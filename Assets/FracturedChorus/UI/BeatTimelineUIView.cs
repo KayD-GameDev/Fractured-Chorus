@@ -25,6 +25,7 @@ namespace FracturedChorus.UI
         [SerializeField] private bool autoPlayOnStart = true;
         [SerializeField] private float autoBeatInterval = 0.35f;
         [SerializeField] private float skillPanelOpenSpeedMultiplier = 0.25f;
+        [SerializeField] private float scanAlignThreshold = 0.28f;
 
         private BeatTimelineEngine _timeline;
         private CombatSession _session;
@@ -41,6 +42,8 @@ namespace FracturedChorus.UI
         private float _totalScrollPx;
         private int _lastFiredBeat = -1;
         private bool _isPlaybackActive;
+        private int _lastHighlightedSlotIndex = -1;
+        private readonly Vector3[] _cornerBuffer = new Vector3[4];
 
         private void Awake()
         {
@@ -216,6 +219,7 @@ namespace FracturedChorus.UI
         {
             StopAutoPlay();
             _autoPlayCompleted = true;
+            ResetAllScanHighlights();
         }
 
         private void HandleTelegraphsPlanned(int phaseIndex)
@@ -271,6 +275,7 @@ namespace FracturedChorus.UI
             _isPlaybackActive = false;
             _autoPlayCompleted = true;
             _autoPlayRoutine = null;
+            ResetAllScanHighlights();
 
             if (_session != null && _session.Phase == CombatPhase.Planning)
             {
@@ -309,6 +314,7 @@ namespace FracturedChorus.UI
             _session?.ResolveBeatAtScan(beat);
             RefreshBeat(beat);
             RefreshPhaseAvLabel();
+            UpdateScanHighlights();
         }
 
         private void ApplyScrollVisual(float scrollPx)
@@ -341,6 +347,7 @@ namespace FracturedChorus.UI
 
                 slotsRow.anchoredPosition = new Vector2(-(phaseScroll - wholeSteps * step), 0f);
                 scanBar.anchoredPosition = new Vector2(scanLineX, 0f);
+                UpdateScanHighlights();
                 return;
             }
 
@@ -355,6 +362,103 @@ namespace FracturedChorus.UI
             var maxSweep = Mathf.Max(0f, (VisibleSlotCount - 1) * step);
             sweepOffset = Mathf.Min(sweepOffset, maxSweep);
             scanBar.anchoredPosition = new Vector2(scanLineX + sweepOffset, 0f);
+            UpdateScanHighlights();
+        }
+
+        private void UpdateScanHighlights()
+        {
+            if (!_slotsBuilt || scanBar == null || viewport == null || _visibleSlots == null)
+            {
+                return;
+            }
+
+            var scanX = scanBar.anchoredPosition.x;
+            var step = GetSlideStep();
+            if (step <= 0f)
+            {
+                return;
+            }
+
+            var threshold = step * scanAlignThreshold;
+            var activeSlot = -1;
+            var bestDist = float.MaxValue;
+
+            for (var i = 0; i < _visibleSlots.Length; i++)
+            {
+                var slot = _visibleSlots[i];
+                if (slot == null)
+                {
+                    continue;
+                }
+
+                var dist = Mathf.Abs(GetSlotCenterXFromLeft(slot) - scanX);
+                if (dist < bestDist)
+                {
+                    bestDist = dist;
+                    activeSlot = i;
+                }
+            }
+
+            var shouldHighlight = activeSlot >= 0 && bestDist <= threshold;
+
+            if (!shouldHighlight)
+            {
+                if (_lastHighlightedSlotIndex >= 0)
+                {
+                    ClearHighlightedSlot();
+                }
+
+                return;
+            }
+
+            if (_lastHighlightedSlotIndex >= 0 && _lastHighlightedSlotIndex < _visibleSlots.Length)
+            {
+                _visibleSlots[_lastHighlightedSlotIndex]?.SetScanHighlighted(false);
+            }
+
+            _visibleSlots[activeSlot]?.SetScanHighlighted(true);
+            _lastHighlightedSlotIndex = activeSlot;
+        }
+
+        private void ClearHighlightedSlot()
+        {
+            if (_lastHighlightedSlotIndex >= 0 &&
+                _visibleSlots != null &&
+                _lastHighlightedSlotIndex < _visibleSlots.Length)
+            {
+                _visibleSlots[_lastHighlightedSlotIndex]?.SetScanHighlighted(false);
+            }
+
+            _lastHighlightedSlotIndex = -1;
+        }
+
+        private float GetSlotCenterXFromLeft(BeatSegmentView slot)
+        {
+            var rt = slot.GetComponent<RectTransform>();
+            if (rt == null || viewport == null)
+            {
+                return 0f;
+            }
+
+            rt.GetWorldCorners(_cornerBuffer);
+            var centerWorld = (_cornerBuffer[0] + _cornerBuffer[2]) * 0.5f;
+            var localX = viewport.InverseTransformPoint(centerWorld).x;
+            return localX + viewport.rect.width * viewport.pivot.x;
+        }
+
+        private void ResetAllScanHighlights()
+        {
+            ClearHighlightedSlot();
+
+            if (_visibleSlots == null)
+            {
+                return;
+            }
+
+            foreach (var slot in _visibleSlots)
+            {
+                slot?.ResetScanHighlight();
+            }
         }
 
         private float GetScanLineX()
@@ -842,6 +946,7 @@ namespace FracturedChorus.UI
         private void RefreshVisibleWindow(int windowStart)
         {
             _windowStart = Mathf.Clamp(windowStart, 0, TimelineConstants.TotalBeats - 1);
+            ClearHighlightedSlot();
             if (_visibleSlots == null)
             {
                 return;
@@ -860,12 +965,14 @@ namespace FracturedChorus.UI
                 return;
             }
 
+            slot.ResetScanHighlight();
             slot.SetDisplayBeatIndex(globalBeat);
             slot.UpdatePhaseDivider();
 
             if (_timeline == null || globalBeat < 0 || globalBeat >= TimelineConstants.TotalBeats)
             {
                 slot.SetEmpty();
+                slot.CaptureLayoutBaseline();
                 return;
             }
 
@@ -881,6 +988,7 @@ namespace FracturedChorus.UI
 
             var telegraph = _timeline.GetTelegraphAtBeat(globalBeat);
             slot.SetSlot(playerEntry, telegraph);
+            slot.CaptureLayoutBaseline();
         }
 
         public void SetScanSpeedMultiplier(float multiplier)

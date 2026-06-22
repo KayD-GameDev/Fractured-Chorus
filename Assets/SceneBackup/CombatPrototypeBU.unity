@@ -3958,6 +3958,7 @@ MonoBehaviour:
   portrait: {fileID: 297397638}
   actionLabel: {fileID: 1588931102}
   phaseDividerLine: {fileID: 702803423}
+  scanScaleBoost: 1.14
 --- !u!114 &715640729
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5210,6 +5211,7 @@ MonoBehaviour:
   slotsRow: {fileID: 1563817237}
   segmentTemplate: {fileID: 715640728}
   scanBar: {fileID: 309590910}
+  trackLine: {fileID: 0}
   confirmButton: {fileID: 0}
   phaseLabel: {fileID: 2113597695}
   budgetLabel: {fileID: 458919646}
@@ -5220,6 +5222,7 @@ MonoBehaviour:
   autoPlayOnStart: 1
   autoBeatInterval: 0.35
   skillPanelOpenSpeedMultiplier: 0.25
+  scanAlignThreshold: 0.28
 --- !u!21 &1260021172
 Material:
   serializedVersion: 8
