@@ -134,6 +134,16 @@ namespace FracturedChorus.Editor
             var scanImg = scanGo.AddComponent<Image>();
             scanImg.color = new Color(1f, 0.15f, 0.1f, 0.85f);
 
+            var trackGo = CreateUiObject("TrackLine", viewportGo.transform);
+            trackGo.transform.SetAsFirstSibling();
+            var trackRect = trackGo.GetComponent<RectTransform>();
+            trackRect.anchorMin = new Vector2(0f, 0f);
+            trackRect.anchorMax = new Vector2(1f, 0f);
+            trackRect.pivot = new Vector2(0.5f, 0f);
+            trackRect.anchoredPosition = new Vector2(0f, 6f);
+            trackRect.sizeDelta = new Vector2(0f, 2f);
+            trackGo.AddComponent<Image>().color = new Color(1f, 1f, 1f, 0.14f);
+
             return viewportRect;
         }
 

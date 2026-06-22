@@ -14,6 +14,7 @@ namespace FracturedChorus.UI
         [SerializeField] private RectTransform slotsRow;
         [SerializeField] private BeatSegmentView segmentTemplate;
         [SerializeField] private RectTransform scanBar;
+        [SerializeField] private RectTransform trackLine;
         [SerializeField] private Button confirmButton;
         [SerializeField] private Text phaseLabel;
         [SerializeField] private Text budgetLabel;
@@ -29,7 +30,6 @@ namespace FracturedChorus.UI
         private CombatSession _session;
         private BeatSegmentView[] _visibleSlots;
         private int _windowStart;
-        private Coroutine _slideRoutine;
         private Coroutine _autoPlayRoutine;
         private bool _slotsBuilt;
         private bool _autoPlayCompleted;
@@ -38,6 +38,9 @@ namespace FracturedChorus.UI
         private Action<int> _onScanBeatReached;
         private float _layoutSpacing;
         private float _scanSpeedMultiplier = 1f;
+        private float _totalScrollPx;
+        private int _lastFiredBeat = -1;
+        private bool _isPlaybackActive;
 
         private void Awake()
         {
@@ -61,15 +64,7 @@ namespace FracturedChorus.UI
             if (Mathf.Abs(w - _lastViewportWidth) > 0.5f)
             {
                 RefitSlotsToViewport();
-                if (_autoPlayCompleted)
-                {
-                    EnsureBeatAlignedToScanBar(Mathf.Clamp(_autoPlayBeat, 0, TimelineConstants.TotalBeats - 1));
-                }
-                else
-                {
-                    RefreshVisibleWindow(_windowStart);
-                    AlignScanBar();
-                }
+                ApplyScrollVisual(_totalScrollPx);
             }
         }
 
@@ -98,6 +93,13 @@ namespace FracturedChorus.UI
             {
                 scanBar = transform.Find("Viewport/ScanBar") as RectTransform;
             }
+
+            if (trackLine == null && viewport != null)
+            {
+                trackLine = viewport.Find("TrackLine") as RectTransform;
+            }
+
+            EnsureTrackLine();
 
             if (confirmButton == null)
             {
@@ -207,7 +209,7 @@ namespace FracturedChorus.UI
                 StopCoroutine(_autoPlayRoutine);
             }
 
-            _autoPlayRoutine = StartCoroutine(AutoPlayTimelineRoutine());
+            _autoPlayRoutine = StartCoroutine(ContinuousScanRoutine());
         }
 
         public void StopTimelinePlayback()
@@ -228,6 +230,7 @@ namespace FracturedChorus.UI
 
         private void StopAutoPlay()
         {
+            _isPlaybackActive = false;
             if (_autoPlayRoutine != null)
             {
                 StopCoroutine(_autoPlayRoutine);
@@ -235,49 +238,37 @@ namespace FracturedChorus.UI
             }
         }
 
-        private IEnumerator AutoPlayTimelineRoutine()
+        private IEnumerator ContinuousScanRoutine()
         {
             RefitSlotsToViewport();
             ResetCarouselVisualState();
+            _totalScrollPx = 0f;
+            _lastFiredBeat = -1;
+            _autoPlayBeat = 0;
             RefreshVisibleWindow(0);
+            EnsureTrackLine();
+            ApplyScrollVisual(0f);
+            ProcessCrossedBeats();
+            _isPlaybackActive = true;
 
-            for (var beat = 0; beat < TimelineConstants.TotalBeats; beat++)
+            var totalTravelPx = (TimelineConstants.TotalBeats - 1) * GetSlideStep() + GetSlideStep();
+
+            while (_isPlaybackActive && _totalScrollPx < totalTravelPx)
             {
-                _autoPlayBeat = beat;
-                EnsureBeatAlignedToScanBar(beat);
-                _session?.OnTimelineScanBeat(beat);
-                RefreshPhaseHeader(beat);
-                _onScanBeatReached?.Invoke(beat);
-                _session?.ResolveBeatAtScan(beat);
-                RefreshAll();
+                var speed = GetScrollSpeedPxPerSecond();
+                _totalScrollPx += speed * Time.deltaTime;
+                ApplyScrollVisual(_totalScrollPx);
+                ProcessCrossedBeats();
 
                 if (_session != null && _session.IsEncounterOver)
-                {
-                    _autoPlayCompleted = true;
-                    _autoPlayRoutine = null;
-                    yield break;
-                }
-
-                yield return new WaitForSeconds(GetBeatWaitDuration());
-
-                if (beat >= TimelineConstants.TotalBeats - 1)
                 {
                     break;
                 }
 
-                var maxWindow = GetMaxWindowStart();
-                if (beat < maxWindow)
-                {
-                    if (_slideRoutine != null)
-                    {
-                        StopCoroutine(_slideRoutine);
-                    }
-
-                    yield return SlideCarouselSteps(1);
-                    AlignScanBar();
-                }
+                yield return null;
             }
 
+            _isPlaybackActive = false;
             _autoPlayCompleted = true;
             _autoPlayRoutine = null;
 
@@ -287,38 +278,122 @@ namespace FracturedChorus.UI
             }
         }
 
-        private void EnsureBeatAlignedToScanBar(int beat)
+        private float GetScrollSpeedPxPerSecond()
         {
-            var maxWindow = GetMaxWindowStart();
-            if (beat <= maxWindow)
+            return GetSlideStep() / GetBeatWaitDuration();
+        }
+
+        private void ProcessCrossedBeats()
+        {
+            var beatIndex = Mathf.FloorToInt(_totalScrollPx / GetSlideStep());
+            beatIndex = Mathf.Clamp(beatIndex, 0, TimelineConstants.TotalBeats - 1);
+
+            while (_lastFiredBeat < beatIndex)
             {
-                if (_windowStart != beat)
+                FireScanBeat(_lastFiredBeat + 1);
+                if (_session != null && _session.IsEncounterOver)
                 {
-                    RefreshVisibleWindow(beat);
+                    _isPlaybackActive = false;
+                    return;
+                }
+            }
+        }
+
+        private void FireScanBeat(int beat)
+        {
+            _lastFiredBeat = beat;
+            _autoPlayBeat = beat;
+            _session?.OnTimelineScanBeat(beat);
+            RefreshPhaseHeader(beat);
+            _onScanBeatReached?.Invoke(beat);
+            _session?.ResolveBeatAtScan(beat);
+            RefreshBeat(beat);
+            RefreshPhaseAvLabel();
+        }
+
+        private void ApplyScrollVisual(float scrollPx)
+        {
+            if (slotsRow == null || scanBar == null || !_slotsBuilt)
+            {
+                return;
+            }
+
+            var step = GetSlideStep();
+            if (step <= 0f)
+            {
+                return;
+            }
+
+            var maxWindow = GetMaxWindowStart();
+            var scanLineX = GetScanLineX();
+
+            if (scrollPx <= maxWindow * step)
+            {
+                var phaseScroll = scrollPx;
+                var wholeSteps = Mathf.FloorToInt(phaseScroll / step);
+                var desiredWindow = Mathf.Clamp(wholeSteps, 0, maxWindow);
+
+                if (_windowStart != desiredWindow)
+                {
+                    _windowStart = desiredWindow;
+                    RefreshVisibleWindow(_windowStart);
                 }
 
-                AlignScanBar();
+                slotsRow.anchoredPosition = new Vector2(-(phaseScroll - wholeSteps * step), 0f);
+                scanBar.anchoredPosition = new Vector2(scanLineX, 0f);
                 return;
             }
 
             if (_windowStart != maxWindow)
             {
-                RefreshVisibleWindow(maxWindow);
+                _windowStart = maxWindow;
+                RefreshVisibleWindow(_windowStart);
             }
 
-            UpdateScanBarForSlotIndex(beat - _windowStart);
+            slotsRow.anchoredPosition = Vector2.zero;
+            var sweepOffset = scrollPx - maxWindow * step;
+            var maxSweep = Mathf.Max(0f, (VisibleSlotCount - 1) * step);
+            sweepOffset = Mathf.Min(sweepOffset, maxSweep);
+            scanBar.anchoredPosition = new Vector2(scanLineX + sweepOffset, 0f);
         }
 
-        private void UpdateScanBarForSlotIndex(int slotIndex)
+        private float GetScanLineX()
         {
-            if (scanBar == null)
+            return GetSlotWidth() * 0.5f;
+        }
+
+        private void EnsureTrackLine()
+        {
+            if (viewport == null)
             {
                 return;
             }
 
-            var clamped = Mathf.Clamp(slotIndex, 0, Mathf.Max(0, VisibleSlotCount - 1));
-            var x = clamped * GetSlideStep() + GetSlotWidth() * 0.5f;
-            scanBar.anchoredPosition = new Vector2(x, 0f);
+            if (trackLine == null)
+            {
+                var existing = viewport.Find("TrackLine");
+                if (existing != null)
+                {
+                    trackLine = existing as RectTransform;
+                }
+            }
+
+            if (trackLine == null)
+            {
+                var go = new GameObject("TrackLine", typeof(RectTransform), typeof(Image));
+                go.transform.SetParent(viewport, false);
+                go.transform.SetAsFirstSibling();
+                trackLine = go.GetComponent<RectTransform>();
+                var img = go.GetComponent<Image>();
+                img.color = new Color(1f, 1f, 1f, 0.14f);
+                img.raycastTarget = false;
+            }
+
+            trackLine.anchorMin = new Vector2(0f, 0f);
+            trackLine.anchorMax = new Vector2(1f, 0f);
+            trackLine.pivot = new Vector2(0.5f, 0f);
+            trackLine.anchoredPosition = new Vector2(0f, 6f);
+            trackLine.sizeDelta = new Vector2(0f, 2f);
         }
 
         private float GetSlotWidth()
@@ -442,7 +517,7 @@ namespace FracturedChorus.UI
             slotsRow.sizeDelta = new Vector2(viewportWidth, 0f);
             ApplyTemplateWidthToAllSlots();
             LayoutRebuilder.ForceRebuildLayoutImmediate(slotsRow);
-            AlignScanBar();
+            ApplyScrollVisual(_totalScrollPx);
         }
 
         private void ApplyTemplateWidthToAllSlots()
@@ -590,10 +665,15 @@ namespace FracturedChorus.UI
         private void ResetCarouselVisualState()
         {
             _windowStart = 0;
+            _totalScrollPx = 0f;
+            _lastFiredBeat = -1;
+            _isPlaybackActive = false;
             if (slotsRow != null)
             {
                 slotsRow.anchoredPosition = Vector2.zero;
             }
+
+            ApplyScrollVisual(0f);
         }
 
         private void OnDestroy()
@@ -649,7 +729,7 @@ namespace FracturedChorus.UI
             scanBar.anchorMin = new Vector2(0f, 0f);
             scanBar.anchorMax = new Vector2(0f, 1f);
             scanBar.pivot = new Vector2(0.5f, 0.5f);
-            scanBar.anchoredPosition = new Vector2(GetSlotWidth() * 0.5f, 0f);
+            scanBar.anchoredPosition = new Vector2(GetScanLineX(), 0f);
             scanBar.sizeDelta = new Vector2(6f, -4f);
         }
 
@@ -683,93 +763,9 @@ namespace FracturedChorus.UI
             }
 
             StopAutoPlay();
-
-            var nextWindowStart = beatIndex + 1;
-            if (nextWindowStart >= TimelineConstants.TotalBeats)
-            {
-                return;
-            }
-
-            if (_slideRoutine != null)
-            {
-                StopCoroutine(_slideRoutine);
-            }
-
-            _slideRoutine = StartCoroutine(SlideCarouselSteps(1));
-        }
-
-        private IEnumerator SlideCarouselSteps(int steps)
-        {
-            for (var step = 0; step < steps; step++)
-            {
-                yield return SlideOneStep();
-                _windowStart++;
-                RefreshRightmostSlot();
-            }
-
-            _slideRoutine = null;
-        }
-
-        private IEnumerator SlideOneStep()
-        {
-            if (slotsRow == null)
-            {
-                yield break;
-            }
-
-            var layout = slotsRow.GetComponent<HorizontalLayoutGroup>();
-            if (layout != null)
-            {
-                layout.enabled = false;
-            }
-
-            var start = slotsRow.anchoredPosition;
-            var end = start + Vector2.left * GetSlideStep();
-            var elapsed = 0f;
-
-            while (elapsed < slideDuration)
-            {
-                elapsed += Time.deltaTime;
-                var t = Mathf.Clamp01(elapsed / slideDuration);
-                slotsRow.anchoredPosition = Vector2.Lerp(start, end, t);
-                yield return null;
-            }
-
-            RotateSlotsLeft();
-            slotsRow.anchoredPosition = start;
-
-            if (layout != null)
-            {
-                layout.enabled = true;
-            }
-        }
-
-        private void RotateSlotsLeft()
-        {
-            if (_visibleSlots == null || _visibleSlots.Length == 0)
-            {
-                return;
-            }
-
-            var first = _visibleSlots[0];
-            for (var i = 0; i < _visibleSlots.Length - 1; i++)
-            {
-                _visibleSlots[i] = _visibleSlots[i + 1];
-            }
-
-            _visibleSlots[^1] = first;
-            first.transform.SetAsLastSibling();
-        }
-
-        private void RefreshRightmostSlot()
-        {
-            if (_visibleSlots == null || _visibleSlots.Length == 0)
-            {
-                return;
-            }
-
-            var globalBeat = _windowStart + _visibleSlots.Length - 1;
-            PopulateSlot(_visibleSlots[^1], globalBeat);
+            _totalScrollPx = beatIndex * GetSlideStep();
+            _lastFiredBeat = beatIndex - 1;
+            ApplyScrollVisual(_totalScrollPx);
         }
 
         public void SetPhase(CombatPhase phase)
@@ -794,9 +790,11 @@ namespace FracturedChorus.UI
 
         private void ResetCarouselForPlanning()
         {
+            StopAutoPlay();
             ResetCarouselVisualState();
             _slotsBuilt = false;
             _visibleSlots = null;
+            _autoPlayCompleted = false;
             CleanupExtraBeatChildren();
 
             if (segmentTemplate != null && slotsRow != null)
@@ -821,6 +819,7 @@ namespace FracturedChorus.UI
             RefreshVisibleWindow(_windowStart);
             RefreshPhaseHeader(_autoPlayBeat);
             RefreshPhaseAvLabel();
+            ApplyScrollVisual(_totalScrollPx);
         }
 
         public void RefreshBeat(int beatIndex)
