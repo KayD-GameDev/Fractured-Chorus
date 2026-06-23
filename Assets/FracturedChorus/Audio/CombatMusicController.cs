@@ -21,6 +21,7 @@ namespace FracturedChorus.Audio
         private bool _inLoopBody;
         private bool _playing;
         private Coroutine _crossfadeRoutine;
+        private float _playbackSpeedMultiplier = 1f;
 
         public float TotalMusicalBeat => _totalMusicalBeat;
         public float PlaybackSpeedMultiplier => _playbackSpeedMultiplier;
