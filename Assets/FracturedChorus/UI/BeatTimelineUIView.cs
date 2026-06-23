@@ -22,7 +22,6 @@ namespace FracturedChorus.UI
         [SerializeField] private Text avLabel;
         [SerializeField] private float slotWidth = 52f;
         [SerializeField] private float slotSpacing = 2f;
-        [SerializeField] private float slideDuration = 0.12f;
         [SerializeField] private bool autoPlayOnStart = true;
         [SerializeField] private float autoBeatInterval = 0.405405f;
         [SerializeField] private bool useMusicSync = true;
@@ -1063,6 +1062,7 @@ namespace FracturedChorus.UI
         public void SetScanSpeedMultiplier(float multiplier)
         {
             _scanSpeedMultiplier = Mathf.Max(0.001f, multiplier);
+            musicController?.SetPlaybackSpeedMultiplier(multiplier);
         }
 
         public void SetSkillPanelOpen(bool open)

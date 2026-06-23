@@ -73,7 +73,7 @@ BeatTimelineUI
 |-----------|--------|----------------|
 | **Đầu timeline** | `TrackLine` + `ScanBar` cố định; content trôi trái; ô dưới vạch quét **nổi lên** | Beat resolve khi vạch quét cắt qua tâm ô |
 | **Cuối timeline** | Content dừng; `ScanBar` trượt phải; ô dưới vạch quét **nổi lên** | Cùng crossing detection |
-| **Mở skill panel** | Tốc độ quét chậm (`skillPanelOpenSpeedMultiplier`) | Không đổi |
+| **Mở skill panel** | Tốc độ quét **0.25×** (scroll + nhạc nếu `useMusicSync`) | Không đổi |
 
 **Inspector `BeatTimelineUIView` (tuning):**
 
@@ -135,5 +135,6 @@ Menu **Fractured Chorus → Setup Combat Scene Hierarchy** → chọn **Tạo l�
 
 | Ngày | Thay đổi |
 |------|----------|
+| 2026-06-23 | Skill panel mở: `SetSkillPanelOpen` → scroll 0.25× + `CombatMusicController` pitch 0.25× (music sync). |
 | 2026-06 | Timeline: scroll liên tục trên `TrackLine`; **chỉ ô đang nằm dưới vạch đỏ** nổi lên (`BeatSegmentView.SetScanHighlighted`), các ô khác giữ nguyên. |
 | — | Combat flow vẫn prototype (Planning + auto-resolve trong một lần quét) — chưa tách UC-04 Planning dừng / Resolution riêng. |

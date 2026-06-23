@@ -23,6 +23,7 @@ namespace FracturedChorus.Audio
         private Coroutine _crossfadeRoutine;
 
         public float TotalMusicalBeat => _totalMusicalBeat;
+        public float PlaybackSpeedMultiplier => _playbackSpeedMultiplier;
         public float BeatDuration => 60f / bpm;
         public bool IsPlaying => _playing && source != null && source.isPlaying;
         public bool UsesBeatMap => beatMap != null && beatMap.HasData;
@@ -82,7 +83,16 @@ namespace FracturedChorus.Audio
                 return;
             }
 
-            _totalMusicalBeat += Time.deltaTime / BeatDuration;
+            _totalMusicalBeat += Time.deltaTime * _playbackSpeedMultiplier / BeatDuration;
+        }
+
+        public void SetPlaybackSpeedMultiplier(float multiplier)
+        {
+            _playbackSpeedMultiplier = Mathf.Max(0.001f, multiplier);
+            if (source != null)
+            {
+                source.pitch = _playbackSpeedMultiplier;
+            }
         }
 
         public void PlayBossMusic()
@@ -107,6 +117,7 @@ namespace FracturedChorus.Audio
             source.time = 0f;
             source.spatialBlend = 0f;
             source.volume = 1f;
+            source.pitch = _playbackSpeedMultiplier;
             source.Play();
 
             if (!source.isPlaying)
