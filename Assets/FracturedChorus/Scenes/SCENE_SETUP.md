@@ -71,9 +71,9 @@ BeatTimelineUI
 
 | Giai đoạn | Visual | Logic combat |
 |-----------|--------|----------------|
-| **Đầu timeline** | `TrackLine` + `ScanBar` cố định bên trái; `ScrollContent` trôi sang trái đều | Beat resolve khi vạch quét **cắt qua** tâm ô (crossing) |
-| **Cuối timeline** | `ScrollContent` dừng; `ScanBar` trượt phải dọc track qua các beat còn lại | Cùng crossing detection |
-| **Mở skill panel** | Tốc độ quét chậm lại (`skillPanelOpenSpeedMultiplier` trên `BeatTimelineUIView`) | Không đổi |
+| **Đầu timeline** | `TrackLine` + `ScanBar` cố định; content trôi trái; ô dưới vạch quét **nổi lên** | Beat resolve khi vạch quét cắt qua tâm ô |
+| **Cuối timeline** | Content dừng; `ScanBar` trượt phải; ô dưới vạch quét **nổi lên** | Cùng crossing detection |
+| **Mở skill panel** | Tốc độ quét chậm (`skillPanelOpenSpeedMultiplier`) | Không đổi |
 
 **Inspector `BeatTimelineUIView` (tuning):**
 
@@ -82,6 +82,7 @@ BeatTimelineUI
 | `Auto Beat Interval` | Thời gian 1 beat → tốc độ scroll = `slotStep / interval` |
 | `Skill Panel Open Speed Multiplier` | Hệ số chậm khi panel skill mở (mặc định 0.25) |
 | `Slot Width` / spacing | Fallback nếu chưa refit viewport |
+| `Scan Align Threshold` | Ngưỡng khớp tâm ô với vạch đỏ (0.28 × slot step); nhỏ hơn = chỉ nổi khi quét trúng |
 
 **Không cần** 105 GameObject beat trong Hierarchy — runtime chỉ giữ **N ô vừa viewport** (carousel ảo), populate nội dung beat 0…104.
 
@@ -134,5 +135,5 @@ Menu **Fractured Chorus → Setup Combat Scene Hierarchy** → chọn **Tạo l�
 
 | Ngày | Thay đổi |
 |------|----------|
-| 2026-06 | Timeline: chuyển từ nhảy từng ô + `WaitForSeconds` sang **scroll liên tục** trên `TrackLine`; thêm `TrackLine` trong Rebuild; cập nhật doc hierarchy `Viewport/ScrollContent`. |
+| 2026-06 | Timeline: scroll liên tục trên `TrackLine`; **chỉ ô đang nằm dưới vạch đỏ** nổi lên (`BeatSegmentView.SetScanHighlighted`), các ô khác giữ nguyên. |
 | — | Combat flow vẫn prototype (Planning + auto-resolve trong một lần quét) — chưa tách UC-04 Planning dừng / Resolution riêng. |
