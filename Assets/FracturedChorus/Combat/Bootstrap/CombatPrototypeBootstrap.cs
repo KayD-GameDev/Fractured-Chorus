@@ -42,6 +42,7 @@ namespace FracturedChorus.Combat.Bootstrap
             CombatInputSetup.Configure(mainCamera != null ? mainCamera : Camera.main);
             ResolveSceneReferences();
             EnsureMusicController();
+            EnsureAudioListener();
 
             _grid = new DualGrid();
             _timeline = new BeatTimelineEngine();
@@ -96,6 +97,27 @@ namespace FracturedChorus.Combat.Bootstrap
             var audioGo = new GameObject("CombatMusic");
             audioGo.transform.SetParent(transform, false);
             musicController = audioGo.AddComponent<CombatMusicController>();
+        }
+
+        private void EnsureAudioListener()
+        {
+            if (FindAnyObjectByType<AudioListener>() != null)
+            {
+                return;
+            }
+
+            var cam = mainCamera != null ? mainCamera : Camera.main;
+            if (cam == null)
+            {
+                Debug.LogWarning("[Bootstrap] No AudioListener and no Main Camera found.");
+                return;
+            }
+
+            if (cam.GetComponent<AudioListener>() == null)
+            {
+                cam.gameObject.AddComponent<AudioListener>();
+                Debug.Log("[Bootstrap] Added AudioListener to Main Camera.");
+            }
         }
 
         private void ResolveSceneReferences()

@@ -67,6 +67,12 @@ namespace FracturedChorus.Editor
                 timelineSo.ApplyModifiedPropertiesWithoutUndo();
             }
 
+            var cam = Camera.main;
+            if (cam != null && cam.GetComponent<AudioListener>() == null)
+            {
+                Undo.AddComponent<AudioListener>(cam.gameObject);
+            }
+
             EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
             Debug.Log("[Fractured Chorus] Combat music wired. Save scene, then press Play on CombatPrototype.");
         }
