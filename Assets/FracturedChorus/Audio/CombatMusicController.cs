@@ -7,6 +7,8 @@ namespace FracturedChorus.Audio
     {
         [SerializeField] private AudioSource source;
         [SerializeField] private AudioClip bossTrack;
+        [SerializeField] private MusicBeatMapSO beatMap;
+        [SerializeField] private TextAsset beatMapCsv;
         [SerializeField] private float bpm = 148f;
         [SerializeField] private float introEndSec = 24f;
         [SerializeField] private float loopEndSec = 122f;
@@ -23,12 +25,42 @@ namespace FracturedChorus.Audio
         public float TotalMusicalBeat => _totalMusicalBeat;
         public float BeatDuration => 60f / bpm;
         public bool IsPlaying => _playing && source != null && source.isPlaying;
+        public bool UsesBeatMap => beatMap != null && beatMap.HasData;
         public int LoopCount => _loopCount;
 
         private void Awake()
         {
             EnsureAudioSource();
             TryAssignDefaultClip();
+            TryLoadBeatMapFromCsv();
+        }
+
+        private void TryLoadBeatMapFromCsv()
+        {
+            if (beatMap != null && beatMap.HasData)
+            {
+                return;
+            }
+
+#if UNITY_EDITOR
+            if (beatMapCsv == null)
+            {
+                beatMapCsv = UnityEditor.AssetDatabase.LoadAssetAtPath<TextAsset>(
+                    "Assets/FracturedChorus/Audio/Music/EternalSpark_CadenceRemix_beats.csv");
+            }
+#endif
+
+            if (beatMapCsv == null || bossTrack == null)
+            {
+                return;
+            }
+
+            beatMap = MusicBeatMapSO.CreateRuntimeFromCsv(beatMapCsv.text, bossTrack);
+        }
+
+        private void OnValidate()
+        {
+            EnsureAudioSource();
         }
 
         private void Update()
@@ -38,8 +70,19 @@ namespace FracturedChorus.Audio
                 return;
             }
 
-            _totalMusicalBeat += Time.deltaTime / BeatDuration;
+            SyncMusicalBeatFromAudio();
             HandleLoopRegions();
+        }
+
+        private void SyncMusicalBeatFromAudio()
+        {
+            if (UsesBeatMap)
+            {
+                _totalMusicalBeat = beatMap.TimeToMusicalBeat(source.time);
+                return;
+            }
+
+            _totalMusicalBeat += Time.deltaTime / BeatDuration;
         }
 
         public void PlayBossMusic()
@@ -62,7 +105,19 @@ namespace FracturedChorus.Audio
             source.clip = bossTrack;
             source.loop = false;
             source.time = 0f;
+            source.spatialBlend = 0f;
+            source.volume = 1f;
             source.Play();
+
+            if (!source.isPlaying)
+            {
+                Debug.LogError("[CombatMusic] AudioSource.Play() failed. Check AudioListener on Main Camera.");
+                _playing = false;
+                return;
+            }
+
+            var syncMode = UsesBeatMap ? $"beat map ({beatMap.BeatCount} markers)" : $"{bpm} BPM";
+            Debug.Log($"[CombatMusic] Playing '{bossTrack.name}' ({bossTrack.length:F1}s) sync={syncMode}.");
         }
 
         public void StopMusic()
@@ -170,18 +225,26 @@ namespace FracturedChorus.Audio
 
             source.playOnAwake = false;
             source.loop = false;
+            source.spatialBlend = 0f;
+            source.bypassListenerEffects = false;
+            source.bypassReverbZones = true;
+            source.priority = 0;
         }
 
         private void TryAssignDefaultClip()
         {
-            if (bossTrack != null)
+#if UNITY_EDITOR
+            if (bossTrack == null)
             {
-                return;
+                bossTrack = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>(
+                    "Assets/FracturedChorus/Audio/Music/EternalSpark_CadenceRemix.mp3");
             }
 
-#if UNITY_EDITOR
-            bossTrack = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>(
-                "Assets/FracturedChorus/Audio/Music/EternalSpark_CadenceRemix.mp3");
+            if (beatMap == null)
+            {
+                beatMap = UnityEditor.AssetDatabase.LoadAssetAtPath<MusicBeatMapSO>(
+                    "Assets/FracturedChorus/Audio/Music/EternalSpark_CadenceRemix_BeatMap.asset");
+            }
 #endif
         }
     }

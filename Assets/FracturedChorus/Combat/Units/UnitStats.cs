@@ -44,7 +44,7 @@ namespace FracturedChorus.Combat.Units
                 HeartBeat = 140,
                 BaseLuck = 10f,
                 CritMultiplier = 1.1f,
-                MaxHp = 120,
+                MaxHp = 5000,
                 BaseSpeed = 8
             };
         }
