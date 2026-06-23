@@ -1,3 +1,4 @@
+using FracturedChorus.Audio;
 using FracturedChorus.Combat.Core;
 using FracturedChorus.Combat.Grid;
 using FracturedChorus.Combat.Timeline;
@@ -23,7 +24,9 @@ namespace FracturedChorus.UI
         [SerializeField] private float slotSpacing = 2f;
         [SerializeField] private float slideDuration = 0.12f;
         [SerializeField] private bool autoPlayOnStart = true;
-        [SerializeField] private float autoBeatInterval = 0.35f;
+        [SerializeField] private float autoBeatInterval = 0.405405f;
+        [SerializeField] private bool useMusicSync = true;
+        [SerializeField] private CombatMusicController musicController;
         [SerializeField] private float skillPanelOpenSpeedMultiplier = 0.25f;
         [SerializeField] private float scanAlignThreshold = 0.28f;
 
@@ -43,6 +46,7 @@ namespace FracturedChorus.UI
         private int _lastFiredBeat = -1;
         private bool _isPlaybackActive;
         private int _lastHighlightedSlotIndex = -1;
+        private float _roundStartMusicalBeat;
         private readonly Vector3[] _cornerBuffer = new Vector3[4];
 
         private void Awake()
@@ -174,8 +178,14 @@ namespace FracturedChorus.UI
             viewport.offsetMax = new Vector2(-8f, viewport.offsetMax.y);
         }
 
-        public void Bind(BeatTimelineEngine timeline, CombatSession session, Action<int> onScanBeatReached = null)
+        public void Bind(BeatTimelineEngine timeline, CombatSession session, Action<int> onScanBeatReached = null,
+            CombatMusicController music = null)
         {
+            if (music != null)
+            {
+                musicController = music;
+            }
+
             _timeline = timeline;
             _session = session;
             _onScanBeatReached = onScanBeatReached;
@@ -212,7 +222,65 @@ namespace FracturedChorus.UI
                 StopCoroutine(_autoPlayRoutine);
             }
 
-            _autoPlayRoutine = StartCoroutine(ContinuousScanRoutine());
+            _autoPlayRoutine = CanUseMusicSync()
+                ? StartCoroutine(MusicDrivenScanRoutine())
+                : StartCoroutine(ContinuousScanRoutine());
+        }
+
+        private bool CanUseMusicSync()
+        {
+            return useMusicSync && musicController != null;
+        }
+
+        private IEnumerator MusicDrivenScanRoutine()
+        {
+            if (musicController == null || !musicController.IsPlaying)
+            {
+                yield return ContinuousScanRoutine();
+                yield break;
+            }
+
+            RefitSlotsToViewport();
+            ResetCarouselVisualState();
+            _totalScrollPx = 0f;
+            _lastFiredBeat = -1;
+            _autoPlayBeat = 0;
+            RefreshVisibleWindow(0);
+            EnsureTrackLine();
+            ApplyScrollVisual(0f);
+            ProcessCrossedBeats();
+            _isPlaybackActive = true;
+            _roundStartMusicalBeat = musicController.TotalMusicalBeat;
+
+            while (_isPlaybackActive)
+            {
+                var localBeat = musicController.TotalMusicalBeat - _roundStartMusicalBeat;
+                if (localBeat >= TimelineConstants.TotalBeats)
+                {
+                    break;
+                }
+
+                _totalScrollPx = localBeat * GetSlideStep();
+                ApplyScrollVisual(_totalScrollPx);
+                ProcessCrossedBeats();
+
+                if (_session != null && _session.IsEncounterOver)
+                {
+                    break;
+                }
+
+                yield return null;
+            }
+
+            _isPlaybackActive = false;
+            _autoPlayCompleted = true;
+            _autoPlayRoutine = null;
+            ResetAllScanHighlights();
+
+            if (_session != null && _session.Phase == CombatPhase.Planning)
+            {
+                FindAnyObjectByType<CombatController>()?.ConfirmPlanning();
+            }
         }
 
         public void StopTimelinePlayback()
@@ -230,6 +298,7 @@ namespace FracturedChorus.UI
         private void HandleEncounterEnded()
         {
             StopTimelinePlayback();
+            musicController?.StopMusic();
         }
 
         private void StopAutoPlay()

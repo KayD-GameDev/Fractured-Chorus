@@ -39,7 +39,7 @@ namespace FracturedChorus.Editor
 
             EditorSceneManager.MarkSceneDirty(canvas.gameObject.scene);
             Selection.activeGameObject = timeline.gameObject;
-            Debug.Log("[Fractured Chorus] Rebuilt BeatTimelineUI (105 slots) + SkillPanelUI in Hierarchy. Save scene.");
+            Debug.Log("[Fractured Chorus] Rebuilt BeatTimelineUI (128 slots) + SkillPanelUI in Hierarchy. Save scene.");
         }
 
         private static void SetRef(Object target, string field, Object value)

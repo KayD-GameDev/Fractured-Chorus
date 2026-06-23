@@ -1,4 +1,4 @@
-using FracturedChorus.Combat.Bootstrap;
+using FracturedChorus.Audio;
 using FracturedChorus.Combat.Core;
 using FracturedChorus.Combat.Grid;
 using FracturedChorus.Combat.Timeline;
@@ -24,6 +24,9 @@ namespace FracturedChorus.Combat.Bootstrap
         [Header("Encounter (optional if units already in scene)")]
         [SerializeField] private EncounterDefinitionSO encounterDefinition;
 
+        [SerializeField] private CombatMusicController musicController;
+        [SerializeField] private bool playBossMusicOnStart = true;
+
         [Header("Grid layout (used when spawning from encounter only)")]
         [SerializeField] private float cellWidth = 1.4f;
         [SerializeField] private float cellHeight = 1.2f;
@@ -38,6 +41,7 @@ namespace FracturedChorus.Combat.Bootstrap
         {
             CombatInputSetup.Configure(mainCamera != null ? mainCamera : Camera.main);
             ResolveSceneReferences();
+            EnsureMusicController();
 
             _grid = new DualGrid();
             _timeline = new BeatTimelineEngine();
@@ -66,8 +70,32 @@ namespace FracturedChorus.Combat.Bootstrap
                 }
             }
 
-            combatController.Initialize(_session, _timeline, timelineView, skillPanelView);
+            if (playBossMusicOnStart)
+            {
+                musicController?.PlayBossMusic();
+            }
+
+            combatController.Initialize(_session, _timeline, timelineView, skillPanelView, musicController);
+
             skillPanelView?.Hide();
+        }
+
+        private void EnsureMusicController()
+        {
+            if (musicController != null)
+            {
+                return;
+            }
+
+            musicController = FindAnyObjectByType<CombatMusicController>();
+            if (musicController != null)
+            {
+                return;
+            }
+
+            var audioGo = new GameObject("CombatMusic");
+            audioGo.transform.SetParent(transform, false);
+            musicController = audioGo.AddComponent<CombatMusicController>();
         }
 
         private void ResolveSceneReferences()

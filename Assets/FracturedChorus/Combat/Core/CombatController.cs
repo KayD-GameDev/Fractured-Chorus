@@ -1,3 +1,4 @@
+using FracturedChorus.Audio;
 using FracturedChorus.Combat.Core;
 using FracturedChorus.Combat.Timeline;
 using FracturedChorus.Combat.Units;
@@ -20,7 +21,7 @@ namespace FracturedChorus.Combat.Core
         public CombatSession Session => _session;
 
         public void Initialize(CombatSession session, BeatTimelineEngine timeline,
-            BeatTimelineUIView timelineUi, SkillPanelUIView skillPanel)
+            BeatTimelineUIView timelineUi, SkillPanelUIView skillPanel, CombatMusicController music = null)
         {
             _session = session;
             _timeline = timeline;
@@ -34,7 +35,7 @@ namespace FracturedChorus.Combat.Core
 
             if (timelineView != null)
             {
-                timelineView.Bind(_timeline, _session, OnScanBeatReached);
+                timelineView.Bind(_timeline, _session, OnScanBeatReached, music);
             }
 
             if (skillPanelView != null)
