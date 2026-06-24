@@ -8485,8 +8485,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
-  m_AnchoredPosition: {x: 54.37, y: -79.996}
-  m_SizeDelta: {x: 58, y: 28.007}
+  m_AnchoredPosition: {x: 58.2635, y: -81.0838}
+  m_SizeDelta: {x: 86.2839, y: 30.1827}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1773493165
 MonoBehaviour:
@@ -8521,7 +8521,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "AV \u2014"
+  m_Text: "Cycle \u2014"
 --- !u!222 &1773493166
 CanvasRenderer:
   m_ObjectHideFlags: 0

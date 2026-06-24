@@ -1114,7 +1114,7 @@ namespace FracturedChorus.UI
             }
 
             var tracker = _session.PhaseAv;
-            avLabel.text = $"AV {tracker.Remaining}/{tracker.CurrentBudget}";
+            avLabel.text = $"Cycle {tracker.Remaining}/{tracker.CurrentBudget}";
         }
 
         public void SetAvDisplay(string text)
