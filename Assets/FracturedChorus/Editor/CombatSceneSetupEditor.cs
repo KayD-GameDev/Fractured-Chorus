@@ -13,11 +13,30 @@ using UnityEngine.UI;
 
 namespace FracturedChorus.Editor
 {
+    [InitializeOnLoad]
     public static class CombatSceneSetupEditor
     {
-        private const float CellWidth = 1.4f;
-        private const float CellHeight = 1.2f;
-        private const float SideGap = 3.5f;
+        static CombatSceneSetupEditor()
+        {
+            EditorSceneManager.sceneOpened += (_, _) => RefreshGridCellVisualsInScene();
+            EditorApplication.delayCall += () =>
+            {
+                if (!Application.isPlaying)
+                {
+                    RefreshGridCellVisualsInScene();
+                }
+            };
+        }
+
+        private static void RefreshGridCellVisualsInScene()
+        {
+            foreach (var marker in Object.FindObjectsByType<GridCellMarker>(FindObjectsInactive.Include))
+            {
+                marker.RebuildVisuals();
+            }
+        }
+
+        private const float SideGap = HexBoardLayout.DefaultSideGap;
 
         [MenuItem("Fractured Chorus/Fix Input System (EventSystem)")]
         public static void FixInputSystemInScene()
@@ -175,27 +194,17 @@ namespace FracturedChorus.Editor
         private static void CreateGridCell(Transform parent, GridSide side, int row, int col)
         {
             var pos = new GridPosition(side, row, col);
-            var world = GetWorldPosition(pos);
+            var world = HexBoardLayout.GetWorldPosition(pos);
 
-            var cellGo = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            var cellGo = new GameObject($"Cell_{side}_R{row}_C{col}");
             Undo.RegisterCreatedObjectUndo(cellGo, "Create Grid Cell");
-            cellGo.name = $"Cell_{side}_R{row}_C{col}";
             cellGo.transform.SetParent(parent, false);
-            cellGo.transform.position = new Vector3(world.x, world.y - 0.55f, 0.5f);
-            cellGo.transform.localScale = new Vector3(1.1f, 1.1f, 1f);
-
-            Object.DestroyImmediate(cellGo.GetComponent<Collider>());
-
-            var renderer = cellGo.GetComponent<Renderer>();
-            var mat = new Material(Shader.Find("Sprites/Default"));
-            mat.color = side == GridSide.Player
-                ? new Color(0.2f, 0.35f, 0.55f, 0.25f)
-                : new Color(0.55f, 0.2f, 0.2f, 0.25f);
-            renderer.sharedMaterial = mat;
+            cellGo.transform.position = new Vector3(world.x, world.y, 0f);
 
             var marker = Undo.AddComponent<GridCellMarker>(cellGo);
             marker.Configure(side, row, col);
-            marker.EnsureBorder();
+            marker.SetFloorSprite(HexSpriteUtil.ResolveHexagonFlatTop());
+            marker.EnsureVisuals();
         }
 
         private static Transform CreateUnits(Transform world, EncounterDefinitionSO encounter)
@@ -239,7 +248,8 @@ namespace FracturedChorus.Editor
                 tm.text = spawn.preset.stats.MaxHp.ToString();
 
                 var view = Undo.AddComponent<UnitView>(unitGo);
-                view.ConfigureDemo(GetDemoKey(spawn.preset), spawn.side, spawn.row, spawn.column);
+                view.ConfigureDemo(GetDemoKey(spawn.preset), spawn.side);
+                view.PlaceOnGrid(pos);
                 unitViews.Add(view);
             }
 
@@ -477,6 +487,11 @@ namespace FracturedChorus.Editor
             SetSerializedField(bootstrap, "gridRoot", gridRoot);
             SetSerializedField(bootstrap, "unitViews", unitsRoot.GetComponentsInChildren<UnitView>(true));
             SetSerializedField(bootstrap, "mainCamera", Camera.main);
+
+            if (bootstrap.GetComponent<BoardDragController>() == null)
+            {
+                Undo.AddComponent<BoardDragController>(bootstrap.gameObject);
+            }
         }
 
         private static void WireController(
@@ -522,14 +537,43 @@ namespace FracturedChorus.Editor
 
         private static Vector3 GetWorldPosition(GridPosition position)
         {
-            var xBase = position.Side == GridSide.Player ? -SideGap : SideGap;
-            var colOffset = position.Side == GridSide.Player
-                ? (2 - position.Column) * CellWidth
-                : position.Column * CellWidth;
-            var x = xBase + colOffset;
-            var y = (1 - position.Row) * CellHeight;
-            var depthStagger = position.Row * 0.1f + position.Column * 0.05f;
-            return new Vector3(x, y + depthStagger, depthStagger);
+            return HexBoardLayout.GetWorldPosition(position, SideGap);
+        }
+
+        [MenuItem("Fractured Chorus/Rebuild Hex Board Grid (scene)")]
+        public static void RebuildHexBoardInScene()
+        {
+            var gridRoot = GameObject.Find("CombatRoot/World/Grid") ?? GameObject.Find("World/Grid") ?? GameObject.Find("Grid");
+            if (gridRoot == null)
+            {
+                Debug.LogWarning("[Fractured Chorus] No Grid root found.");
+                return;
+            }
+
+            var floorSprite = HexSpriteUtil.ResolveHexagonFlatTop();
+
+            foreach (var marker in gridRoot.GetComponentsInChildren<GridCellMarker>(true))
+            {
+                marker.SnapToLayoutPosition(SideGap);
+                marker.SetFloorSprite(floorSprite);
+                marker.RebuildVisuals();
+                EditorUtility.SetDirty(marker.gameObject);
+            }
+
+            foreach (var view in Object.FindObjectsByType<UnitView>(FindObjectsInactive.Include))
+            {
+                if (DefaultPartyFormation.TryGetStartupCell(view.DemoUnitKey, view.Side, out var pos))
+                {
+                    view.PlaceOnGrid(pos);
+                }
+
+                var world = HexBoardLayout.GetWorldPosition(view.GridPosition, SideGap);
+                view.transform.position = new Vector3(world.x, world.y, -0.05f);
+                EditorUtility.SetDirty(view.gameObject);
+            }
+
+            EditorSceneManager.MarkSceneDirty(gridRoot.scene);
+            Debug.Log("[Fractured Chorus] Hex board updated (Hexagon Flat Top 1.5×). Save scene. Xóa object mẫu 'Hexagon Flat Top' ở root nếu không cần.");
         }
 
         private static Sprite CreatePlaceholderSprite()

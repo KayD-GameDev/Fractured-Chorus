@@ -34,7 +34,7 @@ namespace FracturedChorus.Combat.Units
             DisplayName = preset.displayName;
             Role = preset.role;
             Side = side;
-            Stats = preset.stats?.Clone() ?? new UnitStats();
+            Stats = preset.ResolveStats();
             Skills = preset.skills ?? Array.Empty<SkillDefinitionSO>();
             PlaceholderColor = preset.placeholderColor;
             CurrentHp = Stats.MaxHp;

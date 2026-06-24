@@ -5,8 +5,8 @@ using FracturedChorus.Combat.Units;
 namespace FracturedChorus.Combat.Grid
 {
     /// <summary>
-    /// Enemy targeting: cột có Tank trước → giữa (col 1) → cột Mage.
-    /// Bỏ qua cột Tank khi không còn Tank sống.
+    /// Enemy targeting: cột đầu tiên (C1 / index 0) trước → C2 → C3.
+    /// Tank chết thì chuyển sang cột Ren, rồi Mage.
     /// </summary>
     public static class CombatTargetPicker
     {
@@ -23,13 +23,7 @@ namespace FracturedChorus.Combat.Grid
                 return null;
             }
 
-            var tankColumn = FindRoleColumn(alive, UnitRole.Tank);
-            var mageColumn = FindRoleColumn(alive, UnitRole.Mage);
-            var tankAlive = alive.Any(u => u.Role == UnitRole.Tank);
-
-            var columnOrder = BuildColumnOrder(tankColumn, mageColumn, tankAlive);
-
-            foreach (var column in columnOrder)
+            for (var column = 0; column < DualGrid.Columns; column++)
             {
                 var inColumn = alive.Where(u => u.GridPosition.Column == column).ToList();
                 if (inColumn.Count == 0)
@@ -43,40 +37,31 @@ namespace FracturedChorus.Combat.Grid
             return alive[0];
         }
 
-        private static int? FindRoleColumn(IReadOnlyList<CombatUnit> units, UnitRole role)
+        public static CombatUnit PickPlayerAttackTarget(DualGrid grid)
         {
-            var unit = units.FirstOrDefault(u => u.Role == role);
-            return unit != null ? unit.GridPosition.Column : (int?)null;
-        }
-
-        private static IEnumerable<int> BuildColumnOrder(int? tankColumn, int? mageColumn, bool tankAlive)
-        {
-            var order = new List<int>();
-
-            if (tankAlive && tankColumn.HasValue)
+            if (grid == null)
             {
-                order.Add(tankColumn.Value);
+                return null;
             }
 
-            if (!order.Contains(1))
+            var alive = grid.EnemyUnits.Where(u => u.IsAlive).ToList();
+            if (alive.Count == 0)
             {
-                order.Add(1);
+                return null;
             }
 
-            if (mageColumn.HasValue && !order.Contains(mageColumn.Value))
+            for (var column = 0; column < DualGrid.Columns; column++)
             {
-                order.Add(mageColumn.Value);
-            }
-
-            for (var col = 0; col < DualGrid.Columns; col++)
-            {
-                if (!order.Contains(col))
+                var inColumn = alive.Where(u => u.GridPosition.Column == column).ToList();
+                if (inColumn.Count == 0)
                 {
-                    order.Add(col);
+                    continue;
                 }
+
+                return inColumn.OrderBy(u => u.GridPosition.Row).First();
             }
 
-            return order;
+            return alive[0];
         }
 
         private static CombatUnit PickPrimaryInColumn(IReadOnlyList<CombatUnit> inColumn)

@@ -1,4 +1,3 @@
-using FracturedChorus.Combat.Bootstrap;
 using FracturedChorus.Combat.Grid;
 using FracturedChorus.Combat.Units;
 using FracturedChorus.Data;
@@ -14,17 +13,29 @@ namespace FracturedChorus.Combat.Bootstrap
             encounter.encounterId = "demo_encounter_01";
             encounter.units = new[]
             {
-                CreateSpawn(GetPresetByKey("ren"), GridSide.Player, 0, 0),
-                CreateSpawn(GetPresetByKey("tank"), GridSide.Player, 2, 2),
-                CreateSpawn(GetPresetByKey("mage"), GridSide.Player, 1, 0),
-                CreateSpawn(GetPresetByKey("grunt_left"), GridSide.Enemy, 0, 0),
-                CreateSpawn(GetPresetByKey("grunt_right"), GridSide.Enemy, 0, 2)
+                CreateSpawn(GetPresetByKey("tank"), GridSide.Player, 2, 1),
+                CreateSpawn(GetPresetByKey("ren"), GridSide.Player, 2, 2),
+                CreateSpawn(GetPresetByKey("mage"), GridSide.Player, 2, 3),
+                CreateSpawn(GetPresetByKey("grunt_left"), GridSide.Enemy, 2, 1),
+                CreateSpawn(GetPresetByKey("grunt_right"), GridSide.Enemy, 2, 3)
             };
             return encounter;
         }
 
         public static UnitPresetSO GetPresetByKey(string key)
         {
+            var assetKey = key switch
+            {
+                "grunt_left" or "grunt_right" => "grunt",
+                _ => key
+            };
+
+            var fromResources = Resources.Load<UnitPresetSO>($"UnitPresets/UnitPreset_{assetKey}");
+            if (fromResources != null)
+            {
+                return fromResources;
+            }
+
             return key switch
             {
                 "ren" => CreateRenPreset(),
@@ -36,14 +47,15 @@ namespace FracturedChorus.Combat.Bootstrap
             };
         }
 
-        private static EncounterUnitSpawn CreateSpawn(UnitPresetSO preset, GridSide side, int row, int col)
+        private static EncounterUnitSpawn CreateSpawn(UnitPresetSO preset, GridSide side, int displayRow, int displayCol)
         {
+            var pos = HoneycombIndex.FromDisplay(side, displayRow, displayCol);
             return new EncounterUnitSpawn
             {
                 preset = preset,
                 side = side,
-                row = row,
-                column = col
+                row = pos.Row,
+                column = pos.Column
             };
         }
 
@@ -101,11 +113,16 @@ namespace FracturedChorus.Combat.Bootstrap
         private static SkillDefinitionSO CreateGruntStrike(string id, string name)
         {
             var skill = CreateSkill(id, name, SkillSlotKind.BasicAttack, 1, ActionGlowType.Attack);
-            skill.baseDamage = 20;
+            skill.baseDamage = 0;
             return skill;
         }
 
-        private static SkillDefinitionSO[] CreateStandardKit(string prefix, string basic, string skill, string ult, string guard)
+        private static SkillDefinitionSO[] CreateStandardKit(
+            string prefix,
+            string basic,
+            string skill,
+            string ult,
+            string guard)
         {
             return new[]
             {
@@ -116,7 +133,12 @@ namespace FracturedChorus.Combat.Bootstrap
             };
         }
 
-        private static SkillDefinitionSO CreateSkill(string id, string name, SkillSlotKind kind, int tier, ActionGlowType glow)
+        private static SkillDefinitionSO CreateSkill(
+            string id,
+            string name,
+            SkillSlotKind kind,
+            int tier,
+            ActionGlowType glow)
         {
             var skill = ScriptableObject.CreateInstance<SkillDefinitionSO>();
             skill.skillId = id;
@@ -133,7 +155,7 @@ namespace FracturedChorus.Combat.Bootstrap
             skill.skillTier = tier;
             skill.glowType = glow;
             skill.targetType = glow == ActionGlowType.Guard ? SkillTargetType.Self : SkillTargetType.SingleEnemy;
-            skill.baseDamage = kind == SkillSlotKind.Guard ? 0 : 10 + tier * 5;
+            skill.baseDamage = 0;
             return skill;
         }
     }

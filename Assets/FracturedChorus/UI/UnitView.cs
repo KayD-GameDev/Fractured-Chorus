@@ -8,17 +8,17 @@ using UnityEngine.EventSystems;
 namespace FracturedChorus.UI
 {
     /// <summary>
-    /// Scene-placed unit — adjust Transform in Hierarchy; set grid row/col in Inspector.
+    /// Unit in scene — grid row/column assigned at runtime when placed on a honeycomb cell.
     /// </summary>
-    public class UnitView : MonoBehaviour, IPointerClickHandler
+    public class UnitView : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
     {
         [Header("Unit Data")]
         [SerializeField] private UnitPresetSO preset;
         [Tooltip("Used when Preset asset is not assigned — survives scene save")]
         [SerializeField] private string demoUnitKey = "ren";
         [SerializeField] private GridSide side = GridSide.Player;
-        [SerializeField] private int row;
-        [SerializeField] private int column;
+        [SerializeField] private int row = HoneycombIndex.Unplaced;
+        [SerializeField] private int column = HoneycombIndex.Unplaced;
 
         [Header("Scene References (optional — auto-created if empty)")]
         [SerializeField] private SpriteRenderer spriteRenderer;
@@ -44,25 +44,58 @@ namespace FracturedChorus.UI
             return null;
         }
         public GridSide Side => side;
+        public bool IsPlacedOnGrid => HoneycombIndex.IsValidIndex(row) && HoneycombIndex.IsValidIndex(column);
         public GridPosition GridPosition => new GridPosition(side, row, column);
 
         private System.Action<CombatUnit, UnitView> _onSelected;
+        private BoardDragController _dragController;
+        private bool _dragStarted;
+        private bool _suppressClick;
+        private Vector2 _dragStartScreen;
+        private const float ClickDragThresholdPx = 8f;
 
-        public void ConfigureDemo(string unitKey, GridSide gridSide, int gridRow, int gridColumn)
+        public void SetGridCoordinates(int gridRow, int gridColumn)
+        {
+            row = gridRow;
+            column = gridColumn;
+            Unit?.SetGridPosition(new GridPosition(side, row, column));
+        }
+
+        public void PlaceOnGrid(GridPosition position)
+        {
+            side = position.Side;
+            row = position.Row;
+            column = position.Column;
+            Unit?.SetGridPosition(position);
+        }
+
+        public void ClearGridPlacement()
+        {
+            row = HoneycombIndex.Unplaced;
+            column = HoneycombIndex.Unplaced;
+        }
+
+        public void ConfigureDemo(string unitKey, GridSide gridSide)
         {
             demoUnitKey = unitKey;
             preset = null;
             side = gridSide;
-            row = gridRow;
-            column = gridColumn;
+            ClearGridPlacement();
             var resolved = ResolvePreset();
             name = $"Unit_{resolved?.displayName ?? unitKey}";
         }
 
-        public void Bind(CombatUnit unit, System.Action<CombatUnit, UnitView> onSelected)
+        public void Bind(CombatUnit unit, System.Action<CombatUnit, UnitView> onSelected,
+            BoardDragController dragController = null)
         {
+            if (Unit != null)
+            {
+                Unit.OnHpChanged -= HandleHpChanged;
+            }
+
             Unit = unit;
             _onSelected = onSelected;
+            _dragController = dragController;
             EnsureVisuals();
             ApplyVisuals();
             unit.OnHpChanged += HandleHpChanged;
@@ -99,7 +132,7 @@ namespace FracturedChorus.UI
             if (hpLabel == null)
             {
                 var labelTransform = transform.Find("HpLabel");
-                if (labelTransform != null)
+                if (labelTransform != null && labelTransform.IsChildOf(transform))
                 {
                     hpLabel = labelTransform.GetComponent<TextMesh>();
                 }
@@ -115,6 +148,11 @@ namespace FracturedChorus.UI
                     hpLabel.anchor = TextAnchor.MiddleCenter;
                     hpLabel.color = Color.white;
                 }
+            }
+            else if (!hpLabel.transform.IsChildOf(transform))
+            {
+                hpLabel = null;
+                EnsureVisuals();
             }
         }
 
@@ -149,10 +187,51 @@ namespace FracturedChorus.UI
 
         public void OnPointerClick(PointerEventData eventData)
         {
+            if (_suppressClick || _dragStarted)
+            {
+                return;
+            }
+
             if (Unit != null && Unit.IsAlive && Unit.Side == GridSide.Player)
             {
                 _onSelected?.Invoke(Unit, this);
             }
+        }
+
+        public void OnBeginDrag(PointerEventData eventData)
+        {
+            _dragStarted = false;
+            _suppressClick = false;
+            _dragStartScreen = eventData.position;
+            if (_dragController == null || !_dragController.CanDragUnit(this))
+            {
+                return;
+            }
+
+            _dragStarted = true;
+            _dragController.BeginDrag(this);
+        }
+
+        public void OnDrag(PointerEventData eventData)
+        {
+            if (!_dragStarted || _dragController == null)
+            {
+                return;
+            }
+
+            _dragController.UpdateDrag(eventData);
+        }
+
+        public void OnEndDrag(PointerEventData eventData)
+        {
+            if (!_dragStarted || _dragController == null)
+            {
+                return;
+            }
+
+            _dragController.EndDrag(this);
+            _suppressClick = Vector2.Distance(_dragStartScreen, eventData.position) > ClickDragThresholdPx;
+            _dragStarted = false;
         }
 
         private static Sprite CreatePlaceholderSprite()

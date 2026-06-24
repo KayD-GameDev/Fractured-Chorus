@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce73a71ac68f23f48a5aad627d27478a, type: 3}
+  m_Name: UnitPreset_Ren
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.UnitPresetSO
+  unitId: ren
+  displayName: Ren
+  role: 1
+  statBlock: {fileID: 11400000, guid: b5b6bcbfbbe8aae43bfbf63bb565f5d5, type: 2}
+  stats:
+    Element: 1
+    Strength: 100
+    Magic: 100
+    Endurance: 10
+    HeartBeat: 160
+    BaseLuck: 15
+    CritMultiplier: 1.2
+    MaxHp: 80
+    BaseSpeed: 12
+  skills:
+  - {fileID: 11400000, guid: d290998a860c53d4794580a0ecd18147, type: 2}
+  - {fileID: 11400000, guid: fe16fe2211245d64da32c504d6ca02a3, type: 2}
+  - {fileID: 11400000, guid: 176f90a046cefbd478cd7fa62b23b107, type: 2}
+  - {fileID: 11400000, guid: fcbb0489821738d46a5d3fd3f651abba, type: 2}
+  placeholderColor: {r: 0.9, g: 0.35, b: 0.45, a: 1}

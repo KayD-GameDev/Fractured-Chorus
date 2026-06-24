@@ -23,7 +23,7 @@ namespace FracturedChorus.Combat.Grid
 
         public override string ToString()
         {
-            return $"{Side} R{Row} C{Column}";
+            return HoneycombIndex.Format(Side, Row, Column);
         }
     }
 }

@@ -349,25 +349,27 @@ namespace FracturedChorus.Combat.Core
                 return;
             }
 
-            var rawDamage = telegraph.Skill.baseDamage > 0
-                ? telegraph.Skill.baseDamage
-                : DamageCalculator.Calculate(
+            var damageResult = DamageCalculator.Calculate(
                     telegraph.Unit.Stats,
                     target.Stats,
                     telegraph.Skill.skillTier,
-                    BeatTiming.OnBeat).FinalDamage;
+                    telegraph.Unit.Stats.StrengthType,
+                    BeatTiming.OnBeat,
+                    HarmonyElementResolver.GetRelation(telegraph.Unit.Stats.Element, target.Stats.Element));
 
-            var finalDamage = rawDamage;
+            var finalDamage = damageResult.FinalDamage;
             if (guardTimingOnBeat.HasValue)
             {
                 finalDamage = BeatTimingResolver.ApplyGuardReduction(finalDamage, guardTimingOnBeat.Value);
                 Debug.Log(
-                    $"[Guard] Block @ beat {telegraph.BeatIndex} ({guardTimingOnBeat.Value}) → dmg {rawDamage:F0} → {finalDamage:F0}");
+                    $"[Guard] Block @ beat {telegraph.BeatIndex} ({guardTimingOnBeat.Value}) → dmg {damageResult.FinalDamage:F0} → {finalDamage:F0}");
             }
 
             target.TakeDamage(finalDamage);
             Debug.Log(
-                $"[Enemy] {telegraph.Unit.DisplayName} (prio {telegraph.Unit.ActionPriority:F0}) hits {target.DisplayName} for {finalDamage:F0} @ beat {telegraph.BeatIndex}");
+                $"[Enemy] {telegraph.Unit.DisplayName} (prio {telegraph.Unit.ActionPriority:F0}) hits {target.DisplayName} for {finalDamage:F0} @ beat {telegraph.BeatIndex} " +
+                $"(rand={damageResult.SkillRandomRoll:F2}×str={telegraph.Unit.Stats.Strength:F0} raw={damageResult.RawDamage:F0} " +
+                $"crit={damageResult.IsCritical} mult={damageResult.CritDamageMultiplier:F2})");
         }
 
         private CombatUnit PickTarget(CombatUnit source, SkillDefinitionSO skill)
@@ -380,6 +382,11 @@ namespace FracturedChorus.Combat.Core
             if (skill.targetType == SkillTargetType.SingleAlly)
             {
                 return Grid.GetAllies(source.Side).FirstOrDefault(u => u.IsAlive);
+            }
+
+            if (skill.targetType == SkillTargetType.SingleEnemy && source.Side == GridSide.Player)
+            {
+                return CombatTargetPicker.PickPlayerAttackTarget(Grid);
             }
 
             var opponents = Grid.GetOpponents(source.Side).Where(u => u.IsAlive).ToList();

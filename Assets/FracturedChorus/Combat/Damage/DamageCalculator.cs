@@ -5,20 +5,34 @@ namespace FracturedChorus.Combat.Damage
 {
     public struct DamageResult
     {
+        public float SkillRandomRoll;
         public float RawDamage;
+        public float EnduranceFactor;
         public float FinalDamage;
         public bool IsCritical;
+        /// <summary>1 khi không crit · CritMultiplier khi crit.</summary>
+        public float CritDamageMultiplier;
     }
 
     public static class DamageCalculator
     {
-        private const float StrengthConstant = 10f;
-        private const float EnduranceConstant = 4f;
+        /// <summary>raw = random(tier) × strength × StrengthDamageConstant (A = 10).</summary>
+        public const float StrengthDamageConstant = 10f;
+        public const float EnduranceConstant = 4f;
+
+        /// <summary>100 / (100 × C × √EN) — C = 4.</summary>
+        public static float GetEnduranceFactor(float defenderEndurance)
+        {
+            var endurance = Mathf.Max(defenderEndurance, 1f);
+            var denominator = 100f * EnduranceConstant * Mathf.Sqrt(endurance);
+            return 100f / denominator;
+        }
 
         public static DamageResult Calculate(
             UnitStats attacker,
             UnitStats defender,
             int skillTier,
+            DamageType damageType = DamageType.Physical,
             BeatTiming beatTiming = BeatTiming.OnBeat,
             HarmonyRelation harmony = HarmonyRelation.Neutral,
             float coverModifier = 1f,
@@ -26,43 +40,41 @@ namespace FracturedChorus.Combat.Damage
             float buffModifier = 1f)
         {
             var randomMultiplier = RollSkillRandom(skillTier);
-            var rawDamage = randomMultiplier * attacker.Strength * StrengthConstant;
+            var attackPower = attacker.AttackPower;
+            var rawDamage = randomMultiplier * attackPower * StrengthDamageConstant;
 
-            var enduranceFactor = 100f / (100f + EnduranceConstant * defender.Endurance);
+            var enduranceFactor = GetEnduranceFactor(defender.Endurance);
             var beatCondition = beatTiming.GetMultiplier();
             var preCondition = harmony.GetPreCondition();
 
-            var finalDamage = rawDamage * enduranceFactor * beatCondition * preCondition
-                              * coverModifier * exposedModifier * buffModifier;
+            var damageBeforeCrit = rawDamage * enduranceFactor * beatCondition * preCondition
+                                   * coverModifier * exposedModifier * buffModifier;
 
-            var isCritical = RollCritical(attacker.BaseLuck);
-            if (isCritical)
-            {
-                finalDamage *= attacker.CritMultiplier;
-            }
+            var isCritical = attacker.RollCriticalHit();
+            var critDamageMultiplier = attacker.ResolveCritDamageMultiplier(isCritical);
+            var finalDamage = damageBeforeCrit * critDamageMultiplier;
 
             return new DamageResult
             {
+                SkillRandomRoll = randomMultiplier,
                 RawDamage = rawDamage,
+                EnduranceFactor = enduranceFactor,
                 FinalDamage = Mathf.Max(1f, finalDamage),
-                IsCritical = isCritical
+                IsCritical = isCritical,
+                CritDamageMultiplier = critDamageMultiplier
             };
         }
 
+        /// <summary>Basic 0.80–1.05 · Skill 0.90–1.10 · Ultimate 1.10–1.50</summary>
         public static float RollSkillRandom(int skillTier)
         {
             return skillTier switch
             {
                 1 => Random.Range(0.80f, 1.05f),
-                2 => Random.Range(0.9f, 1.1f),
-                3 => Random.Range(1.1f, 1.5f),
-                _ => Random.Range(0.9f, 1.1f)
+                2 => Random.Range(0.90f, 1.10f),
+                3 => Random.Range(1.10f, 1.50f),
+                _ => Random.Range(0.90f, 1.10f)
             };
-        }
-
-        private static bool RollCritical(float baseLuckPercent)
-        {
-            return Random.Range(0f, 100f) < baseLuckPercent;
         }
     }
 }

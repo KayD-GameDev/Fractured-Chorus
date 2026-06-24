@@ -1,3 +1,4 @@
+using FracturedChorus.Combat.Damage;
 using UnityEngine;
 
 namespace FracturedChorus.Data
@@ -28,6 +29,8 @@ namespace FracturedChorus.Data
         public int avCost;
         public int delay = 3;
         public int skillTier = 1;
+        [Tooltip("Legacy — combat dùng Strength Type từ Unit Stat Block.")]
+        public DamageType damageType = DamageType.Physical;
         public SkillTargetType targetType = SkillTargetType.SingleEnemy;
         public ActionGlowType glowType = ActionGlowType.Attack;
         public int baseDamage = 10;
