@@ -69,6 +69,32 @@ namespace FracturedChorus.Combat.Grid
             return true;
         }
 
+        public bool TryMoveUnit(CombatUnit unit, GridPosition newPosition)
+        {
+            if (unit == null || !newPosition.IsValid() || newPosition.Side != unit.Side)
+            {
+                return false;
+            }
+
+            var oldPosition = unit.GridPosition;
+            if (oldPosition.Equals(newPosition))
+            {
+                return true;
+            }
+
+            var targetCell = GetCell(newPosition);
+            if (targetCell == null || targetCell.IsOccupied)
+            {
+                return false;
+            }
+
+            var oldCell = GetCell(oldPosition);
+            oldCell?.Clear();
+            targetCell.TryPlace(unit);
+            unit.SetGridPosition(newPosition);
+            return true;
+        }
+
         public float GetCoverModifier(GridPosition attackerPos, GridPosition targetPos)
         {
             // Stub: full cover logic deferred to later phase.
@@ -77,14 +103,7 @@ namespace FracturedChorus.Combat.Grid
 
         public Vector3 GetWorldPosition(GridPosition position, float cellWidth, float cellHeight, float sideGap)
         {
-            var xBase = position.Side == GridSide.Player ? -sideGap : sideGap;
-            var colOffset = position.Side == GridSide.Player
-                ? (2 - position.Column) * cellWidth
-                : position.Column * cellWidth;
-            var x = xBase + colOffset;
-            var y = (1 - position.Row) * cellHeight;
-            var depthStagger = position.Row * 0.1f + position.Column * 0.05f;
-            return new Vector3(x, y + depthStagger, depthStagger);
+            return HexBoardLayout.GetWorldPosition(position, sideGap);
         }
 
         public IEnumerable<CombatUnit> GetAllUnits()

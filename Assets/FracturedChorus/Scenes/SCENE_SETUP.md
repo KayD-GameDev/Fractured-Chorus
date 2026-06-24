@@ -49,7 +49,9 @@ Main Camera
 
 **UnitView Inspector:** `Side`, `Row`, `Column` = logic combat (0–2). Transform = vị trí hiển thị — có thể tách riêng khi chỉnh layout.
 
-**GridCellMarker:** chỉ visual; không bắt buộc sync với unit.
+**GridCellMarker:** honeycomb hex (`Board margin.drawio`). Hàng **1–3** (vàng), cột **1–3** (đỏ): player C1 = phải/front; enemy C1 = trái/front (board mirror). Drop → **neon xanh**.
+
+**UnitView:** row/column = **-1** trong scene; runtime gán khi đặt lên ô. Mặc định demo: **H2** — Tank C1, Ren C2, Mage C3.
 
 ---
 
@@ -111,6 +113,8 @@ Nếu xóa hết `Units` khỏi scene, bootstrap spawn từ `EncounterDefinition
 ---
 
 ## Rebuild UI (timeline + skill panel)
+
+Menu **Fractured Chorus → Rebuild Hex Board Grid (scene)** — cập nhật vị trí honeycomb + viền hex (từ `Board margin.drawio`).
 
 Menu **Fractured Chorus → Rebuild Timeline + Skill Panel (Hierarchy)** — tạo lại:
 

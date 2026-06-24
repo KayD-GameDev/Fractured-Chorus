@@ -14,11 +14,11 @@ namespace FracturedChorus.Combat.Bootstrap
             encounter.encounterId = "demo_encounter_01";
             encounter.units = new[]
             {
-                CreateSpawn(GetPresetByKey("ren"), GridSide.Player, 0, 0),
-                CreateSpawn(GetPresetByKey("tank"), GridSide.Player, 2, 2),
-                CreateSpawn(GetPresetByKey("mage"), GridSide.Player, 1, 0),
-                CreateSpawn(GetPresetByKey("grunt_left"), GridSide.Enemy, 0, 0),
-                CreateSpawn(GetPresetByKey("grunt_right"), GridSide.Enemy, 0, 2)
+                CreateSpawn(GetPresetByKey("tank"), GridSide.Player, 2, 1),
+                CreateSpawn(GetPresetByKey("ren"), GridSide.Player, 2, 2),
+                CreateSpawn(GetPresetByKey("mage"), GridSide.Player, 2, 3),
+                CreateSpawn(GetPresetByKey("grunt_left"), GridSide.Enemy, 2, 1),
+                CreateSpawn(GetPresetByKey("grunt_right"), GridSide.Enemy, 2, 3)
             };
             return encounter;
         }
@@ -36,14 +36,15 @@ namespace FracturedChorus.Combat.Bootstrap
             };
         }
 
-        private static EncounterUnitSpawn CreateSpawn(UnitPresetSO preset, GridSide side, int row, int col)
+        private static EncounterUnitSpawn CreateSpawn(UnitPresetSO preset, GridSide side, int displayRow, int displayCol)
         {
+            var pos = HoneycombIndex.FromDisplay(side, displayRow, displayCol);
             return new EncounterUnitSpawn
             {
                 preset = preset,
                 side = side,
-                row = row,
-                column = col
+                row = pos.Row,
+                column = pos.Column
             };
         }
 

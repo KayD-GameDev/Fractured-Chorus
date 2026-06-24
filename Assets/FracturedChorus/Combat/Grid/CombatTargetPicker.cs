@@ -5,7 +5,7 @@ using FracturedChorus.Combat.Units;
 namespace FracturedChorus.Combat.Grid
 {
     /// <summary>
-    /// Enemy targeting: cột có Tank trước → giữa (col 1) → cột Mage.
+    /// Enemy targeting: cột Tank (C1–C3) trước → cột giữa (C2) → cột Mage.
     /// Bỏ qua cột Tank khi không còn Tank sống.
     /// </summary>
     public static class CombatTargetPicker
