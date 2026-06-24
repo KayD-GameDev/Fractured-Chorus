@@ -10,12 +10,21 @@ namespace FracturedChorus.Combat.Grid
     {
         public const float DefaultSideGap = 3.5f;
         public const float HexRadius = 0.55f;
+        /// <summary>Vertical pitch between honeycomb rows (R0↔R1 = R1↔R2).</summary>
+        public const float RowVerticalPitch = 1.35f;
+
+        private static readonly float[] RowY =
+        {
+            -RowVerticalPitch,
+            0f,
+            RowVerticalPitch
+        };
 
         private static readonly Vector2[,] PlayerLocalOffsets =
         {
-            { new Vector2(0.7f, -1.35f), new Vector2(-1.07f, -1.35f), new Vector2(-2.83f, -1.35f) },
-            { new Vector2(1.4f, 0f), new Vector2(-0.37f, 0f), new Vector2(-2.13f, 0f) },
-            { new Vector2(0.7f, 1.38f), new Vector2(-1.07f, 1.38f), new Vector2(-2.83f, 1.38f) }
+            { new Vector2(0.7f, RowY[0]), new Vector2(-1.07f, RowY[0]), new Vector2(-2.83f, RowY[0]) },
+            { new Vector2(1.4f, RowY[1]), new Vector2(-0.37f, RowY[1]), new Vector2(-2.13f, RowY[1]) },
+            { new Vector2(0.7f, RowY[2]), new Vector2(-1.07f, RowY[2]), new Vector2(-2.83f, RowY[2]) }
         };
 
         public static Vector3 GetWorldPosition(GridPosition position, float sideGap = DefaultSideGap)
