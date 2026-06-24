@@ -54,7 +54,6 @@ namespace FracturedChorus.Editor
 
             var bootstrapSo = new SerializedObject(bootstrap);
             bootstrapSo.FindProperty("musicController").objectReferenceValue = music;
-            bootstrapSo.FindProperty("playBossMusicOnStart").boolValue = true;
             bootstrapSo.ApplyModifiedPropertiesWithoutUndo();
 
             var timeline = Object.FindAnyObjectByType<BeatTimelineUIView>();
@@ -74,7 +73,7 @@ namespace FracturedChorus.Editor
             }
 
             EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
-            Debug.Log("[Fractured Chorus] Combat music wired. Save scene, then press Play on CombatPrototype.");
+            Debug.Log("[Fractured Chorus] Combat music wired. Press Play, then EXECUTE to start the round.");
         }
     }
 }

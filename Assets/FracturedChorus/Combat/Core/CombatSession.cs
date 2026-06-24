@@ -44,6 +44,9 @@ namespace FracturedChorus.Combat.Core
         private int _lastTelegraphPlanTriggerBeat = -1;
         public PhaseAvTracker PhaseAv { get; } = new();
 
+        /// <summary>True only before Execute — player may drag units onto grid cells.</summary>
+        public bool AllowPlayerReposition { get; private set; } = true;
+
         public bool IsEncounterOver =>
             Phase == CombatPhase.Victory || Phase == CombatPhase.Defeat;
 
@@ -136,9 +139,15 @@ namespace FracturedChorus.Combat.Core
         {
             _resolvedBeats.Clear();
             _lastTelegraphPlanTriggerBeat = -1;
+            AllowPlayerReposition = true;
             Timeline.ResetForPlanning();
             PhaseAv.ResetForPlanning();
             Timeline.SetPhase(CombatPhase.Planning);
+        }
+
+        public void LockPlayerReposition()
+        {
+            AllowPlayerReposition = false;
         }
 
         public void ConfirmPlanningAndExecute()

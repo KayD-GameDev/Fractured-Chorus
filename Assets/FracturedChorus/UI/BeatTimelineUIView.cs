@@ -22,7 +22,7 @@ namespace FracturedChorus.UI
         [SerializeField] private Text avLabel;
         [SerializeField] private float slotWidth = 52f;
         [SerializeField] private float slotSpacing = 2f;
-        [SerializeField] private bool autoPlayOnStart = true;
+        [SerializeField] private bool autoPlayOnStart;
         [SerializeField] private float autoBeatInterval = 0.405405f;
         [SerializeField] private bool useMusicSync = true;
         [SerializeField] private CombatMusicController musicController;
@@ -129,8 +129,6 @@ namespace FracturedChorus.UI
             }
 
             ConfigureAvLabelLayout();
-
-            HideExecuteButton();
             ExpandViewportWidth();
         }
 
@@ -150,20 +148,6 @@ namespace FracturedChorus.UI
             if (avRect != null && avRect.sizeDelta.x < 96f)
             {
                 avRect.sizeDelta = new Vector2(96f, avRect.sizeDelta.y);
-            }
-        }
-
-        private void HideExecuteButton()
-        {
-            if (confirmButton != null)
-            {
-                confirmButton.gameObject.SetActive(false);
-            }
-
-            var legacyButton = transform.Find("ConfirmButton");
-            if (legacyButton != null)
-            {
-                legacyButton.gameObject.SetActive(false);
             }
         }
 
@@ -206,15 +190,16 @@ namespace FracturedChorus.UI
             RefreshVisibleWindow(0);
             RefreshPhaseHeader(0);
             RefreshPhaseAvLabel();
-            StartAutoPlayIfNeeded();
         }
 
-        private void StartAutoPlayIfNeeded()
+        public void BeginRoundPlayback()
         {
-            if (!autoPlayOnStart || _autoPlayCompleted)
+            if (_isPlaybackActive)
             {
                 return;
             }
+
+            _autoPlayCompleted = false;
 
             if (_autoPlayRoutine != null)
             {
@@ -224,6 +209,16 @@ namespace FracturedChorus.UI
             _autoPlayRoutine = CanUseMusicSync()
                 ? StartCoroutine(MusicDrivenScanRoutine())
                 : StartCoroutine(ContinuousScanRoutine());
+        }
+
+        private void StartAutoPlayIfNeeded()
+        {
+            if (!autoPlayOnStart || _autoPlayCompleted)
+            {
+                return;
+            }
+
+            BeginRoundPlayback();
         }
 
         private bool CanUseMusicSync()
@@ -942,17 +937,11 @@ namespace FracturedChorus.UI
 
         public void SetPhase(CombatPhase phase)
         {
-            if (confirmButton != null)
-            {
-                confirmButton.gameObject.SetActive(false);
-            }
-
             if (phase == CombatPhase.Planning)
             {
                 _autoPlayCompleted = false;
                 ResetCarouselForPlanning();
                 RefreshPhaseHeader(0);
-                StartAutoPlayIfNeeded();
             }
             else if (phaseLabel != null)
             {

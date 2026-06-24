@@ -19,6 +19,9 @@ namespace FracturedChorus.UI
 
         public bool IsDragging => _draggingUnit != null;
 
+        public bool IsPreExecuteRepositionPhase =>
+            _session != null && _session.Phase == CombatPhase.Planning && _session.AllowPlayerReposition;
+
         public void Initialize(CombatSession session, DualGrid grid, IEnumerable<GridCellMarker> markers,
             Camera camera = null)
         {
@@ -50,7 +53,18 @@ namespace FracturedChorus.UI
                    && view.Unit.IsAlive
                    && view.Side == GridSide.Player
                    && _session != null
-                   && _session.Phase == CombatPhase.Planning;
+                   && _session.Phase == CombatPhase.Planning
+                   && _session.AllowPlayerReposition;
+        }
+
+        public void CancelActiveDrag()
+        {
+            if (_draggingUnit == null)
+            {
+                return;
+            }
+
+            CancelDrag(_draggingUnit);
         }
 
         public void BeginDrag(UnitView view)
@@ -66,7 +80,7 @@ namespace FracturedChorus.UI
 
         public void UpdateDrag(PointerEventData eventData)
         {
-            if (_draggingUnit == null || eventData == null)
+            if (_draggingUnit == null || eventData == null || !CanDragUnit(_draggingUnit))
             {
                 return;
             }
@@ -88,6 +102,17 @@ namespace FracturedChorus.UI
             var world = view.transform.position;
             var target = FindDropCell(world, view.Side);
             ClearHighlight();
+
+            if (!CanDragUnit(view))
+            {
+                if (_markers.TryGetValue(view.GridPosition, out var lockedHome))
+                {
+                    SnapUnitToCell(view, lockedHome);
+                }
+
+                _draggingUnit = null;
+                return;
+            }
 
             if (target != null && IsValidDrop(target, view) && _grid != null && view.Unit != null)
             {

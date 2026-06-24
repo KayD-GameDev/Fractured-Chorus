@@ -192,6 +192,11 @@ namespace FracturedChorus.UI
                 return;
             }
 
+            if (_dragController != null && _dragController.IsPreExecuteRepositionPhase)
+            {
+                return;
+            }
+
             if (Unit != null && Unit.IsAlive && Unit.Side == GridSide.Player)
             {
                 _onSelected?.Invoke(Unit, this);

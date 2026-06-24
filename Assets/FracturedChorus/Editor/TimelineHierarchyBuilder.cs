@@ -93,6 +93,47 @@ namespace FracturedChorus.Editor
             return ui;
         }
 
+        public static CombatExecuteOverlayUIView BuildExecuteOverlay(Transform canvasTransform)
+        {
+            var existing = canvasTransform.Find("ExecuteOverlayUI");
+            if (existing != null)
+            {
+                Object.DestroyImmediate(existing.gameObject);
+            }
+
+            var overlayGo = CreateUiObject("ExecuteOverlayUI", canvasTransform);
+            var overlayRect = overlayGo.GetComponent<RectTransform>();
+            overlayRect.anchorMin = new Vector2(0.5f, 0.5f);
+            overlayRect.anchorMax = new Vector2(0.5f, 0.5f);
+            overlayRect.pivot = new Vector2(0.5f, 0.5f);
+            overlayRect.anchoredPosition = Vector2.zero;
+            overlayRect.sizeDelta = Vector2.zero;
+
+            var btnGo = CreateUiObject("ExecuteButton", overlayGo.transform);
+            var btnRect = btnGo.GetComponent<RectTransform>();
+            btnRect.anchorMin = new Vector2(0.5f, 0.5f);
+            btnRect.anchorMax = new Vector2(0.5f, 0.5f);
+            btnRect.pivot = new Vector2(0.5f, 0.5f);
+            btnRect.anchoredPosition = Vector2.zero;
+            btnRect.sizeDelta = new Vector2(160f, 56f);
+            btnGo.AddComponent<Image>().color = new Color(0.35f, 0.15f, 0.55f, 0.95f);
+            var button = btnGo.AddComponent<Button>();
+
+            var labelGo = CreateUiObject("Label", btnGo.transform);
+            StretchFull(labelGo.GetComponent<RectTransform>());
+            var label = labelGo.AddComponent<Text>();
+            ApplyText(label);
+            label.fontSize = 18;
+            label.fontStyle = FontStyle.Bold;
+            label.text = "EXECUTE";
+
+            var overlay = overlayGo.AddComponent<CombatExecuteOverlayUIView>();
+            SetField(overlay, "executeButton", button);
+            SetField(overlay, "labelText", label);
+            overlay.WireReferences();
+            return overlay;
+        }
+
         private static RectTransform CreateViewport(Transform parent, out RectTransform scrollContent,
             out RectTransform scanBar, out BeatSegmentView segmentTemplate)
         {

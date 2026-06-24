@@ -16,6 +16,7 @@ namespace FracturedChorus.Combat.Bootstrap
         [SerializeField] private CombatController combatController;
         [SerializeField] private BeatTimelineUIView timelineView;
         [SerializeField] private SkillPanelUIView skillPanelView;
+        [SerializeField] private CombatExecuteOverlayUIView executeOverlay;
         [SerializeField] private Transform unitsRoot;
         [SerializeField] private Transform gridRoot;
         [SerializeField] private UnitView[] unitViews;
@@ -25,7 +26,6 @@ namespace FracturedChorus.Combat.Bootstrap
         [SerializeField] private EncounterDefinitionSO encounterDefinition;
 
         [SerializeField] private CombatMusicController musicController;
-        [SerializeField] private bool playBossMusicOnStart = true;
 
         [Header("Grid layout")]
         [SerializeField] private float sideGap = HexBoardLayout.DefaultSideGap;
@@ -73,14 +73,23 @@ namespace FracturedChorus.Combat.Bootstrap
                 }
             }
 
-            if (playBossMusicOnStart)
-            {
-                musicController?.PlayBossMusic();
-            }
+            var executeOverlay = ResolveExecuteOverlay();
 
-            combatController.Initialize(_session, _timeline, timelineView, skillPanelView, musicController);
+            combatController.Initialize(_session, _timeline, timelineView, skillPanelView, musicController,
+                executeOverlay, _boardDrag);
 
             skillPanelView?.Hide();
+        }
+
+        private CombatExecuteOverlayUIView ResolveExecuteOverlay()
+        {
+            if (executeOverlay == null)
+            {
+                executeOverlay = FindAnyObjectByType<CombatExecuteOverlayUIView>();
+            }
+
+            executeOverlay?.WireReferences();
+            return executeOverlay;
         }
 
         private void EnsureMusicController()
@@ -151,6 +160,11 @@ namespace FracturedChorus.Combat.Bootstrap
                 skillPanelView = FindAnyObjectByType<SkillPanelUIView>();
             }
 
+            if (executeOverlay == null)
+            {
+                executeOverlay = FindAnyObjectByType<CombatExecuteOverlayUIView>();
+            }
+
             if (unitViews == null || unitViews.Length == 0)
             {
                 unitViews = unitsRoot != null
@@ -160,6 +174,7 @@ namespace FracturedChorus.Combat.Bootstrap
 
             timelineView?.WireReferences();
             skillPanelView?.WireReferences();
+            executeOverlay?.WireReferences();
         }
 
         private bool HasSceneUnits()
@@ -315,6 +330,11 @@ namespace FracturedChorus.Combat.Bootstrap
 
         private void HandleUnitSelected(CombatUnit unit, UnitView view)
         {
+            if (_session != null && _session.AllowPlayerReposition)
+            {
+                return;
+            }
+
             skillPanelView?.ToggleForUnit(unit, view);
         }
     }

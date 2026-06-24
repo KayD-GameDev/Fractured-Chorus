@@ -97,9 +97,10 @@ namespace FracturedChorus.Editor
             var unitsRoot = CreateUnits(world, encounter);
             var timelineUi = TimelineHierarchyBuilder.BuildTimeline(canvas.transform);
             var skillPanel = TimelineHierarchyBuilder.BuildSkillPanel(canvas.transform);
+            var executeOverlay = TimelineHierarchyBuilder.BuildExecuteOverlay(canvas.transform);
 
-            WireBootstrap(bootstrap, controller, timelineUi, skillPanel, unitsRoot, gridRoot);
-            WireController(controller, timelineUi, skillPanel);
+            WireBootstrap(bootstrap, controller, timelineUi, skillPanel, executeOverlay, unitsRoot, gridRoot);
+            WireController(controller, timelineUi, skillPanel, executeOverlay);
 
             EditorSceneManager.MarkSceneDirty(root.scene);
             Selection.activeGameObject = root;
@@ -477,12 +478,14 @@ namespace FracturedChorus.Editor
             CombatController controller,
             BeatTimelineUIView timeline,
             SkillPanelUIView skillPanel,
+            CombatExecuteOverlayUIView executeOverlay,
             Transform unitsRoot,
             Transform gridRoot)
         {
             SetSerializedField(bootstrap, "combatController", controller);
             SetSerializedField(bootstrap, "timelineView", timeline);
             SetSerializedField(bootstrap, "skillPanelView", skillPanel);
+            SetSerializedField(bootstrap, "executeOverlay", executeOverlay);
             SetSerializedField(bootstrap, "unitsRoot", unitsRoot);
             SetSerializedField(bootstrap, "gridRoot", gridRoot);
             SetSerializedField(bootstrap, "unitViews", unitsRoot.GetComponentsInChildren<UnitView>(true));
@@ -497,10 +500,12 @@ namespace FracturedChorus.Editor
         private static void WireController(
             CombatController controller,
             BeatTimelineUIView timeline,
-            SkillPanelUIView skillPanel)
+            SkillPanelUIView skillPanel,
+            CombatExecuteOverlayUIView executeOverlay = null)
         {
             SetSerializedField(controller, "timelineView", timeline);
             SetSerializedField(controller, "skillPanelView", skillPanel);
+            SetSerializedField(controller, "executeOverlay", executeOverlay);
         }
 
         private static GameObject CreateUiObject(string name, Transform parent)

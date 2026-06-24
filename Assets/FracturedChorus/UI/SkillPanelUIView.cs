@@ -79,6 +79,11 @@ namespace FracturedChorus.UI
                 return;
             }
 
+            if (_session != null && _session.AllowPlayerReposition)
+            {
+                return;
+            }
+
             if (_currentUnitView == unitView && IsVisible)
             {
                 Hide();
