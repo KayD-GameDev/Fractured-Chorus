@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4ad02d2c09387c479b12df228f24c50, type: 3}
+  m_Name: StatBlock_Ren
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.UnitStatBlockSO
+  blockId: StatBlock_Ren
+  element: 1
+  strength: 100
+  magic: 80
+  endurance: 10
+  heartBeat: 160
+  baseLuck: 15
+  critMultiplier: 1.2
+  maxHp: 80
+  baseSpeed: 12

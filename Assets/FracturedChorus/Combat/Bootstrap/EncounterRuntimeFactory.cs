@@ -1,4 +1,3 @@
-using FracturedChorus.Combat.Bootstrap;
 using FracturedChorus.Combat.Grid;
 using FracturedChorus.Combat.Units;
 using FracturedChorus.Data;
@@ -25,6 +24,18 @@ namespace FracturedChorus.Combat.Bootstrap
 
         public static UnitPresetSO GetPresetByKey(string key)
         {
+            var assetKey = key switch
+            {
+                "grunt_left" or "grunt_right" => "grunt",
+                _ => key
+            };
+
+            var fromResources = Resources.Load<UnitPresetSO>($"UnitPresets/UnitPreset_{assetKey}");
+            if (fromResources != null)
+            {
+                return fromResources;
+            }
+
             return key switch
             {
                 "ren" => CreateRenPreset(),
@@ -102,11 +113,16 @@ namespace FracturedChorus.Combat.Bootstrap
         private static SkillDefinitionSO CreateGruntStrike(string id, string name)
         {
             var skill = CreateSkill(id, name, SkillSlotKind.BasicAttack, 1, ActionGlowType.Attack);
-            skill.baseDamage = 20;
+            skill.baseDamage = 0;
             return skill;
         }
 
-        private static SkillDefinitionSO[] CreateStandardKit(string prefix, string basic, string skill, string ult, string guard)
+        private static SkillDefinitionSO[] CreateStandardKit(
+            string prefix,
+            string basic,
+            string skill,
+            string ult,
+            string guard)
         {
             return new[]
             {
@@ -117,7 +133,12 @@ namespace FracturedChorus.Combat.Bootstrap
             };
         }
 
-        private static SkillDefinitionSO CreateSkill(string id, string name, SkillSlotKind kind, int tier, ActionGlowType glow)
+        private static SkillDefinitionSO CreateSkill(
+            string id,
+            string name,
+            SkillSlotKind kind,
+            int tier,
+            ActionGlowType glow)
         {
             var skill = ScriptableObject.CreateInstance<SkillDefinitionSO>();
             skill.skillId = id;
@@ -134,7 +155,7 @@ namespace FracturedChorus.Combat.Bootstrap
             skill.skillTier = tier;
             skill.glowType = glow;
             skill.targetType = glow == ActionGlowType.Guard ? SkillTargetType.Self : SkillTargetType.SingleEnemy;
-            skill.baseDamage = kind == SkillSlotKind.Guard ? 0 : 10 + tier * 5;
+            skill.baseDamage = 0;
             return skill;
         }
     }

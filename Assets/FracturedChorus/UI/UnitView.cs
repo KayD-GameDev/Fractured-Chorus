@@ -51,6 +51,8 @@ namespace FracturedChorus.UI
         private BoardDragController _dragController;
         private bool _dragStarted;
         private bool _suppressClick;
+        private Vector2 _dragStartScreen;
+        private const float ClickDragThresholdPx = 8f;
 
         public void SetGridCoordinates(int gridRow, int gridColumn)
         {
@@ -86,6 +88,11 @@ namespace FracturedChorus.UI
         public void Bind(CombatUnit unit, System.Action<CombatUnit, UnitView> onSelected,
             BoardDragController dragController = null)
         {
+            if (Unit != null)
+            {
+                Unit.OnHpChanged -= HandleHpChanged;
+            }
+
             Unit = unit;
             _onSelected = onSelected;
             _dragController = dragController;
@@ -125,7 +132,7 @@ namespace FracturedChorus.UI
             if (hpLabel == null)
             {
                 var labelTransform = transform.Find("HpLabel");
-                if (labelTransform != null)
+                if (labelTransform != null && labelTransform.IsChildOf(transform))
                 {
                     hpLabel = labelTransform.GetComponent<TextMesh>();
                 }
@@ -141,6 +148,11 @@ namespace FracturedChorus.UI
                     hpLabel.anchor = TextAnchor.MiddleCenter;
                     hpLabel.color = Color.white;
                 }
+            }
+            else if (!hpLabel.transform.IsChildOf(transform))
+            {
+                hpLabel = null;
+                EnsureVisuals();
             }
         }
 
@@ -190,6 +202,7 @@ namespace FracturedChorus.UI
         {
             _dragStarted = false;
             _suppressClick = false;
+            _dragStartScreen = eventData.position;
             if (_dragController == null || !_dragController.CanDragUnit(this))
             {
                 return;
@@ -217,7 +230,7 @@ namespace FracturedChorus.UI
             }
 
             _dragController.EndDrag(this);
-            _suppressClick = true;
+            _suppressClick = Vector2.Distance(_dragStartScreen, eventData.position) > ClickDragThresholdPx;
             _dragStarted = false;
         }
 

@@ -84,17 +84,22 @@ namespace FracturedChorus.Combat.Actions
                 return;
             }
 
+            var harmony = HarmonyElementResolver.GetRelation(ctx.Source.Stats.Element, target.Stats.Element);
+
             var result = DamageCalculator.Calculate(
                 ctx.Source.Stats,
                 target.Stats,
                 ctx.Skill.skillTier,
+                ctx.Source.Stats.StrengthType,
                 ctx.BeatTiming,
-                ctx.Harmony,
+                harmony,
                 coverMod);
 
             target.TakeDamage(result.FinalDamage);
             Debug.Log($"[SkillAction] {ctx.Source.DisplayName} -> {target.DisplayName} | " +
-                      $"raw={result.RawDamage:F1} final={result.FinalDamage:F1} crit={result.IsCritical}");
+                      $"rand={result.SkillRandomRoll:F2}×str={ctx.Source.Stats.Strength:F0} " +
+                      $"raw={result.RawDamage:F1} en×={result.EnduranceFactor:F2} " +
+                      $"final={result.FinalDamage:F1} crit={result.IsCritical} mult={result.CritDamageMultiplier:F2}");
         }
     }
 }
