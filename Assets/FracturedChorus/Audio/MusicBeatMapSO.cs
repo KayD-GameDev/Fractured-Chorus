@@ -62,6 +62,41 @@ namespace FracturedChorus.Audio
             return times.ToArray();
         }
 
+        public float GetBeatSpanSec(int beatIndex)
+        {
+            if (!HasData)
+            {
+                return 60f / fallbackBpm;
+            }
+
+            var last = beatTimesSec.Length - 1;
+            if (beatIndex < 0)
+            {
+                beatIndex = 0;
+            }
+
+            if (beatIndex >= last)
+            {
+                var tail = last > 0 ? beatTimesSec[last] - beatTimesSec[last - 1] : 60f / fallbackBpm;
+                return tail > 0f ? tail : 60f / fallbackBpm;
+            }
+
+            var span = beatTimesSec[beatIndex + 1] - beatTimesSec[beatIndex];
+            return span > 0f ? span : 60f / fallbackBpm;
+        }
+
+        public float AverageBeatSpanSec()
+        {
+            if (!HasData || beatTimesSec.Length < 2)
+            {
+                return 60f / fallbackBpm;
+            }
+
+            var total = beatTimesSec[beatTimesSec.Length - 1] - beatTimesSec[0];
+            var span = total / (beatTimesSec.Length - 1);
+            return span > 0f ? span : 60f / fallbackBpm;
+        }
+
         public float TimeToMusicalBeat(float audioTimeSec)
         {
             if (!HasData)

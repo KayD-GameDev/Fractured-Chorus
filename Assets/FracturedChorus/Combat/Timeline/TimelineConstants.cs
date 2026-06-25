@@ -2,10 +2,10 @@ namespace FracturedChorus.Combat.Timeline
 {
     public static class TimelineConstants
     {
-        public const int PhaseCount = 8;
+        public const int PhaseCount = 30;
         public const int Phase1SlotCount = 16;
         public const int LaterPhaseSlotCount = 16;
-        public const int TotalBeats = 128;
+        public const int TotalBeats = Phase1SlotCount + (PhaseCount - 1) * LaterPhaseSlotCount;
 
         /// <summary>Fallback when UI has not reported visible slot count yet.</summary>
         public const int DefaultVisibleBeatHint = 20;
