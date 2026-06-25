@@ -32,3 +32,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 8430f3ed4761c4043be3158deb287d0d, type: 2}
   - {fileID: 11400000, guid: c8fdd7bdae73901438ed6ef1a7380d14, type: 2}
   placeholderColor: {r: 0.65, g: 0.35, b: 0.95, a: 1}
+  battleSprite: {fileID: -7428215157034606851, guid: c717b6aad7a95364c80e530ab2dde0db, type: 3}
