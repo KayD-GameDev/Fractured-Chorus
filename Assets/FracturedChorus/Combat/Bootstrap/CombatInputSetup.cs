@@ -29,16 +29,35 @@ namespace FracturedChorus.Combat.Bootstrap
             ApplyInputModule(eventSystem.gameObject, destroyImmediate: false);
         }
 
-        public static void EnsureCameraRaycaster(Camera camera)
+        public static void EnsureCameraRaycaster(Camera camera, bool destroyImmediate = false)
         {
             if (camera == null)
             {
                 return;
             }
 
-            if (camera.GetComponent<PhysicsRaycaster>() == null)
+            var legacy3D = camera.GetComponent<PhysicsRaycaster>();
+            if (legacy3D != null)
             {
-                camera.gameObject.AddComponent<PhysicsRaycaster>();
+                if (destroyImmediate)
+                {
+                    Object.DestroyImmediate(legacy3D);
+                }
+                else
+                {
+                    Object.Destroy(legacy3D);
+                }
+            }
+
+            if (camera.GetComponent<Physics2DRaycaster>() == null)
+            {
+                camera.gameObject.AddComponent<Physics2DRaycaster>();
+            }
+
+            var raycaster2D = camera.GetComponent<Physics2DRaycaster>();
+            if (raycaster2D != null && raycaster2D.maxRayIntersections <= 0)
+            {
+                raycaster2D.maxRayIntersections = 32;
             }
         }
 

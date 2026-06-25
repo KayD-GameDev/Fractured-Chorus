@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using FracturedChorus.Combat.Core;
 using FracturedChorus.Combat.Units;
 using FracturedChorus.Data;
@@ -14,23 +15,30 @@ namespace FracturedChorus.UI
         [SerializeField] private Text titleLabel;
         [SerializeField] private Camera worldCamera;
         [SerializeField] private float screenPaddingPx = 1.5f;
+        [Tooltip("Giữ pivot/anchor panel đã chỉnh trong scene.")]
+        [SerializeField] private bool preserveSceneLayout = true;
+        [SerializeField] private GameObject dismissBackdrop;
 
         private CombatSession _session;
         private CombatUnit _currentUnit;
         private UnitView _currentUnitView;
         private Func<CombatUnit, SkillDefinitionSO, bool> _onSkillSelected;
+        private Coroutine _enableBackdropRoutine;
+        private float _backdropDismissUnlockTime;
 
         public event Action<bool> VisibilityChanged;
+
+        public bool ShouldIgnoreOutsideDismiss => Time.unscaledTime < _backdropDismissUnlockTime;
 
         public bool IsVisible => panelRect != null && panelRect.gameObject.activeSelf;
 
         private void Awake()
         {
-            screenPaddingPx = 1.5f;
             WireReferences();
             StripNestedCanvasIfAny();
-            if (panelRect != null)
+            if (!preserveSceneLayout && panelRect != null)
             {
+                screenPaddingPx = 1.5f;
                 panelRect.pivot = new Vector2(0f, 0.5f);
             }
         }
@@ -102,7 +110,7 @@ namespace FracturedChorus.UI
 
             WireReferences();
             StripNestedCanvasIfAny();
-            ApplyOverlayLayout();
+            ApplyRuntimeOverlayLayout();
 
             _currentUnit = unit;
             _currentUnitView = unitView;
@@ -112,10 +120,83 @@ namespace FracturedChorus.UI
             }
 
             RebuildButtons();
-            PositionBesideUnit(unitView);
+
+            if (!gameObject.activeSelf)
+            {
+                gameObject.SetActive(true);
+            }
+
             panelRect.gameObject.SetActive(true);
             panelRect.SetAsLastSibling();
+            PositionBesideUnit(unitView);
+
+            _backdropDismissUnlockTime = Time.unscaledTime + 0.15f;
+            if (_enableBackdropRoutine != null)
+            {
+                StopCoroutine(_enableBackdropRoutine);
+            }
+
+            _enableBackdropRoutine = StartCoroutine(EnableBackdropNextFrame());
             VisibilityChanged?.Invoke(true);
+        }
+
+        private IEnumerator EnableBackdropNextFrame()
+        {
+            yield return null;
+            ShowDismissBackdrop();
+            _enableBackdropRoutine = null;
+        }
+
+        private void ShowDismissBackdrop()
+        {
+            EnsureDismissBackdrop();
+            if (dismissBackdrop == null)
+            {
+                return;
+            }
+
+            dismissBackdrop.SetActive(true);
+            dismissBackdrop.transform.SetAsLastSibling();
+            panelRect.SetAsLastSibling();
+        }
+
+        private void HideDismissBackdrop()
+        {
+            if (dismissBackdrop != null)
+            {
+                dismissBackdrop.SetActive(false);
+            }
+        }
+
+        private void EnsureDismissBackdrop()
+        {
+            if (dismissBackdrop != null)
+            {
+                return;
+            }
+
+            var canvasRect = GetRootCanvasRectTransform();
+            if (canvasRect == null)
+            {
+                return;
+            }
+
+            dismissBackdrop = new GameObject("SkillPanelDismissBackdrop", typeof(RectTransform));
+            dismissBackdrop.transform.SetParent(canvasRect, false);
+
+            var rect = dismissBackdrop.GetComponent<RectTransform>();
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+
+            var image = dismissBackdrop.AddComponent<Image>();
+            image.color = new Color(0f, 0f, 0f, 0f);
+            image.raycastTarget = true;
+
+            var dismiss = dismissBackdrop.AddComponent<SkillPanelDismissBackdrop>();
+            dismiss.SetPanel(this);
+            dismissBackdrop.SetActive(false);
         }
 
         private void StripNestedCanvasIfAny()
@@ -138,7 +219,7 @@ namespace FracturedChorus.UI
             }
         }
 
-        private void ApplyOverlayLayout()
+        private void ApplyRuntimeOverlayLayout()
         {
             if (panelRect == null)
             {
@@ -149,6 +230,16 @@ namespace FracturedChorus.UI
             panelRect.anchorMax = new Vector2(0.5f, 0.5f);
             panelRect.pivot = new Vector2(0f, 0.5f);
             panelRect.localScale = Vector3.one;
+        }
+
+        private void ApplyOverlayLayout()
+        {
+            if (panelRect == null || preserveSceneLayout)
+            {
+                return;
+            }
+
+            ApplyRuntimeOverlayLayout();
         }
 
         private RectTransform GetRootCanvasRectTransform()
@@ -174,6 +265,14 @@ namespace FracturedChorus.UI
 
         public void Hide()
         {
+            if (_enableBackdropRoutine != null)
+            {
+                StopCoroutine(_enableBackdropRoutine);
+                _enableBackdropRoutine = null;
+            }
+
+            HideDismissBackdrop();
+
             if (panelRect != null && panelRect.gameObject.activeSelf)
             {
                 panelRect.gameObject.SetActive(false);
@@ -241,16 +340,7 @@ namespace FracturedChorus.UI
                 return;
             }
 
-            var spriteRenderer = unitView.GetComponent<SpriteRenderer>();
-            Vector3 anchorWorld;
-            if (spriteRenderer != null)
-            {
-                anchorWorld = new Vector3(spriteRenderer.bounds.max.x, spriteRenderer.bounds.center.y, 0f);
-            }
-            else
-            {
-                anchorWorld = unitView.transform.position + Vector3.right * 0.5f;
-            }
+            var anchorWorld = unitView.GetSkillPanelAnchorWorld();
 
             var screenPoint = RectTransformUtility.WorldToScreenPoint(worldCamera, anchorWorld);
             screenPoint.x += screenPaddingPx;
