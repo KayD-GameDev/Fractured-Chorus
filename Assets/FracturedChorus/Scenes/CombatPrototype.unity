@@ -637,8 +637,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 56, y: 0}
-  m_SizeDelta: {x: -128, y: -16}
+  m_AnchoredPosition: {x: 78.34088, y: 0}
+  m_SizeDelta: {x: -172.6818, y: -16}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &62846717
 MonoBehaviour:
@@ -1088,7 +1088,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 110, y: 0}
+  m_SizeDelta: {x: 164.68, y: 0}
   m_Pivot: {x: 0, y: 0.5}
 --- !u!213 &183192659
 Sprite:
@@ -6713,7 +6713,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
-  m_AnchoredPosition: {x: 55, y: -18.318}
+  m_AnchoredPosition: {x: 80.37, y: -18.318}
   m_SizeDelta: {x: 59.2601, y: 95.349}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1173406309
@@ -8487,7 +8487,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
-  m_AnchoredPosition: {x: 58.2635, y: -81.0838}
+  m_AnchoredPosition: {x: 82.34, y: -81.084}
   m_SizeDelta: {x: 86.2839, y: 30.1827}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1773493165
@@ -8603,7 +8603,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
-  m_AnchoredPosition: {x: 55, y: 47.4}
+  m_AnchoredPosition: {x: 80.37, y: 56.2}
   m_SizeDelta: {x: 50.1743, y: 38.6307}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1864874596
@@ -9214,7 +9214,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 0.0000011325, y: 2.0151978}
+  m_AnchoredPosition: {x: 25.370005, y: 0}
   m_SizeDelta: {x: 110, y: 29.299}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &2113597695
@@ -9412,7 +9412,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d54ba4bdc5049a743a22af43720f58d6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.CombatExecuteOverlayUIView
-  executeButton: {fileID: 2120607406}
+  executeButton: {fileID: 0}
   labelText: {fileID: 2120607410}
   combatController: {fileID: 707156459}
 --- !u!1 &2120607403
@@ -9426,7 +9426,6 @@ GameObject:
   - component: {fileID: 2120607404}
   - component: {fileID: 2120607407}
   - component: {fileID: 2120607405}
-  - component: {fileID: 2120607406}
   m_Layer: 0
   m_Name: ExecuteButton
   m_TagString: Untagged
@@ -9484,62 +9483,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &2120607406
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2120607403}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b899bb6e57421848482, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
-  m_Navigation:
-    m_Mode: 3
-    m_WrapAround: 0
-    m_SelectOnUp: {fileID: 0}
-    m_SelectOnDown: {fileID: 0}
-    m_SelectOnLeft: {fileID: 0}
-    m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
-  m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
-    m_ColorMultiplier: 1
-    m_FadeDuration: 0.1
-  m_SpriteState:
-    m_HighlightedSprite: {fileID: 0}
-    m_PressedSprite: {fileID: 0}
-    m_SelectedSprite: {fileID: 0}
-    m_DisabledSprite: {fileID: 0}
-  m_AnimationTriggers:
-    m_NormalTrigger: Normal
-    m_HighlightedTrigger: Highlighted
-    m_PressedTrigger: Pressed
-    m_SelectedTrigger: Selected
-    m_DisabledTrigger: Disabled
-  m_Interactable: 1
-  m_TargetGraphic: {fileID: 2120607405}
-  m_OnClick:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 707156459}
-        m_TargetAssemblyTypeName: FracturedChorus.Combat.Core.CombatController, Assembly-CSharp
-        m_MethodName: StartRound
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
 --- !u!222 &2120607407
 CanvasRenderer:
   m_ObjectHideFlags: 0
