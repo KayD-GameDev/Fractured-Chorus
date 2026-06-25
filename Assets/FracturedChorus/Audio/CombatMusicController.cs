@@ -23,6 +23,7 @@ namespace FracturedChorus.Audio
         private Coroutine _crossfadeRoutine;
         private float _playbackSpeedMultiplier = 1f;
 
+        public MusicBeatMapSO BeatMap => beatMap;
         public float TotalMusicalBeat => _totalMusicalBeat;
         public float PlaybackSpeedMultiplier => _playbackSpeedMultiplier;
         public float BeatDuration => 60f / bpm;

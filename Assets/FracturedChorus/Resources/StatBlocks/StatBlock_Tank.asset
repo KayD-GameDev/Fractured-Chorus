@@ -20,5 +20,5 @@ MonoBehaviour:
   heartBeat: 140
   baseLuck: 10
   critMultiplier: 1.1
-  maxHp: 1000
+  maxHp: 3000
   baseSpeed: 8

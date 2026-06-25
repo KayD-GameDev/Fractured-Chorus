@@ -15,9 +15,12 @@ namespace FracturedChorus.UI
         [SerializeField] private Text actionLabel;
         [SerializeField] private Image phaseDividerLine;
         [SerializeField] private float scanScaleBoost = 1.14f;
+        [SerializeField] private float scanFadeInDuration = 0.08f;
+        [SerializeField] private float scanFadeOutDuration = 0.35f;
 
         private RectTransform _rect;
-        private bool _scanHighlighted;
+        private float _scanIntensity;
+        private float _targetIntensity;
         private Color _glowBaseColor = Color.white;
         private Color _backgroundBaseColor = Color.white;
 
@@ -95,58 +98,58 @@ namespace FracturedChorus.UI
 
         public void SetScanHighlighted(bool highlighted)
         {
-            if (_scanHighlighted == highlighted)
-            {
-                return;
-            }
+            SetScanIntensity(highlighted ? 1f : 0f);
+        }
 
-            _scanHighlighted = highlighted;
-            ApplyScanVisual(highlighted);
+        public void SetScanIntensity(float intensity)
+        {
+            _targetIntensity = Mathf.Clamp01(intensity);
         }
 
         public void ResetScanHighlight()
         {
-            _scanHighlighted = false;
-            ApplyScanVisual(false);
+            _scanIntensity = 0f;
+            _targetIntensity = 0f;
+            ApplyScanVisual(0f);
         }
 
-        private void ApplyScanVisual(bool highlighted)
+        private void Update()
+        {
+            if (Mathf.Approximately(_scanIntensity, _targetIntensity))
+            {
+                return;
+            }
+
+            var duration = _targetIntensity > _scanIntensity ? scanFadeInDuration : scanFadeOutDuration;
+            var step = duration > 0f ? Time.deltaTime / duration : 1f;
+            _scanIntensity = Mathf.MoveTowards(_scanIntensity, _targetIntensity, step);
+            ApplyScanVisual(_scanIntensity);
+        }
+
+        private void ApplyScanVisual(float intensity)
         {
             if (_rect == null)
             {
                 return;
             }
 
-            if (highlighted)
-            {
-                _rect.localScale = Vector3.one * scanScaleBoost;
-            }
-            else
-            {
-                _rect.localScale = Vector3.one;
-            }
+            _rect.localScale = Vector3.one * Mathf.Lerp(1f, scanScaleBoost, intensity);
 
             if (glow != null)
             {
-                var glowAlpha = highlighted ? Mathf.Max(_glowBaseColor.a, 0.55f) : _glowBaseColor.a;
+                var peakAlpha = Mathf.Max(_glowBaseColor.a, 0.55f);
+                var glowAlpha = Mathf.Lerp(_glowBaseColor.a, peakAlpha, intensity);
                 glow.color = new Color(_glowBaseColor.r, _glowBaseColor.g, _glowBaseColor.b, glowAlpha);
             }
 
             if (background != null)
             {
                 var c = _backgroundBaseColor;
-                if (highlighted)
-                {
-                    background.color = new Color(
-                        Mathf.Min(1f, c.r + 0.1f),
-                        Mathf.Min(1f, c.g + 0.1f),
-                        Mathf.Min(1f, c.b + 0.1f),
-                        c.a);
-                }
-                else
-                {
-                    background.color = c;
-                }
+                background.color = new Color(
+                    Mathf.Min(1f, c.r + 0.1f * intensity),
+                    Mathf.Min(1f, c.g + 0.1f * intensity),
+                    Mathf.Min(1f, c.b + 0.1f * intensity),
+                    c.a);
             }
         }
 

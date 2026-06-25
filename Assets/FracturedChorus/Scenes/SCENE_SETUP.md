@@ -89,30 +89,48 @@ BeatTimelineUI
     └── ScanBar         ← vạch quét đỏ; trượt dọc track, không nhảy từng ô
 ```
 
+### Độ rộng ô theo thời gian thực (smooth scroll)
+
+> **Cập nhật (2026-06):** Độ rộng mỗi ô beat **tỉ lệ với số giây** của khoảng beat đó (`width = span_giây × pixelsPerSecond`), không còn các ô đều nhau. Nhờ vậy:
+>
+> - Vùng beat **ngắn liên tục** → ô **hẹp, sát nhau**; vùng beat **dài** → ô **rộng ra** ⇒ timeline phản ánh đúng nhịp bài.
+> - Scroll được lái bằng `musical beat → offset tích lũy`, nên tốc độ **px/giây không đổi** ⇒ chạy **mượt**, vẫn khớp nhạc và đúng cả khi nhạc loop.
+> - **Data-driven**: độ rộng suy ra từ `MusicBeatMapSO` của bài đang chơi (`GetBeatSpanSec`, `AverageBeatSpanSec`). Đổi bài khác chỉ cần gán beat map/CSV cho `CombatMusicController` — không sửa code timeline. Không có beat map → tự về độ rộng đều theo `Auto Beat Interval`.
+
 ### Hành vi khi Play (prototype hiện tại)
 
 | Giai đoạn | Visual | Logic combat |
 |-----------|--------|----------------|
-| **Đầu timeline** | `TrackLine` + `ScanBar` cố định; content trôi trái; ô dưới vạch quét **nổi lên** | Beat resolve khi vạch quét cắt qua tâm ô |
-| **Cuối timeline** | Content dừng; `ScanBar` trượt phải; ô dưới vạch quét **nổi lên** | Cùng crossing detection |
+| **Đầu timeline** | `TrackLine` + `ScanBar` cố định ở mốc `slotWidth/2`; content trôi trái | Beat resolve khi `localBeat` chạm chỉ số nguyên (rìa trái ô) |
+| **Cuối timeline** | Content dừng; `ScanBar` trượt phải | Cùng crossing detection |
 | **Mở skill panel** | Tốc độ quét **0.25×** (scroll + nhạc nếu `useMusicSync`) | Không đổi |
+
+**Hiệu ứng chiếu sáng ô (mọi nốt giống nhau):** thanh đỏ vừa chạm **rìa** ô → ô sáng nhẹ → tới **tâm** chớp mạnh nhất (`SmoothStep`) → qua tâm thì **tắt dần** theo thời gian. Cả lúc sáng lên và tắt đi đều được làm mượt theo thời lượng (tránh "pop" ở nốt ngắn). Việc tắt dần vẫn tiếp tục kể cả khi thanh đỏ đã rời ô.
 
 **Inspector `BeatTimelineUIView` (tuning):**
 
 | Field | Ý nghĩa |
 |-------|---------|
-| `Auto Beat Interval` | Thời gian 1 beat → tốc độ scroll = `slotStep / interval` |
+| `Slot Width` | **Độ rộng ô trung bình mục tiêu** → suy ra `pixelsPerSecond = slotWidth / span_trung_bình`. Tăng = cả timeline giãn rộng, chênh lệch ngắn/dài rõ hơn |
+| `Min Slot Width` | Độ rộng tối thiểu của ô (beat quá ngắn không bị mảnh quá; mặc định 14) |
+| `Auto Beat Interval` | Fallback khi **không có** beat map → scroll đều theo interval này |
 | `Skill Panel Open Speed Multiplier` | Hệ số chậm khi panel skill mở (mặc định 0.25) |
-| `Slot Width` / spacing | Fallback nếu chưa refit viewport |
-| `Scan Align Threshold` | Ngưỡng khớp tâm ô với vạch đỏ (0.28 × slot step); nhỏ hơn = chỉ nổi khi quét trúng |
 
-**Không cần** 105 GameObject beat trong Hierarchy — runtime chỉ giữ **N ô vừa viewport** (carousel ảo), populate nội dung beat 0…104.
+**Inspector `BeatSegmentView` (hiệu ứng quét):**
+
+| Field | Ý nghĩa |
+|-------|---------|
+| `Scan Scale Boost` | Hệ số phóng to ô lúc chớp sáng (mặc định 1.14) |
+| `Scan Fade In Duration` | Thời lượng sáng lên tối thiểu (mặc định 0.08s; tăng nếu nốt ngắn còn giật) |
+| `Scan Fade Out Duration` | Thời lượng tắt dần (mặc định 0.35s; tăng = tắt chậm rãi hơn) |
+
+**Runtime tạo đủ `TimelineConstants.TotalBeats` ô** (render-all, không còn carousel ảo): hàng `ScrollContent` dài hơn viewport và được `RectMask2D` cắt viền. `HorizontalLayoutGroup` để `childControlWidth = true` để áp `preferredWidth` (độ rộng theo giây) cho từng ô.
 
 **Scene cũ thiếu `TrackLine`:** vẫn chạy; `BeatTimelineUIView` tự tạo `TrackLine` lúc Play. Rebuild UI để có sẵn trong scene.
 
 ### Phase divider
 
-Vạch trắng **PhaseDivider** trên từng ô sau beat 14, 24, 34… (giữa phase timeline). Trôi qua vạch quét cùng content — không cần setup thêm.
+Vạch trắng **PhaseDivider** trên từng ô sau beat 15, 31, 47… (mỗi **16 beat** một phase). Hiện cấu hình **30 phase × 16 = 480 beat** (`TimelineConstants.PhaseCount` / `TotalBeats`). Trôi qua vạch quét cùng content — không cần setup thêm.
 
 ---
 
@@ -147,7 +165,7 @@ Menu **Fractured Chorus → Rebuild Timeline + Skill Panel (Hierarchy)** — t�
 
 Save scene sau khi rebuild.
 
-> **Lưu ý:** Rebuild **không** tạo 105 object `Beat_1…Beat_104` — số ô hiển thị do code fit theo chiều rộng viewport.
+> **Lưu ý:** Rebuild (editor) chỉ tạo template `Beat_0`. Lúc Play, runtime mới clone đủ `TotalBeats` ô (`BeatSlot_1…N`) với độ rộng theo giây — không cần các object beat trong Hierarchy.
 
 ---
 
@@ -161,6 +179,9 @@ Menu **Fractured Chorus → Setup Combat Scene Hierarchy** → chọn **Tạo l�
 
 | Ngày | Thay đổi |
 |------|----------|
+| 2026-06-25 | **Độ rộng ô theo giây**: `width = span × pixelsPerSecond` (data-driven từ `MusicBeatMapSO`); scroll lái bằng musical beat → px/giây không đổi (mượt, khớp nhạc). Render-all `TotalBeats` ô + `RectMask2D`; `childControlWidth = true`. |
+| 2026-06-25 | **Hiệu ứng quét nâng cấp** (mọi nốt): rìa → tâm chớp (`SmoothStep`) → tắt dần theo thời gian; làm mượt cả fade-in/out (`scanFadeInDuration` / `scanFadeOutDuration`). Bỏ `scanAlignThreshold`. |
+| 2026-06-25 | **30 phase** (`PhaseCount = 30`, `TotalBeats = 480`) để chạy hết bài không gián đoạn. Charlotte (Tank) máu = 3000 để test (`StatBlock_Tank` + `UnitStats.CreateTankPreset`). |
 | 2026-06-23 | Skill panel mở: `SetSkillPanelOpen` → scroll 0.25× + `CombatMusicController` pitch 0.25× (music sync). |
 | 2026-06 | Timeline: scroll liên tục trên `TrackLine`; **chỉ ô đang nằm dưới vạch đỏ** nổi lên (`BeatSegmentView.SetScanHighlighted`), các ô khác giữ nguyên. |
 | — | Combat flow vẫn prototype (Planning + auto-resolve trong một lần quét) — chưa tách UC-04 Planning dừng / Resolution riêng. |
