@@ -16,6 +16,8 @@ namespace FracturedChorus.Data
         public UnitStats stats = new UnitStats();
         public SkillDefinitionSO[] skills;
         public Color placeholderColor = Color.white;
+        [Tooltip("Sprite combat m?c d?nh — dùng khi scene chua gán ho?c b? placeholder 1×1.")]
+        public Sprite battleSprite;
 
         public UnitStats ResolveStats()
         {

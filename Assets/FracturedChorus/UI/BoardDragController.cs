@@ -1,21 +1,47 @@
+using System;
 using System.Collections.Generic;
 using FracturedChorus.Combat.Core;
 using FracturedChorus.Combat.Grid;
+using FracturedChorus.Combat.Units;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+#endif
 
 namespace FracturedChorus.UI
 {
+    /// <summary>
+    /// Press-and-hold on a player unit to drag between grid cells (Planning, pre-Execute).
+    /// Click without drag after Execute opens the skill panel.
+    /// Uses Physics2D pick — reliable with Screen Space Overlay UI + Input System.
+    /// </summary>
     public class BoardDragController : MonoBehaviour
     {
         [SerializeField] private Camera worldCamera;
         [SerializeField] private float cellPickRadius = 1.15f;
+        [SerializeField] private float clickDragThresholdPx = 8f;
 
         private CombatSession _session;
         private DualGrid _grid;
         private readonly Dictionary<GridPosition, GridCellMarker> _markers = new();
+        private readonly List<RaycastResult> _uiRaycastBuffer = new();
+        private readonly Collider2D[] _overlapHits = new Collider2D[8];
+        private ContactFilter2D _unitPickFilter;
         private GridCellMarker _highlightedCell;
         private UnitView _draggingUnit;
+        private UnitView _pointerDownUnit;
+        private Vector2 _pointerDownScreen;
+        private bool _dragPointerActive;
+        private Action<CombatUnit, UnitView> _onUnitClicked;
+
+        private void Awake()
+        {
+            _unitPickFilter.useLayerMask = true;
+            _unitPickFilter.layerMask = Physics2D.AllLayers;
+            _unitPickFilter.useTriggers = false;
+        }
 
         public bool IsDragging => _draggingUnit != null;
 
@@ -46,6 +72,11 @@ namespace FracturedChorus.UI
             }
         }
 
+        public void SetUnitClickHandler(Action<CombatUnit, UnitView> onUnitClicked)
+        {
+            _onUnitClicked = onUnitClicked;
+        }
+
         public bool CanDragUnit(UnitView view)
         {
             return view != null
@@ -57,6 +88,85 @@ namespace FracturedChorus.UI
                    && _session.AllowPlayerReposition;
         }
 
+        private void Update()
+        {
+            if (_session == null)
+            {
+                return;
+            }
+
+            var screenPos = GetPointerScreenPosition();
+
+            if (WasPointerPressedThisFrame())
+            {
+                HandlePointerDown(screenPos);
+            }
+
+            if (IsPointerHeld() && _dragPointerActive && _draggingUnit != null)
+            {
+                UpdateDragAtScreen(screenPos);
+            }
+
+            if (WasPointerReleasedThisFrame())
+            {
+                HandlePointerUp(screenPos);
+            }
+        }
+
+        private void HandlePointerDown(Vector2 screenPos)
+        {
+            _pointerDownUnit = null;
+            _dragPointerActive = false;
+
+            if (IsScreenPointBlockedByUi(screenPos))
+            {
+                return;
+            }
+
+            var view = PickUnitAtScreen(screenPos);
+            if (view == null)
+            {
+                return;
+            }
+
+            _pointerDownUnit = view;
+            _pointerDownScreen = screenPos;
+
+            if (CanDragUnit(view))
+            {
+                BeginDrag(view);
+                _dragPointerActive = true;
+            }
+        }
+
+        private void HandlePointerUp(Vector2 screenPos)
+        {
+            var moved = _pointerDownScreen != Vector2.zero
+                        && Vector2.Distance(_pointerDownScreen, screenPos) > clickDragThresholdPx;
+
+            if (_dragPointerActive && _draggingUnit != null)
+            {
+                EndDrag(_draggingUnit);
+            }
+            else if (!moved && _pointerDownUnit != null && CanOpenSkillPanelFor(_pointerDownUnit))
+            {
+                _onUnitClicked?.Invoke(_pointerDownUnit.Unit, _pointerDownUnit);
+            }
+
+            _pointerDownUnit = null;
+            _dragPointerActive = false;
+        }
+
+        private bool CanOpenSkillPanelFor(UnitView view)
+        {
+            return view != null
+                   && view.Unit != null
+                   && view.Unit.IsAlive
+                   && view.Side == GridSide.Player
+                   && _session != null
+                   && !IsPreExecuteRepositionPhase;
+        }
+
         public void CancelActiveDrag()
         {
             if (_draggingUnit == null)
@@ -65,6 +175,8 @@ namespace FracturedChorus.UI
             }
 
             CancelDrag(_draggingUnit);
+            _dragPointerActive = false;
+            _pointerDownUnit = null;
         }
 
         public void BeginDrag(UnitView view)
@@ -78,16 +190,16 @@ namespace FracturedChorus.UI
             ClearHighlight();
         }
 
-        public void UpdateDrag(PointerEventData eventData)
+        public void UpdateDragAtScreen(Vector2 screenPos)
         {
-            if (_draggingUnit == null || eventData == null || !CanDragUnit(_draggingUnit))
+            if (_draggingUnit == null || !CanDragUnit(_draggingUnit))
             {
                 return;
             }
 
-            var world = ScreenToWorld(eventData.position);
-            _draggingUnit.transform.position = new Vector3(world.x, world.y, _draggingUnit.transform.position.z);
-            SetHighlight(FindDropCell(world, _draggingUnit.Side), _draggingUnit);
+            var world = ScreenToWorld(screenPos);
+            _draggingUnit.PlaceFeetAt(new Vector3(world.x, world.y, _draggingUnit.transform.position.z));
+            SetHighlight(FindDropCell(_draggingUnit.FeetWorldPosition, _draggingUnit.Side), _draggingUnit);
         }
 
         public void EndDrag(UnitView view)
@@ -99,8 +211,7 @@ namespace FracturedChorus.UI
                 return;
             }
 
-            var world = view.transform.position;
-            var target = FindDropCell(world, view.Side);
+            var target = FindDropCell(view.FeetWorldPosition, view.Side);
             ClearHighlight();
 
             if (!CanDragUnit(view))
@@ -148,6 +259,85 @@ namespace FracturedChorus.UI
             }
 
             _draggingUnit = null;
+        }
+
+        private UnitView PickUnitAtScreen(Vector2 screenPos)
+        {
+            var world = ScreenToWorld(screenPos);
+            var count = Physics2D.OverlapPoint(new Vector2(world.x, world.y), _unitPickFilter, _overlapHits);
+
+            UnitView best = null;
+            var bestOrder = int.MinValue;
+
+            for (var i = 0; i < count; i++)
+            {
+                var hit = _overlapHits[i];
+                if (hit == null)
+                {
+                    continue;
+                }
+
+                var view = hit.GetComponent<UnitView>() ?? hit.GetComponentInParent<UnitView>();
+                if (view == null || view.Unit == null || !view.Unit.IsAlive)
+                {
+                    continue;
+                }
+
+                var sr = view.GetComponent<SpriteRenderer>();
+                var order = sr != null ? sr.sortingOrder : 0;
+                if (order < bestOrder)
+                {
+                    continue;
+                }
+
+                bestOrder = order;
+                best = view;
+            }
+
+            return best;
+        }
+
+        private bool IsScreenPointBlockedByUi(Vector2 screenPos)
+        {
+            if (EventSystem.current == null)
+            {
+                return false;
+            }
+
+            var pointerData = new PointerEventData(EventSystem.current) { position = screenPos };
+            _uiRaycastBuffer.Clear();
+            EventSystem.current.RaycastAll(pointerData, _uiRaycastBuffer);
+
+            foreach (var result in _uiRaycastBuffer)
+            {
+                if (result.module is not GraphicRaycaster)
+                {
+                    continue;
+                }
+
+                var go = result.gameObject;
+                if (go.GetComponentInParent<BeatTimelineUIView>() != null)
+                {
+                    return true;
+                }
+
+                if (go.GetComponentInParent<SkillPanelUIView>() != null)
+                {
+                    return true;
+                }
+
+                if (go.GetComponentInParent<CombatExecuteOverlayUIView>() != null)
+                {
+                    return true;
+                }
+
+                if (go.GetComponent<Button>() != null || go.GetComponent<ScrollRect>() != null)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private GridCellMarker FindDropCell(Vector3 world, GridSide side)
@@ -230,7 +420,7 @@ namespace FracturedChorus.UI
             var pos = marker.transform.position;
             var gridPos = view.GridPosition;
             var depth = gridPos.Row * 0.1f + gridPos.Column * 0.05f;
-            view.transform.position = new Vector3(pos.x, pos.y, -0.05f + depth);
+            view.SnapFeetTo(new Vector3(pos.x, pos.y, 0f), -0.05f + depth);
         }
 
         private Vector3 ScreenToWorld(Vector2 screenPoint)
@@ -242,8 +432,80 @@ namespace FracturedChorus.UI
             }
 
             var depth = Mathf.Abs(cam.transform.position.z);
-            var world = cam.ScreenToWorldPoint(new Vector3(screenPoint.x, screenPoint.y, depth));
-            return world;
+            return cam.ScreenToWorldPoint(new Vector3(screenPoint.x, screenPoint.y, depth));
+        }
+
+        private static Vector2 GetPointerScreenPosition()
+        {
+#if ENABLE_INPUT_SYSTEM
+            if (Mouse.current != null)
+            {
+                return Mouse.current.position.ReadValue();
+            }
+
+            if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed)
+            {
+                return Touchscreen.current.primaryTouch.position.ReadValue();
+            }
+#endif
+            return Input.mousePosition;
+        }
+
+        private static bool WasPointerPressedThisFrame()
+        {
+#if ENABLE_INPUT_SYSTEM
+            if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+            {
+                return true;
+            }
+
+            if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.wasPressedThisFrame)
+            {
+                return true;
+            }
+
+            return false;
+#else
+            return Input.GetMouseButtonDown(0);
+#endif
+        }
+
+        private static bool IsPointerHeld()
+        {
+#if ENABLE_INPUT_SYSTEM
+            if (Mouse.current != null && Mouse.current.leftButton.isPressed)
+            {
+                return true;
+            }
+
+            if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed)
+            {
+                return true;
+            }
+
+            return false;
+#else
+            return Input.GetMouseButton(0);
+#endif
+        }
+
+        private static bool WasPointerReleasedThisFrame()
+        {
+#if ENABLE_INPUT_SYSTEM
+            if (Mouse.current != null && Mouse.current.leftButton.wasReleasedThisFrame)
+            {
+                return true;
+            }
+
+            if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.wasReleasedThisFrame)
+            {
+                return true;
+            }
+
+            return false;
+#else
+            return Input.GetMouseButtonUp(0);
+#endif
         }
     }
 }

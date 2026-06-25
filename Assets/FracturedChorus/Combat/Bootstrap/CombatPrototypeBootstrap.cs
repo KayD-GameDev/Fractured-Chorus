@@ -195,12 +195,13 @@ namespace FracturedChorus.Combat.Bootstrap
                 ? gridRoot.GetComponentsInChildren<GridCellMarker>(true)
                 : System.Array.Empty<GridCellMarker>();
             _boardDrag.Initialize(_session, _grid, markers, mainCamera);
+            _boardDrag.SetUnitClickHandler(HandleUnitSelected);
 
             foreach (var view in unitViews)
             {
                 if (view?.Unit != null)
                 {
-                    view.Bind(view.Unit, HandleUnitSelected, _boardDrag);
+                    view.Bind(view.Unit);
                 }
             }
         }
@@ -249,7 +250,7 @@ namespace FracturedChorus.Combat.Bootstrap
                 }
 
                 view.PlaceOnGrid(pos);
-                view.Bind(unit, HandleUnitSelected);
+                view.Bind(unit);
                 AlignUnitViewToGridCell(view);
             }
         }
@@ -324,7 +325,7 @@ namespace FracturedChorus.Combat.Bootstrap
                 var view = unitGo.AddComponent<UnitView>();
                 view.ConfigureDemo(spawn.preset?.unitId ?? "grunt", spawn.side);
                 view.PlaceOnGrid(pos);
-                view.Bind(unit, HandleUnitSelected);
+                view.Bind(unit);
             }
         }
 

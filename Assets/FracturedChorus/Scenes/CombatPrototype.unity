@@ -233,7 +233,10 @@ MonoBehaviour:
   column: 0
   spriteRenderer: {fileID: 7695631}
   hpLabel: {fileID: 0}
-  clickCollider: {fileID: 0}
+  bodyCollider: {fileID: 7695633}
+  feetAnchor: {fileID: 0}
+  preserveSceneVisuals: 1
+  preserveSceneCollider: 1
 --- !u!61 &7695633
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -2384,7 +2387,10 @@ MonoBehaviour:
   column: 2
   spriteRenderer: {fileID: 335934020}
   hpLabel: {fileID: 0}
-  clickCollider: {fileID: 0}
+  bodyCollider: {fileID: 335934022}
+  feetAnchor: {fileID: 0}
+  preserveSceneVisuals: 1
+  preserveSceneCollider: 1
 --- !u!212 &335934020
 SpriteRenderer:
   serializedVersion: 2
@@ -2752,7 +2758,10 @@ MonoBehaviour:
   column: 0
   spriteRenderer: {fileID: 377598856}
   hpLabel: {fileID: 0}
-  clickCollider: {fileID: 0}
+  bodyCollider: {fileID: 377598858}
+  feetAnchor: {fileID: 0}
+  preserveSceneVisuals: 1
+  preserveSceneCollider: 1
 --- !u!61 &377598858
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -2787,7 +2796,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.15602827, y: 0.0683794}
+  m_Offset: {x: -0.2535947, y: 0.0683794}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -2797,7 +2806,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 7.119546, y: 8.623627}
+  m_Size: {x: 4.2901196, y: 8.623627}
   m_EdgeRadius: 0
 --- !u!1 &404302628
 GameObject:
@@ -3582,7 +3591,10 @@ MonoBehaviour:
   column: 1
   spriteRenderer: {fileID: 487667174}
   hpLabel: {fileID: 0}
-  clickCollider: {fileID: 0}
+  bodyCollider: {fileID: 487667176}
+  feetAnchor: {fileID: 0}
+  preserveSceneVisuals: 1
+  preserveSceneCollider: 1
 --- !u!61 &487667176
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -6415,7 +6427,10 @@ MonoBehaviour:
   column: 2
   spriteRenderer: {fileID: 1144376352}
   hpLabel: {fileID: 0}
-  clickCollider: {fileID: 0}
+  bodyCollider: {fileID: 1144376354}
+  feetAnchor: {fileID: 0}
+  preserveSceneVisuals: 1
+  preserveSceneCollider: 1
 --- !u!61 &1144376354
 BoxCollider2D:
   m_ObjectHideFlags: 0
