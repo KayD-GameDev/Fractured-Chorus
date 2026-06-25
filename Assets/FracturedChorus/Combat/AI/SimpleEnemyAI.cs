@@ -11,7 +11,7 @@ namespace FracturedChorus.Combat.AI
     public class SimpleEnemyAI
     {
         /// <summary>
-        /// Mỗi phase: chọn ngẫu nhiên N ô trong phase (15 ô đầu, sau đó 10 ô/phase),
+        /// Mỗi phase: chọn ngẫu nhiên N ô trong phase (16 ô/phase),
         /// N = số quái còn sống — mỗi quái một telegraph đỏ.
         /// </summary>
         public void PlanTelegraphsForPhase(int phaseIndex, DualGrid grid, BeatTimelineEngine timeline)

@@ -16,6 +16,10 @@ namespace FracturedChorus.UI
         [SerializeField] private int column;
         [SerializeField] private Sprite floorSprite;
         [SerializeField] private Vector2 hexScale = new Vector2(HexSpriteUtil.DefaultScaleX, HexSpriteUtil.DefaultScaleY);
+        [SerializeField] private bool useCustomFloorColor;
+        [SerializeField] private Color customFloorColor = Color.white;
+        [Tooltip("Giữ visual/active state đã chỉnh trong scene — không rebuild hex khi chọn object hoặc Play.")]
+        [SerializeField] private bool preserveSceneVisuals = true;
 
         private static readonly Color PlayerFill = new Color(0.12f, 0.28f, 0.48f, 0.35f);
         private static readonly Color EnemyFill = new Color(0.48f, 0.14f, 0.14f, 0.35f);
@@ -31,10 +35,22 @@ namespace FracturedChorus.UI
         {
             if (!Application.isPlaying)
             {
-                SyncEditModeVisuals();
+                if (preserveSceneVisuals)
+                {
+                    HideLegacyQuadMesh();
+                }
+                else
+                {
+                    SyncEditModeVisuals();
+                }
             }
         }
 #endif
+
+        public void HideLegacyMeshOnly()
+        {
+            HideLegacyQuadMesh();
+        }
 
         public void Configure(GridSide gridSide, int gridRow, int gridColumn)
         {
@@ -88,9 +104,34 @@ namespace FracturedChorus.UI
 
         public void RebuildVisualsForPlay()
         {
+            PrepareForPlay();
+        }
+
+        /// <summary>
+        /// Play mode: giữ visual đã chỉnh trong scene (màu, active hex). Chỉ tạo mesh thiếu.
+        /// </summary>
+        public void PrepareForPlay()
+        {
             HideLegacyQuadMesh();
-            transform.localScale = Vector3.one;
-            EnsureVisuals();
+
+            if (!preserveSceneVisuals)
+            {
+                transform.localScale = Vector3.one;
+            }
+
+            var hexRoot = transform.Find(HexFloorChildName);
+            if (hexRoot == null)
+            {
+                EnsureHexFloor();
+            }
+
+            EnsureDropGlow();
+            SetDropHighlight(false);
+
+            if (GetComponent<BoxCollider>() == null)
+            {
+                EnsureCollider();
+            }
         }
 
 #if UNITY_EDITOR
@@ -181,8 +222,33 @@ namespace FracturedChorus.UI
             }
 
             spriteRenderer.sprite = sprite;
-            spriteRenderer.color = side == GridSide.Player ? PlayerFill : EnemyFill;
+            if (useCustomFloorColor)
+            {
+                spriteRenderer.color = customFloorColor;
+            }
+            else
+            {
+                spriteRenderer.color = side == GridSide.Player ? PlayerFill : EnemyFill;
+            }
             spriteRenderer.sortingOrder = 0;
+        }
+
+        public void ApplyFloorColorFromRenderer()
+        {
+            var hexRoot = transform.Find(HexFloorChildName);
+            if (hexRoot == null)
+            {
+                return;
+            }
+
+            var spriteRenderer = hexRoot.GetComponent<SpriteRenderer>();
+            if (spriteRenderer == null)
+            {
+                return;
+            }
+
+            useCustomFloorColor = true;
+            customFloorColor = spriteRenderer.color;
         }
 
         private void EnsureDropGlow()

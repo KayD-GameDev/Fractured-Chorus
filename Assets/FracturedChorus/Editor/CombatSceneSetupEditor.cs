@@ -18,7 +18,18 @@ namespace FracturedChorus.Editor
     {
         static CombatSceneSetupEditor()
         {
-            EditorSceneManager.sceneOpened += (_, _) => RefreshGridCellVisualsInScene();
+            EditorSceneManager.sceneOpened += (_, _) =>
+            {
+                RefreshGridCellVisualsInScene();
+                EditorApplication.delayCall += () =>
+                {
+                    if (!Application.isPlaying)
+                    {
+                        EnsureUnitInteractionCollidersInScene(silent: true);
+                        FixCombatSceneErrors(silent: true);
+                    }
+                };
+            };
             EditorApplication.delayCall += () =>
             {
                 if (!Application.isPlaying)
@@ -32,7 +43,42 @@ namespace FracturedChorus.Editor
         {
             foreach (var marker in Object.FindObjectsByType<GridCellMarker>(FindObjectsInactive.Include))
             {
-                marker.RebuildVisuals();
+                // Scene-first: never wipe hex colors/active state on editor load.
+                marker.PrepareForPlay();
+            }
+        }
+
+        private static void EnsureUnitInteractionCollidersInScene(bool silent)
+        {
+            var views = Object.FindObjectsByType<UnitView>(FindObjectsInactive.Include);
+            if (views.Length == 0)
+            {
+                return;
+            }
+
+            var changed = false;
+            foreach (var view in views)
+            {
+                view.EnsureInteractionColliders();
+                EditorUtility.SetDirty(view);
+                changed = true;
+            }
+
+            CombatInputSetup.EnsureCameraRaycaster(Camera.main, destroyImmediate: true);
+
+            if (changed)
+            {
+                var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+                if (scene.IsValid() && scene.isLoaded)
+                {
+                    EditorSceneManager.MarkSceneDirty(scene);
+                }
+
+                if (!silent)
+                {
+                    Debug.Log(
+                        $"[Fractured Chorus] Ensured BoxCollider2D + FeetAnchor on {views.Length} unit(s). Save scene (Ctrl+S).");
+                }
             }
         }
 
@@ -48,9 +94,254 @@ namespace FracturedChorus.Editor
                 CombatInputSetup.ApplyInputModule(eventSystem.gameObject, destroyImmediate: true);
             }
 
-            CombatInputSetup.EnsureCameraRaycaster(Camera.main);
+            CombatInputSetup.EnsureCameraRaycaster(Camera.main, destroyImmediate: true);
             EditorSceneManager.MarkSceneDirty(eventSystem != null ? eventSystem.gameObject.scene : UnityEngine.SceneManagement.SceneManager.GetActiveScene());
-            Debug.Log("[Fractured Chorus] EventSystem switched to Input System UI module. Save scene.");
+            Debug.Log("[Fractured Chorus] EventSystem + Physics2DRaycaster on Main Camera. Save scene.");
+        }
+
+        [MenuItem("Fractured Chorus/Apply All Play-Ready Updates")]
+        public static void ApplyAllPlayReadyUpdates()
+        {
+            FixInputSystemInScene();
+            MigrateUnitCollidersTo2D();
+            RestoreUnitSpritesFromPresets();
+
+            foreach (var bootstrap in Object.FindObjectsByType<CombatPrototypeBootstrap>(FindObjectsInactive.Include))
+            {
+                SetSerializedField(bootstrap, "respectSceneAuthoring", true);
+                EditorUtility.SetDirty(bootstrap);
+            }
+
+            foreach (var marker in Object.FindObjectsByType<GridCellMarker>(FindObjectsInactive.Include))
+            {
+                SetSerializedField(marker, "preserveSceneVisuals", true);
+                marker.PrepareForPlay();
+                EditorUtility.SetDirty(marker);
+            }
+
+            foreach (var timeline in Object.FindObjectsByType<BeatTimelineUIView>(FindObjectsInactive.Include))
+            {
+                timeline.WireReferences();
+                timeline.ForceRefitViewportSlots();
+                EditorUtility.SetDirty(timeline);
+            }
+
+            var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+            if (scene.IsValid() && scene.isLoaded)
+            {
+                EditorSceneManager.SaveScene(scene);
+            }
+
+            Debug.Log("[Fractured Chorus] Applied play-ready updates (input, colliders, sprites, grid, timeline) and saved scene.");
+        }
+
+        [MenuItem("Fractured Chorus/Restore Scene/From SceneBackup (BU — honeycomb layout)")]
+        public static void RestoreSceneFromBackupBu()
+        {
+            var buPath = "Assets/SceneBackup/CombatPrototypeBU.unity";
+            if (!System.IO.File.Exists(buPath))
+            {
+                EditorUtility.DisplayDialog("Fractured Chorus", "Không tìm thấy CombatPrototypeBU.unity", "OK");
+                return;
+            }
+
+            if (!EditorUtility.DisplayDialog(
+                    "Restore Scene",
+                    "Thay CombatPrototype.unity bằng bản SceneBackup (BU)?\nLayout honeycomb (23/6) — khác bản hiện tại.",
+                    "Restore",
+                    "Cancel"))
+            {
+                return;
+            }
+
+            RestoreSceneFromAsset(buPath);
+        }
+
+        [MenuItem("Fractured Chorus/Restore Scene/From HEAD backup (2026-06-25)")]
+        public static void RestoreSceneFromHeadBackup()
+        {
+            RestoreSceneFromHeadBackupInternal(applyPlayReadyUpdates: false);
+        }
+
+        [MenuItem("Fractured Chorus/Restore Scene/From HEAD backup + Apply All Updates")]
+        public static void RestoreSceneFromHeadBackupAndApplyAll()
+        {
+            RestoreSceneFromHeadBackupInternal(applyPlayReadyUpdates: true);
+        }
+
+        private static void RestoreSceneFromHeadBackupInternal(bool applyPlayReadyUpdates)
+        {
+            var path = "Assets/SceneBackup/CombatPrototype_HEAD_20260625.unity";
+            if (!System.IO.File.Exists(path))
+            {
+                EditorUtility.DisplayDialog("Fractured Chorus", "Không tìm thấy CombatPrototype_HEAD_20260625.unity", "OK");
+                return;
+            }
+
+            var message = applyPlayReadyUpdates
+                ? "Khôi phục scene từ backup HEAD rồi chạy Apply All (collider 2D, sprite, timeline)?\nLayout Ren (-3.87, 0)."
+                : "Khôi phục scene từ backup HEAD (trước khi sửa YAML)?\nĐây là bản git commit mới nhất — layout Ren (-3.87, 0).";
+
+            if (!EditorUtility.DisplayDialog("Restore Scene", message, "Restore", "Cancel"))
+            {
+                return;
+            }
+
+            RestoreSceneFromAsset(path, applyPlayReadyUpdates);
+        }
+
+        private static void RestoreSceneFromAsset(string sourceAssetPath, bool applyPlayReadyUpdates = false)
+        {
+            var targetPath = "Assets/FracturedChorus/Scenes/CombatPrototype.unity";
+            if (!AssetDatabase.CopyAsset(sourceAssetPath, targetPath))
+            {
+                Debug.LogError($"[Fractured Chorus] CopyAsset failed: {sourceAssetPath} → {targetPath}");
+                return;
+            }
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            var scene = EditorSceneManager.OpenScene(targetPath, OpenSceneMode.Single);
+            FixCombatSceneErrors(silent: true);
+
+            if (applyPlayReadyUpdates)
+            {
+                ApplyAllPlayReadyUpdates();
+                FixCombatSceneErrors(silent: true);
+            }
+            else
+            {
+                EditorSceneManager.MarkSceneDirty(scene);
+            }
+
+            Debug.Log(
+                applyPlayReadyUpdates
+                    ? $"[Fractured Chorus] Restored + applied play-ready updates from {sourceAssetPath}."
+                    : $"[Fractured Chorus] Restored scene from {sourceAssetPath}. Save scene (Ctrl+S).");
+        }
+
+        [MenuItem("Fractured Chorus/Fix Combat Scene Errors (Missing Scripts + Timeline Clones)")]
+        public static void FixCombatSceneErrorsMenu()
+        {
+            FixCombatSceneErrors(silent: false);
+        }
+
+        private static void FixCombatSceneErrors(bool silent)
+        {
+            var removedMissing = 0;
+            foreach (var go in Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include))
+            {
+                removedMissing += GameObjectUtility.RemoveMonoBehavioursWithMissingScript(go);
+            }
+
+            var removedClones = CleanTimelineRuntimeClonesInScene();
+            if (removedMissing > 0 || removedClones > 0)
+            {
+                var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+                if (scene.IsValid() && scene.isLoaded)
+                {
+                    EditorSceneManager.MarkSceneDirty(scene);
+                }
+
+                if (!silent)
+                {
+                    Debug.Log(
+                        $"[Fractured Chorus] Removed {removedMissing} missing script(s) and {removedClones} BeatSlot clone(s). Save scene.");
+                }
+            }
+            else if (!silent)
+            {
+                Debug.Log("[Fractured Chorus] No missing scripts or BeatSlot clones found.");
+            }
+        }
+
+        private static int CleanTimelineRuntimeClonesInScene()
+        {
+            var scroll = GameObject.Find("CombatCanvas/BeatTimelineUI/Viewport/ScrollContent")
+                ?? GameObject.Find("BeatTimelineUI/Viewport/ScrollContent");
+            if (scroll == null)
+            {
+                return 0;
+            }
+
+            var removed = 0;
+            for (var i = scroll.transform.childCount - 1; i >= 0; i--)
+            {
+                var child = scroll.transform.GetChild(i);
+                if (child.name.StartsWith("BeatSlot_")
+                    || (child.name.StartsWith("Beat_") && child.name != "Beat_0"))
+                {
+                    Undo.DestroyObjectImmediate(child.gameObject);
+                    removed++;
+                }
+            }
+
+            return removed;
+        }
+
+        [MenuItem("Fractured Chorus/Migrate Unit Colliders (2D + Feet)")]
+        public static void MigrateUnitCollidersTo2D()
+        {
+            var views = Object.FindObjectsByType<UnitView>(FindObjectsInactive.Include);
+            foreach (var view in views)
+            {
+                view.EnsureInteractionColliders();
+                EditorUtility.SetDirty(view);
+            }
+
+            CombatInputSetup.EnsureCameraRaycaster(Camera.main, destroyImmediate: true);
+            EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
+            Debug.Log(
+                $"[Fractured Chorus] Migrated {views.Length} UnitView(s) to BoxCollider2D + FeetAnchor (giữ collider scene nếu Preserve Scene Collider bật). Save scene.");
+        }
+
+        [MenuItem("Fractured Chorus/Fit Unit Colliders To Sprite (override scene)")]
+        public static void FitUnitCollidersToSprite()
+        {
+            var views = Object.FindObjectsByType<UnitView>(FindObjectsInactive.Include);
+            foreach (var view in views)
+            {
+                view.RefitBodyColliderToSprite();
+                EditorUtility.SetDirty(view);
+            }
+
+            EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
+            Debug.Log($"[Fractured Chorus] Refit BoxCollider2D theo sprite trên {views.Length} unit(s). Save scene (Ctrl+S).");
+        }
+
+        [MenuItem("Fractured Chorus/Restore Unit Sprites from Presets")]
+        public static void RestoreUnitSpritesFromPresets()
+        {
+            var views = Object.FindObjectsByType<UnitView>(FindObjectsInactive.Include);
+            var restored = 0;
+            foreach (var view in views)
+            {
+                var preset = view.ResolvePreset();
+                if (preset?.battleSprite == null)
+                {
+                    continue;
+                }
+
+                var sr = view.GetComponent<SpriteRenderer>();
+                if (sr == null)
+                {
+                    continue;
+                }
+
+                var current = sr.sprite;
+                if (current != null && (current.rect.width > 1f || current.rect.height > 1f))
+                {
+                    continue;
+                }
+
+                sr.sprite = preset.battleSprite;
+                EditorUtility.SetDirty(sr);
+                EditorUtility.SetDirty(view);
+                restored++;
+            }
+
+            EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
+            Debug.Log($"[Fractured Chorus] Restored battleSprite on {restored} unit(s). Save scene.");
         }
 
         [MenuItem("Fractured Chorus/Setup Combat Scene Hierarchy")]
@@ -236,21 +527,10 @@ namespace FracturedChorus.Editor
                 sr.color = spawn.preset.placeholderColor;
                 sr.sortingOrder = 10 + spawn.row;
 
-                unitGo.AddComponent<BoxCollider>().size = Vector3.one;
-
-                var labelGo = new GameObject("HpLabel");
-                labelGo.transform.SetParent(unitGo.transform, false);
-                labelGo.transform.localPosition = new Vector3(0f, -0.7f, 0f);
-                var tm = labelGo.AddComponent<TextMesh>();
-                tm.characterSize = 0.08f;
-                tm.fontSize = 48;
-                tm.anchor = TextAnchor.MiddleCenter;
-                tm.color = Color.white;
-                tm.text = spawn.preset.stats.MaxHp.ToString();
-
                 var view = Undo.AddComponent<UnitView>(unitGo);
                 view.ConfigureDemo(GetDemoKey(spawn.preset), spawn.side);
                 view.PlaceOnGrid(pos);
+                view.EnsureInteractionColliders();
                 unitViews.Add(view);
             }
 

@@ -3,7 +3,8 @@ using UnityEngine;
 namespace FracturedChorus.UI
 {
     /// <summary>
-    /// Feet / ground contact point — snap unit onto grid cell centers. Transform only, no collider.
+    /// Marks the feet / ground contact point used to snap the unit onto grid cell centers.
+    /// No collider — only Transform, so child does not steal pointer hits from body BoxCollider2D.
     /// </summary>
     public class UnitFeetAnchor : MonoBehaviour
     {
