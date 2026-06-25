@@ -3,15 +3,19 @@ using FracturedChorus.Combat.Grid;
 using FracturedChorus.Combat.Units;
 using FracturedChorus.Data;
 using UnityEngine;
-using UnityEngine.EventSystems;
+using UnityEngine.Serialization;
 
 namespace FracturedChorus.UI
 {
     /// <summary>
     /// Unit in scene — grid row/column assigned at runtime when placed on a honeycomb cell.
+    /// Root BoxCollider2D = pointer hit target for click (skill panel) and drag (reposition).
+    /// Child FeetAnchor = snap point only (Transform, no collider).
     /// </summary>
-    public class UnitView : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
+    public class UnitView : MonoBehaviour
     {
+        private const string FeetAnchorObjectName = "FeetAnchor";
+
         [Header("Unit Data")]
         [SerializeField] private UnitPresetSO preset;
         [Tooltip("Used when Preset asset is not assigned — survives scene save")]
@@ -23,11 +27,43 @@ namespace FracturedChorus.UI
         [Header("Scene References (optional — auto-created if empty)")]
         [SerializeField] private SpriteRenderer spriteRenderer;
         [SerializeField] private TextMesh hpLabel;
-        [SerializeField] private BoxCollider clickCollider;
+        [FormerlySerializedAs("clickCollider")]
+        [SerializeField] private BoxCollider2D bodyCollider;
+        [SerializeField] private UnitFeetAnchor feetAnchor;
+        [Tooltip("Giữ sprite/màu/scale Transform đã chỉnh trong scene.")]
+        [SerializeField] private bool preserveSceneVisuals = true;
+        [Tooltip("Giữ size/offset BoxCollider2D đã chỉnh trong scene — dùng làm vùng click + kéo thả.")]
+        [SerializeField] private bool preserveSceneCollider = true;
 
         public CombatUnit Unit { get; private set; }
         public UnitPresetSO Preset => preset;
         public string DemoUnitKey => demoUnitKey;
+        public UnitFeetAnchor FeetAnchor => feetAnchor;
+
+        /// <summary>World position used for grid snap / drop detection.</summary>
+        public Vector3 FeetWorldPosition =>
+            feetAnchor != null ? feetAnchor.transform.position : transform.position;
+
+        /// <summary>Anchor cạnh phải thân nhân vật — dùng cho skill panel UI.</summary>
+        public Vector3 GetSkillPanelAnchorWorld()
+        {
+            ResolveSpriteRendererReference();
+            ResolveBodyColliderReference();
+
+            if (bodyCollider != null)
+            {
+                var bounds = bodyCollider.bounds;
+                return new Vector3(bounds.max.x, bounds.center.y, bounds.center.z);
+            }
+
+            if (spriteRenderer != null)
+            {
+                var bounds = spriteRenderer.bounds;
+                return new Vector3(bounds.max.x, bounds.center.y, bounds.center.z);
+            }
+
+            return transform.position + Vector3.right * 0.5f;
+        }
 
         public UnitPresetSO ResolvePreset()
         {
@@ -47,13 +83,6 @@ namespace FracturedChorus.UI
         public bool IsPlacedOnGrid => HoneycombIndex.IsValidIndex(row) && HoneycombIndex.IsValidIndex(column);
         public GridPosition GridPosition => new GridPosition(side, row, column);
 
-        private System.Action<CombatUnit, UnitView> _onSelected;
-        private BoardDragController _dragController;
-        private bool _dragStarted;
-        private bool _suppressClick;
-        private Vector2 _dragStartScreen;
-        private const float ClickDragThresholdPx = 8f;
-
         public void SetGridCoordinates(int gridRow, int gridColumn)
         {
             row = gridRow;
@@ -67,6 +96,27 @@ namespace FracturedChorus.UI
             row = position.Row;
             column = position.Column;
             Unit?.SetGridPosition(position);
+        }
+
+        /// <summary>Align feet (not transform pivot) to a world XY; optional Z for draw order.</summary>
+        public void SnapFeetTo(Vector3 cellWorldCenter, float? depthZ = null)
+        {
+            var rootToFeet = transform.position - FeetWorldPosition;
+            var target = cellWorldCenter + rootToFeet;
+            if (depthZ.HasValue)
+            {
+                target.z = depthZ.Value;
+            }
+
+            transform.position = target;
+        }
+
+        /// <summary>Move unit so feet follow pointer while dragging.</summary>
+        public void PlaceFeetAt(Vector3 feetWorld)
+        {
+            var rootToFeet = transform.position - FeetWorldPosition;
+            transform.position = new Vector3(feetWorld.x + rootToFeet.x, feetWorld.y + rootToFeet.y,
+                transform.position.z);
         }
 
         public void ClearGridPlacement()
@@ -85,8 +135,7 @@ namespace FracturedChorus.UI
             name = $"Unit_{resolved?.displayName ?? unitKey}";
         }
 
-        public void Bind(CombatUnit unit, System.Action<CombatUnit, UnitView> onSelected,
-            BoardDragController dragController = null)
+        public void Bind(CombatUnit unit)
         {
             if (Unit != null)
             {
@@ -94,66 +143,272 @@ namespace FracturedChorus.UI
             }
 
             Unit = unit;
-            _onSelected = onSelected;
-            _dragController = dragController;
-            EnsureVisuals();
+            ResolveSpriteRendererReference();
+            EnsureHpLabel();
+            EnsureInteractionColliders();
+            TryRestoreSpriteFromPresetIfNeeded();
             ApplyVisuals();
             unit.OnHpChanged += HandleHpChanged;
             RefreshHp();
         }
 
-        private void EnsureVisuals()
+        /// <summary>Body/feet colliders — không đụng sprite. Giữ size/offset scene khi preserveSceneCollider.</summary>
+        public void EnsureInteractionColliders()
         {
-            if (spriteRenderer == null)
+            ResolveSpriteRendererReference();
+            RemoveLegacyBoxCollider();
+            EnsureBodyCollider2D();
+            EnsureFeetAnchor();
+        }
+
+        /// <summary>Editor/menu — ghi đè collider theo sprite (bỏ qua preserveSceneCollider).</summary>
+        public void RefitBodyColliderToSprite()
+        {
+            ResolveSpriteRendererReference();
+            ResolveBodyColliderReference();
+            if (bodyCollider == null)
             {
-                spriteRenderer = GetComponent<SpriteRenderer>();
-                if (spriteRenderer == null)
-                {
-                    spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
-                }
+                bodyCollider = gameObject.AddComponent<BoxCollider2D>();
             }
 
-            if (spriteRenderer.sprite == null)
+            bodyCollider.enabled = true;
+            bodyCollider.isTrigger = false;
+            RemoveDuplicateBodyColliders();
+            FitBodyColliderToSprite();
+        }
+
+        private void EnsureVisuals()
+        {
+            ResolveSpriteRendererReference();
+            EnsureHpLabel();
+            EnsureInteractionColliders();
+        }
+
+        private void ResolveSpriteRendererReference()
+        {
+            if (spriteRenderer != null)
+            {
+                return;
+            }
+
+            spriteRenderer = GetComponent<SpriteRenderer>();
+        }
+
+        /// <summary>Chỉ gán placeholder/preset khi chưa có art thật — không ghi đè sprite scene.</summary>
+        private void TryRestoreSpriteFromPresetIfNeeded()
+        {
+            ResolveSpriteRendererReference();
+            if (spriteRenderer == null)
+            {
+                return;
+            }
+
+            if (spriteRenderer.sprite != null && !IsGeneratedPlaceholderSprite(spriteRenderer.sprite))
+            {
+                return;
+            }
+
+            var preset = ResolvePreset();
+            if (preset?.battleSprite != null)
+            {
+                spriteRenderer.sprite = preset.battleSprite;
+                return;
+            }
+
+            if (!preserveSceneVisuals && spriteRenderer.sprite == null)
             {
                 spriteRenderer.sprite = CreatePlaceholderSprite();
             }
+        }
 
-            if (clickCollider == null)
+        private static bool IsGeneratedPlaceholderSprite(Sprite sprite)
+        {
+            if (sprite == null)
             {
-                clickCollider = GetComponent<BoxCollider>();
-                if (clickCollider == null)
-                {
-                    clickCollider = gameObject.AddComponent<BoxCollider>();
-                }
-
-                clickCollider.size = Vector3.one;
+                return false;
             }
 
+            return sprite.rect.width <= 1f && sprite.rect.height <= 1f;
+        }
+
+        private void RemoveLegacyBoxCollider()
+        {
+            var legacy = GetComponent<BoxCollider>();
+            if (legacy == null)
+            {
+                return;
+            }
+
+            if (Application.isPlaying)
+            {
+                Destroy(legacy);
+            }
+            else
+            {
+                DestroyImmediate(legacy);
+            }
+        }
+
+        private void EnsureBodyCollider2D()
+        {
+            ResolveBodyColliderReference();
+
+            if (bodyCollider == null)
+            {
+                bodyCollider = gameObject.AddComponent<BoxCollider2D>();
+            }
+
+            bodyCollider.enabled = true;
+            bodyCollider.isTrigger = false;
+            RemoveDuplicateBodyColliders();
+
+            if (!ShouldPreserveSceneCollider() && IsDefaultColliderShape())
+            {
+                FitBodyColliderToSprite();
+            }
+        }
+
+        private void ResolveBodyColliderReference()
+        {
+            if (bodyCollider != null && bodyCollider.gameObject == gameObject)
+            {
+                return;
+            }
+
+            bodyCollider = GetComponent<BoxCollider2D>();
+        }
+
+        private bool ShouldPreserveSceneCollider()
+        {
+            return preserveSceneCollider && bodyCollider != null;
+        }
+
+        private bool IsDefaultColliderShape()
+        {
+            return bodyCollider.size == Vector2.one && bodyCollider.offset == Vector2.zero;
+        }
+
+        private void RemoveDuplicateBodyColliders()
+        {
+            foreach (var col in GetComponents<BoxCollider2D>())
+            {
+                if (col == bodyCollider)
+                {
+                    continue;
+                }
+
+                if (Application.isPlaying)
+                {
+                    Destroy(col);
+                }
+                else
+                {
+                    DestroyImmediate(col);
+                }
+            }
+        }
+
+        private void FitBodyColliderToSprite()
+        {
+            if (bodyCollider == null || spriteRenderer == null || spriteRenderer.sprite == null)
+            {
+                if (bodyCollider != null)
+                {
+                    bodyCollider.size = Vector2.one;
+                    bodyCollider.offset = Vector2.zero;
+                }
+
+                return;
+            }
+
+            var bounds = spriteRenderer.bounds;
+            var lossyScale = transform.lossyScale;
+            var scaleX = Mathf.Max(Mathf.Abs(lossyScale.x), 0.0001f);
+            var scaleY = Mathf.Max(Mathf.Abs(lossyScale.y), 0.0001f);
+            bodyCollider.size = new Vector2(bounds.size.x / scaleX, bounds.size.y / scaleY);
+            bodyCollider.offset = transform.InverseTransformPoint(bounds.center);
+        }
+
+        private void EnsureFeetAnchor()
+        {
+            if (feetAnchor == null)
+            {
+                var existing = transform.Find(FeetAnchorObjectName);
+                if (existing != null)
+                {
+                    feetAnchor = existing.GetComponent<UnitFeetAnchor>();
+                    if (feetAnchor == null)
+                    {
+                        feetAnchor = existing.gameObject.AddComponent<UnitFeetAnchor>();
+                    }
+                }
+            }
+
+            if (feetAnchor == null)
+            {
+                var feetGo = new GameObject(FeetAnchorObjectName);
+                feetGo.transform.SetParent(transform, false);
+                feetAnchor = feetGo.AddComponent<UnitFeetAnchor>();
+                PositionFeetAnchorAtSpriteBase();
+            }
+
+            feetAnchor.WireReferences();
+        }
+
+        private void PositionFeetAnchorAtSpriteBase()
+        {
+            if (feetAnchor == null)
+            {
+                return;
+            }
+
+            var localFeetY = -0.5f;
+            if (spriteRenderer != null && spriteRenderer.sprite != null)
+            {
+                localFeetY = spriteRenderer.bounds.min.y - transform.position.y;
+            }
+
+            feetAnchor.transform.localPosition = new Vector3(0f, localFeetY, 0f);
+        }
+
+        private void EnsureHpLabel()
+        {
+            if (IsHpLabelValid())
+            {
+                return;
+            }
+
+            hpLabel = null;
+            var labelTransform = transform.Find("HpLabel");
+            if (labelTransform != null && labelTransform.IsChildOf(transform))
+            {
+                hpLabel = labelTransform.GetComponent<TextMesh>();
+            }
+
+            if (hpLabel != null)
+            {
+                return;
+            }
+
+            var labelGo = new GameObject("HpLabel");
+            labelGo.transform.SetParent(transform, false);
+            labelGo.transform.localPosition = new Vector3(0f, -0.7f, 0f);
+            hpLabel = labelGo.AddComponent<TextMesh>();
+            hpLabel.characterSize = 0.08f;
+            hpLabel.fontSize = 48;
+            hpLabel.anchor = TextAnchor.MiddleCenter;
+            hpLabel.color = Color.white;
+        }
+
+        private bool IsHpLabelValid()
+        {
             if (hpLabel == null)
             {
-                var labelTransform = transform.Find("HpLabel");
-                if (labelTransform != null && labelTransform.IsChildOf(transform))
-                {
-                    hpLabel = labelTransform.GetComponent<TextMesh>();
-                }
+                return false;
+            }
 
-                if (hpLabel == null)
-                {
-                    var labelGo = new GameObject("HpLabel");
-                    labelGo.transform.SetParent(transform, false);
-                    labelGo.transform.localPosition = new Vector3(0f, -0.7f, 0f);
-                    hpLabel = labelGo.AddComponent<TextMesh>();
-                    hpLabel.characterSize = 0.08f;
-                    hpLabel.fontSize = 48;
-                    hpLabel.anchor = TextAnchor.MiddleCenter;
-                    hpLabel.color = Color.white;
-                }
-            }
-            else if (!hpLabel.transform.IsChildOf(transform))
-            {
-                hpLabel = null;
-                EnsureVisuals();
-            }
+            var labelTransform = hpLabel.transform;
+            return labelTransform != null && labelTransform.IsChildOf(transform);
         }
 
         private void ApplyVisuals()
@@ -163,8 +418,11 @@ namespace FracturedChorus.UI
                 return;
             }
 
-            spriteRenderer.color = Unit.PlaceholderColor;
-            spriteRenderer.sortingOrder = 10 + Unit.GridPosition.Row;
+            if (!preserveSceneVisuals)
+            {
+                spriteRenderer.color = Unit.PlaceholderColor;
+                spriteRenderer.sortingOrder = 10 + Unit.GridPosition.Row;
+            }
         }
 
         private void HandleHpChanged(CombatUnit unit)
@@ -185,60 +443,6 @@ namespace FracturedChorus.UI
             }
         }
 
-        public void OnPointerClick(PointerEventData eventData)
-        {
-            if (_suppressClick || _dragStarted)
-            {
-                return;
-            }
-
-            if (_dragController != null && _dragController.IsPreExecuteRepositionPhase)
-            {
-                return;
-            }
-
-            if (Unit != null && Unit.IsAlive && Unit.Side == GridSide.Player)
-            {
-                _onSelected?.Invoke(Unit, this);
-            }
-        }
-
-        public void OnBeginDrag(PointerEventData eventData)
-        {
-            _dragStarted = false;
-            _suppressClick = false;
-            _dragStartScreen = eventData.position;
-            if (_dragController == null || !_dragController.CanDragUnit(this))
-            {
-                return;
-            }
-
-            _dragStarted = true;
-            _dragController.BeginDrag(this);
-        }
-
-        public void OnDrag(PointerEventData eventData)
-        {
-            if (!_dragStarted || _dragController == null)
-            {
-                return;
-            }
-
-            _dragController.UpdateDrag(eventData);
-        }
-
-        public void OnEndDrag(PointerEventData eventData)
-        {
-            if (!_dragStarted || _dragController == null)
-            {
-                return;
-            }
-
-            _dragController.EndDrag(this);
-            _suppressClick = Vector2.Distance(_dragStartScreen, eventData.position) > ClickDragThresholdPx;
-            _dragStarted = false;
-        }
-
         private static Sprite CreatePlaceholderSprite()
         {
             var tex = new Texture2D(1, 1);
@@ -254,5 +458,15 @@ namespace FracturedChorus.UI
                 Unit.OnHpChanged -= HandleHpChanged;
             }
         }
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            if (bodyCollider == null)
+            {
+                bodyCollider = GetComponent<BoxCollider2D>();
+            }
+        }
+#endif
     }
 }

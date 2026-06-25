@@ -29,6 +29,8 @@ namespace FracturedChorus.Combat.Bootstrap
 
         [Header("Grid layout")]
         [SerializeField] private float sideGap = HexBoardLayout.DefaultSideGap;
+        [Tooltip("Giữ Transform/visual mọi object scene khi Play. Tắt chỉ khi cần snap lại lưới công thức.")]
+        [SerializeField] private bool respectSceneAuthoring = true;
 
         private CombatSession _session;
         private DualGrid _grid;
@@ -48,6 +50,7 @@ namespace FracturedChorus.Combat.Bootstrap
             _session = new CombatSession();
 
             EnsureHoneycombGrid();
+            CacheGridCellTransforms();
 
             if (HasSceneUnits())
             {
@@ -78,7 +81,10 @@ namespace FracturedChorus.Combat.Bootstrap
             combatController.Initialize(_session, _timeline, timelineView, skillPanelView, musicController,
                 executeOverlay, _boardDrag);
 
-            skillPanelView?.Hide();
+            if (skillPanelView != null && !skillPanelView.gameObject.activeSelf)
+            {
+                skillPanelView.Hide();
+            }
         }
 
         private CombatExecuteOverlayUIView ResolveExecuteOverlay()
@@ -195,12 +201,13 @@ namespace FracturedChorus.Combat.Bootstrap
                 ? gridRoot.GetComponentsInChildren<GridCellMarker>(true)
                 : System.Array.Empty<GridCellMarker>();
             _boardDrag.Initialize(_session, _grid, markers, mainCamera);
+            _boardDrag.SetUnitClickHandler(HandleUnitSelected);
 
             foreach (var view in unitViews)
             {
                 if (view?.Unit != null)
                 {
-                    view.Bind(view.Unit, HandleUnitSelected, _boardDrag);
+                    view.Bind(view.Unit);
                 }
             }
         }
@@ -212,19 +219,36 @@ namespace FracturedChorus.Combat.Bootstrap
                 return;
             }
 
+            if (respectSceneAuthoring)
+            {
+                WireSceneGrid();
+                return;
+            }
+
             var floorSprite = HexSpriteUtil.ResolveHexagonFlatTop();
             foreach (var marker in gridRoot.GetComponentsInChildren<GridCellMarker>(true))
             {
                 marker.SnapToLayoutPosition(sideGap);
-                marker.SetFloorSprite(floorSprite);
-                marker.RebuildVisualsForPlay();
+
+                if (floorSprite != null && marker.transform.Find("Hexagon Flat Top") == null)
+                {
+                    marker.SetFloorSprite(floorSprite);
+                }
+
+                marker.PrepareForPlay();
+            }
+        }
+
+        private void WireSceneGrid()
+        {
+            foreach (var marker in gridRoot.GetComponentsInChildren<GridCellMarker>(true))
+            {
+                marker.HideLegacyMeshOnly();
             }
         }
 
         private void RegisterSceneUnits()
         {
-            CacheGridCellTransforms();
-
             foreach (var view in unitViews)
             {
                 var unitPreset = view?.ResolvePreset();
@@ -233,11 +257,11 @@ namespace FracturedChorus.Combat.Bootstrap
                     continue;
                 }
 
-                view.ConfigureDemo(view.DemoUnitKey, view.Side);
+                view.EnsureInteractionColliders();
 
-                if (!DefaultPartyFormation.TryGetStartupCell(view.DemoUnitKey, view.Side, out var pos))
+                if (!TryResolveUnitGridPosition(view, out var pos))
                 {
-                    Debug.LogWarning($"[Bootstrap] No startup cell for {view.DemoUnitKey} ({view.Side})");
+                    Debug.LogWarning($"[Bootstrap] Could not resolve grid cell for {view.name} ({view.DemoUnitKey})");
                     continue;
                 }
 
@@ -249,9 +273,82 @@ namespace FracturedChorus.Combat.Bootstrap
                 }
 
                 view.PlaceOnGrid(pos);
-                view.Bind(unit, HandleUnitSelected);
-                AlignUnitViewToGridCell(view);
+                view.Bind(unit);
+
+                if (!respectSceneAuthoring)
+                {
+                    SyncUnitTransformFromSceneOrCell(view);
+                }
             }
+        }
+
+        private bool TryResolveUnitGridPosition(UnitView view, out GridPosition position)
+        {
+            if (view.IsPlacedOnGrid)
+            {
+                position = view.GridPosition;
+                return true;
+            }
+
+            if (TryFindCellFromWorldPosition(view.FeetWorldPosition, view.Side, out position))
+            {
+                return true;
+            }
+
+            return DefaultPartyFormation.TryGetStartupCell(view.DemoUnitKey, view.Side, out position);
+        }
+
+        private bool TryFindCellFromWorldPosition(Vector3 world, GridSide side, out GridPosition position)
+        {
+            position = default;
+            if (_cellByPosition == null || _cellByPosition.Count == 0)
+            {
+                return false;
+            }
+
+            GridCellMarker best = null;
+            var bestDist = float.MaxValue;
+            foreach (var pair in _cellByPosition)
+            {
+                if (pair.Key.Side != side || pair.Value == null)
+                {
+                    continue;
+                }
+
+                var cellPos = pair.Value.position;
+                var dist = Vector2.Distance(new Vector2(world.x, world.y), new Vector2(cellPos.x, cellPos.y));
+                if (dist >= 1.15f || dist >= bestDist)
+                {
+                    continue;
+                }
+
+                bestDist = dist;
+                best = pair.Value.GetComponent<GridCellMarker>();
+            }
+
+            if (best == null)
+            {
+                return false;
+            }
+
+            position = best.Position;
+            return true;
+        }
+
+        private void SyncUnitTransformFromSceneOrCell(UnitView view)
+        {
+            if (view == null)
+            {
+                return;
+            }
+
+            if (TryFindCellFromWorldPosition(view.FeetWorldPosition, view.Side, out var sceneCell)
+                && sceneCell.Equals(view.GridPosition))
+            {
+                return;
+            }
+
+            AlignUnitViewToGridCell(view);
         }
 
         private void CacheGridCellTransforms()
@@ -288,7 +385,7 @@ namespace FracturedChorus.Combat.Bootstrap
             }
 
             var depth = gridPos.Row * 0.1f + gridPos.Column * 0.05f;
-            view.transform.position = new Vector3(worldPos.x, worldPos.y, -0.05f + depth);
+            view.SnapFeetTo(new Vector3(worldPos.x, worldPos.y, 0f), -0.05f + depth);
         }
 
         private void SpawnUnitsFromEncounter(EncounterDefinitionSO encounter)
@@ -324,7 +421,7 @@ namespace FracturedChorus.Combat.Bootstrap
                 var view = unitGo.AddComponent<UnitView>();
                 view.ConfigureDemo(spawn.preset?.unitId ?? "grunt", spawn.side);
                 view.PlaceOnGrid(pos);
-                view.Bind(unit, HandleUnitSelected);
+                view.Bind(unit);
             }
         }
 

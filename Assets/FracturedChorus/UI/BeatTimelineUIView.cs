@@ -27,6 +27,8 @@ namespace FracturedChorus.UI
         [SerializeField] private bool useMusicSync = true;
         [SerializeField] private CombatMusicController musicController;
         [SerializeField] private float skillPanelOpenSpeedMultiplier = 0.25f;
+        [Tooltip("Giữ vị trí Header / khung ngoài BeatTimeline. Layout nội bộ (TrackLine, ScrollContent, ScanBar) vẫn auto-layout.")]
+        [SerializeField] private bool preserveSceneLayout = true;
 
         private BeatTimelineEngine _timeline;
         private CombatSession _session;
@@ -157,7 +159,7 @@ namespace FracturedChorus.UI
 
         private void ExpandViewportWidth()
         {
-            if (viewport == null)
+            if (preserveSceneLayout || viewport == null)
             {
                 return;
             }
@@ -571,6 +573,38 @@ namespace FracturedChorus.UI
                 var img = go.GetComponent<Image>();
                 img.color = new Color(1f, 1f, 1f, 0.14f);
                 img.raycastTarget = false;
+                ApplyTrackLineLayout();
+                return;
+            }
+
+            if (!preserveSceneLayout || TrackLineNeedsFunctionalLayout(trackLine))
+            {
+                ApplyTrackLineLayout();
+            }
+        }
+
+        private static bool TrackLineNeedsFunctionalLayout(RectTransform line)
+        {
+            if (line == null)
+            {
+                return false;
+            }
+
+            var rect = line.rect;
+            if (rect.height > 4f)
+            {
+                return true;
+            }
+
+            return line.parent is RectTransform parent && parent.rect.width > 1f &&
+                rect.width < parent.rect.width * 0.9f;
+        }
+
+        private void ApplyTrackLineLayout()
+        {
+            if (trackLine == null)
+            {
+                return;
             }
 
             trackLine.anchorMin = new Vector2(0f, 0f);
@@ -622,6 +656,12 @@ namespace FracturedChorus.UI
             }
 
             return slotWidth;
+        }
+
+        /// <summary>Editor menu / scene sync — rebuild beat slots and widths for current viewport.</summary>
+        public void ForceRefitViewportSlots()
+        {
+            RebuildLayout();
         }
 
         private void RebuildLayout()
@@ -734,6 +774,7 @@ namespace FracturedChorus.UI
             {
                 var cloneGo = Instantiate(segmentTemplate.gameObject, slotsRow);
                 cloneGo.name = $"BeatSlot_{i}";
+                MarkRuntimeClone(cloneGo);
                 var clone = cloneGo.GetComponent<BeatSegmentView>();
                 clone.SetDisplayBeatIndex(i);
                 clone.WireReferences();
@@ -741,6 +782,28 @@ namespace FracturedChorus.UI
             }
 
             _slotsBuilt = true;
+        }
+
+        private static void MarkRuntimeClone(GameObject cloneGo)
+        {
+#if UNITY_EDITOR
+            if (!Application.isPlaying)
+            {
+                cloneGo.hideFlags = HideFlags.DontSaveInEditor;
+            }
+#endif
+        }
+
+        private static void DestroyBeatClone(GameObject cloneGo)
+        {
+#if UNITY_EDITOR
+            if (!Application.isPlaying)
+            {
+                DestroyImmediate(cloneGo);
+                return;
+            }
+#endif
+            Destroy(cloneGo);
         }
 
         private void ResetScrollState()
@@ -815,7 +878,7 @@ namespace FracturedChorus.UI
 
                 if (child.name.StartsWith("Beat_") || child.name.StartsWith("BeatSlot_"))
                 {
-                    Destroy(child.gameObject);
+                    DestroyBeatClone(child.gameObject);
                 }
             }
         }

@@ -2,6 +2,24 @@
 
 Logic nằm trong **MonoBehaviour `.cs`**. Layout chỉnh trực tiếp trong **Hierarchy** (kéo Transform, RectTransform, anchor UI).
 
+## Quy tắc Scene = Source of Truth
+
+**Mọi GameObject trong scene** (unit, ô lưới, UI, EXECUTE button, camera…) — nếu bạn đổi vị trí, màu, scale, active/inactive trong Hierarchy rồi **Save scene**, thì **Play phải hiển thị y hệt**.
+
+| Được phép lúc Play | Không được (trừ khi tắt Respect Scene Authoring) |
+|--------------------|---------------------------------------------------|
+| Gắn logic combat (HP, grid index, timeline data) | Snap lại Transform unit/ô lưới theo công thức |
+| Clone beat slot từ template `Beat_0` (carousel) | Rebuild màu hex / bật lại child đã tắt |
+| Ẩn/hiện UI theo phase gameplay (EXECUTE, skill panel) | Ép màu placeholder lên sprite đã chỉnh |
+
+**Inspector flags (mặc định bật):**
+- `CombatPrototypeBootstrap` → **Respect Scene Authoring**
+- `GridCellMarker` → **Preserve Scene Visuals**
+- `UnitView` → **Preserve Scene Visuals**
+- `BeatTimelineUIView` / `SkillPanelUIView` → **Preserve Scene Layout** (chỉ khung ngoài / Header; carousel vẫn auto-layout TrackLine + ScrollContent)
+
+**Rebuild layout:** chỉ dùng menu **Fractured Chorus → Setup / Rebuild…**, không tự chạy khi Play.
+
 > **Ghi chú cập nhật (2026-06):** Beat timeline dùng **quét liên tục trên track ngang** (conveyor + sweep), không còn nhảy từng ô / dừng–trượt rời. Chi tiết mục [Beat Timeline UI](#beat-timeline-ui-quét-liên-tục).
 
 ---
@@ -47,11 +65,13 @@ Main Camera
 | `BeatTimelineUI/Viewport/ScrollContent/Beat_0` | Template ô beat (clone thêm lúc runtime theo chiều rộng viewport) |
 | `SkillPanelUI` | Size, pivot; panel follow unit khi Play |
 
-**UnitView Inspector:** `Side`, `Row`, `Column` = logic combat (0–2). Transform = vị trí hiển thị — có thể tách riêng khi chỉnh layout.
+**UnitView Inspector:** `Side`, `Row`, `Column` = logic combat (index **0–2** = hàng/cột hiển thị **1–3**). **Scene là nguồn sự thật:** giá trị Inspector + Transform trong Hierarchy phải khớp Game khi Play — bootstrap không ghi đè formation mặc định nếu đã gán `Row`/`Column` hợp lệ.
 
-**GridCellMarker:** honeycomb hex (`Board margin.drawio`). Hàng **1–3** (vàng), cột **1–3** (đỏ): player C1 = phải/front; enemy C1 = trái/front (board mirror). Drop → **neon xanh**.
+**GridCellMarker:** honeycomb hex (`Board margin.drawio`). Hàng **1–3** (vàng), cột **1–3** (đỏ): player C1 = phải/front; enemy C1 = trái/front (board mirror). Drop → **neon xanh**. Tắt/đổi màu child `Hexagon Flat Top` trong scene → giữ nguyên khi Play.
 
-**UnitView:** row/column = **-1** trong scene; runtime gán khi đặt lên ô. Mặc định demo: **H2** — Tank C1, Ren C2, Mage C3.
+**UnitView:** `Body Collider` = `BoxCollider2D` (click/drag). Con `FeetAnchor` (child) + `BoxCollider2D` nhỏ = điểm chân snap vào tâm ô — kéo `FeetAnchor` trong scene để chỉnh. Menu **Migrate Unit Colliders (2D + Feet)** nếu scene còn `BoxCollider` 3D.
+
+**Input:** Main Camera cần `Physics2DRaycaster` (menu **Fix Input System**).
 
 ---
 
@@ -127,6 +147,8 @@ Nếu xóa hết `Units` khỏi scene, bootstrap spawn từ `EncounterDefinition
 - Gắn logic scroll/resolve beat bằng Animation clip trên scene — do `BeatTimelineUIView` + `CombatSession` xử lý.
 
 **Input System:** Project dùng **Input System Package** — EventSystem phải có `Input System UI Input Module` (không dùng Standalone Input Module). Nếu lỗi 999+ `InvalidOperationException` về Input: menu **Fractured Chorus → Fix Input System (EventSystem)** hoặc Play (bootstrap tự sửa).
+
+**Một lần áp dụng mọi cập nhật play-ready:** **Fractured Chorus → Apply All Play-Ready Updates** — sửa EventSystem + Physics2DRaycaster, migrate BoxCollider2D + FeetAnchor, restore sprite từ preset, bật `respectSceneAuthoring` / `preserveSceneVisuals`, refit timeline viewport, **Save scene**. Chạy sau khi pull code mới hoặc khi Play không khớp Hierarchy.
 
 ---
 
