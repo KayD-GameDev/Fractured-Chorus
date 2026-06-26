@@ -3,6 +3,19 @@
 Canonical code & content live under `Assets/FracturedChorus/`.  
 Design docs: GitHub repo `fractured-chorus` (`docs/`).
 
+## Combat prototype (cập nhật 2026-06-25)
+
+| Tính năng | Script chính |
+|-----------|--------------|
+| EXECUTE → bắt đầu round | `CombatExecuteOverlayUIView`, `CombatController.StartRound` |
+| Kéo formation (trước EXECUTE) | `BoardDragController`, `GridCellMarker` DropGlow |
+| Click unit → skill panel (sau EXECUTE) | `BoardDragController` + `SkillPanelUIView` |
+| Stat / dmg / crit | `UnitStatBlockSO`, `DamageCalculator`, `HarmonyElementResolver` |
+| Target cột front | `CombatTargetPicker` |
+| Scene layout giữ nguyên khi Play | `SceneAuthoringPolicy`, `respectSceneAuthoring` |
+
+**Playtest:** mở `Scenes/CombatPrototype.unity` → menu **Apply All Play-Ready Updates** → Save → Play.
+
 ## Folder map
 
 ```
@@ -19,8 +32,9 @@ FracturedChorus/
 ├── UI/                     # Timeline bar, skill panel, unit views (active)
 ├── Data/
 │   └── ScriptableObjects/
-│       └── Presets/        # Unit / skill / encounter .asset files
-├── Scenes/                 # CombatPrototype + setup guide
+│       └── Presets/        # README + Unit / skill / stat block .asset
+├── Resources/              # StatBlocks, Skills, UnitPresets (runtime load)
+├── Scenes/                 # CombatPrototype + SCENE_SETUP.md
 ├── RunMap/                 # StS-style node graph (P2)
 ├── Narrative/              # VN-style scenes, dialogue data (P2)
 ├── Audio/
@@ -48,6 +62,7 @@ FracturedChorus/
 ## Rules
 
 - Gameplay logic → **`.cs` scripts only**; scene holds bootstrap + SO refs.
+- **Hierarchy = source of truth** cho layout; rebuild chỉ qua menu Editor.
 - New art → check `docs/ASSET_INVENTORY.md` before import.
 - Session log → `docs/PROJECT_LOG.md` on GitHub repo.
 

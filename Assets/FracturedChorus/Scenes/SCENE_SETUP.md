@@ -69,9 +69,11 @@ Main Camera
 
 **GridCellMarker:** honeycomb hex (`Board margin.drawio`). Hàng **1–3** (vàng), cột **1–3** (đỏ): player C1 = phải/front; enemy C1 = trái/front (board mirror). Drop → **neon xanh**. Tắt/đổi màu child `Hexagon Flat Top` trong scene → giữ nguyên khi Play.
 
-**UnitView:** `Body Collider` = `BoxCollider2D` (click/drag). Con `FeetAnchor` (child) + `BoxCollider2D` nhỏ = điểm chân snap vào tâm ô — kéo `FeetAnchor` trong scene để chỉnh. Menu **Migrate Unit Colliders (2D + Feet)** nếu scene còn `BoxCollider` 3D.
+**UnitView:** `Body Collider` = `BoxCollider2D` trên **unit root** (click/drag). Con `FeetAnchor` = Transform snap grid — **không collider** (tránh cướp raycast). Menu **Migrate Unit Colliders (2D + Feet)** hoặc **Apply All Play-Ready Updates** nếu scene còn collider cũ.
 
-**Input:** Main Camera cần `Physics2DRaycaster` (menu **Fix Input System**).
+**EXECUTE:** `CombatCanvas/ExecuteOverlay` — chỉ hiện trước round; bấm để bắt đầu quét timeline.
+
+**Input:** Main Camera cần `Physics2DRaycaster` (`maxRayIntersections = 32`); menu **Fix Input System** / **Apply All**.
 
 ---
 
@@ -161,6 +163,8 @@ Menu **Fractured Chorus → Setup Combat Scene Hierarchy** → chọn **Tạo l�
 
 | Ngày | Thay đổi |
 |------|----------|
+| 2026-06-25 | **Scene-first:** `respectSceneAuthoring`, `preserveSceneCollider`; `UnitFeetAnchor` (Transform only); input `Physics2DRaycaster`. Drag pre-EXECUTE / click post-EXECUTE qua `BoardDragController`. Import sprite Ren/Tank/Mage. |
+| 2026-06-24 | **EXECUTE** overlay — khóa timeline/skill trước round; `AllowPlayerReposition` gate. Stat blocks + Resources presets. UI skill rename Skill 1/2. |
 | 2026-06-23 | Skill panel mở: `SetSkillPanelOpen` → scroll 0.25× + `CombatMusicController` pitch 0.25× (music sync). |
 | 2026-06 | Timeline: scroll liên tục trên `TrackLine`; **chỉ ô đang nằm dưới vạch đỏ** nổi lên (`BeatSegmentView.SetScanHighlighted`), các ô khác giữ nguyên. |
-| — | Combat flow vẫn prototype (Planning + auto-resolve trong một lần quét) — chưa tách UC-04 Planning dừng / Resolution riêng. |
+| — | Combat flow vẫn prototype — chưa Morale/Affliction, Interrupt đầy đủ. |
