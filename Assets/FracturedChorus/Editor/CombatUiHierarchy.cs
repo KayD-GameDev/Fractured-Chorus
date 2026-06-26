@@ -293,6 +293,100 @@ namespace FracturedChorus.Editor
                 Debug.Log("[Fractured Chorus] Background canvas renamed (if needed). PartyStatusBarUI already under CombatCanvas or not found.");
             }
         }
+
+        public static int LogMissingScriptsInActiveScene()
+        {
+            var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+            if (!scene.IsValid() || !scene.isLoaded)
+            {
+                Debug.LogWarning("[Fractured Chorus] No active loaded scene.");
+                return 0;
+            }
+
+            var count = 0;
+            foreach (var root in scene.GetRootGameObjects())
+            {
+                LogMissingScriptsRecursive(root.transform, ref count);
+            }
+
+            if (count == 0)
+            {
+                Debug.Log("[Fractured Chorus] No missing scripts found in active scene.");
+            }
+            else
+            {
+                Debug.Log($"[Fractured Chorus] Found {count} missing script slot(s) in active scene.");
+            }
+
+            return count;
+        }
+
+        public static int RemoveMissingScriptsInActiveScene()
+        {
+            var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+            if (!scene.IsValid() || !scene.isLoaded)
+            {
+                Debug.LogWarning("[Fractured Chorus] No active loaded scene.");
+                return 0;
+            }
+
+            var removed = 0;
+            foreach (var root in scene.GetRootGameObjects())
+            {
+                removed += RemoveMissingScriptsRecursive(root.transform);
+            }
+
+            if (removed > 0)
+            {
+                EditorSceneManager.MarkSceneDirty(scene);
+                Debug.Log($"[Fractured Chorus] Removed {removed} missing script slot(s). Save scene (Ctrl+S).");
+            }
+            else
+            {
+                Debug.Log("[Fractured Chorus] No missing scripts to remove in active scene.");
+            }
+
+            return removed;
+        }
+
+        private static void LogMissingScriptsRecursive(Transform transform, ref int count)
+        {
+            var components = transform.GetComponents<Component>();
+            for (var i = 0; i < components.Length; i++)
+            {
+                if (components[i] == null)
+                {
+                    count++;
+                    Debug.LogWarning($"[Fractured Chorus] Missing script on '{GetTransformPath(transform)}' (component index {i}).", transform.gameObject);
+                }
+            }
+
+            for (var i = 0; i < transform.childCount; i++)
+            {
+                LogMissingScriptsRecursive(transform.GetChild(i), ref count);
+            }
+        }
+
+        private static int RemoveMissingScriptsRecursive(Transform transform)
+        {
+            var removed = GameObjectUtility.RemoveMonoBehavioursWithMissingScript(transform.gameObject);
+            for (var i = 0; i < transform.childCount; i++)
+            {
+                removed += RemoveMissingScriptsRecursive(transform.GetChild(i));
+            }
+
+            return removed;
+        }
+
+        private static string GetTransformPath(Transform transform)
+        {
+            if (transform.parent == null)
+            {
+                return transform.name;
+            }
+
+            return $"{GetTransformPath(transform.parent)}/{transform.name}";
+        }
     }
 }
 #endif

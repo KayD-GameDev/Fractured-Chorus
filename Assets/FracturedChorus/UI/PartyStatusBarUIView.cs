@@ -16,7 +16,7 @@ namespace FracturedChorus.UI
     public class PartyStatusBarUIView : MonoBehaviour
     {
         public const int MaxPartyCards = 5;
-        public const float DefaultCardSpacing = 0.5f;
+        public const float DefaultCardSpacing = 1f;
 
         [SerializeField] private RectTransform cardsRow;
         [SerializeField] private PartyMemberCardView cardTemplate;
@@ -70,6 +70,8 @@ namespace FracturedChorus.UI
             {
                 SpawnCard(view.Unit, view.ResolvePreset());
             }
+
+            RebuildCardsRowLayout();
         }
 
         public void BindFromSession(CombatSession session)
@@ -91,6 +93,8 @@ namespace FracturedChorus.UI
             {
                 SpawnCard(unit, ResolvePresetForUnit(unit));
             }
+
+            RebuildCardsRowLayout();
         }
 
         private void ApplyCardSpacing()
@@ -103,7 +107,32 @@ namespace FracturedChorus.UI
             var layout = cardsRow.GetComponent<HorizontalLayoutGroup>();
             if (layout != null)
             {
-                layout.spacing = cardSpacing;
+                layout.enabled = false;
+            }
+        }
+
+        private void RebuildCardsRowLayout()
+        {
+            if (cardsRow == null)
+            {
+                return;
+            }
+
+            ApplyCardSpacing();
+
+            var x = 0f;
+            for (var i = 0; i < cardsRow.childCount; i++)
+            {
+                var child = cardsRow.GetChild(i) as RectTransform;
+                if (child == null || !child.gameObject.activeSelf)
+                {
+                    continue;
+                }
+
+                PrepareCardRectForRowLayout(child);
+                var width = child.sizeDelta.x;
+                child.anchoredPosition = new Vector2(x, 0f);
+                x += width + cardSpacing;
             }
         }
 
@@ -112,9 +141,41 @@ namespace FracturedChorus.UI
             var card = Instantiate(cardTemplate, cardsRow);
             card.gameObject.SetActive(true);
             card.name = $"Card_{unit.DisplayName}";
+            PrepareCardRectForRowLayout(card.transform as RectTransform);
             card.WireReferences();
             card.Bind(unit, preset);
             _spawnedCards.Add(card);
+        }
+
+        private static void PrepareCardRectForRowLayout(RectTransform rect)
+        {
+            if (rect == null)
+            {
+                return;
+            }
+
+            var size = rect.sizeDelta;
+            if (size.x <= 0f || size.y <= 0f)
+            {
+                size = new Vector2(72f, 96f);
+            }
+
+            rect.anchorMin = new Vector2(0f, 1f);
+            rect.anchorMax = new Vector2(0f, 1f);
+            rect.pivot = new Vector2(0f, 1f);
+            rect.sizeDelta = size;
+            rect.anchoredPosition = Vector2.zero;
+            rect.localScale = Vector3.one;
+
+            var layoutElement = rect.GetComponent<LayoutElement>();
+            if (layoutElement == null)
+            {
+                layoutElement = rect.gameObject.AddComponent<LayoutElement>();
+            }
+
+            layoutElement.ignoreLayout = false;
+            layoutElement.preferredWidth = size.x;
+            layoutElement.preferredHeight = size.y;
         }
 
         private static UnitPresetSO ResolvePresetForUnit(CombatUnit unit)

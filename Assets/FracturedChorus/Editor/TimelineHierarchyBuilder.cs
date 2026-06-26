@@ -86,6 +86,10 @@ namespace FracturedChorus.Editor
         {
             var cardGo = CreateUiObject("CardTemplate", parent);
             var cardRect = cardGo.GetComponent<RectTransform>();
+            cardRect.anchorMin = new Vector2(0f, 1f);
+            cardRect.anchorMax = new Vector2(0f, 1f);
+            cardRect.pivot = new Vector2(0f, 1f);
+            cardRect.anchoredPosition = Vector2.zero;
             cardRect.sizeDelta = new Vector2(PartyCardWidth, PartyCardHeight);
             cardGo.AddComponent<LayoutElement>().preferredWidth = PartyCardWidth;
             cardGo.GetComponent<LayoutElement>().preferredHeight = PartyCardHeight;

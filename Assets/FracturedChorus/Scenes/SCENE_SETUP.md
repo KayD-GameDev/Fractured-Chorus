@@ -70,7 +70,7 @@ Main Camera
 | `PartyStatusBarUI` | Anchor góc trái trên; spacing `CardsRow`; chỉnh `CardTemplate` (avatar placeholder, màu hệ) |
 | `PartyStatusBarUI/CardTemplate` | Model thẻ — **inactive**; con: `Border`, `Avatar`, `HealthBarBg`, `ElementBadge/ElementIcon` (vòng tròn hệ; icon từ `StatBlock.elementBadgeIcon`) |
 
-**Party status bar:** Phải nằm dưới **CombatCanvas** (không phải `Background canvas`). Menu **Add Party Status Bar** hoặc **Fix Party Status Bar (Move to CombatCanvas)** nếu scene cũ đặt nhầm.
+**Party status bar:** Phải nằm dưới **CombatCanvas** (không phải `Background canvas`). Menu **Add Party Status Bar** hoặc **Fix Party Status Bar (Move to CombatCanvas)** nếu scene cũ đặt nhầm. Spacing thẻ **1px** (runtime layout trong `PartyStatusBarUIView`). Nếu Console báo *missing script*: **Find Missing Scripts** → **Remove Missing Scripts** → Save.
 
 **UnitView Inspector:** `Side`, `Row`, `Column` = logic combat (index **0–2** = hàng/cột hiển thị **1–3**). **Scene là nguồn sự thật:** giá trị Inspector + Transform trong Hierarchy phải khớp Game khi Play — bootstrap không ghi đè formation mặc định nếu đã gán `Row`/`Column` hợp lệ.
 
@@ -188,6 +188,7 @@ Menu **Fractured Chorus → Setup Combat Scene Hierarchy** → chọn **Tạo l�
 
 | Ngày | Thay đổi |
 |------|----------|
+| 2026-06-26 | **Party status bar:** clone từ `CardTemplate` (max 5); spacing 1px; thứ tự Mage→Ren→Tank; badge hệ tròn (bỏ `RoleBadge`); swap formation refresh bar; menu Find/Remove Missing Scripts. |
 | 2026-06-25 | **Độ rộng ô theo giây**: `width = span × pixelsPerSecond` (data-driven từ `MusicBeatMapSO`); scroll lái bằng musical beat → px/giây không đổi (mượt, khớp nhạc). Render-all `TotalBeats` ô + `RectMask2D`; `childControlWidth = true`. |
 | 2026-06-25 | **Hiệu ứng quét nâng cấp** (mọi nốt): rìa → tâm chớp (`SmoothStep`) → tắt dần theo thời gian; làm mượt cả fade-in/out (`scanFadeInDuration` / `scanFadeOutDuration`). Bỏ `scanAlignThreshold`. |
 | 2026-06-25 | **30 phase** (`PhaseCount = 30`, `TotalBeats = 480`) để chạy hết bài không gián đoạn. Charlotte (Tank) máu = 3000 để test (`StatBlock_Tank` + `UnitStats.CreateTankPreset`). |

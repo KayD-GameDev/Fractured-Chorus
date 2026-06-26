@@ -181,6 +181,18 @@ namespace FracturedChorus.Editor
             CombatUiHierarchy.FixPartyStatusBarPlacement();
         }
 
+        [MenuItem("Fractured Chorus/Find Missing Scripts (Active Scene)")]
+        public static void FindMissingScriptsInActiveScene()
+        {
+            CombatUiHierarchy.LogMissingScriptsInActiveScene();
+        }
+
+        [MenuItem("Fractured Chorus/Remove Missing Scripts (Active Scene)")]
+        public static void RemoveMissingScriptsInActiveScene()
+        {
+            CombatUiHierarchy.RemoveMissingScriptsInActiveScene();
+        }
+
         [MenuItem("Fractured Chorus/Add Party Status Bar (Hierarchy)")]
         public static void AddPartyStatusBarToScene()
         {

@@ -3,14 +3,15 @@
 Canonical code & content live under `Assets/FracturedChorus/`.  
 Design docs: GitHub repo `fractured-chorus` (`docs/`).
 
-## Combat prototype (cập nhật 2026-06-25)
+## Combat prototype (cập nhật 2026-06-26)
 
 | Tính năng | Script chính |
 |-----------|--------------|
 | EXECUTE → bắt đầu round | `CombatExecuteOverlayUIView`, `CombatController.StartRound` |
 | Kéo formation (trước EXECUTE) | `BoardDragController`, `GridCellMarker` DropGlow |
 | Click unit → skill panel (sau EXECUTE) | `BoardDragController` + `SkillPanelUIView` |
-| Thẻ party (avatar + HP + hệ) góc trái trên | `PartyStatusBarUIView`, `PartyMemberCardView` |
+| Thẻ party (avatar + HP + hệ) góc trái trên | `PartyStatusBarUIView`, `PartyMemberCardView`, `PartyCardDisplayOrder` |
+| Swap formation (kéo lên ô ally) | `BoardDragController`, `DualGrid.TrySwapUnits` |
 | Stat / dmg / crit | `UnitStatBlockSO`, `DamageCalculator`, `HarmonyElementResolver` |
 | Target cột front | `CombatTargetPicker` |
 | Scene layout giữ nguyên khi Play | `SceneAuthoringPolicy`, `respectSceneAuthoring` |

@@ -8190,6 +8190,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.PartyStatusBarUIView
   cardsRow: {fileID: 1694336808}
   cardTemplate: {fileID: 1830421416}
+  cardSpacing: 1
 --- !u!1 &1447538485
 GameObject:
   m_ObjectHideFlags: 0
@@ -9235,7 +9236,7 @@ MonoBehaviour:
     m_Top: 0
     m_Bottom: 0
   m_ChildAlignment: 0
-  m_Spacing: 4
+  m_Spacing: 1
   m_ChildForceExpandWidth: 0
   m_ChildForceExpandHeight: 0
   m_ChildControlWidth: 0
@@ -9575,7 +9576,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1830421415
 RectTransform:
   m_ObjectHideFlags: 0
