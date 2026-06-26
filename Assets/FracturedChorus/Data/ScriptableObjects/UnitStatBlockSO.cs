@@ -15,6 +15,8 @@ namespace FracturedChorus.Data
 
         [Header("Pre-condition (element)")]
         public HarmonyElement element = HarmonyElement.Melody;
+        [Tooltip("Icon hệ trên thẻ party UI — nếu trống dùng icon mặc định theo element.")]
+        public Sprite elementBadgeIcon;
 
         [Header("Strength — chọn Physical/Magical, rồi nhập chỉ số")]
         public DamageType strengthType = DamageType.Physical;

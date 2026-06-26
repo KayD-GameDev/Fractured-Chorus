@@ -12,6 +12,9 @@ namespace FracturedChorus.Editor
         public const float SlotWidth = 52f;
         public const float SlotHeight = 64f;
 
+        public const float PartyCardWidth = 72f;
+        public const float PartyCardHeight = 96f;
+
         public static BeatTimelineUIView BuildTimeline(Transform canvasTransform)
         {
             var existing = canvasTransform.Find("BeatTimelineUI");
@@ -39,6 +42,129 @@ namespace FracturedChorus.Editor
             SetField(ui, "slotWidth", SlotWidth);
             ui.WireReferences();
             return ui;
+        }
+
+        public static PartyStatusBarUIView BuildPartyStatusBar(Transform canvasTransform)
+        {
+            var existing = canvasTransform.Find("PartyStatusBarUI");
+            if (existing != null)
+            {
+                Object.DestroyImmediate(existing.gameObject);
+            }
+
+            var barGo = CreateUiObject("PartyStatusBarUI", canvasTransform);
+            var barRect = barGo.GetComponent<RectTransform>();
+            barRect.anchorMin = new Vector2(0f, 1f);
+            barRect.anchorMax = new Vector2(0f, 1f);
+            barRect.pivot = new Vector2(0f, 1f);
+            barRect.anchoredPosition = new Vector2(12f, -12f);
+            barRect.sizeDelta = new Vector2(400f, PartyCardHeight);
+
+            var cardsRowGo = CreateUiObject("CardsRow", barGo.transform);
+            var cardsRowRect = cardsRowGo.GetComponent<RectTransform>();
+            StretchFull(cardsRowRect);
+            var rowLayout = cardsRowGo.AddComponent<HorizontalLayoutGroup>();
+            rowLayout.spacing = PartyStatusBarUIView.DefaultCardSpacing;
+            rowLayout.childAlignment = TextAnchor.UpperLeft;
+            rowLayout.childControlWidth = false;
+            rowLayout.childControlHeight = false;
+            rowLayout.childForceExpandWidth = false;
+            rowLayout.childForceExpandHeight = false;
+
+            var cardTemplate = CreatePartyCardTemplate(barGo.transform);
+            cardTemplate.gameObject.SetActive(false);
+
+            var barUi = barGo.AddComponent<PartyStatusBarUIView>();
+            SetField(barUi, "cardsRow", cardsRowRect);
+            SetField(barUi, "cardTemplate", cardTemplate);
+            SetField(barUi, "cardSpacing", PartyStatusBarUIView.DefaultCardSpacing);
+            barUi.WireReferences();
+            return barUi;
+        }
+
+        private static PartyMemberCardView CreatePartyCardTemplate(Transform parent)
+        {
+            var cardGo = CreateUiObject("CardTemplate", parent);
+            var cardRect = cardGo.GetComponent<RectTransform>();
+            cardRect.sizeDelta = new Vector2(PartyCardWidth, PartyCardHeight);
+            cardGo.AddComponent<LayoutElement>().preferredWidth = PartyCardWidth;
+            cardGo.GetComponent<LayoutElement>().preferredHeight = PartyCardHeight;
+
+            var borderGo = CreateUiObject("Border", cardGo.transform);
+            StretchFull(borderGo.GetComponent<RectTransform>());
+            var borderImage = borderGo.AddComponent<Image>();
+            borderImage.color = HarmonyElementPalette.GetBorderColor(Combat.Damage.HarmonyElement.Melody);
+            borderImage.raycastTarget = false;
+
+            var avatarGo = CreateUiObject("Avatar", cardGo.transform);
+            var avatarRect = avatarGo.GetComponent<RectTransform>();
+            StretchWithPadding(avatarRect, 0f, 0f, 1f, 1f);
+            avatarRect.offsetMin = new Vector2(3f, 10f);
+            avatarRect.offsetMax = new Vector2(-3f, -3f);
+            var avatarImage = avatarGo.AddComponent<Image>();
+            avatarImage.color = new Color(0.35f, 0.35f, 0.42f, 1f);
+            avatarImage.preserveAspect = true;
+            avatarImage.raycastTarget = false;
+
+            var healthBgGo = CreateUiObject("HealthBarBg", cardGo.transform);
+            var healthBgRect = healthBgGo.GetComponent<RectTransform>();
+            healthBgRect.anchorMin = new Vector2(0f, 0f);
+            healthBgRect.anchorMax = new Vector2(1f, 0f);
+            healthBgRect.pivot = new Vector2(0.5f, 0f);
+            healthBgRect.anchoredPosition = new Vector2(0f, 3f);
+            healthBgRect.sizeDelta = new Vector2(-6f, 10f);
+            var healthBgImage = healthBgGo.AddComponent<Image>();
+            healthBgImage.sprite = UiCircleSpriteUtil.White;
+            healthBgImage.type = Image.Type.Simple;
+            healthBgImage.color = new Color(0.08f, 0.08f, 0.1f, 0.95f);
+            healthBgImage.raycastTarget = false;
+
+            var healthFillGo = CreateUiObject("HealthBarFill", healthBgGo.transform);
+            var healthFillRect = healthFillGo.GetComponent<RectTransform>();
+            healthFillRect.anchorMin = Vector2.zero;
+            healthFillRect.anchorMax = Vector2.one;
+            healthFillRect.pivot = new Vector2(0f, 0.5f);
+            healthFillRect.offsetMin = Vector2.zero;
+            healthFillRect.offsetMax = Vector2.zero;
+            var healthFillImage = healthFillGo.AddComponent<Image>();
+            healthFillImage.sprite = UiCircleSpriteUtil.White;
+            healthFillImage.type = Image.Type.Simple;
+            healthFillImage.color = new Color(0.18f, 0.92f, 0.28f, 1f);
+            healthFillImage.raycastTarget = false;
+
+            var elementGo = CreateUiObject("ElementBadge", cardGo.transform);
+            var elementRect = elementGo.GetComponent<RectTransform>();
+            elementRect.anchorMin = new Vector2(1f, 1f);
+            elementRect.anchorMax = new Vector2(1f, 1f);
+            elementRect.pivot = new Vector2(0.5f, 0.5f);
+            elementRect.anchoredPosition = new Vector2(-6f, -6f);
+            elementRect.sizeDelta = new Vector2(22f, 22f);
+            var elementRingImage = elementGo.AddComponent<Image>();
+            elementRingImage.sprite = UiCircleSpriteUtil.Circle;
+            elementRingImage.color = HarmonyElementPalette.GetBadgeRingColor(Combat.Damage.HarmonyElement.Melody);
+            elementRingImage.raycastTarget = false;
+
+            var elementIconGo = CreateUiObject("ElementIcon", elementGo.transform);
+            var elementIconRect = elementIconGo.GetComponent<RectTransform>();
+            StretchFull(elementIconRect);
+            elementIconRect.offsetMin = new Vector2(4f, 4f);
+            elementIconRect.offsetMax = new Vector2(-4f, -4f);
+            var elementIconImage = elementIconGo.AddComponent<Image>();
+            elementIconImage.sprite = UiCircleSpriteUtil.Circle;
+            elementIconImage.color = Color.white;
+            elementIconImage.preserveAspect = true;
+            elementIconImage.raycastTarget = false;
+
+            var cardView = cardGo.AddComponent<PartyMemberCardView>();
+            SetField(cardView, "borderImage", borderImage);
+            SetField(cardView, "avatarImage", avatarImage);
+            SetField(cardView, "healthBarBg", healthBgImage);
+            SetField(cardView, "healthBarFill", healthFillImage);
+            SetField(cardView, "healthBarFillRect", healthFillRect);
+            SetField(cardView, "elementBadgeRing", elementRingImage);
+            SetField(cardView, "elementIcon", elementIconImage);
+            cardView.WireReferences();
+            return cardView;
         }
 
         public static SkillPanelUIView BuildSkillPanel(Transform canvasTransform)

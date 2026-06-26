@@ -14,6 +14,7 @@ namespace FracturedChorus.Combat.Grid
         private readonly Dictionary<GridPosition, GridCell> _cells = new();
         private readonly List<CombatUnit> _playerUnits = new();
         private readonly List<CombatUnit> _enemyUnits = new();
+        private int _nextPlayerBarOrder;
 
         public IReadOnlyList<CombatUnit> PlayerUnits => _playerUnits;
         public IReadOnlyList<CombatUnit> EnemyUnits => _enemyUnits;
@@ -66,6 +67,51 @@ namespace FracturedChorus.Combat.Grid
 
             unit.SetGridPosition(position);
             list.Add(unit);
+            if (position.Side == GridSide.Player)
+            {
+                unit.PartyBarOrder = _nextPlayerBarOrder++;
+            }
+
+            return true;
+        }
+
+        public CombatUnit GetOccupant(GridPosition position)
+        {
+            return GetCell(position)?.Occupant;
+        }
+
+        public bool TrySwapUnits(CombatUnit unit, GridPosition targetPosition)
+        {
+            if (unit == null || !targetPosition.IsValid() || targetPosition.Side != unit.Side)
+            {
+                return false;
+            }
+
+            var sourcePosition = unit.GridPosition;
+            if (sourcePosition.Equals(targetPosition))
+            {
+                return true;
+            }
+
+            var sourceCell = GetCell(sourcePosition);
+            var targetCell = GetCell(targetPosition);
+            if (sourceCell == null || targetCell == null || !targetCell.IsOccupied)
+            {
+                return false;
+            }
+
+            var other = targetCell.Occupant;
+            if (other == null || other == unit || other.Side != unit.Side)
+            {
+                return false;
+            }
+
+            sourceCell.Clear();
+            targetCell.Clear();
+            targetCell.TryPlace(unit);
+            sourceCell.TryPlace(other);
+            unit.SetGridPosition(targetPosition);
+            other.SetGridPosition(sourcePosition);
             return true;
         }
 
