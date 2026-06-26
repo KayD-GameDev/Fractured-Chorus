@@ -18,6 +18,9 @@ namespace FracturedChorus.Combat.Units
         public int CurrentHp { get; private set; }
         public int CurrentDelay { get; set; }
 
+        /// <summary>Thứ tự đặt lên lưới — dùng sắp xếp thẻ party khi cùng cột/hàng.</summary>
+        public int PartyBarOrder { get; internal set; }
+
         /// <summary>Read-only mirror of BaseAv for UI — not spent when using skills.</summary>
         public float CurrentAv => Stats.BaseAv;
 

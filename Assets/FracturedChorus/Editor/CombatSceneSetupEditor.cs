@@ -388,9 +388,10 @@ namespace FracturedChorus.Editor
             var unitsRoot = CreateUnits(world, encounter);
             var timelineUi = TimelineHierarchyBuilder.BuildTimeline(canvas.transform);
             var skillPanel = TimelineHierarchyBuilder.BuildSkillPanel(canvas.transform);
+            var partyBar = TimelineHierarchyBuilder.BuildPartyStatusBar(canvas.transform);
             var executeOverlay = TimelineHierarchyBuilder.BuildExecuteOverlay(canvas.transform);
 
-            WireBootstrap(bootstrap, controller, timelineUi, skillPanel, executeOverlay, unitsRoot, gridRoot);
+            WireBootstrap(bootstrap, controller, timelineUi, skillPanel, partyBar, executeOverlay, unitsRoot, gridRoot);
             WireController(controller, timelineUi, skillPanel, executeOverlay);
 
             EditorSceneManager.MarkSceneDirty(root.scene);
@@ -429,13 +430,14 @@ namespace FracturedChorus.Editor
 
         private static Canvas CreateCanvas(Transform parent)
         {
-            var existing = Object.FindAnyObjectByType<Canvas>();
-            if (existing != null)
+            var existingTransform = parent.Find(CombatUiHierarchy.CombatCanvasName);
+            if (existingTransform != null &&
+                existingTransform.TryGetComponent<Canvas>(out var existingCanvas))
             {
-                return existing;
+                return existingCanvas;
             }
 
-            var canvasGo = new GameObject("CombatCanvas");
+            var canvasGo = new GameObject(CombatUiHierarchy.CombatCanvasName);
             Undo.RegisterCreatedObjectUndo(canvasGo, "Create CombatCanvas");
             canvasGo.transform.SetParent(parent, false);
             var canvas = canvasGo.AddComponent<Canvas>();
@@ -758,6 +760,7 @@ namespace FracturedChorus.Editor
             CombatController controller,
             BeatTimelineUIView timeline,
             SkillPanelUIView skillPanel,
+            PartyStatusBarUIView partyBar,
             CombatExecuteOverlayUIView executeOverlay,
             Transform unitsRoot,
             Transform gridRoot)
@@ -765,6 +768,7 @@ namespace FracturedChorus.Editor
             SetSerializedField(bootstrap, "combatController", controller);
             SetSerializedField(bootstrap, "timelineView", timeline);
             SetSerializedField(bootstrap, "skillPanelView", skillPanel);
+            SetSerializedField(bootstrap, "partyStatusBarView", partyBar);
             SetSerializedField(bootstrap, "executeOverlay", executeOverlay);
             SetSerializedField(bootstrap, "unitsRoot", unitsRoot);
             SetSerializedField(bootstrap, "gridRoot", gridRoot);

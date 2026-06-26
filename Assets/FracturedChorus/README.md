@@ -10,6 +10,7 @@ Design docs: GitHub repo `fractured-chorus` (`docs/`).
 | EXECUTE → bắt đầu round | `CombatExecuteOverlayUIView`, `CombatController.StartRound` |
 | Kéo formation (trước EXECUTE) | `BoardDragController`, `GridCellMarker` DropGlow |
 | Click unit → skill panel (sau EXECUTE) | `BoardDragController` + `SkillPanelUIView` |
+| Thẻ party (avatar + HP + hệ) góc trái trên | `PartyStatusBarUIView`, `PartyMemberCardView` |
 | Stat / dmg / crit | `UnitStatBlockSO`, `DamageCalculator`, `HarmonyElementResolver` |
 | Target cột front | `CombatTargetPicker` |
 | Scene layout giữ nguyên khi Play | `SceneAuthoringPolicy`, `respectSceneAuthoring` |

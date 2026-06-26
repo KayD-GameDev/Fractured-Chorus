@@ -35,6 +35,7 @@ namespace FracturedChorus.UI
         private Vector2 _pointerDownScreen;
         private bool _dragPointerActive;
         private Action<CombatUnit, UnitView> _onUnitClicked;
+        private Action _onFormationChanged;
 
         private void Awake()
         {
@@ -75,6 +76,11 @@ namespace FracturedChorus.UI
         public void SetUnitClickHandler(Action<CombatUnit, UnitView> onUnitClicked)
         {
             _onUnitClicked = onUnitClicked;
+        }
+
+        public void SetFormationChangedHandler(Action onFormationChanged)
+        {
+            _onFormationChanged = onFormationChanged;
         }
 
         public bool CanDragUnit(UnitView view)
@@ -227,12 +233,30 @@ namespace FracturedChorus.UI
 
             if (target != null && IsValidDrop(target, view) && _grid != null && view.Unit != null)
             {
-                if (_grid.TryMoveUnit(view.Unit, target.Position))
+                var oldPosition = view.GridPosition;
+                var moved = false;
+
+                if (target.Position.Equals(oldPosition))
+                {
+                    SnapUnitToCell(view, target);
+                    moved = true;
+                }
+                else if (_grid.IsOccupied(target.Position))
+                {
+                    moved = TrySwapUnits(view, target, oldPosition);
+                }
+                else if (_grid.TryMoveUnit(view.Unit, target.Position))
                 {
                     view.PlaceOnGrid(target.Position);
                     SnapUnitToCell(view, target);
+                    moved = true;
                 }
-                else if (_markers.TryGetValue(view.GridPosition, out var home))
+
+                if (moved)
+                {
+                    _onFormationChanged?.Invoke();
+                }
+                else if (_markers.TryGetValue(oldPosition, out var home))
                 {
                     SnapUnitToCell(view, home);
                 }
@@ -401,7 +425,67 @@ namespace FracturedChorus.UI
                 return false;
             }
 
-            return !_grid.IsOccupied(marker.Position);
+            if (!_grid.IsOccupied(marker.Position))
+            {
+                return true;
+            }
+
+            var occupant = _grid.GetOccupant(marker.Position);
+            return occupant != null && occupant != view.Unit && occupant.Side == view.Side;
+        }
+
+        private bool TrySwapUnits(UnitView draggedView, GridCellMarker target, GridPosition sourcePosition)
+        {
+            if (draggedView?.Unit == null || _grid == null)
+            {
+                return false;
+            }
+
+            if (!_grid.TrySwapUnits(draggedView.Unit, target.Position))
+            {
+                return false;
+            }
+
+            draggedView.PlaceOnGrid(target.Position);
+            SnapUnitToCell(draggedView, target);
+
+            var swappedUnit = _grid.GetOccupant(sourcePosition);
+            if (swappedUnit == null)
+            {
+                return true;
+            }
+
+            var swappedView = FindViewForUnit(swappedUnit);
+            if (swappedView == null)
+            {
+                return true;
+            }
+
+            swappedView.PlaceOnGrid(sourcePosition);
+            if (_markers.TryGetValue(sourcePosition, out var sourceMarker))
+            {
+                SnapUnitToCell(swappedView, sourceMarker);
+            }
+
+            return true;
+        }
+
+        private static UnitView FindViewForUnit(CombatUnit unit)
+        {
+            if (unit == null)
+            {
+                return null;
+            }
+
+            foreach (var view in UnityEngine.Object.FindObjectsByType<UnitView>(FindObjectsInactive.Exclude))
+            {
+                if (view != null && view.Unit == unit)
+                {
+                    return view;
+                }
+            }
+
+            return null;
         }
 
         private void ClearHighlight()

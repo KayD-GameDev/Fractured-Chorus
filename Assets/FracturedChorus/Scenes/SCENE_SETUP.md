@@ -17,6 +17,7 @@ Logic nằm trong **MonoBehaviour `.cs`**. Layout chỉnh trực tiếp trong **
 - `GridCellMarker` → **Preserve Scene Visuals**
 - `UnitView` → **Preserve Scene Visuals**
 - `BeatTimelineUIView` / `SkillPanelUIView` → **Preserve Scene Layout** (chỉ khung ngoài / Header; carousel vẫn auto-layout TrackLine + ScrollContent)
+- `PartyStatusBarUIView` → anchor bar góc trái trên trên **CombatCanvas**; clone thẻ từ `CardTemplate` lúc Play
 
 **Rebuild layout:** chỉ dùng menu **Fractured Chorus → Setup / Rebuild…**, không tự chạy khi Play.
 
@@ -42,8 +43,10 @@ CombatRoot          ← CombatPrototypeBootstrap + CombatController
 │       ├── Unit_Mage
 │       └── Unit_Grunt …
 └── CombatCanvas
+    ├── PartyStatusBarUI   ← góc trái trên; CardTemplate + clone tối đa 5 thẻ lúc Play
     ├── BeatTimelineUI    ← kéo anchor, resize bar
     └── SkillPanelUI      ← vị trí mặc định; runtime follow unit
+Background canvas         ← sibling của CombatCanvas; chỉ chứa ảnh nền (không đặt combat UI)
 EventSystem
 Main Camera
 ```
@@ -64,6 +67,10 @@ Main Camera
 | `BeatTimelineUI/Viewport/ScrollContent` | Spacing ô beat (`HorizontalLayoutGroup`) |
 | `BeatTimelineUI/Viewport/ScrollContent/Beat_0` | Template ô beat (clone thêm lúc runtime theo chiều rộng viewport) |
 | `SkillPanelUI` | Size, pivot; panel follow unit khi Play |
+| `PartyStatusBarUI` | Anchor góc trái trên; spacing `CardsRow`; chỉnh `CardTemplate` (avatar placeholder, màu hệ) |
+| `PartyStatusBarUI/CardTemplate` | Model thẻ — **inactive**; con: `Border`, `Avatar`, `HealthBarBg`, `ElementBadge/ElementIcon` (vòng tròn hệ; icon từ `StatBlock.elementBadgeIcon`) |
+
+**Party status bar:** Phải nằm dưới **CombatCanvas** (không phải `Background canvas`). Menu **Add Party Status Bar** hoặc **Fix Party Status Bar (Move to CombatCanvas)** nếu scene cũ đặt nhầm.
 
 **UnitView Inspector:** `Side`, `Row`, `Column` = logic combat (index **0–2** = hàng/cột hiển thị **1–3**). **Scene là nguồn sự thật:** giá trị Inspector + Transform trong Hierarchy phải khớp Game khi Play — bootstrap không ghi đè formation mặc định nếu đã gán `Row`/`Column` hợp lệ.
 

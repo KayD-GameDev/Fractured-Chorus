@@ -93,14 +93,14 @@ namespace FracturedChorus.Editor
         [MenuItem("Fractured Chorus/Add Execute Overlay (Hierarchy)")]
         public static void AddExecuteOverlayToScene()
         {
-            var canvas = Object.FindAnyObjectByType<Canvas>();
-            if (canvas == null)
+            var canvasTransform = CombatUiHierarchy.ResolveCombatCanvasTransform();
+            if (canvasTransform == null)
             {
-                EditorUtility.DisplayDialog("Fractured Chorus", "Không tìm thấy Canvas trong scene.", "OK");
+                EditorUtility.DisplayDialog("Fractured Chorus", "Không tìm thấy CombatCanvas trong scene.", "OK");
                 return;
             }
 
-            var existing = canvas.transform.Find("ExecuteOverlayUI");
+            var existing = canvasTransform.Find("ExecuteOverlayUI");
             CombatExecuteOverlayUIView executeOverlay;
             if (existing != null)
             {
@@ -112,7 +112,7 @@ namespace FracturedChorus.Editor
             }
             else
             {
-                executeOverlay = TimelineHierarchyBuilder.BuildExecuteOverlay(canvas.transform);
+                executeOverlay = TimelineHierarchyBuilder.BuildExecuteOverlay(canvasTransform);
             }
 
             var bootstrap = Object.FindAnyObjectByType<CombatPrototypeBootstrap>();
@@ -127,7 +127,7 @@ namespace FracturedChorus.Editor
                 SetRef(controller, "executeOverlay", executeOverlay);
             }
 
-            EditorSceneManager.MarkSceneDirty(canvas.gameObject.scene);
+            EditorSceneManager.MarkSceneDirty(canvasTransform.gameObject.scene);
             Selection.activeGameObject = executeOverlay.gameObject;
             Debug.Log("[Fractured Chorus] ExecuteOverlayUI ready in Hierarchy. Adjust RectTransform in Inspector, then Save scene.");
         }
@@ -135,22 +135,24 @@ namespace FracturedChorus.Editor
         [MenuItem("Fractured Chorus/Rebuild Timeline + Skill Panel (Hierarchy)")]
         public static void RebuildUiHierarchy()
         {
-            var canvas = Object.FindAnyObjectByType<Canvas>();
-            if (canvas == null)
+            var canvasTransform = CombatUiHierarchy.ResolveCombatCanvasTransform();
+            if (canvasTransform == null)
             {
-                EditorUtility.DisplayDialog("Fractured Chorus", "Không tìm thấy Canvas trong scene.", "OK");
+                EditorUtility.DisplayDialog("Fractured Chorus", "Không tìm thấy CombatCanvas trong scene.", "OK");
                 return;
             }
 
-            var timeline = TimelineHierarchyBuilder.BuildTimeline(canvas.transform);
-            var skillPanel = TimelineHierarchyBuilder.BuildSkillPanel(canvas.transform);
-            var executeOverlay = TimelineHierarchyBuilder.BuildExecuteOverlay(canvas.transform);
+            var timeline = TimelineHierarchyBuilder.BuildTimeline(canvasTransform);
+            var skillPanel = TimelineHierarchyBuilder.BuildSkillPanel(canvasTransform);
+            var partyBar = TimelineHierarchyBuilder.BuildPartyStatusBar(canvasTransform);
+            var executeOverlay = TimelineHierarchyBuilder.BuildExecuteOverlay(canvasTransform);
 
             var bootstrap = Object.FindAnyObjectByType<CombatPrototypeBootstrap>();
             if (bootstrap != null)
             {
                 SetRef(bootstrap, "timelineView", timeline);
                 SetRef(bootstrap, "skillPanelView", skillPanel);
+                SetRef(bootstrap, "partyStatusBarView", partyBar);
                 SetRef(bootstrap, "executeOverlay", executeOverlay);
             }
 
@@ -162,9 +164,46 @@ namespace FracturedChorus.Editor
                 SetRef(controller, "executeOverlay", executeOverlay);
             }
 
-            EditorSceneManager.MarkSceneDirty(canvas.gameObject.scene);
+            EditorSceneManager.MarkSceneDirty(canvasTransform.gameObject.scene);
             Selection.activeGameObject = executeOverlay.gameObject;
-            Debug.Log("[Fractured Chorus] Rebuilt BeatTimelineUI + SkillPanelUI + ExecuteOverlayUI. Save scene.");
+            Debug.Log("[Fractured Chorus] Rebuilt BeatTimelineUI + SkillPanelUI + PartyStatusBarUI + ExecuteOverlayUI. Save scene.");
+        }
+
+        [MenuItem("Fractured Chorus/Upgrade Party Card Template (Hierarchy)")]
+        public static void UpgradePartyCardTemplate()
+        {
+            CombatUiHierarchy.UpgradePartyCardTemplatesInScene();
+        }
+
+        [MenuItem("Fractured Chorus/Fix Party Status Bar (Move to CombatCanvas)")]
+        public static void FixPartyStatusBarPlacement()
+        {
+            CombatUiHierarchy.FixPartyStatusBarPlacement();
+        }
+
+        [MenuItem("Fractured Chorus/Add Party Status Bar (Hierarchy)")]
+        public static void AddPartyStatusBarToScene()
+        {
+            CombatUiHierarchy.RenameBackgroundCanvasInScene();
+
+            var canvasTransform = CombatUiHierarchy.ResolveCombatCanvasTransform();
+            if (canvasTransform == null)
+            {
+                EditorUtility.DisplayDialog("Fractured Chorus", "Không tìm thấy CombatCanvas trong scene.", "OK");
+                return;
+            }
+
+            var partyBar = TimelineHierarchyBuilder.BuildPartyStatusBar(canvasTransform);
+
+            var bootstrap = Object.FindAnyObjectByType<CombatPrototypeBootstrap>();
+            if (bootstrap != null)
+            {
+                SetRef(bootstrap, "partyStatusBarView", partyBar);
+            }
+
+            EditorSceneManager.MarkSceneDirty(canvasTransform.gameObject.scene);
+            Selection.activeGameObject = partyBar.gameObject;
+            Debug.Log("[Fractured Chorus] PartyStatusBarUI ready under CombatCanvas (top-left). Save scene.");
         }
 
         private static void SetRef(Object target, string field, Object value)
