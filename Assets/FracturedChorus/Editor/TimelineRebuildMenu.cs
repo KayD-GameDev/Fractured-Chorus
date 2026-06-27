@@ -206,6 +206,8 @@ namespace FracturedChorus.Editor
             }
 
             var partyBar = TimelineHierarchyBuilder.BuildPartyStatusBar(canvasTransform);
+            CombatUiHierarchy.EnsurePartyCardsInHierarchy();
+            ElementBadgeIconSetup.ApplyToStatBlocks();
 
             var bootstrap = Object.FindAnyObjectByType<CombatPrototypeBootstrap>();
             if (bootstrap != null)
@@ -216,6 +218,13 @@ namespace FracturedChorus.Editor
             EditorSceneManager.MarkSceneDirty(canvasTransform.gameObject.scene);
             Selection.activeGameObject = partyBar.gameObject;
             Debug.Log("[Fractured Chorus] PartyStatusBarUI ready under CombatCanvas (top-left). Save scene.");
+        }
+
+        [MenuItem("Fractured Chorus/Setup Party Cards in Hierarchy")]
+        public static void SetupPartyCardsInHierarchy()
+        {
+            CombatUiHierarchy.EnsurePartyCardsInHierarchy();
+            ElementBadgeIconSetup.ApplyToStatBlocks();
         }
 
         private static void SetRef(Object target, string field, Object value)

@@ -14,8 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.UnitStatBlockSO
   blockId: StatBlock_Mage
   element: 2
+  elementBadgeIcon: {fileID: 21300000, guid: cb81623deca5f254cb9d5893eb5d889d, type: 3}
+  strengthType: 0
   strength: 50
-  magic: 100
   endurance: 8
   heartBeat: 150
   baseLuck: 12

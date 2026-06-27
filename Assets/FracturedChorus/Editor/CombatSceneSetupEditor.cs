@@ -126,6 +126,9 @@ namespace FracturedChorus.Editor
                 EditorUtility.SetDirty(timeline);
             }
 
+            CombatUiHierarchy.EnsurePartyCardsInHierarchy();
+            ElementBadgeIconSetup.ApplyToStatBlocks();
+
             var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
             if (scene.IsValid() && scene.isLoaded)
             {

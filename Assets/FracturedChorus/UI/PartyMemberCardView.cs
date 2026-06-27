@@ -24,6 +24,8 @@ namespace FracturedChorus.UI
 
         private CombatUnit _unit;
 
+        public CombatUnit BoundUnit => _unit;
+
         public void WireReferences()
         {
             if (borderImage == null)
@@ -68,6 +70,20 @@ namespace FracturedChorus.UI
 
             EnsureHealthBarVisuals();
             EnsureCircleBadgeSprites();
+            ApplyBadgeLayout();
+        }
+
+        private void ApplyBadgeLayout()
+        {
+            if (elementBadgeRing != null)
+            {
+                PartyCardLayout.ApplyElementBadgeRect(elementBadgeRing.rectTransform);
+            }
+            else
+            {
+                var badgeTransform = transform.Find("ElementBadge") as RectTransform;
+                PartyCardLayout.ApplyElementBadgeRect(badgeTransform);
+            }
         }
 
         public void Bind(CombatUnit unit, UnitPresetSO preset)
@@ -130,18 +146,22 @@ namespace FracturedChorus.UI
                 borderImage.color = HarmonyElementPalette.GetBorderColor(element);
             }
 
+            var icon = HarmonyElementPalette.ResolveElementIcon(element, statBlock);
+
             if (elementBadgeRing != null)
             {
+                elementBadgeRing.enabled = true;
                 elementBadgeRing.sprite = UiCircleSpriteUtil.Circle;
                 elementBadgeRing.color = HarmonyElementPalette.GetBadgeRingColor(element);
             }
 
             if (elementIcon != null)
             {
-                var icon = HarmonyElementPalette.ResolveElementIcon(element, statBlock);
+                var hasArtIcon = statBlock?.elementBadgeIcon != null && icon != null;
                 elementIcon.sprite = icon != null ? icon : UiCircleSpriteUtil.Circle;
-                elementIcon.color = icon != null ? Color.white : HarmonyElementPalette.GetBadgeFill(element);
+                elementIcon.color = hasArtIcon ? Color.white : HarmonyElementPalette.GetBadgeFill(element);
                 elementIcon.preserveAspect = true;
+                PartyCardLayout.ApplyElementIconRect(elementIcon.rectTransform);
             }
         }
 
@@ -199,9 +219,14 @@ namespace FracturedChorus.UI
         private void EnsureCircleBadgeSprites()
         {
             var circle = UiCircleSpriteUtil.Circle;
-            if (elementBadgeRing != null && elementBadgeRing.sprite == null)
+            if (elementBadgeRing != null)
             {
-                elementBadgeRing.sprite = circle;
+                if (elementBadgeRing.sprite == null)
+                {
+                    elementBadgeRing.sprite = circle;
+                }
+
+                elementBadgeRing.enabled = true;
             }
 
             if (elementIcon != null && elementIcon.sprite == null)

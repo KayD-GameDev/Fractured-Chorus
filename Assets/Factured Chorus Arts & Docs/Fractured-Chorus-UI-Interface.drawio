@@ -1,0 +1,376 @@
+<mxfile host="Electron" agent="fc-ui-wireframe" pages="2">
+  <diagram name="UI-Overview-Flow" id="ui-overview">
+    <mxGraphModel dx="1288" dy="783" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="920" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="doc_title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=14;fontStyle=1;" value="&lt;b&gt;Fractured Chorus — UI Interface (Wireframe)&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;Boundary screens · MVC View layer · UC navigation&lt;/font&gt;" vertex="1">
+          <mxGeometry height="40" width="520" x="40" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacingLeft=8;fontSize=10;" value="&lt;b&gt;Chú thích&lt;/b&gt;&lt;br&gt;─── Chuyển scene (UC)&lt;br&gt;▭ Panel / HUD&lt;br&gt;◎ Map node" vertex="1">
+          <mxGeometry height="90" width="200" x="1280" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="menu_frame" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1a1a2e;strokeColor=#16213e;strokeWidth=2;align=left;verticalAlign=top;spacingTop=0;" value="" vertex="1">
+          <mxGeometry height="200" width="220" x="40" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="menu_title" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#6c8ebf;strokeColor=#6c8ebf;fontColor=#ffffff;fontStyle=1;fontSize=12;align=center;verticalAlign=middle;" value="1. Main Menu" vertex="1">
+          <mxGeometry height="28" width="220" x="40" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="menu_body" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8f9fa;strokeColor=#dee2e6;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fontSize=10;" value="" vertex="1">
+          <mxGeometry height="172" width="220" x="40" y="108" as="geometry" />
+        </mxCell>
+        <mxCell id="menu_start" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6c8ebf;strokeColor=#6c8ebf;fontColor=#ffffff;fontSize=11;align=center;verticalAlign=middle;fontStyle=1;" value="Start Run" vertex="1">
+          <mxGeometry height="32" width="160" x="70" y="132" as="geometry" />
+        </mxCell>
+        <mxCell id="menu_load" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;align=center;verticalAlign=middle;fontStyle=1;" value="Load Profile" vertex="1">
+          <mxGeometry height="28" width="160" x="70" y="172" as="geometry" />
+        </mxCell>
+        <mxCell id="menu_set" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;align=center;verticalAlign=middle;fontStyle=1;" value="Settings" vertex="1">
+          <mxGeometry height="28" width="160" x="70" y="208" as="geometry" />
+        </mxCell>
+        <mxCell id="menu_meta" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#adb5bd;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=10;" value="Echo · Unlocks (meta)" vertex="1">
+          <mxGeometry height="36" width="188" x="56" y="248" as="geometry" />
+        </mxCell>
+        <mxCell id="contract_frame" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1a1a2e;strokeColor=#16213e;strokeWidth=2;align=left;verticalAlign=top;spacingTop=0;" value="" vertex="1">
+          <mxGeometry height="200" width="240" x="300" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="contract_title" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#6c8ebf;strokeColor=#6c8ebf;fontColor=#ffffff;fontStyle=1;fontSize=12;align=center;verticalAlign=middle;" value="2. Select Contract (UC-02)" vertex="1">
+          <mxGeometry height="28" width="240" x="300" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="contract_body" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8f9fa;strokeColor=#dee2e6;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fontSize=10;" value="" vertex="1">
+          <mxGeometry height="172" width="240" x="300" y="108" as="geometry" />
+        </mxCell>
+        <mxCell id="c_easy" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#adb5bd;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=10;" value="Contract A — Standard" vertex="1">
+          <mxGeometry height="44" width="216" x="312" y="124" as="geometry" />
+        </mxCell>
+        <mxCell id="c_hard" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#adb5bd;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=10;" value="Contract B — Hard (+relic risk)" vertex="1">
+          <mxGeometry height="44" width="216" x="312" y="176" as="geometry" />
+        </mxCell>
+        <mxCell id="c_confirm" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6c8ebf;strokeColor=#6c8ebf;fontColor=#ffffff;fontSize=11;align=center;verticalAlign=middle;fontStyle=1;" value="Confirm → Generate Map" vertex="1">
+          <mxGeometry height="32" width="192" x="324" y="236" as="geometry" />
+        </mxCell>
+        <mxCell id="map_frame" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1a1a2e;strokeColor=#16213e;strokeWidth=2;align=left;verticalAlign=top;spacingTop=0;" value="" vertex="1">
+          <mxGeometry height="340" width="360" x="40" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="map_title" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#6c8ebf;strokeColor=#6c8ebf;fontColor=#ffffff;fontStyle=1;fontSize=12;align=center;verticalAlign=middle;" value="3. Run Map (UC-01 / UC-12)" vertex="1">
+          <mxGeometry height="28" width="360" x="40" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="map_body" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8f9fa;strokeColor=#dee2e6;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fontSize=10;" value="" vertex="1">
+          <mxGeometry height="312" width="360" x="40" y="348" as="geometry" />
+        </mxCell>
+        <mxCell id="map_hud" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#adb5bd;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=10;" value="Floor 4/16 · Seed #A91F · Shard 120" vertex="1">
+          <mxGeometry height="28" width="344" x="48" y="356" as="geometry" />
+        </mxCell>
+        <mxCell id="map_n0" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=9;align=center;verticalAlign=middle;" value="Start" vertex="1">
+          <mxGeometry height="36" width="64" x="190" y="398" as="geometry" />
+        </mxCell>
+        <mxCell id="map_e0" edge="1" parent="1" source="map_n0" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#6c8ebf;strokeWidth=2;endArrow=blockThin;endFill=1;fontSize=10;fontColor=#333333;" target="map_n1" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="map_n1" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=9;align=center;verticalAlign=middle;" value="Battle" vertex="1">
+          <mxGeometry height="36" width="64" x="190" y="446" as="geometry" />
+        </mxCell>
+        <mxCell id="map_e1" edge="1" parent="1" source="map_n1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#6c8ebf;strokeWidth=2;endArrow=blockThin;endFill=1;fontSize=10;fontColor=#333333;" target="map_n2" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="map_n2" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=9;align=center;verticalAlign=middle;" value="Elite" vertex="1">
+          <mxGeometry height="36" width="64" x="190" y="494" as="geometry" />
+        </mxCell>
+        <mxCell id="map_e2" edge="1" parent="1" source="map_n2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#6c8ebf;strokeWidth=2;endArrow=blockThin;endFill=1;fontSize=10;fontColor=#333333;" target="map_n3" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="map_n3" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=2;fontSize=9;align=center;verticalAlign=middle;fontStyle=1;" value="Camp" vertex="1">
+          <mxGeometry height="36" width="64" x="190" y="542" as="geometry" />
+        </mxCell>
+        <mxCell id="map_e3" edge="1" parent="1" source="map_n3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#6c8ebf;strokeWidth=2;endArrow=blockThin;endFill=1;fontSize=10;fontColor=#333333;" target="map_n4" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="map_n4" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=9;align=center;verticalAlign=middle;" value="Boss" vertex="1">
+          <mxGeometry height="36" width="64" x="190" y="590" as="geometry" />
+        </mxCell>
+        <mxCell id="map_party" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#adb5bd;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=10;" value="Party: Tank · DPS · Mage" vertex="1">
+          <mxGeometry height="34" width="132" x="48" y="616" as="geometry" />
+        </mxCell>
+        <mxCell id="map_go" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6c8ebf;strokeColor=#6c8ebf;fontColor=#ffffff;fontSize=11;align=center;verticalAlign=middle;fontStyle=1;" value="Enter Node →" vertex="1">
+          <mxGeometry height="36" width="120" x="272" y="616" as="geometry" />
+        </mxCell>
+        <mxCell id="combat_frame" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1a1a2e;strokeColor=#16213e;strokeWidth=2;align=left;verticalAlign=top;spacingTop=0;" value="" vertex="1">
+          <mxGeometry height="340" width="520" x="440" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="combat_title" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#6c8ebf;strokeColor=#6c8ebf;fontColor=#ffffff;fontStyle=1;fontSize=12;align=center;verticalAlign=middle;" value="4. Combat Scene (UC-03/04/06/11)" vertex="1">
+          <mxGeometry height="28" width="520" x="440" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="combat_body" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8f9fa;strokeColor=#dee2e6;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fontSize=10;" value="" vertex="1">
+          <mxGeometry height="312" width="520" x="440" y="348" as="geometry" />
+        </mxCell>
+        <mxCell id="c_timeline" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#adb5bd;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=10;" value="Beat Timeline: [P:Skill D3] [E:Atk D5] [P:Move D2] … ▶ Beat 7" vertex="1">
+          <mxGeometry height="32" width="504" x="448" y="354" as="geometry" />
+        </mxCell>
+        <mxCell id="c_tele" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#adb5bd;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=10;" value="Enemy Telegraph&lt;br&gt;Oni → Slash (target: backline)" vertex="1">
+          <mxGeometry height="72" width="120" x="448" y="392" as="geometry" />
+        </mxCell>
+        <mxCell id="c_grid_0_0" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e9ecef;strokeColor=#6c757d;fontSize=9;align=center;verticalAlign=middle;" value="[E]" vertex="1">
+          <mxGeometry height="42" width="46" x="580" y="392" as="geometry" />
+        </mxCell>
+        <mxCell id="c_grid_0_1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e9ecef;strokeColor=#6c757d;fontSize=9;align=center;verticalAlign=middle;" value="[·]" vertex="1">
+          <mxGeometry height="42" width="46" x="631" y="392" as="geometry" />
+        </mxCell>
+        <mxCell id="c_grid_0_2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e9ecef;strokeColor=#6c757d;fontSize=9;align=center;verticalAlign=middle;" value="[·]" vertex="1">
+          <mxGeometry height="42" width="46" x="682" y="392" as="geometry" />
+        </mxCell>
+        <mxCell id="c_grid_1_0" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e9ecef;strokeColor=#6c757d;fontSize=9;align=center;verticalAlign=middle;" value="[·]" vertex="1">
+          <mxGeometry height="42" width="46" x="580" y="439" as="geometry" />
+        </mxCell>
+        <mxCell id="c_grid_1_1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e9ecef;strokeColor=#6c757d;fontSize=9;align=center;verticalAlign=middle;" value="[P]" vertex="1">
+          <mxGeometry height="42" width="46" x="631" y="439" as="geometry" />
+        </mxCell>
+        <mxCell id="c_grid_1_2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e9ecef;strokeColor=#6c757d;fontSize=9;align=center;verticalAlign=middle;" value="[·]" vertex="1">
+          <mxGeometry height="42" width="46" x="682" y="439" as="geometry" />
+        </mxCell>
+        <mxCell id="c_grid_2_0" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e9ecef;strokeColor=#6c757d;fontSize=9;align=center;verticalAlign=middle;" value="[·]" vertex="1">
+          <mxGeometry height="42" width="46" x="580" y="486" as="geometry" />
+        </mxCell>
+        <mxCell id="c_grid_2_1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e9ecef;strokeColor=#6c757d;fontSize=9;align=center;verticalAlign=middle;" value="[·]" vertex="1">
+          <mxGeometry height="42" width="46" x="631" y="486" as="geometry" />
+        </mxCell>
+        <mxCell id="c_grid_2_2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e9ecef;strokeColor=#6c757d;fontSize=9;align=center;verticalAlign=middle;" value="[·]" vertex="1">
+          <mxGeometry height="42" width="46" x="682" y="486" as="geometry" />
+        </mxCell>
+        <mxCell id="c_party" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#adb5bd;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=10;" value="Ally HUD&lt;br&gt;HP · Posture · Morale&lt;br&gt;Cover / Flank" vertex="1">
+          <mxGeometry height="130" width="112" x="840" y="392" as="geometry" />
+        </mxCell>
+        <mxCell id="c_chorus" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#adb5bd;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=10;" value="Chorus Gauge ████░░" vertex="1">
+          <mxGeometry height="24" width="504" x="448" y="530" as="geometry" />
+        </mxCell>
+        <mxCell id="c_act0" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6c8ebf;strokeColor=#6c8ebf;fontColor=#ffffff;fontSize=11;align=center;verticalAlign=middle;fontStyle=1;" value="Skill" vertex="1">
+          <mxGeometry height="28" width="90" x="448" y="562" as="geometry" />
+        </mxCell>
+        <mxCell id="c_act1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;align=center;verticalAlign=middle;fontStyle=1;" value="Move" vertex="1">
+          <mxGeometry height="28" width="90" x="546" y="562" as="geometry" />
+        </mxCell>
+        <mxCell id="c_act2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;align=center;verticalAlign=middle;fontStyle=1;" value="Guard" vertex="1">
+          <mxGeometry height="28" width="90" x="644" y="562" as="geometry" />
+        </mxCell>
+        <mxCell id="c_act3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;align=center;verticalAlign=middle;fontStyle=1;" value="Interrupt" vertex="1">
+          <mxGeometry height="28" width="90" x="742" y="562" as="geometry" />
+        </mxCell>
+        <mxCell id="c_act4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;align=center;verticalAlign=middle;fontStyle=1;" value="End Round" vertex="1">
+          <mxGeometry height="28" width="90" x="840" y="562" as="geometry" />
+        </mxCell>
+        <mxCell id="c_log" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#adb5bd;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=10;" value="Combat log / Intent line" vertex="1">
+          <mxGeometry height="48" width="360" x="448" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="c_retreat" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;align=center;verticalAlign=middle;fontStyle=1;" value="Retreat (UC-11)" vertex="1">
+          <mxGeometry height="32" width="120" x="820" y="608" as="geometry" />
+        </mxCell>
+        <mxCell id="camp_frame" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1a1a2e;strokeColor=#16213e;strokeWidth=2;align=left;verticalAlign=top;spacingTop=0;" value="" vertex="1">
+          <mxGeometry height="180" width="220" x="40" y="700" as="geometry" />
+        </mxCell>
+        <mxCell id="camp_title" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#6c8ebf;strokeColor=#6c8ebf;fontColor=#ffffff;fontStyle=1;fontSize=12;align=center;verticalAlign=middle;" value="5. Breach Camp (UC-07)" vertex="1">
+          <mxGeometry height="28" width="220" x="40" y="700" as="geometry" />
+        </mxCell>
+        <mxCell id="camp_body" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8f9fa;strokeColor=#dee2e6;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fontSize=10;" value="" vertex="1">
+          <mxGeometry height="172" width="220" x="40" y="728" as="geometry" />
+        </mxCell>
+        <mxCell id="camp_desc" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#adb5bd;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=10;" value="Rest node · −30 Morale stress" vertex="1">
+          <mxGeometry height="40" width="196" x="52" y="740" as="geometry" />
+        </mxCell>
+        <mxCell id="camp_heal" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6c8ebf;strokeColor=#6c8ebf;fontColor=#ffffff;fontSize=11;align=center;verticalAlign=middle;fontStyle=1;" value="Heal 30% HP" vertex="1">
+          <mxGeometry height="30" width="180" x="60" y="788" as="geometry" />
+        </mxCell>
+        <mxCell id="camp_skill" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;align=center;verticalAlign=middle;fontStyle=1;" value="Upgrade Skill (→ UC-07)" vertex="1">
+          <mxGeometry height="30" width="180" x="60" y="826" as="geometry" />
+        </mxCell>
+        <mxCell id="camp_leave" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;align=center;verticalAlign=middle;fontStyle=1;" value="Leave → Map" vertex="1">
+          <mxGeometry height="28" width="180" x="60" y="864" as="geometry" />
+        </mxCell>
+        <mxCell id="shop_frame" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1a1a2e;strokeColor=#16213e;strokeWidth=2;align=left;verticalAlign=top;spacingTop=0;" value="" vertex="1">
+          <mxGeometry height="180" width="220" x="280" y="700" as="geometry" />
+        </mxCell>
+        <mxCell id="shop_title" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#6c8ebf;strokeColor=#6c8ebf;fontColor=#ffffff;fontStyle=1;fontSize=12;align=center;verticalAlign=middle;" value="6. Relay Shop" vertex="1">
+          <mxGeometry height="28" width="220" x="280" y="700" as="geometry" />
+        </mxCell>
+        <mxCell id="shop_body" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8f9fa;strokeColor=#dee2e6;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fontSize=10;" value="" vertex="1">
+          <mxGeometry height="152" width="220" x="280" y="728" as="geometry" />
+        </mxCell>
+        <mxCell id="shop_item1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#adb5bd;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=10;" value="Relic / Consumable slot" vertex="1">
+          <mxGeometry height="36" width="196" x="292" y="740" as="geometry" />
+        </mxCell>
+        <mxCell id="shop_item2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#adb5bd;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=10;" value="Reroll / Remove card" vertex="1">
+          <mxGeometry height="36" width="196" x="292" y="782" as="geometry" />
+        </mxCell>
+        <mxCell id="shop_buy" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6c8ebf;strokeColor=#6c8ebf;fontColor=#ffffff;fontSize=11;align=center;verticalAlign=middle;fontStyle=1;" value="Purchase" vertex="1">
+          <mxGeometry height="30" width="180" x="300" y="828" as="geometry" />
+        </mxCell>
+        <mxCell id="shop_exit" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;align=center;verticalAlign=middle;fontStyle=1;" value="Exit → Map" vertex="1">
+          <mxGeometry height="28" width="180" x="300" y="864" as="geometry" />
+        </mxCell>
+        <mxCell id="skill_frame" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1a1a2e;strokeColor=#16213e;strokeWidth=2;align=left;verticalAlign=top;spacingTop=0;" value="" vertex="1">
+          <mxGeometry height="180" width="240" x="520" y="700" as="geometry" />
+        </mxCell>
+        <mxCell id="skill_title" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#6c8ebf;strokeColor=#6c8ebf;fontColor=#ffffff;fontStyle=1;fontSize=12;align=center;verticalAlign=middle;" value="7. Skill Tree (UC-07)" vertex="1">
+          <mxGeometry height="28" width="240" x="520" y="700" as="geometry" />
+        </mxCell>
+        <mxCell id="skill_body" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8f9fa;strokeColor=#dee2e6;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fontSize=10;" value="" vertex="1">
+          <mxGeometry height="172" width="240" x="520" y="728" as="geometry" />
+        </mxCell>
+        <mxCell id="sk_tree" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#adb5bd;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=10;" value="Weapon branch nodes&lt;br&gt;Shield / Bow / Staff tiers" vertex="1">
+          <mxGeometry height="80" width="216" x="532" y="740" as="geometry" />
+        </mxCell>
+        <mxCell id="sk_up" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6c8ebf;strokeColor=#6c8ebf;fontColor=#ffffff;fontSize=11;align=center;verticalAlign=middle;fontStyle=1;" value="Spend Script → Unlock" vertex="1">
+          <mxGeometry height="30" width="192" x="544" y="828" as="geometry" />
+        </mxCell>
+        <mxCell id="sk_close" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;align=center;verticalAlign=middle;fontStyle=1;" value="Close" vertex="1">
+          <mxGeometry height="28" width="192" x="544" y="864" as="geometry" />
+        </mxCell>
+        <mxCell id="boss_frame" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1a1a2e;strokeColor=#16213e;strokeWidth=2;align=left;verticalAlign=top;spacingTop=0;" value="" vertex="1">
+          <mxGeometry height="180" width="240" x="780" y="700" as="geometry" />
+        </mxCell>
+        <mxCell id="boss_title" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#6c8ebf;strokeColor=#6c8ebf;fontColor=#ffffff;fontStyle=1;fontSize=12;align=center;verticalAlign=middle;" value="8. Boss — Oni (UC-09)" vertex="1">
+          <mxGeometry height="28" width="240" x="780" y="700" as="geometry" />
+        </mxCell>
+        <mxCell id="boss_body" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8f9fa;strokeColor=#dee2e6;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fontSize=10;" value="" vertex="1">
+          <mxGeometry height="152" width="240" x="780" y="728" as="geometry" />
+        </mxCell>
+        <mxCell id="boss_ph" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#adb5bd;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=10;" value="Phase 1 → Phase 2 (≤50% HP)" vertex="1">
+          <mxGeometry height="36" width="216" x="792" y="740" as="geometry" />
+        </mxCell>
+        <mxCell id="boss_st" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#adb5bd;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=10;" value="Stunt bar · Dissonant Conductor" vertex="1">
+          <mxGeometry height="40" width="216" x="792" y="782" as="geometry" />
+        </mxCell>
+        <mxCell id="boss_fight" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6c8ebf;strokeColor=#6c8ebf;fontColor=#ffffff;fontSize=11;align=center;verticalAlign=middle;fontStyle=1;" value="Combat HUD (shared)" vertex="1">
+          <mxGeometry height="28" width="192" x="804" y="838" as="geometry" />
+        </mxCell>
+        <mxCell id="mvc_note" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacingLeft=8;fontSize=10;" value="&lt;b&gt;MVC — Combat Scene&lt;/b&gt;&lt;br&gt;View: HUD, Grid, Timeline, Telegraph&lt;br&gt;Controller: CombatController, input&lt;br&gt;Model: CombatSession, BeatTimeline, RunState" vertex="1">
+          <mxGeometry height="100" width="220" x="1040" y="700" as="geometry" />
+        </mxCell>
+        <mxCell id="f1" edge="1" parent="1" source="menu_frame" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#6c8ebf;strokeWidth=2;endArrow=blockThin;endFill=1;fontSize=10;fontColor=#333333;" target="contract_frame" value="UC-01">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f2" edge="1" parent="1" source="contract_frame" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#6c8ebf;strokeWidth=2;endArrow=blockThin;endFill=1;fontSize=10;fontColor=#333333;" target="map_frame" value="generate">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f3" edge="1" parent="1" source="map_frame" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#6c8ebf;strokeWidth=2;endArrow=blockThin;endFill=1;fontSize=10;fontColor=#333333;" target="combat_frame" value="Battle/Elite">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f4" edge="1" parent="1" source="map_frame" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#6c8ebf;strokeWidth=2;endArrow=blockThin;endFill=1;fontSize=10;fontColor=#333333;" target="camp_frame" value="Camp node">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f5" edge="1" parent="1" source="map_frame" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#6c8ebf;strokeWidth=2;endArrow=blockThin;endFill=1;fontSize=10;fontColor=#333333;" target="shop_frame" value="Relay">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f6" edge="1" parent="1" source="camp_body" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#6c8ebf;strokeWidth=2;endArrow=blockThin;endFill=1;fontSize=10;fontColor=#333333;dashed=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="skill_body" value="«include»">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="150" y="910" />
+              <mxPoint x="640" y="910" />
+            </Array>
+            <mxPoint x="150" y="910" as="sourcePoint" />
+            <mxPoint x="640" y="900" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="f7" edge="1" parent="1" source="map_frame" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#6c8ebf;strokeWidth=2;endArrow=blockThin;endFill=1;fontSize=10;fontColor=#333333;" target="boss_frame" value="Floor 16">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f8" edge="1" parent="1" source="combat_frame" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#6c8ebf;strokeWidth=2;endArrow=blockThin;endFill=1;fontSize=10;fontColor=#333333;dashed=1;" target="map_frame" value="win / UC-11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f9" edge="1" parent="1" source="camp_frame" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#6c8ebf;strokeWidth=2;endArrow=blockThin;endFill=1;fontSize=10;fontColor=#333333;" target="map_frame" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f10" edge="1" parent="1" source="shop_frame" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#6c8ebf;strokeWidth=2;endArrow=blockThin;endFill=1;fontSize=10;fontColor=#333333;" target="map_frame" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="UI-Combat-Detail" id="ui-combat">
+    <mxGraphModel dx="1084" dy="659" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="700" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="d_title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=14;fontStyle=1;" value="&lt;b&gt;Combat UI — Detail wireframe&lt;/b&gt; (Planning phase)" vertex="1">
+          <mxGeometry height="30" width="400" x="80" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="d_frame" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1a1a2e;strokeColor=#16213e;strokeWidth=2;align=left;verticalAlign=top;spacingTop=0;" value="" vertex="1">
+          <mxGeometry height="520" width="900" x="80" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#6c8ebf;strokeColor=#6c8ebf;fontColor=#ffffff;fontStyle=1;fontSize=12;align=center;verticalAlign=middle;" value="Combat Scene — View Layer" vertex="1">
+          <mxGeometry height="28" width="900" x="80" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="d_body" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8f9fa;strokeColor=#dee2e6;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fontSize=10;" value="" vertex="1">
+          <mxGeometry height="492" width="900" x="80" y="88" as="geometry" />
+        </mxCell>
+        <mxCell id="d_r1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#adb5bd;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=10;" value="TOP — Beat Timeline + Round phase (Planning / Execute / Upkeep)" vertex="1">
+          <mxGeometry height="48" width="900" x="80" y="88" as="geometry" />
+        </mxCell>
+        <mxCell id="d_r2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#adb5bd;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=10;" value="LEFT — Enemy roster + Telegraph intents" vertex="1">
+          <mxGeometry height="210" width="250" x="80" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="d_r3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#adb5bd;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=10;" value="CENTER — FormationGrid 3×3 (Cover / Flank)" vertex="1">
+          <mxGeometry height="210" width="390" x="340" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="d_r4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#adb5bd;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=10;" value="RIGHT — Party cards + Morale / Affliction" vertex="1">
+          <mxGeometry height="210" width="240" x="740" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="d_r5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#adb5bd;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=10;" value="BOTTOM — Action bar + Delay budget" vertex="1">
+          <mxGeometry height="100" width="900" x="80" y="380" as="geometry" />
+        </mxCell>
+        <mxCell id="d_r6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#adb5bd;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=10;" value="FOOTER — Chorus Gauge · Combat log · Retreat" vertex="1">
+          <mxGeometry height="80" width="900" x="80" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="d_g_0_0" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e9ecef;strokeColor=#6c757d;fontSize=9;align=center;verticalAlign=middle;" value="[E]" vertex="1">
+          <mxGeometry height="48" width="52" x="382" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="d_g_0_1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e9ecef;strokeColor=#6c757d;fontSize=9;align=center;verticalAlign=middle;" value="[·]" vertex="1">
+          <mxGeometry height="48" width="52" x="509" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="d_g_0_2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e9ecef;strokeColor=#6c757d;fontSize=9;align=center;verticalAlign=middle;" value="[·]" vertex="1">
+          <mxGeometry height="48" width="52" x="646" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="d_g_1_0" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e9ecef;strokeColor=#6c757d;fontSize=9;align=center;verticalAlign=middle;" value="[·]" vertex="1">
+          <mxGeometry height="48" width="52" x="382" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="d_g_1_1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e9ecef;strokeColor=#6c757d;fontSize=9;align=center;verticalAlign=middle;" value="[P]" vertex="1">
+          <mxGeometry height="48" width="52" x="509" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="d_g_1_2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e9ecef;strokeColor=#6c757d;fontSize=9;align=center;verticalAlign=middle;" value="[·]" vertex="1">
+          <mxGeometry height="48" width="52" x="646" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="d_g_2_0" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e9ecef;strokeColor=#6c757d;fontSize=9;align=center;verticalAlign=middle;" value="[·]" vertex="1">
+          <mxGeometry height="48" width="52" x="380" y="306" as="geometry" />
+        </mxCell>
+        <mxCell id="d_g_2_1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e9ecef;strokeColor=#6c757d;fontSize=9;align=center;verticalAlign=middle;" value="[·]" vertex="1">
+          <mxGeometry height="48" width="52" x="509" y="306" as="geometry" />
+        </mxCell>
+        <mxCell id="d_g_2_2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e9ecef;strokeColor=#6c757d;fontSize=9;align=center;verticalAlign=middle;" value="[·]" vertex="1">
+          <mxGeometry height="48" width="52" x="646" y="306" as="geometry" />
+        </mxCell>
+        <mxCell id="d_actions" parent="1" style="rounded=0;fillColor=none;strokeColor=none;html=1;" value="" vertex="1">
+          <mxGeometry height="40" width="860" x="100" y="390" as="geometry" />
+        </mxCell>
+        <mxCell id="d_b0" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6c8ebf;strokeColor=#6c8ebf;fontColor=#ffffff;fontSize=11;align=center;verticalAlign=middle;fontStyle=1;" value="Skill (UC-04)" vertex="1">
+          <mxGeometry height="32" width="128" x="121" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="d_b1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;align=center;verticalAlign=middle;fontStyle=1;" value="Move (UC-06)" vertex="1">
+          <mxGeometry height="32" width="128" x="259" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="d_b2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;align=center;verticalAlign=middle;fontStyle=1;" value="Guard" vertex="1">
+          <mxGeometry height="32" width="128" x="397" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="d_b3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;align=center;verticalAlign=middle;fontStyle=1;" value="Interrupt (UC-05)" vertex="1">
+          <mxGeometry height="32" width="128" x="535" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="d_b4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;align=center;verticalAlign=middle;fontStyle=1;" value="Undo" vertex="1">
+          <mxGeometry height="32" width="128" x="673" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="d_b5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;align=center;verticalAlign=middle;fontStyle=1;" value="Confirm Planning" vertex="1">
+          <mxGeometry height="32" width="128" x="811" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="d_annot" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacingLeft=8;fontSize=10;" value="«boundary» CombatHUDView  ·  «control» CombatController  ·  «entity» CombatSession" vertex="1">
+          <mxGeometry height="50" width="420" x="80" y="600" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -141,8 +141,8 @@ namespace FracturedChorus.Editor
             elementRect.anchorMin = new Vector2(1f, 1f);
             elementRect.anchorMax = new Vector2(1f, 1f);
             elementRect.pivot = new Vector2(0.5f, 0.5f);
-            elementRect.anchoredPosition = new Vector2(-6f, -6f);
-            elementRect.sizeDelta = new Vector2(22f, 22f);
+            elementRect.anchoredPosition = Vector2.zero;
+            elementRect.sizeDelta = new Vector2(PartyCardLayout.BadgeSize, PartyCardLayout.BadgeSize);
             var elementRingImage = elementGo.AddComponent<Image>();
             elementRingImage.sprite = UiCircleSpriteUtil.Circle;
             elementRingImage.color = HarmonyElementPalette.GetBadgeRingColor(Combat.Damage.HarmonyElement.Melody);

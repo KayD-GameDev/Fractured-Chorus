@@ -1,0 +1,132 @@
+================================================================================
+BÁO CÁO PHÂN TÍCH QUÁ TRÌNH TẠO HÌNH NHÂN VẬT
+REN — Human World (Lumina / HIMA) · Full + Chibi
+================================================================================
+Dự án      : Fractured Chorus (game chủ đề âm nhạc)
+Hạng mục   : Thiết kế nhân vật chính 2D — thế giới thực
+Vai trò    : Protagonist · Học sinh HIMA · Second Listen / Off-Beat Covers
+Ngày chốt  : 10/06/2026
+Thư mục    : F:\Factured Chorus\art concept\Ren concept\human_world
+Trạng thái : LOCKED (user-approved v2)
+================================================================================
+
+
+--------------------------------------------------------------------------------
+TÓM TẮT
+--------------------------------------------------------------------------------
+Báo cáo ghi lại quy trình tạo concept nhân vật Ren cho bối cảnh thế giới thực
+(Lumina), format giống Coda (full-body + chibi). Thiết kế pha Yi Sang (Limbus
+Company — melancholic, áo khoác khoác vai) với Ren Amamiya (Persona 5 — tóc,
+blazer học sinh), đồng phục Nhật futuristic cho HIMA, và violin Off-Beat (không
+súng) theo Ren_Weapon_Notes.txt.
+
+Quy trình: concept brief → gen v1 (full + chibi) → v2 sửa logo HIMA chính thức
++ đổi nhãn violin "True chord" → composite logo Pillow → QA alpha → user chốt.
+
+Kết quả canon: Ren_human_CANON_full_alpha.png · Ren_human_CANON_chibi_alpha.png
+
+
+--------------------------------------------------------------------------------
+1. ĐẶT VẤN ĐỀ
+--------------------------------------------------------------------------------
+Ren là nhân vật chính Fractured Chorus — học viện HIMA, nghe lớp Resonance Lock,
+dẫn party Off-Beat Covers. Cần asset human-world đọc rõ:
+  - Silhouette học sinh trường nhạc + accent fracture (glitch hem)
+  - Nhạc cụ chính: violin học sinh, KHÔNG rifle-violin
+  - Logo HIMA chính xác trên blazer
+  - Hai deliverable: full (hero sheet) + chibi (battle/UI)
+
+
+--------------------------------------------------------------------------------
+2. PHƯƠNG PHÁP (game-2d-asset-creation)
+--------------------------------------------------------------------------------
+- Anatomy gate: ~7.5 heads (full), ~2.4 heads MapleStory (chibi)
+- Style lock: premium 2D anime cel-shade, key light top-left, Blue Archive /
+  Persona sheet quality
+- Color script: 60% black cloth · 30% grey vest/coat · 10% cyan fracture accent
+- Prop manifest: Off-Beat violin (matte black, silver trim, cyan strings/f-holes,
+  traditional neck/scroll), bow cyan line, cape glitch hem
+- Generation: native image model + reference images
+- Post: flood-matte checkerboard → Pillow composite HIMA logo từ file gốc
+- QA: manifest check, alpha RGBA on disk
+
+
+--------------------------------------------------------------------------------
+3. THAM CHIẾU (references/)
+--------------------------------------------------------------------------------
+| File | Vai trò |
+|------|---------|
+| ref_yi_sang_limbus.png | Mệt mỏi, áo khoác khoác vai, vest xám |
+| ref_persona5_ren.png | Tóc messy đen, blazer học sinh, silhouette |
+| ref_jp_school_uniform.png | Blazer đen viền trắng, cà vạt đỏ |
+| ref_offbeat_violin_concept.png | Violin gothic-futuristic (bỏ phần súng) |
+| ref_HIMA_logo.png | Logo trường — composite lên ngực trái |
+| Ren_Weapon_Notes.txt | F:\Factured Chorus\Ren_Weapon_Asset\ |
+
+
+--------------------------------------------------------------------------------
+4. PHIÊN BẢN & LỊCH SỬ
+--------------------------------------------------------------------------------
+
+v1 (archive/v1/)
+  - Gen full + chibi từ brief lore + refs
+  - Đạt: silhouette, uniform, violin no-gun, glitch cape
+  - Drift: logo HIMA approximated; violin text "OFF-BEAT"; găng cả hai tay
+
+v2 (CANON — user chốt 10/06/2026)
+  - Sửa logo: composite HIMA_logo_source.png (Pillow, fixed chest coords)
+  - Sửa violin label: "True chord" (regen violinfix full + chibi gen)
+  - Script: scripts/ren_v2_logo_composite.py
+  - Script: scripts/ren_chibi_crest_cleanup.py (xóa logo stray nếu có)
+  - Output: 1536×1024 RGBA
+
+Known accepted drift (không chặn lock):
+  - Fingerless gloves cả hai tay (manifest gốc: trái only)
+
+
+--------------------------------------------------------------------------------
+5. CANON FILES
+--------------------------------------------------------------------------------
+CANON/ (import Unity — ưu tiên *_alpha)
+  Ren_human_CANON_full_alpha.png   ← hero concept RGBA
+  Ren_human_CANON_full.png
+  Ren_human_CANON_chibi_alpha.png  ← battle/UI chibi RGBA
+  Ren_human_CANON_chibi_alpha.png
+  HIMA_logo_source.png
+
+approved_preview/ — bản preview RGB user duyệt (1024×682, không alpha)
+
+docs/
+  Ren_concept_brief.md
+  Ren_LOCK.txt
+  Ren_Human_World_Process_Analysis.txt (file này)
+
+
+--------------------------------------------------------------------------------
+6. LOADOUT LOCK (tóm tắt)
+--------------------------------------------------------------------------------
+FACE: messy black bowl bangs + wavy sides; grey-blue tired eyes; calm melancholic
+OUTFIT: black blazer white piping · HIMA patch left breast · white shirt maroon tie
+        · charcoal vest · charcoal cape shoulders · cyan glitch hem · black trousers
+        · dress shoes · fingerless gloves
+VIOLIN: matte black + silver trim · cyan strings/f-holes · "True chord" label
+        · traditional neck/scroll · NO gun stock/grip/barrel
+FORBIDDEN: rifle violin, Cadence enforcer armor (enemy variant riêng), idol costume
+
+
+--------------------------------------------------------------------------------
+7. ENGINE IMPORT
+--------------------------------------------------------------------------------
+- PPU 100–128; pivot feet (full) / bottom center (chibi battle)
+- Filter Bilinear; Sorting Group nếu tách cape/violin layer sau
+- Chibi normalize 512×768: scripts/normalize_chibi_battle.py (repo)
+
+
+--------------------------------------------------------------------------------
+8. PHÁT HIỆN SẢN XUẤT
+--------------------------------------------------------------------------------
+- Logo HIMA: gen alone drifts — composite từ file logo là cách ổn định nhất
+- Text violin nhỏ: cần pass regen riêng (violinfix) vì dễ illegible
+- Mô hình vẽ lại toàn bộ mỗi lần — giữ manifest bằng reference image + style lock block
+
+END REPORT

@@ -1,0 +1,57 @@
+================================================================================
+CHARLOTT (CHARLOTTE DUBOIS) — HUMAN WORLD LOCK (v11)
+Fractured Chorus · Party member · Lumina / HIMA · Percussion / Off-Beat ally
+Locked: 2026-06-18 · v11 gen · official HIMA crest · flood matte
+Style anchor: Ren_human_CANON_full · Ren_human_CANON_chibi
+================================================================================
+
+ROLE
+----
+- Cộng sự đầu tiên thế giới thực (Lumina).
+- Du học sinh Pháp (Lyon), HIMA Percussion / Beat & Rhythm Studies.
+
+CANON SOURCE (v11)
+------------------
+User-approved gen (2026-06-18):
+  Charlott_human_full_v11_gen.png
+  Charlott_human_chibi_v11_gen.png
+
+CANON (engine — prefer *_alpha.png):
+  Charlott_human_CANON_full_alpha.png
+  Charlott_human_CANON_chibi_alpha.png
+  Charlott_human_palette_CANON.png
+
+PIPELINE
+--------
+  scripts/charlotte_v8_finalize.py
+  → fit 1024×682 → HIMA crest (charlotte_hima_crest.py) → flood matte → CANON → sync F:
+
+HIMA CREST (sync rule)
+----------------------
+- Logo: assets/characters/charlotte/refs/HIMA_logo_source.png (official)
+- Placement: auto-detect baked badge on viewer-right lapel; same scale rule both forms
+- Full: ~(545,160) size ~64 · Chibi: ~(581,292) size ~57
+- Safe composite: no dark pre-erase · lapel occlude only
+
+MATTE
+-----
+- Flood from edges only (keeps shirt/bow/piping white opaque)
+- shirt_holes=0 required on QA
+
+FORBIDDEN ON CANON
+------------------
+  torso_feminize · glitch_piping post · skin_brighten · dark-ellipse crest erase
+
+FACE / BODY
+-----------
+- Blue eyes · porcelain skin · ginger hair · melancholic expression
+- Cyan glitch on blazer white piping only · Laurent drum · drumstick · NO cape
+- Full ~7.5 heads · Chibi ~2.4 heads
+
+F: DRIVE
+--------
+  F:\Factured Chorus\art assets\Charlotte\human_world\CANON\
+  F:\Factured Chorus\art concept\Charlotte concept\human_world\CANON\
+  F:\Factured Chorus\art concept\Charlotte concept\docs\
+
+END LOCK

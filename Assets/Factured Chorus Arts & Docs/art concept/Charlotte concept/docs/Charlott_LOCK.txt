@@ -1,0 +1,53 @@
+================================================================================
+CHARLOTT (CHARLOTTE DUBOIS) — HUMAN WORLD LOCK (v13)
+Fractured Chorus · Party member · Lumina / HIMA · Percussion / Off-Beat ally
+Locked: 2026-06-18 · chibi crest = logo master · full synced from chibi scan
+================================================================================
+
+ROLE
+----
+- Cộng sự đầu tiên thế giới thực (Lumina).
+- Du học sinh Pháp (Lyon), HIMA Percussion / Beat & Rhythm Studies.
+
+CANON SOURCE (v13)
+------------------
+  Charlott_human_full_v13_gen.png   (crest synced from chibi)
+  Charlott_human_chibi_v13_gen.png  (logo master — anchor + HIMA arc)
+  refs/HIMA_crest_from_chibi.png    (extracted circular crest patch)
+
+CANON (engine — prefer *_alpha.png):
+  Charlott_human_CANON_full_alpha.png
+  Charlott_human_CANON_chibi_alpha.png
+  Charlott_human_palette_CANON.png
+
+PIPELINE
+--------
+  scripts/charlotte_v8_finalize.py
+  → install gen → charlotte_sync_crest_from_chibi (full only) → flood matte → CANON
+
+CREST SYNC
+----------
+  Scan badge on chibi gen → paste scaled onto full lapel (same anchor + HIMA text).
+  KHÔNG dùng iridescent HIMA_logo_source overlay.
+
+MATTE
+-----
+- Flood từ viền — giữ áo trắng / bow / piping opaque
+- QA: shirt_holes=0
+
+FORBIDDEN ON CANON
+------------------
+  HIMA_logo_source Pillow overlay · dark-ellipse crest erase · torso_feminize
+
+FACE / BODY
+-----------
+- Blue eyes · porcelain skin · ginger hair · melancholic
+- Cyan glitch on blazer white piping · Laurent drum · drumstick · NO cape
+- Full ~7.5 heads · Chibi ~2.4 heads · 1024×682
+
+F: DRIVE (concept only)
+-----------------------
+  F:\Factured Chorus\art concept\Charlotte concept\CANON\   ← PNG assets
+  F:\Factured Chorus\art concept\Charlotte concept\docs\    ← LOCK + brief
+
+END LOCK

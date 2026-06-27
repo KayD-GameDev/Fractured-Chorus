@@ -6,6 +6,10 @@ Logic nằm trong **MonoBehaviour `.cs`**. Layout chỉnh trực tiếp trong **
 
 **Mọi GameObject trong scene** (unit, ô lưới, UI, EXECUTE button, camera…) — nếu bạn đổi vị trí, màu, scale, active/inactive trong Hierarchy rồi **Save scene**, thì **Play phải hiển thị y hệt**.
 
+**Quy tắc bổ sung (2026-06-27):**
+- **Không code trên scene** — logic combat/UI chỉ trong `.cs`; không UnityEvent wiring phức tạp, không Visual Scripting gameplay.
+- **GameObject phải hiện trong Hierarchy** — UI/combat object phải thấy được trong Editor (ví dụ `Card_Mage`, `Card_Ren`, `Card_Tank` dưới `CardsRow`); runtime **không** spawn ẩn rồi dịch layout khi `preserveSceneLayout` bật.
+
 | Được phép lúc Play | Không được (trừ khi tắt Respect Scene Authoring) |
 |--------------------|---------------------------------------------------|
 | Gắn logic combat (HP, grid index, timeline data) | Snap lại Transform unit/ô lưới theo công thức |
@@ -17,7 +21,7 @@ Logic nằm trong **MonoBehaviour `.cs`**. Layout chỉnh trực tiếp trong **
 - `GridCellMarker` → **Preserve Scene Visuals**
 - `UnitView` → **Preserve Scene Visuals**
 - `BeatTimelineUIView` / `SkillPanelUIView` → **Preserve Scene Layout** (chỉ khung ngoài / Header; carousel vẫn auto-layout TrackLine + ScrollContent)
-- `PartyStatusBarUIView` → anchor bar góc trái trên trên **CombatCanvas**; clone thẻ từ `CardTemplate` lúc Play
+- `PartyStatusBarUIView` → anchor bar góc trái trên trên **CombatCanvas**; thẻ `Card_*` nằm sẵn trong **CardsRow** (Hierarchy-first); `preserveSceneLayout` — Play chỉ bind, không dịch thẻ
 
 **Rebuild layout:** chỉ dùng menu **Fractured Chorus → Setup / Rebuild…**, không tự chạy khi Play.
 
@@ -43,7 +47,7 @@ CombatRoot          ← CombatPrototypeBootstrap + CombatController
 │       ├── Unit_Mage
 │       └── Unit_Grunt …
 └── CombatCanvas
-    ├── PartyStatusBarUI   ← góc trái trên; CardTemplate + clone tối đa 5 thẻ lúc Play
+    ├── PartyStatusBarUI   ← góc trái trên; CardsRow chứa Card_Mage / Card_Ren / Card_Tank + CardTemplate (inactive)
     ├── BeatTimelineUI    ← kéo anchor, resize bar
     └── SkillPanelUI      ← vị trí mặc định; runtime follow unit
 Background canvas         ← sibling của CombatCanvas; chỉ chứa ảnh nền (không đặt combat UI)
@@ -67,10 +71,11 @@ Main Camera
 | `BeatTimelineUI/Viewport/ScrollContent` | Spacing ô beat (`HorizontalLayoutGroup`) |
 | `BeatTimelineUI/Viewport/ScrollContent/Beat_0` | Template ô beat (clone thêm lúc runtime theo chiều rộng viewport) |
 | `SkillPanelUI` | Size, pivot; panel follow unit khi Play |
-| `PartyStatusBarUI` | Anchor góc trái trên; spacing `CardsRow`; chỉnh `CardTemplate` (avatar placeholder, màu hệ) |
-| `PartyStatusBarUI/CardTemplate` | Model thẻ — **inactive**; con: `Border`, `Avatar`, `HealthBarBg`, `ElementBadge/ElementIcon` (vòng tròn hệ; icon từ `StatBlock.elementBadgeIcon`) |
+| `PartyStatusBarUI` | Anchor góc trái trên; Mage tại **(0,0)**, mỗi thẻ +**100px** X; badge offset **(-4,-4)** |
+| `PartyStatusBarUI/CardsRow` | Chỉ `CardTemplate` (inactive) trong Edit mode — lúc Play runtime **clone** theo số unit |
+| `PartyStatusBarUI/CardTemplate` | Model thẻ — **inactive**; con: `Border`, `Avatar`, `HealthBarBg`, `ElementBadge/ElementIcon` |
 
-**Party status bar:** Phải nằm dưới **CombatCanvas** (không phải `Background canvas`). Menu **Add Party Status Bar** hoặc **Fix Party Status Bar (Move to CombatCanvas)** nếu scene cũ đặt nhầm. Spacing thẻ **1px** (runtime layout trong `PartyStatusBarUIView`). Nếu Console báo *missing script*: **Find Missing Scripts** → **Remove Missing Scripts** → Save.
+**Party status bar:** Phải nằm dưới **CombatCanvas**. Thứ tự thẻ **theo formation** (hàng 2 ưu tiên → cột front → PartyBarOrder); refresh sau kéo đổi ô. Spacing **100px** giữa thẻ (Mage index 0 tại x=0).
 
 **UnitView Inspector:** `Side`, `Row`, `Column` = logic combat (index **0–2** = hàng/cột hiển thị **1–3**). **Scene là nguồn sự thật:** giá trị Inspector + Transform trong Hierarchy phải khớp Game khi Play — bootstrap không ghi đè formation mặc định nếu đã gán `Row`/`Column` hợp lệ.
 
@@ -188,6 +193,7 @@ Menu **Fractured Chorus → Setup Combat Scene Hierarchy** → chọn **Tạo l�
 
 | Ngày | Thay đổi |
 |------|----------|
+| 2026-06-27 | **Party bar hierarchy-first:** `Card_Mage/Ren/Tank` trong `CardsRow`; spacing **1.25px**; Tank ngoài cùng phải; `preserveSceneLayout` — không dịch thẻ khi di chuyển unit; icon hệ art (`icon_he_*`). Rule: không code scene + object phải hiện Hierarchy. |
 | 2026-06-26 | **Party status bar:** clone từ `CardTemplate` (max 5); spacing 1px; thứ tự Mage→Ren→Tank; badge hệ tròn (bỏ `RoleBadge`); swap formation refresh bar; menu Find/Remove Missing Scripts. |
 | 2026-06-25 | **Độ rộng ô theo giây**: `width = span × pixelsPerSecond` (data-driven từ `MusicBeatMapSO`); scroll lái bằng musical beat → px/giây không đổi (mượt, khớp nhạc). Render-all `TotalBeats` ô + `RectMask2D`; `childControlWidth = true`. |
 | 2026-06-25 | **Hiệu ứng quét nâng cấp** (mọi nốt): rìa → tâm chớp (`SmoothStep`) → tắt dần theo thời gian; làm mượt cả fade-in/out (`scanFadeInDuration` / `scanFadeOutDuration`). Bỏ `scanAlignThreshold`. |

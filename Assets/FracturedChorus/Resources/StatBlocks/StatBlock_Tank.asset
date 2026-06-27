@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.UnitStatBlockSO
   blockId: StatBlock_Tank
   element: 0
-  elementBadgeIcon: {fileID: 0}
+  elementBadgeIcon: {fileID: 21300000, guid: 296878caee23de949921604f333b9146, type: 3}
   strengthType: 0
   strength: 80
   endurance: 15

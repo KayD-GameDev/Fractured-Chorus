@@ -1,0 +1,520 @@
+fileFormatVersion: 2
+guid: b10c6cccb889fb34fa2f0190156f6686
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 1265187421027672039
+    second: Coda_concept_CANON_alpha_0
+  - first:
+      213: 4237286954844467849
+    second: Coda_concept_CANON_alpha_1
+  - first:
+      213: 8933456809211332888
+    second: Coda_concept_CANON_alpha_2
+  - first:
+      213: -3655524310641929066
+    second: Coda_concept_CANON_alpha_3
+  - first:
+      213: -5062123355902998461
+    second: Coda_concept_CANON_alpha_4
+  - first:
+      213: 8669793944398576968
+    second: Coda_concept_CANON_alpha_5
+  - first:
+      213: 1629588251197293416
+    second: Coda_concept_CANON_alpha_6
+  - first:
+      213: -4283639180971839070
+    second: Coda_concept_CANON_alpha_7
+  - first:
+      213: 1008482465075145272
+    second: Coda_concept_CANON_alpha_8
+  - first:
+      213: 2784315555687654118
+    second: Coda_concept_CANON_alpha_9
+  - first:
+      213: 5759478637709054773
+    second: Coda_concept_CANON_alpha_10
+  - first:
+      213: -8966112888588703434
+    second: Coda_concept_CANON_alpha_11
+  - first:
+      213: 2063508692316817667
+    second: Coda_concept_CANON_alpha_12
+  - first:
+      213: -3697791645200899711
+    second: Coda_concept_CANON_alpha_13
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WindowsStoreApps
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Coda_concept_CANON_alpha_0
+      rect:
+        serializedVersion: 2
+        x: 660
+        y: 948
+        width: 30
+        height: 35
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7ef95a49149de8110800000000000000
+      internalID: 1265187421027672039
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Coda_concept_CANON_alpha_1
+      rect:
+        serializedVersion: 2
+        x: 683
+        y: 980
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 982b6ea090eddca30800000000000000
+      internalID: 4237286954844467849
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Coda_concept_CANON_alpha_2
+      rect:
+        serializedVersion: 2
+        x: 686
+        y: 932
+        width: 80
+        height: 78
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8190651f2a30afb70800000000000000
+      internalID: 8933456809211332888
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Coda_concept_CANON_alpha_3
+      rect:
+        serializedVersion: 2
+        x: 767
+        y: 979
+        width: 13
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 694126cd108f44dc0800000000000000
+      internalID: -3655524310641929066
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Coda_concept_CANON_alpha_4
+      rect:
+        serializedVersion: 2
+        x: 779
+        y: 982
+        width: 12
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 348813ac0a9bfb9b0800000000000000
+      internalID: -5062123355902998461
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Coda_concept_CANON_alpha_5
+      rect:
+        serializedVersion: 2
+        x: 790
+        y: 944
+        width: 33
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 84db5bb68ab415870800000000000000
+      internalID: 8669793944398576968
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Coda_concept_CANON_alpha_6
+      rect:
+        serializedVersion: 2
+        x: 682
+        y: 962
+        width: 14
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 863c3ca61e57d9610800000000000000
+      internalID: 1629588251197293416
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Coda_concept_CANON_alpha_7
+      rect:
+        serializedVersion: 2
+        x: 727
+        y: 925
+        width: 53
+        height: 51
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2a17a305cd47d84c0800000000000000
+      internalID: -4283639180971839070
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Coda_concept_CANON_alpha_8
+      rect:
+        serializedVersion: 2
+        x: 785
+        y: 958
+        width: 16
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 83aa3057579defd00800000000000000
+      internalID: 1008482465075145272
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Coda_concept_CANON_alpha_9
+      rect:
+        serializedVersion: 2
+        x: 558
+        y: 35
+        width: 466
+        height: 911
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6e26b57fe30e3a620800000000000000
+      internalID: 2784315555687654118
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Coda_concept_CANON_alpha_10
+      rect:
+        serializedVersion: 2
+        x: 654
+        y: 930
+        width: 31
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 53359145e47cdef40800000000000000
+      internalID: 5759478637709054773
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Coda_concept_CANON_alpha_11
+      rect:
+        serializedVersion: 2
+        x: 708
+        y: 929
+        width: 13
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6396e9315d7f19380800000000000000
+      internalID: -8966112888588703434
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Coda_concept_CANON_alpha_12
+      rect:
+        serializedVersion: 2
+        x: 1001
+        y: 924
+        width: 16
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3098974093e03ac10800000000000000
+      internalID: 2063508692316817667
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Coda_concept_CANON_alpha_13
+      rect:
+        serializedVersion: 2
+        x: 1009
+        y: 827
+        width: 17
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 181a466271eceacc0800000000000000
+      internalID: -3697791645200899711
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Coda_concept_CANON_alpha_0: 1265187421027672039
+      Coda_concept_CANON_alpha_1: 4237286954844467849
+      Coda_concept_CANON_alpha_10: 5759478637709054773
+      Coda_concept_CANON_alpha_11: -8966112888588703434
+      Coda_concept_CANON_alpha_12: 2063508692316817667
+      Coda_concept_CANON_alpha_13: -3697791645200899711
+      Coda_concept_CANON_alpha_2: 8933456809211332888
+      Coda_concept_CANON_alpha_3: -3655524310641929066
+      Coda_concept_CANON_alpha_4: -5062123355902998461
+      Coda_concept_CANON_alpha_5: 8669793944398576968
+      Coda_concept_CANON_alpha_6: 1629588251197293416
+      Coda_concept_CANON_alpha_7: -4283639180971839070
+      Coda_concept_CANON_alpha_8: 1008482465075145272
+      Coda_concept_CANON_alpha_9: 2784315555687654118
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

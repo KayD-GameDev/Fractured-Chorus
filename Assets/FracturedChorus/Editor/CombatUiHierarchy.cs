@@ -209,11 +209,7 @@ namespace FracturedChorus.Editor
             var badgeRect = badgeTransform as RectTransform;
             if (badgeRect != null)
             {
-                badgeRect.anchorMin = new Vector2(1f, 1f);
-                badgeRect.anchorMax = new Vector2(1f, 1f);
-                badgeRect.pivot = new Vector2(0.5f, 0.5f);
-                badgeRect.anchoredPosition = new Vector2(-6f, -6f);
-                badgeRect.sizeDelta = new Vector2(22f, 22f);
+                PartyCardLayout.ApplyElementBadgeRect(badgeRect);
             }
 
             card.WireReferences();
@@ -386,6 +382,117 @@ namespace FracturedChorus.Editor
             }
 
             return $"{GetTransformPath(transform.parent)}/{transform.name}";
+        }
+
+        public static void EnsurePartyCardsInHierarchy()
+        {
+            CleanupFixedPartyCardsInHierarchy();
+
+            var partyBar = Object.FindAnyObjectByType<PartyStatusBarUIView>(FindObjectsInactive.Include);
+            if (partyBar == null)
+            {
+                Debug.LogWarning("[Fractured Chorus] PartyStatusBarUI not found — run Add Party Status Bar first.");
+                return;
+            }
+
+            partyBar.WireReferences();
+
+            var cardsRow = partyBar.transform.Find("CardsRow") as RectTransform;
+            if (cardsRow == null)
+            {
+                Debug.LogWarning("[Fractured Chorus] CardsRow missing under PartyStatusBarUI.");
+                return;
+            }
+
+            SetPartyBarField(partyBar, "cardSpacing", PartyStatusBarUIView.DefaultCardSpacing);
+
+            var rowLayout = cardsRow.GetComponent<HorizontalLayoutGroup>();
+            if (rowLayout != null)
+            {
+                Undo.RecordObject(rowLayout, "Party card row spacing");
+                rowLayout.spacing = PartyStatusBarUIView.DefaultCardSpacing;
+                rowLayout.enabled = false;
+                EditorUtility.SetDirty(rowLayout);
+            }
+
+            var template = partyBar.transform.Find("CardTemplate")?.GetComponent<PartyMemberCardView>();
+            if (template != null)
+            {
+                UpgradePartyCardTemplate(template);
+                template.gameObject.SetActive(false);
+            }
+
+            EditorUtility.SetDirty(partyBar);
+
+            var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+            if (scene.IsValid() && scene.isLoaded)
+            {
+                EditorSceneManager.MarkSceneDirty(scene);
+            }
+
+            Debug.Log("[Fractured Chorus] Party bar ready: CardTemplate only in CardsRow; runtime clones per party size. Save scene.");
+        }
+
+        public static void CleanupFixedPartyCardsInHierarchy()
+        {
+            var partyBar = Object.FindAnyObjectByType<PartyStatusBarUIView>(FindObjectsInactive.Include);
+            if (partyBar == null)
+            {
+                return;
+            }
+
+            var cardsRow = partyBar.transform.Find("CardsRow");
+            if (cardsRow == null)
+            {
+                return;
+            }
+
+            var template = partyBar.transform.Find("CardTemplate");
+            var removed = 0;
+
+            for (var i = cardsRow.childCount - 1; i >= 0; i--)
+            {
+                var child = cardsRow.GetChild(i);
+                if (template != null && child == template)
+                {
+                    continue;
+                }
+
+                if (child.GetComponent<PartyMemberCardView>() == null)
+                {
+                    continue;
+                }
+
+                Undo.DestroyObjectImmediate(child.gameObject);
+                removed++;
+            }
+
+            if (removed > 0)
+            {
+                Debug.Log($"[Fractured Chorus] Removed {removed} fixed party card(s) from CardsRow — runtime will clone from CardTemplate.");
+            }
+        }
+
+        private static void SetPartyBarField(PartyStatusBarUIView partyBar, string fieldName, object value)
+        {
+            var so = new SerializedObject(partyBar);
+            var prop = so.FindProperty(fieldName);
+            if (prop == null)
+            {
+                return;
+            }
+
+            switch (value)
+            {
+                case bool boolValue:
+                    prop.boolValue = boolValue;
+                    break;
+                case float floatValue:
+                    prop.floatValue = floatValue;
+                    break;
+            }
+
+            so.ApplyModifiedPropertiesWithoutUndo();
         }
     }
 }

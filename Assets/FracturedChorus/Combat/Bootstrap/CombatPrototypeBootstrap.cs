@@ -452,10 +452,24 @@ namespace FracturedChorus.Combat.Bootstrap
                 return;
             }
 
+            if (_session?.Grid != null)
+            {
+                partyStatusBarView.BindFromSession(_session);
+                return;
+            }
+
             var views = unitsRoot != null
                 ? unitsRoot.GetComponentsInChildren<UnitView>(true)
                 : GetComponentsInChildren<UnitView>(true);
-            partyStatusBarView.BindFromUnitViews(views);
+
+            if (partyStatusBarView.BoundUnitCount > 0)
+            {
+                partyStatusBarView.RefreshFormationOrderFromUnitViews(views);
+            }
+            else
+            {
+                partyStatusBarView.BindFromUnitViews(views);
+            }
         }
     }
 }
