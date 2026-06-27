@@ -14,11 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.UnitStatBlockSO
   blockId: StatBlock_Tank
   element: 0
+  elementBadgeIcon: {fileID: 0}
+  strengthType: 0
   strength: 80
-  magic: 40
   endurance: 15
   heartBeat: 140
   baseLuck: 10
   critMultiplier: 1.1
-  maxHp: 3000
+  maxHp: 100
   baseSpeed: 8

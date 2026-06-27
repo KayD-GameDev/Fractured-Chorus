@@ -18,8 +18,8 @@ MonoBehaviour:
   statBlock: {fileID: 11400000, guid: 79831804a5028c7418b2a6443baf1935, type: 2}
   stats:
     Element: 1
+    StrengthType: 0
     Strength: 100
-    Magic: 100
     Endurance: 10
     HeartBeat: 160
     BaseLuck: 15
@@ -32,4 +32,5 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 32c1d202c17d11649ad60e21e8d7d676, type: 2}
   - {fileID: 11400000, guid: f4aa555b847836548b298f0b13bd4d9e, type: 2}
   placeholderColor: {r: 0.35, g: 0.55, b: 0.95, a: 1}
-  battleSprite: {fileID: 2945500796298478541, guid: a9071c51aaeebd347b170019af54e848, type: 3}
+  battleSprite: {fileID: -7428215157034606851, guid: c717b6aad7a95364c80e530ab2dde0db, type: 3}
+  portraitSprite: {fileID: 0}

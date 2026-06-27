@@ -208,7 +208,7 @@ namespace FracturedChorus.Combat.Core
 
         private void HandleUnitHpChanged(CombatUnit unit)
         {
-            // UnitView listens directly; hook for future global HUD.
+            // PartyMemberCardView listens to CombatUnit.OnHpChanged directly.
         }
 
         private void HandleEncounterEnded()

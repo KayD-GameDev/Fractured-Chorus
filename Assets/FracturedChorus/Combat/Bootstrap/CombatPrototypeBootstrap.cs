@@ -16,6 +16,7 @@ namespace FracturedChorus.Combat.Bootstrap
         [SerializeField] private CombatController combatController;
         [SerializeField] private BeatTimelineUIView timelineView;
         [SerializeField] private SkillPanelUIView skillPanelView;
+        [SerializeField] private PartyStatusBarUIView partyStatusBarView;
         [SerializeField] private CombatExecuteOverlayUIView executeOverlay;
         [SerializeField] private PartyStatusBarUIView partyStatusBar;
         [SerializeField] private Transform unitsRoot;
@@ -83,7 +84,11 @@ namespace FracturedChorus.Combat.Bootstrap
             combatController.Initialize(_session, _timeline, timelineView, skillPanelView, musicController,
                 executeOverlay, _boardDrag);
 
+<<<<<<< HEAD
             EnsurePartyStatusBar()?.Bind(_session, unitViews);
+=======
+            RefreshPartyStatusBar();
+>>>>>>> main
 
             if (skillPanelView != null && !skillPanelView.gameObject.activeSelf)
             {
@@ -170,6 +175,11 @@ namespace FracturedChorus.Combat.Bootstrap
                 skillPanelView = FindAnyObjectByType<SkillPanelUIView>();
             }
 
+            if (partyStatusBarView == null)
+            {
+                partyStatusBarView = FindAnyObjectByType<PartyStatusBarUIView>();
+            }
+
             if (executeOverlay == null)
             {
                 executeOverlay = FindAnyObjectByType<CombatExecuteOverlayUIView>();
@@ -189,6 +199,7 @@ namespace FracturedChorus.Combat.Bootstrap
 
             timelineView?.WireReferences();
             skillPanelView?.WireReferences();
+            partyStatusBarView?.WireReferences();
             executeOverlay?.WireReferences();
             EnsurePartyStatusBar()?.WireReferences();
         }
@@ -251,6 +262,7 @@ namespace FracturedChorus.Combat.Bootstrap
                 : System.Array.Empty<GridCellMarker>();
             _boardDrag.Initialize(_session, _grid, markers, mainCamera);
             _boardDrag.SetUnitClickHandler(HandleUnitSelected);
+            _boardDrag.SetFormationChangedHandler(RefreshPartyStatusBar);
 
             foreach (var view in unitViews)
             {
@@ -482,6 +494,19 @@ namespace FracturedChorus.Combat.Bootstrap
             }
 
             skillPanelView?.ToggleForUnit(unit, view);
+        }
+
+        private void RefreshPartyStatusBar()
+        {
+            if (partyStatusBarView == null)
+            {
+                return;
+            }
+
+            var views = unitsRoot != null
+                ? unitsRoot.GetComponentsInChildren<UnitView>(true)
+                : GetComponentsInChildren<UnitView>(true);
+            partyStatusBarView.BindFromUnitViews(views);
         }
     }
 }

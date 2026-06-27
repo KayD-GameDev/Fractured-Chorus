@@ -18,8 +18,18 @@ namespace FracturedChorus.Data
         public Color placeholderColor = Color.white;
         [Tooltip("Sprite combat mặc định — dùng khi scene chưa gán hoặc bị placeholder 1×1.")]
         public Sprite battleSprite;
+<<<<<<< HEAD
         [Tooltip("Icon hệ (Nhịp / Giai điệu / Hòa âm) — hiển thị trên party bar.")]
         public Sprite elementIcon;
+=======
+        [Tooltip("Portrait thẻ party UI — nếu trống dùng battleSprite.")]
+        public Sprite portraitSprite;
+
+        public Sprite ResolvePortraitSprite()
+        {
+            return portraitSprite != null ? portraitSprite : battleSprite;
+        }
+>>>>>>> main
 
         public UnitStats ResolveStats()
         {
