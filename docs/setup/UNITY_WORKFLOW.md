@@ -29,7 +29,14 @@ Assets/FracturedChorus/
 ├── RunMap/                 # Node graph (P2)
 ├── Narrative/              # Dialogue / story scenes (P2)
 ├── Audio/ Music/ SFX/
-├── Art/ Characters/ Backgrounds/ UI/
+├── Art/
+│   ├── Characters/
+│   │   ├── Coda/Animation/       ← Mage (UnitPreset_Mage)
+│   │   ├── Ren/Animation/        ← DPS (UnitPreset_Ren)
+│   │   ├── Charlotte/Animation/  ← Tank (UnitPreset_Tank)
+│   │   └── _Reference/           ← temp ref sprites (not canon)
+│   ├── Backgrounds/
+│   └── UI/
 └── Prefabs/ Combat/ UI/
 ```
 
@@ -123,6 +130,12 @@ CombatCanvas/PartyStatusBarUI     ← PartyStatusBarUIView (preserveSceneLayout)
 
 - Chưa import art approved → dùng **placeholder** (sprite màu / quad) trong code bootstrap.
 - Art production → `docs/ASSET_INVENTORY.md` (GitHub) trước khi thay placeholder trong build.
+- **Character animation folders** (tên canon, không tên role):
+  - Mage → `Art/Characters/Coda/Animation/`
+  - DPS → `Art/Characters/Ren/Animation/`
+  - Tank → `Art/Characters/Charlotte/Animation/`
+  - Mỗi state: `Idle`, `Move`, `Attack`, `Hit`, `Death`; skill thêm subfolder (vd. `Attack/Skill1_*`).
+  - Chi tiết: `Assets/FracturedChorus/Art/Characters/README.md`.
 
 ---
 

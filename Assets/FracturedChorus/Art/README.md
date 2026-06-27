@@ -2,7 +2,7 @@
 
 | Subfolder | Content |
 |-----------|---------|
-| `Characters/` | Sprites, sprite sheets, animation clips |
+| `Characters/` | Per-canon folders (`Coda`, `Ren`, `Charlotte`) — `Animation/Idle|Move|…`; see `Characters/README.md` |
 | `Backgrounds/` | Combat / hub / event BGs |
 | `UI/` | Timeline chrome, icons, frames |
 

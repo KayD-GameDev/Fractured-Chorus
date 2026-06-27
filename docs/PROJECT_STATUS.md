@@ -1,6 +1,6 @@
 # Fractured Chorus — Trạng thái dự án
 
-**Cập nhật:** 2026-06-27 (Party bar hierarchy-first + icon hệ)  
+**Cập nhật:** 2026-06-27 (Unity character animation folders + party bar)  
 **Repo:** `C:\Users\admin\Projects\fractured-chorus` (docs mirror)  
 **Unity:** `F:\Unity_Project\Fractured Chorus` · scene `CombatPrototype.unity` · GitHub remote **Fractured-Chorus1**  
 **Log:** [`PROJECT_LOG.md`](PROJECT_LOG.md) · [`LOGGING.md`](LOGGING.md)
@@ -47,6 +47,16 @@
 | **Coda** | `Coda_LOCK.txt`, cadence brief | brief + cadence lock |
 
 Inventory tổng: [`ASSET_INVENTORY.md`](ASSET_INVENTORY.md).
+
+**Unity import layout** (`Assets/FracturedChorus/Art/Characters/`):
+
+| Role | Tên canon | Folder animation |
+|------|-----------|------------------|
+| Mage | **Coda** | `Coda/Animation/Idle|Move|Attack|Hit|Death/` |
+| DPS | **Ren** | `Ren/Animation/…` |
+| Tank | **Charlotte** | `Charlotte/Animation/…` |
+
+Preset SO vẫn `UnitPreset_Mage|Ren|Tank` — xem `Art/Characters/README.md`.
 
 ---
 

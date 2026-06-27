@@ -43,7 +43,7 @@ FracturedChorus/
 │   ├── Music/
 │   └── SFX/
 ├── Art/
-│   ├── Characters/         # Import after ASSET_INVENTORY approval
+│   ├── Characters/         # Coda · Ren · Charlotte — each has Animation/Idle|Move|Attack|Hit|Death
 │   ├── Backgrounds/
 │   └── UI/
 └── Prefabs/

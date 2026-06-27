@@ -9,6 +9,25 @@ Newest first.
 
 ---
 
+## 2026-06-27 — Unity: folder animation theo tên canon (Coda · Ren · Charlotte)
+
+**Focus:** art pipeline + docs
+
+**Owner:** Khoa
+
+**Done**
+- Tạo `Assets/FracturedChorus/Art/Characters/{Coda,Ren,Charlotte}/Animation/` với subfolder `Idle|Move|Attack|Hit|Death`.
+- Thêm `Art/Characters/README.md` — map role combat ↔ tên canon ↔ `UnitPreset_*` / `StatBlock_*`.
+- Thêm `_Reference/` cho sprite LoR tạm (không ship).
+- Cập nhật `Art/README.md`, `Assets/FracturedChorus/README.md`, `docs/setup/UNITY_WORKFLOW.md`.
+
+**Decisions**
+- Folder Unity đặt theo **tên nhân vật** (Coda = Mage, Charlotte = Tank); preset SO vẫn giữ suffix role (`UnitPreset_Mage`, `Card_Mage`, …).
+
+**Refs:** `Art/Characters/README.md`, `UNITY_WORKFLOW.md`
+
+---
+
 ## 2026-06-27 — Party bar: hierarchy-first, spacing 1.25px, icon hệ
 
 **Focus:** code (Unity) + docs
