@@ -18,6 +18,7 @@ namespace FracturedChorus.Combat.Bootstrap
         [SerializeField] private SkillPanelUIView skillPanelView;
         [SerializeField] private PartyStatusBarUIView partyStatusBarView;
         [SerializeField] private CombatExecuteOverlayUIView executeOverlay;
+        [SerializeField] private PartyStatusBarUIView partyStatusBar;
         [SerializeField] private Transform unitsRoot;
         [SerializeField] private Transform gridRoot;
         [SerializeField] private UnitView[] unitViews;
@@ -43,6 +44,7 @@ namespace FracturedChorus.Combat.Bootstrap
         {
             CombatInputSetup.Configure(mainCamera != null ? mainCamera : Camera.main);
             ResolveSceneReferences();
+            EnsureCombatCanvasReady();
             EnsureMusicController();
             EnsureAudioListener();
 
@@ -82,7 +84,11 @@ namespace FracturedChorus.Combat.Bootstrap
             combatController.Initialize(_session, _timeline, timelineView, skillPanelView, musicController,
                 executeOverlay, _boardDrag);
 
+<<<<<<< HEAD
+            EnsurePartyStatusBar()?.Bind(_session, unitViews);
+=======
             RefreshPartyStatusBar();
+>>>>>>> main
 
             if (skillPanelView != null && !skillPanelView.gameObject.activeSelf)
             {
@@ -179,6 +185,11 @@ namespace FracturedChorus.Combat.Bootstrap
                 executeOverlay = FindAnyObjectByType<CombatExecuteOverlayUIView>();
             }
 
+            if (partyStatusBar == null)
+            {
+                partyStatusBar = FindAnyObjectByType<PartyStatusBarUIView>();
+            }
+
             if (unitViews == null || unitViews.Length == 0)
             {
                 unitViews = unitsRoot != null
@@ -190,6 +201,46 @@ namespace FracturedChorus.Combat.Bootstrap
             skillPanelView?.WireReferences();
             partyStatusBarView?.WireReferences();
             executeOverlay?.WireReferences();
+            EnsurePartyStatusBar()?.WireReferences();
+        }
+
+        private void EnsureCombatCanvasReady()
+        {
+            var canvas = timelineView != null
+                ? timelineView.GetComponentInParent<Canvas>()
+                : FindAnyObjectByType<Canvas>();
+            if (canvas == null)
+            {
+                return;
+            }
+
+            if (canvas.transform.localScale == Vector3.zero)
+            {
+                canvas.transform.localScale = Vector3.one;
+            }
+
+            if (!canvas.gameObject.activeInHierarchy)
+            {
+                canvas.gameObject.SetActive(true);
+            }
+        }
+
+        private PartyStatusBarUIView EnsurePartyStatusBar()
+        {
+            if (partyStatusBar != null)
+            {
+                return partyStatusBar;
+            }
+
+            partyStatusBar = FindAnyObjectByType<PartyStatusBarUIView>();
+            if (partyStatusBar != null)
+            {
+                return partyStatusBar;
+            }
+
+            Debug.LogWarning(
+                "[Bootstrap] PartyStatusBarUI chưa có trong scene. Chạy menu Fractured Chorus → Rebuild Party Status Bar (Hierarchy), chỉnh layout rồi Save scene.");
+            return null;
         }
 
         private bool HasSceneUnits()

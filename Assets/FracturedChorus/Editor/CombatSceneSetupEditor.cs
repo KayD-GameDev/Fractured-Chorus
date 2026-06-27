@@ -126,13 +126,69 @@ namespace FracturedChorus.Editor
                 EditorUtility.SetDirty(timeline);
             }
 
+            FixCombatCanvasScaleInScene();
+            RebuildPartyStatusBarInSceneSilent();
+
             var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
             if (scene.IsValid() && scene.isLoaded)
             {
                 EditorSceneManager.SaveScene(scene);
             }
 
-            Debug.Log("[Fractured Chorus] Applied play-ready updates (input, colliders, sprites, grid, timeline) and saved scene.");
+            Debug.Log("[Fractured Chorus] Applied play-ready updates (input, colliders, sprites, grid, timeline, party bar) and saved scene.");
+        }
+
+        [MenuItem("Fractured Chorus/Rebuild Party Status Bar (Hierarchy)")]
+        public static void RebuildPartyStatusBarInScene()
+        {
+            RebuildPartyStatusBarInSceneInternal(silent: false);
+        }
+
+        public static void RebuildPartyStatusBarInSceneSilent()
+        {
+            RebuildPartyStatusBarInSceneInternal(silent: true);
+        }
+
+        private static void RebuildPartyStatusBarInSceneInternal(bool silent)
+        {
+            FixCombatCanvasScaleInScene();
+
+            var canvas = Object.FindAnyObjectByType<Canvas>();
+            if (canvas == null)
+            {
+                if (!silent)
+                {
+                    EditorUtility.DisplayDialog("Fractured Chorus", "Không tìm thấy Canvas trong scene.", "OK");
+                }
+
+                return;
+            }
+
+            var partyBar = TimelineHierarchyBuilder.BuildPartyStatusBar(canvas.transform);
+            foreach (var bootstrap in Object.FindObjectsByType<CombatPrototypeBootstrap>(FindObjectsInactive.Include))
+            {
+                SetSerializedField(bootstrap, "partyStatusBar", partyBar);
+                EditorUtility.SetDirty(bootstrap);
+            }
+
+            EditorSceneManager.MarkSceneDirty(canvas.gameObject.scene);
+            if (!silent)
+            {
+                Selection.activeGameObject = partyBar.gameObject;
+                Debug.Log("[Fractured Chorus] PartyStatusBarUI đã tạo dưới CombatCanvas (3 thẻ PartyCard_0..2). Chỉnh RectTransform/Image trong Hierarchy, Save scene.");
+            }
+        }
+
+        private static void FixCombatCanvasScaleInScene()
+        {
+            foreach (var canvas in Object.FindObjectsByType<Canvas>(FindObjectsInactive.Include))
+            {
+                if (canvas.transform.localScale == Vector3.zero)
+                {
+                    canvas.transform.localScale = Vector3.one;
+                    EditorUtility.SetDirty(canvas);
+                }
+            }
         }
 
         [MenuItem("Fractured Chorus/Restore Scene/From SceneBackup (BU — honeycomb layout)")]
@@ -390,8 +446,13 @@ namespace FracturedChorus.Editor
             var skillPanel = TimelineHierarchyBuilder.BuildSkillPanel(canvas.transform);
             var partyBar = TimelineHierarchyBuilder.BuildPartyStatusBar(canvas.transform);
             var executeOverlay = TimelineHierarchyBuilder.BuildExecuteOverlay(canvas.transform);
+            var partyStatusBar = TimelineHierarchyBuilder.BuildPartyStatusBar(canvas.transform);
 
+<<<<<<< HEAD
+            WireBootstrap(bootstrap, controller, timelineUi, skillPanel, executeOverlay, partyStatusBar, unitsRoot, gridRoot);
+=======
             WireBootstrap(bootstrap, controller, timelineUi, skillPanel, partyBar, executeOverlay, unitsRoot, gridRoot);
+>>>>>>> main
             WireController(controller, timelineUi, skillPanel, executeOverlay);
 
             EditorSceneManager.MarkSceneDirty(root.scene);
@@ -762,6 +823,7 @@ namespace FracturedChorus.Editor
             SkillPanelUIView skillPanel,
             PartyStatusBarUIView partyBar,
             CombatExecuteOverlayUIView executeOverlay,
+            PartyStatusBarUIView partyStatusBar,
             Transform unitsRoot,
             Transform gridRoot)
         {
@@ -770,6 +832,7 @@ namespace FracturedChorus.Editor
             SetSerializedField(bootstrap, "skillPanelView", skillPanel);
             SetSerializedField(bootstrap, "partyStatusBarView", partyBar);
             SetSerializedField(bootstrap, "executeOverlay", executeOverlay);
+            SetSerializedField(bootstrap, "partyStatusBar", partyStatusBar);
             SetSerializedField(bootstrap, "unitsRoot", unitsRoot);
             SetSerializedField(bootstrap, "gridRoot", gridRoot);
             SetSerializedField(bootstrap, "unitViews", unitsRoot.GetComponentsInChildren<UnitView>(true));
