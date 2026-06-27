@@ -1,29 +1,3 @@
-<<<<<<< HEAD
-using FracturedChorus.Combat.Core;
-using FracturedChorus.Combat.Units;
-using UnityEngine;
-
-namespace FracturedChorus.UI
-{
-    [DisallowMultipleComponent]
-    [RequireComponent(typeof(PartyStatusBarSyncBinder))]
-    public class PartyStatusBarUIView : MonoBehaviour
-    {
-        [Header("Layout")]
-        [SerializeField] private RectTransform cardsRow;
-        [SerializeField] private PartyUnitCardView cardTemplate;
-        [Tooltip("Giữ vị trí/kích thước khung ngoài đã chỉnh trong Hierarchy.")]
-        [SerializeField] private bool preserveSceneLayout = true;
-
-        [Header("Sync")]
-        [SerializeField] private PartyStatusBarSyncBinder syncBinder;
-
-        private CombatSession _session;
-        private UnitView[] _unitViews;
-
-        public RectTransform CardsRow => cardsRow;
-        public PartyUnitCardView CardTemplate => cardTemplate;
-=======
 using System.Collections.Generic;
 using System.Linq;
 using FracturedChorus.Combat.Bootstrap;
@@ -55,7 +29,6 @@ namespace FracturedChorus.UI
             WireReferences();
             HideTemplate();
         }
->>>>>>> main
 
         public void WireReferences()
         {
@@ -64,39 +37,6 @@ namespace FracturedChorus.UI
                 cardsRow = transform.Find("CardsRow") as RectTransform;
             }
 
-<<<<<<< HEAD
-            if (cardTemplate == null && cardsRow != null)
-            {
-                cardTemplate = PartyStatusBarCardFactory.ResolveTemplate(cardsRow);
-            }
-
-            if (syncBinder == null)
-            {
-                syncBinder = GetComponent<PartyStatusBarSyncBinder>();
-            }
-        }
-
-        public void Bind(CombatSession session, UnitView[] unitViews)
-        {
-            _session = session;
-            _unitViews = unitViews;
-            gameObject.SetActive(true);
-            WireReferences();
-            ApplyDefaultRootLayout();
-
-            syncBinder ??= GetComponent<PartyStatusBarSyncBinder>();
-            syncBinder?.Sync(session, unitViews, this);
-        }
-
-        public void RefreshAll()
-        {
-            syncBinder?.RefreshAll();
-        }
-
-        private void ApplyDefaultRootLayout()
-        {
-            if (preserveSceneLayout)
-=======
             if (cardTemplate == null)
             {
                 var templateTransform = transform.Find("CardTemplate");
@@ -116,15 +56,10 @@ namespace FracturedChorus.UI
             ClearSpawnedCards();
 
             if (cardTemplate == null || cardsRow == null || unitViews == null)
->>>>>>> main
             {
                 return;
             }
 
-<<<<<<< HEAD
-            var rootRect = transform as RectTransform;
-            if (rootRect == null)
-=======
             var playerViews = unitViews
                 .Where(v => v != null && v.Side == GridSide.Player && v.Unit != null)
                 .ToList();
@@ -142,49 +77,10 @@ namespace FracturedChorus.UI
             ClearSpawnedCards();
 
             if (session?.Grid == null || cardTemplate == null || cardsRow == null)
->>>>>>> main
             {
                 return;
             }
 
-<<<<<<< HEAD
-            var playerCount = CountPlayerUnits(_session, _unitViews);
-            var cardCount = Mathf.Max(1, playerCount);
-
-            rootRect.anchorMin = new Vector2(0f, 1f);
-            rootRect.anchorMax = new Vector2(0f, 1f);
-            rootRect.pivot = new Vector2(0f, 1f);
-            rootRect.anchoredPosition = new Vector2(16f, -16f);
-            rootRect.sizeDelta = PartyStatusBarLayout.DefaultRootSize(cardCount);
-        }
-
-        private static int CountPlayerUnits(CombatSession session, UnitView[] unitViews)
-        {
-            var count = 0;
-            if (unitViews != null)
-            {
-                foreach (var view in unitViews)
-                {
-                    if (view != null && view.Side == Combat.Grid.GridSide.Player && view.Unit != null)
-                    {
-                        count++;
-                    }
-                }
-            }
-
-            if (count == 0 && session?.Grid != null)
-            {
-                foreach (var unit in session.Grid.PlayerUnits)
-                {
-                    if (unit != null && unit.Side == Combat.Grid.GridSide.Player)
-                    {
-                        count++;
-                    }
-                }
-            }
-
-            return count;
-=======
             var units = session.Grid.PlayerUnits
                 .Where(u => u != null)
                 .OrderBy(u => u, Comparer<CombatUnit>.Create(PartyCardDisplayOrder.CompareUnits))
@@ -269,7 +165,6 @@ namespace FracturedChorus.UI
             }
 
             _spawnedCards.Clear();
->>>>>>> main
         }
     }
 }
