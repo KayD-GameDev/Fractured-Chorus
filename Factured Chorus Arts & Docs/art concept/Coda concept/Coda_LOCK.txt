@@ -1,0 +1,119 @@
+================================================================================
+CODA — CHARACTER LOCK (CANON)
+Fractured Chorus · Guide / Resonance Dive · Audio-spirit
+Locked: 2026-06-07 · Canon art: v11 (Coda_concept_v11_hairfix)
+================================================================================
+
+ROLE
+----
+- NPC guide trong Resonance Dive; audio-spirit giữa bản nháp và bản phát hành.
+- Pillars: Human-first · Audio scavenger (light) · Guide vui, hơi mỉa.
+- Player fantasy: “cô ấy luôn đang monitor nhịp của bạn.”
+
+CANON FILES
+-----------
+- Hero concept (RGBA):  Coda_concept_CANON_alpha.png
+- Hero concept (flat):  Coda_concept_CANON.png
+- Source truth (v11):   Coda_concept_v11_hairfix.png — tóc TRẮNG; KHÔNG dùng v10 làm canon
+- Lock doc:             Coda_LOCK.txt
+- Production brief:     Coda_concept_brief.md
+
+NOTE: v10_waveform_calf = tóc đen (lỗi drift) — chỉ archive, không copy sang CANON.
+
+BODY & PROPORTIONS
+------------------
+- Silhouette: nữ trẻ, athletic-slim, full-body ortho ~¾ front, đọc rõ ở scale in-game.
+- Da: fair peach-beige #F0D5BC / #FFDFC4, cel-shade 2–3 bước, key light top-left.
+- Toàn thân mặc định: da người solid — KHÔNG full transparent body.
+
+HAIR (CANON = v6b)
+-------------------
+- Kiểu: bob ngắn + bangs + ponytail nhỏ đỉnh đầu.
+- Màu base: TRẮNG #F5F0FF / #E8E0F0 — KHÔNG đen, KHÔNG nâu.
+- Accent: highlight tím nhạt #C4B5FD / #B794F6 ở lớp trong và đuôi tóc.
+- Variant archive (không canon): undercut spiky v6 — chỉ dùng nếu spin-off art.
+
+EYES (CANON = v9+)
+------------------
+- Iris gradient dọc: teal → xanh lá → vàng → cam/hồng.
+- Highlight trắng trên cùng + star sparkle nhỏ giữa mắt.
+- KHÔNG equalizer bar dọc/ngang · KHÔNG heterochromia · KHÔNG pupil thường.
+- Biểu cảm mặc định: smirk tự tin, thân thiện, hơi mỉa.
+
+OUTFIT MANIFEST (CANON = v8 cyber-pop)
+--------------------------------------
+| Slot        | Item |
+|-------------|------|
+| Inner       | Crop tank ĐEN + graphic soundwave cyan/hồng/tím ngực; hem fracture/glitch pixel nhẹ |
+| Mid         | Denim vest XANH NHẠT mở, armhole ragged |
+| Bottom      | Short denim ĐEN distressed |
+| Belt        | Đen, khóa bạc, chain bạc một bên |
+| Leg acc.    | Thigh strap đen (đùi phải nhân vật); bandage đầu gối optional |
+| Feet        | Combat boots ĐEN, dây TÍM #8B5CF6 |
+| Hands       | Fingerless glove ĐEN — tay đặt hông (tay phải nhân vật) |
+| Held props  | KHÔNG — tay trống |
+
+GLITCH / FX ZONES (LOCKED — chỉ 3 vùng + 1 mark chân)
+-----------------------------------------------------
+1. Tay trái (đang vẫy): waveform trong suốt cyan–tím, sine oscilloscope bên trong,
+   floating eighth notes — KHÔNG hologram nổi lơ lửng tách tay.
+2. Forearm phải: band/patch waveform cùng style, chỉ dưới khuỷu.
+3. Bắp chân TRÁI (upper calf): MỘT patch waveform cyan–tím nhỏ (sine wave),
+   KHÔNG star · KHÔNG chân phải · KHÔNG bụng.
+
+Glitch visual language: translucent glow + grid/sine + notes — KHÔNG pixel RGB split.
+
+FORBIDDEN (never add without explicit redesign)
+----------------------------------------------
+- Full transparent waveform body
+- Chân máy / prosthetic leg
+- Bandolier chéo ngực
+- Jack cables trên tay
+- Carabiner / dây chéo utility
+- Mark trên bụng / midriff
+- Tóc đen làm base
+- EQ-bar eyes
+
+COLOR SCRIPT (60 / 30 / 10)
+---------------------------
+Black cloth      #1A1A1A   ~25%   crop + shorts
+Light denim      #7EB8DA   ~20%   vest
+Skin             #F0D5BC   ~15%   base flesh
+Hair white       #F5F0FF   ~8%    dominant hair
+Hair purple      #C4B5FD   ~2%    tips/inner
+Soundwave FX     #22D3EE   ~10%   cyan accent (+ magenta/purple)
+Purple identity  #8B5CF6   ~8%    boot laces, glitch rim
+Metal            #C0C0C0   ~5%    belt, chain
+
+Harmony: test trên bg Cadence (tím/xanh đậm) và Lumina (neon) — vest xanh + crop đen
+phải tách khỏi nền.
+
+ENGINE IMPORT
+-------------
+- Source: Coda_concept_CANON_alpha.png
+- PPU: 100–150 · Filter: Bilinear (cel art) · Pivot: feet nếu in-world
+- Sorting: Sorting Group trên root; glitch VFX tách layer nếu animate pulse idle
+
+GENERATION PROMPT (copy-paste lock)
+-----------------------------------
+Full-body 2D anime character, transparent background.
+Coda: mostly human fair peach skin. Waveform glitch on left waving hand/arm, right forearm only
+(translucent cyan-purple, oscilloscope sine, floating musical notes).
+EYES: smooth vertical rainbow gradient iris (teal→green→yellow→orange-pink), white highlight + star sparkle.
+NO equalizer bars, NO heterochromia.
+White-lavender hair bob + bangs + crown ponytail (base WHITE #F5F0FF, purple tips only — NO black hair).
+OUTFIT v8: black soundwave crop (fractured hem), light blue denim vest, black shorts, belt+chain,
+thigh strap, black boots purple laces, fingerless glove hip hand.
+Clean midriff — NO belly marks. ONE cyan-purple WAVEFORM sine patch on character LEFT leg UPPER CALF.
+NOT star. NOT right leg. NO bandolier, NO cables, NO mechanical legs.
+Cel-shaded, key top-left. No text, no watermark.
+
+VERSION HISTORY (archive only — do not use for new art)
+-------------------------------------------------------
+v1  waveform body idol · v2 post-apoc heavy · v3 localized glitch
+v4  hair bob fix · v5 light skin · v6/v6b hair variants · v7/v7b skin+glitch
+v8  cyber-pop outfit · v9 rainbow eyes · v10 waveform calf · v11 hair fix (CANON)
+
+================================================================================
+END LOCK — mọi asset mới phải inherit manifest trên unless GDD revision.
+================================================================================

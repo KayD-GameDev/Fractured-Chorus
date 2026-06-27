@@ -1,0 +1,23 @@
+{
+  "skill": "Skill 1 — Rifle stock butt-strike (xoay súng đánh cán)",
+  "frame_count": 6,
+  "approved_frames": 2,
+  "fx_policy": "NO red aura / flame behind head",
+  "frames": [
+    {
+      "index": 1,
+      "beat": "idle_ready",
+      "file": "Ren_chibi_stock_strike_01_idle_ready.png"
+    },
+    {
+      "index": 2,
+      "beat": "windup_vertical_front",
+      "file": "Ren_chibi_stock_strike_02_windup_tilt.png"
+    }
+  ],
+  "outputs": {
+    "frames_dir": "F:\\Factured Chorus\\art concept\\Ren Concept\\animation\\skill1_stock_strike\\frames",
+    "f_drive": "F:\\Factured Chorus\\art concept\\Ren Concept\\animation\\skill1_stock_strike",
+    "repo": "C:\\Users\\admin\\Projects\\fractured-chorus\\assets\\characters\\ren\\animation\\skill1_stock_strike"
+  }
+}

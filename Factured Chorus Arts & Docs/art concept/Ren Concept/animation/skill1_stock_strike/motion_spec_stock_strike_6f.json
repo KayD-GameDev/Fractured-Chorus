@@ -1,0 +1,98 @@
+{
+  "skill": "Skill 1 — Rifle stock butt-strike (xoay súng đánh cán)",
+  "frame_count": 6,
+  "fx_policy": "NO red aura / flame behind head",
+  "ren_manifest": {
+    "body": "Chibi ~2.4 heads, pale skin, messy black hair, tired grey-blue eyes",
+    "outfit": "HIMA black blazer white piping, grey vest, white shirt, maroon tie, black pants, dress shoes, black fingerless gloves, black cape cyan glitch hem",
+    "weapon": "Kar98 rifle-violin Off-Beat, True chord text, cyan string glow, silver filigree"
+  },
+  "frames": [
+    {
+      "index": 1,
+      "beat": "idle_ready",
+      "weapon_state": "vertical_right_barrel_up",
+      "root": "upright_planted",
+      "facing": "screen_right",
+      "handedness_lock": {
+        "rifle_side": "character_anatomical_RIGHT = viewer_LEFT of silhouette",
+        "grip_hand": "character_RIGHT_hand on stock butt (low, near hip)",
+        "free_arm": "character_LEFT_arm hangs at side — no touch rifle"
+      },
+      "stance": "left_foot_slightly_forward",
+      "notes_vi": "Nhìn phải; súng dọc bên PHẢI nhân vật (= bên TRÁI khung hình); tay PHẢI cầm đáy cán; tay TRÁI thả; chân trái hơi bước trước"
+    },
+    {
+      "index": 2,
+      "beat": "windup_vertical_front",
+      "weapon_state": "vertical_center_front_both_hands",
+      "root": "upright_planted",
+      "facing": "screen_right",
+      "handedness_lock": {
+        "left_hand": "character_LEFT on VIEWER_RIGHT — raised high, grips upper barrel",
+        "right_hand": "character_RIGHT on VIEWER_LEFT — low, grips trigger/stock area at waist"
+      },
+      "notes_vi": "Kéo súng về giữa ngực dọc; hai tay: trái cao (nòng), phải thấp (cán); chuẩn bị xoay cán đánh"
+    },
+    {
+      "index": 3,
+      "beat": "spin_lever_pivot",
+      "weapon_state": "horizontal_mid_spin_stock_swinging_back",
+      "root": "upright_twist",
+      "facing": "screen_right_3quarter",
+      "motion_mechanics_vi": "Đòn bẩy xoay cán: hai tay KẸP CỤM Ở GIỮA SÚNG (receiver); tay PHẢI đẩy; tay TRÁI pivot. KHÔNG tách tay về đáy cán và đầu nòng.",
+      "handedness_lock": {
+        "grip_cluster": "receiver_center — geometric MIDPOINT of rifle; both hands within center zone, NOT spread to stock_tip and muzzle",
+        "right_hand": {
+          "side": "character_RIGHT (viewer_LEFT when facing right)",
+          "landmark": "receiver_center",
+          "palm_faces": "inward_chest",
+          "finger_wrap": "from_below",
+          "force": "push stock backward over right shoulder"
+        },
+        "left_hand": {
+          "side": "character_LEFT (viewer_RIGHT when facing right)",
+          "landmark": "receiver_center slightly toward forend",
+          "palm_faces": "inward_face",
+          "finger_wrap": "from_below",
+          "force": "pivot / prepare secure grip during spin"
+        },
+        "stock_end": "LEFT of image — behind head and right shoulder",
+        "barrel_end": "RIGHT of image — points slightly downward"
+      },
+      "palm_forbidden": "overhand on stock tip, underhand far on muzzle, spread grip, palm outward, hands at weapon extremities",
+      "outfit_lock": {
+        "tie": "maroon FABRIC necktie on white shirt visible on chest — NOT wood, NOT rifle",
+        "forbidden": "wooden tie, rifle stock on chest, duplicate stock as clothing"
+      },
+      "f2_to_f3_delta": {
+        "rifle": "vertical center → diagonal upper chest; stock left behind head, barrel right down",
+        "right_hand": "F2 low on stock → F3 moves to receiver_center, palm inward, pushes",
+        "left_hand": "F2 high on barrel → F3 moves to receiver_center cluster, palm inward face, pivot"
+      },
+      "forbidden": "spread grip stock-to-muzzle, overhand stock tip, underhand far barrel, aiming, yoke carry, red aura, wooden tie",
+      "notes_vi": "Hai tay cụm GIỮA SÚNG; lòng bàn tay hướng vào ngực/mặt; tay phải đẩy cán ra sau; KHÔNG tách tay hai đầu súng"
+    },
+    {
+      "index": 4,
+      "beat": "stock_strike_contact",
+      "weapon_state": "stock_forward_barrel_back",
+      "root": "lunge_forward",
+      "notes_vi": "Cán súng đánh ra phía trước; nòng chỉ về sau vai; lunge mạnh"
+    },
+    {
+      "index": 5,
+      "beat": "followthrough",
+      "weapon_state": "stock_low_extended",
+      "root": "lunge_hold",
+      "notes_vi": "Follow-through sau impact; cán vẫn hướng trước, thấp hơn"
+    },
+    {
+      "index": 6,
+      "beat": "recovery",
+      "weapon_state": "return_vertical",
+      "root": "pullback_planted",
+      "notes_vi": "Kéo súng về, đứng lại; root có thể dịch phải nhẹ (ref cx≈249)"
+    }
+  ]
+}

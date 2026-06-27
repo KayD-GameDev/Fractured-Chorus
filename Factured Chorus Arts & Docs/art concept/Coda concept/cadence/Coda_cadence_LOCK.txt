@@ -1,0 +1,124 @@
+================================================================================
+CODA — CADENCE VARIANT LOCK (v13 story-merge)
+Fractured Chorus · Resonance Dive · Cadence realm guide aesthetic
+Locked: 2026-06-08 · Canon art: Coda_cadence_v13_story_full / _chibi
+Source lock lineage: CODA_candence.txt (Downloads) — v12 supersedes guitar/gothic bob
+================================================================================
+
+ROLE
+----
+- Alternate visual identity for Coda trong Cadence / waveform realm contexts.
+- Pillars: Cyber-idol · Sound herald · Guide vui, năng lượng cao.
+- Player fantasy: "cô ấy khuếch đại nhịp và dẫn bạn qua sóng âm."
+
+CANON FILES
+-----------
+- Full body:     Coda_cadence_v13_story_full.png
+- Chibi:         Coda_cadence_v13_story_chibi.png
+- Archive v12:   Coda_cadence_v12_cyber_full.png · _chibi
+- Lock doc:      Coda_cadence_LOCK.txt
+- Main canon:    Coda_LOCK.txt (Resonance Dive default — KHÔNG thay thế)
+
+DESIGN PIVOT (v12 vs legacy Cadence)
+------------------------------------
+| Legacy (v10 gothic)     | v12 cyber-idol (CANON)              |
+|-------------------------|-------------------------------------|
+| Short bob + ahoge       | Twin tails + cyan inner glow        |
+| Long tattered black coat| White cropped zip hoodie + staff FX |
+| Corset + bare legs      | Short white-cyan athletic shorts    |
+| Electric guitar         | Megaphone (loa phóng thanh)         |
+| Purple waveform rings   | Cyan notes + soundwave FX           |
+
+BODY & PROPORTIONS (full body)
+------------------------------
+- Silhouette: nữ trẻ, slim, full-body ¾ front (~17° yaw left), feet visible.
+- Height ratio: ~2.38 heads tall (production sheet standard).
+- Camera: yaw -17°, pitch +2°, weight 55% right foot.
+- Background: white (marketing / Cadence UI sheets).
+
+HAIR (CANON = v12)
+------------------
+- Kiểu: voluminous twin tails (pigtails), thick bangs, wispy curled ends.
+- Inner glow: cyan #67E8F9.
+- Base: #F8F9FA · shadow #CBD5E1 · accent lavender #A5B4FC.
+- KHÔNG short bob · KHÔNG single ahoge-only · KHÔNG đen base.
+
+FACE & HEADWEAR
+---------------
+- Eyes: purple-lavender iris — outer #36226E, mid #6B43D9, glow #A67DFF, highlight #F4F2FF.
+- Visor: translucent cyan HUD with floating musical notes (NOT EQ-bar eyes).
+- Headphones: silver-black over-ear, cyan glowing earcup rings.
+- Expression: neutral confident (full) · neutral cute (chibi).
+
+STORY STYLE GRAMMAR (Ren + Charlotte → Coda slots)
+-------------------------------------------------
+| Story read (Ren)              | Story read (Charlotte)     | Coda slot |
+|-------------------------------|----------------------------|-----------|
+| Black trench + glitch hem     | Tattered coat + buckles    | Short open black tactical coat panels over hoodie, pixel-glitch cyan hem at waist |
+| Shirt + vest + tie formal     | White shirt + red tie + vest | Collar + purple ribbon + grey vest trim UNDER cropped hoodie |
+| Tactical straps, hip pouch    | Thigh straps, knee hardware | Thigh buckles on shorts, hip utility pouch cyan display |
+| Fingerless gloves, buckle boots | Combat boots buckles    | Black fingerless gloves, black buckle combat boots cyan sole |
+| Blue soundwave rings          | Purple note FX             | Cyan + purple notes + circular soundwave at feet |
+
+OUTFIT MANIFEST (CANON = v13 — giữ slot v12)
+--------------------------------------------
+| Slot        | Item |
+|-------------|------|
+| Under       | White collar + purple ribbon, dark grey vest trim visible at hoodie opening |
+| Top         | White cropped zip hoodie #F8F9FA, cyan musical staff + notes (PRIMARY top — không bỏ) |
+| Outer       | Open short black tactical coat/cape panels — silver buckles, straps; glitch pixel + cyan waveform hem (waist length, NOT floor coat) |
+| Bottom      | Short white athletic shorts — mid-thigh (NOT pleated skirt) |
+| Leg acc.    | Black thigh strap + silver buckle (Charlotte); hip pouch (Ren) |
+| Hands       | Black fingerless gloves |
+| Feet        | Black combat boots, silver buckles, cyan glow sole |
+| Head        | Headphones cyan rings + cyan visor HUD (unchanged) |
+| Held prop   | Megaphone silver-white, cyan glow interior (unchanged) |
+| FX          | Cyan + purple notes, circular soundwave rings |
+
+FORBIDDEN (Cadence v13)
+-----------------------
+- Electric guitar, microphone stand, drum, conductor baton, sword
+- Holographic skirt overlay · pleated skirt replacing shorts
+- Floor-length coat ONLY (no hoodie/shorts visible)
+- Full Ren suit + tie ONLY (no hoodie layer)
+- Short bob-only hair (legacy archive)
+- Tóc đen base · adult realistic body · 3D/Pixar style
+
+COLOR SCRIPT (Cadence v12)
+--------------------------
+White base       #F8F9FA   ~35%   hair, hoodie, shorts
+Cyan glow        #67E8F9   ~25%   FX, visor, trim, megaphone core
+Lavender         #A5B4FC   ~10%   shadows, eye mid
+Purple identity  #6B43D9   ~10%   iris, crystal charm
+Navy accent      #111827   ~8%    headphone frame
+Skin             fair peach ~12%   face, legs
+
+CHIBI LOCK (MapleStory proportions)
+-----------------------------------
+- Large head ~42% height · very short limbs · compact body.
+- Same hair/outfit/prop manifest as full body — scaled read.
+- Round chibi face, large drooping anime eyes, small dot mouth.
+- File: Coda_cadence_v12_cyber_chibi.png
+
+GENERATION PROMPT (copy-paste lock)
+----------------------------------
+Full-body 2D anime, white background, premium gacha sheet quality.
+Coda Cadence v13: silver-white twin tails cyan inner glow, purple eyes, cyan visor, headphones.
+KEEP: cropped white hoodie + cyan staff, SHORT shorts, megaphone.
+STORY MERGE Ren+Charlotte: white collar purple ribbon grey vest under hoodie;
+open black tactical coat panels buckles straps glitch-cyan pixel hem at waist;
+thigh strap buckle shorts hip pouch; fingerless gloves; black buckle combat boots cyan sole.
+Cyan purple notes + soundwave rings. NO guitar drum baton skirt floor-coat-only.
+3/4 front, full body, soft anime shading, no text.
+
+Chibi: MapleStory proportions, same v13 manifest.
+
+VERSION HISTORY
+---------------
+v10  gothic rock + guitar + bob (archive)
+v12  cyber-idol hoodie shorts megaphone (archive)
+v13  story style Ren+Charlotte on v12 slots (CANON)
+
+================================================================================
+END LOCK — Cadence variant only; main Resonance Dive canon remains Coda_LOCK.txt
+================================================================================
