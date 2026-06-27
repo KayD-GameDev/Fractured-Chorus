@@ -13,7 +13,6 @@ namespace FracturedChorus.Editor
         private const string StatBlockFolder = "Assets/FracturedChorus/Resources/StatBlocks";
         private const string PresetFolder = "Assets/FracturedChorus/Resources/UnitPresets";
         private const string SkillFolder = "Assets/FracturedChorus/Resources/Skills";
-        private const string PartyBarFolder = "Assets/FracturedChorus/Resources/PartyStatusBar";
 
         [MenuItem("Fractured Chorus/Create Default Stat Blocks & Presets")]
         public static void CreateDefaultAssets()
@@ -21,7 +20,6 @@ namespace FracturedChorus.Editor
             EnsureFolder(StatBlockFolder);
             EnsureFolder(PresetFolder);
             EnsureFolder(SkillFolder);
-            EnsureFolder(PartyBarFolder);
 
             var renBlock = CreateStatBlock("StatBlock_Ren", HarmonyElement.Melody, DamageType.Physical, 100, 10, 160, 15, 1.2f, 80, 12);
             var tankBlock = CreateStatBlock("StatBlock_Tank", HarmonyElement.Rhythm, DamageType.Physical, 80, 15, 140, 10, 1.1f, 120, 8);
@@ -43,49 +41,9 @@ namespace FracturedChorus.Editor
             CreatePreset("UnitPreset_Grunt", "grunt", "Grunt", UnitRole.Grunt, gruntBlock,
                 new[] { gruntStrike }, new Color(0.85f, 0.25f, 0.2f));
 
-            CreatePartyRoster();
-
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-            Debug.Log("[Fractured Chorus] Stat blocks + presets + party roster in Resources.");
-        }
-
-        [MenuItem("Fractured Chorus/Create Party Status Bar Roster")]
-        public static void CreatePartyRosterMenu()
-        {
-            EnsureFolder(PartyBarFolder);
-            CreatePartyRoster();
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-            Debug.Log("[Fractured Chorus] Party roster saved to Resources/PartyStatusBar/PartyRoster.asset");
-        }
-
-        private static void CreatePartyRoster()
-        {
-            var path = $"{PartyBarFolder}/PartyRoster.asset";
-            var roster = LoadOrCreate<PartyStatusBarRosterSO>(path);
-            roster.slots = new[]
-            {
-                new PartyStatusBarSlotDefinition
-                {
-                    statBlockResourceName = "StatBlock_Tank",
-                    unitPresetResourceName = "Tank",
-                    unitMatchKey = "tank"
-                },
-                new PartyStatusBarSlotDefinition
-                {
-                    statBlockResourceName = "StatBlock_Ren",
-                    unitPresetResourceName = "Ren",
-                    unitMatchKey = "ren"
-                },
-                new PartyStatusBarSlotDefinition
-                {
-                    statBlockResourceName = "StatBlock_Mage",
-                    unitPresetResourceName = "Mage",
-                    unitMatchKey = "mage"
-                }
-            };
-            EditorUtility.SetDirty(roster);
+            Debug.Log("[Fractured Chorus] Stat blocks + presets in Resources/StatBlocks and Resources/UnitPresets.");
         }
 
         private static void EnsureFolder(string path)
