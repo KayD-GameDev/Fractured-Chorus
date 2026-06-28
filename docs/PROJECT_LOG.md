@@ -9,6 +9,27 @@ Newest first.
 
 ---
 
+## 2026-06-28 — Run Map: layout scroll, procedural seed, edge sync
+
+**Focus:** code (Unity) + docs
+
+**Owner:** Khoa
+
+**Done**
+- **Layout bottom-origin:** `MapContent` + layers anchor/pivot `(0.5, 0)` — F1 đáy, F16 trên; `fitToViewport` scale spacing theo scroll viewport.
+- **Edge ↔ node sync:** `MapConnectionLineView` anchor đáy (fix lệch ~F10); lines spawn trong `NodesLayer` cùng node — scroll đồng bộ.
+- **Procedural mặc định:** `MapTemplate_Default` — `useReferenceDemoOnPlay=0`, `randomizeSeedOnPlay=1`; path unique hash + mutate; log seed Console.
+- **Path UX:** visited edge cam đậm, preview cam nhạt; auto-scroll theo node; boss **58px** hội tụ F15.
+- **Docs:** `RUNMAP_SCENE_SETUP.md`, `RunMap/README.md`, `PROJECT_STATUS`, mirror repo.
+
+**Decisions**
+- Demo reference (`STS_PATHS`) chỉ khi bật flag Inspector — không phải Play default.
+- Không dùng center anchor cho connection lines trên bottom-pivot layer.
+
+**Refs:** `RUNMAP_SCENE_SETUP.md`, `RunMapPrototype.unity`, `MapTemplate_Default.asset`
+
+---
+
 ## 2026-06-28 — Unity: Run Map prototype scene (StS clone 7×15 + F16)
 
 **Focus:** code (Unity) + docs
@@ -16,17 +37,14 @@ Newest first.
 **Owner:** Khoa
 
 **Done**
-- **`RunMap/` module:** `MapGenerator` (path gen ×6, prune, fixed F1/F9/F15, random types + rules, boss F16), `MapGraph`, `RunState`, `NodeTypeAssigner`, `PathValidator`.
-- **UI:** `RunMapUIView`, `MapNodeView`, `MapConnectionLineView` — scroll map dọc, click path, highlight cam.
-- **Scene:** menu **Fractured Chorus → Create Run Map Prototype Scene** → `RunMapPrototype.unity`; doc `RUNMAP_SCENE_SETUP.md`.
-- **Demo map:** `GenerateDemoReference()` khớp `STS_PATHS` / locations trong `build_fc_diagrams_drawio.py`.
-- **`MapTemplateSO`:** toggle reference demo vs procedural seed.
+- **`RunMap/` module:** `MapGenerator`, `MapGraph`, `RunState`, `NodeTypeAssigner`, `PathValidator`.
+- **UI:** `RunMapUIView`, `MapNodeView`, `MapConnectionLineView` — scroll map dọc, click path.
+- **Scene:** menu **Create Run Map Prototype Scene** → `RunMapPrototype.unity`.
 
 **Decisions**
-- Node naming FC: Battle / Event / Elite / Camp / Relay / Treasure / Boss Oni (không dùng tên StS thuần).
-- Play mặc định demo reference map (seed 42) để so sánh với draw.io; procedural khi tắt flag trên SO.
+- Node naming FC: Battle / Event / Elite / Camp / Relay / Treasure / Boss Oni.
 
-**Refs:** `RunMap/README.md`, `RUNMAP_SCENE_SETUP.md`, StS ref workshop + YouTube trong scene doc
+**Refs:** `RunMap/README.md`, `RUNMAP_SCENE_SETUP.md`
 
 ---
 

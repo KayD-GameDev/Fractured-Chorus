@@ -1,22 +1,32 @@
-# Run Map (P2)
+# Run Map (P2 MVP)
 
 Slay the Spire–style node graph: **7×15 floors + boss floor 16**.
 
-## Scene
+## Scene & docs
 
-- `Assets/FracturedChorus/Scenes/RunMapPrototype.unity`
-- Setup doc: [`RUNMAP_SCENE_SETUP.md`](../Scenes/RUNMAP_SCENE_SETUP.md)
+| | Path |
+|--|------|
+| Scene | `Assets/FracturedChorus/Scenes/RunMapPrototype.unity` |
+| Setup | [`../Scenes/RUNMAP_SCENE_SETUP.md`](../Scenes/RUNMAP_SCENE_SETUP.md) |
+| Template SO | `Data/ScriptableObjects/Presets/MapTemplate_Default.asset` |
 
 ## Scripts
 
 | Path | Class |
 |------|-------|
-| `RunMap/Core/` | `MapGenerator`, `MapGraph`, `RunState`, `NodeTypeAssigner`, `PathValidator` |
+| `RunMap/Core/` | `MapGenerator`, `MapGraph`, `RunState`, `NodeTypeAssigner`, `PathValidator`, `MapLayoutConstants` |
 | `RunMap/UI/` | `RunMapUIView`, `MapNodeView`, `MapConnectionLineView`, `MapNodePalette` |
 | `RunMap/` | `RunMapController`, `RunMapBootstrap` |
 | `Data/ScriptableObjects/` | `MapTemplateSO` |
-| `Editor/` | `RunMapSceneSetupEditor` — menu **Create Run Map Prototype Scene** |
+| `Editor/` | `RunMapSceneSetupEditor` |
+
+## Play defaults (2026-06-28)
+
+- **Procedural** map, **random seed** mỗi Play
+- F1 ở **đáy** scroll; boss F16 **một node to** ở trên
+- Path click + edge highlight (visited / preview)
+- Demo reference map: bật `useReferenceDemoOnPlay` trên `MapTemplate_Default`
 
 **UC:** UC-01 Start Run · UC-02 Select Contract · UC-12 Navigate Map
 
-Design ref: GitHub `scripts/build_fc_diagrams_drawio.py`, GDD §3, StS workshop + YouTube links in scene setup doc.
+Design: `scripts/build_fc_diagrams_drawio.py`, GDD §3, StS workshop/YouTube links trong scene setup doc.

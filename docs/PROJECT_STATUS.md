@@ -1,8 +1,8 @@
 # Fractured Chorus — Trạng thái dự án
 
-**Cập nhật:** 2026-06-28 (Unity run map prototype)  
+**Cập nhật:** 2026-06-28 (Run Map layout + procedural + docs sync)  
 **Repo:** `C:\Users\admin\Projects\fractured-chorus` (docs mirror)  
-**Unity:** `F:\Unity_Project\Fractured Chorus` · scene `CombatPrototype.unity` · GitHub remote **Fractured-Chorus1**  
+**Unity:** `F:\Unity_Project\Fractured Chorus` · scenes `CombatPrototype.unity` · `RunMapPrototype.unity` · GitHub remote **Fractured-Chorus1**  
 **Log:** [`PROJECT_LOG.md`](PROJECT_LOG.md) · [`LOGGING.md`](LOGGING.md)
 
 ---
@@ -80,9 +80,24 @@ Preset SO vẫn `UnitPreset_Mage|Ren|Tank` — xem `Art/Characters/README.md`.
 | Battle sprite Ren/Tank/Mage (`UnitPresetSO.battleSprite`) | 🟡 3/3 demo |
 | Audio beat map (`MusicBeatMapSO`, `CombatMusicController`) | 🟡 Stub/editor |
 | Run map / Morale / drag skill → beat slot | 🔲 |
-| **Run map prototype** — StS clone scene `RunMapPrototype.unity`, path click, demo STS_PATHS | 🟡 MVP |
+| **Run map prototype** (`RunMapPrototype.unity`) | 🟡 MVP | Procedural seed, F1 đáy scroll, boss F16, path click + edge highlight |
 
-Chi tiết logic: [`setup/UNITY_WORKFLOW.md`](setup/UNITY_WORKFLOW.md) · log session: [`PROJECT_LOG.md`](PROJECT_LOG.md) (24–26/06).
+### Run map prototype (Unity — 2026-06-28)
+
+| Thành phần | Trạng thái |
+|------------|------------|
+| Scene `RunMapPrototype.unity` | ✅ |
+| Procedural `MapGenerator` (6 path unique, boss hội tụ) | ✅ |
+| Random seed mỗi Play (`MapTemplate_Default`) | ✅ |
+| Scroll F1 đáy → F16; `fitToViewport` | ✅ |
+| Edge + node cùng layer, bottom anchor | ✅ |
+| Path visited / preview highlight | ✅ |
+| Demo reference map (flag Inspector) | ✅ debug only |
+| Nối node → Combat scene | 🔲 |
+
+Doc: [`RUNMAP_SCENE_SETUP.md`](setup/RUNMAP_SCENE_SETUP.md) · Unity `Assets/FracturedChorus/Scenes/RUNMAP_SCENE_SETUP.md`
+
+Chi tiết combat: [`setup/UNITY_WORKFLOW.md`](setup/UNITY_WORKFLOW.md) · log: [`PROJECT_LOG.md`](PROJECT_LOG.md).
 
 ---
 
@@ -120,3 +135,4 @@ Broadcast nhóm: [`TEAM_MESSENGER_BROADCAST.md`](TEAM_MESSENGER_BROADCAST.md).
 2. Push docs mirror `fractured-chorus` lên GitHub; cập nhật `LINKS.md`.
 3. **Thiên:** tiếp tab Story → Done Linear P1-1.
 4. Import sprite canon đầy đủ (Grunt, UI polish) khi art approved.
+5. **Run map:** playtest procedural seed; nối node Battle → `CombatPrototype` (Linear issue).

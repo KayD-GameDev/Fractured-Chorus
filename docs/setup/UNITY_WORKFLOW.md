@@ -199,4 +199,15 @@ python scripts/verify_combat_scene_sync.py
 
 ## Phase gate
 
-Combat Unity = **P2**. Run map scene = **P2 MVP** (`RunMapPrototype.unity`). Mọi thay đổi canon gameplay/story → Notion Decision Log trước khi implement.
+Combat Unity = **P2**. Run map = **P2 MVP** — scene `RunMapPrototype.unity`, doc [`RUNMAP_SCENE_SETUP.md`](../../Assets/FracturedChorus/Scenes/RUNMAP_SCENE_SETUP.md) (Unity) / mirror [`RUNMAP_SCENE_SETUP.md`](RUNMAP_SCENE_SETUP.md).
+
+### Run map quick ref
+
+| Menu | Mục đích |
+|------|----------|
+| **Create Run Map Prototype Scene** | Tạo + save scene |
+| **Setup Run Map Scene Hierarchy** | Rebuild hierarchy |
+
+Play: procedural map, random seed, F1 ở đáy scroll. Template: `MapTemplate_Default` — tắt **Use Reference Demo On Play** cho map ngẫu nhiên.
+
+Mọi thay đổi canon gameplay/story → Notion Decision Log trước khi implement.
