@@ -1,0 +1,4290 @@
+fileFormatVersion: 2
+guid: fedd5d8ecce140f4bbcfc4d1d692d784
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -5668575271067214602
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_0
+  - first:
+      213: -5351745890193160729
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_1
+  - first:
+      213: -4395628406058298133
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_2
+  - first:
+      213: 4387301972849035075
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_3
+  - first:
+      213: 311140158812390098
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_4
+  - first:
+      213: 7673169897801854840
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_5
+  - first:
+      213: 5809761170164996309
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_6
+  - first:
+      213: -2658218561773695583
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_7
+  - first:
+      213: -8195813624162341863
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_8
+  - first:
+      213: -6722050898291307378
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_9
+  - first:
+      213: 4516789146634981018
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_10
+  - first:
+      213: -5381456069136005069
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_11
+  - first:
+      213: -4432585460286141871
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_12
+  - first:
+      213: 2103843040483374748
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_13
+  - first:
+      213: 7192980155390813633
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_14
+  - first:
+      213: 8853131294489341255
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_15
+  - first:
+      213: -2939405652097537161
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_16
+  - first:
+      213: -937694184755265896
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_17
+  - first:
+      213: -5026470375006704728
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_18
+  - first:
+      213: -1121496837637650984
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_19
+  - first:
+      213: -3485128719321112839
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_20
+  - first:
+      213: 1110828791309384005
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_21
+  - first:
+      213: 7719872914198209362
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_22
+  - first:
+      213: 791946454864573953
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_23
+  - first:
+      213: -6815487216565608283
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_24
+  - first:
+      213: -8558534843607157655
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_25
+  - first:
+      213: 6489492994575624769
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_26
+  - first:
+      213: -6128818323181387268
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_27
+  - first:
+      213: -1335557568270066015
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_28
+  - first:
+      213: 3461691019399181580
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_29
+  - first:
+      213: 5695161022622949272
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_30
+  - first:
+      213: 3456646824157459824
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_31
+  - first:
+      213: 7168444506129064743
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_32
+  - first:
+      213: -4557937092053846706
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_33
+  - first:
+      213: 6185913050450494883
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_34
+  - first:
+      213: 5808021907014774485
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_35
+  - first:
+      213: -1365674607471422946
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_36
+  - first:
+      213: 8466523992415492294
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_37
+  - first:
+      213: 3221685692587428779
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_38
+  - first:
+      213: 8771382179073737100
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_39
+  - first:
+      213: -1599754014978154227
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_40
+  - first:
+      213: -153385495227940356
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_41
+  - first:
+      213: -4182784396664793376
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_42
+  - first:
+      213: 2986546452421586188
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_43
+  - first:
+      213: -1186050416613511586
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_44
+  - first:
+      213: 7052965618894136925
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_45
+  - first:
+      213: 4449810754446979197
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_46
+  - first:
+      213: 2770260068892580587
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_47
+  - first:
+      213: 7694552444698672107
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_48
+  - first:
+      213: -7920277397272064332
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_49
+  - first:
+      213: 4699806959918349413
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_50
+  - first:
+      213: -8474123631421778177
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_51
+  - first:
+      213: -2641512949629959888
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_52
+  - first:
+      213: -3358914622667611732
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_53
+  - first:
+      213: -2113035008628431712
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_54
+  - first:
+      213: -5191688005965681853
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_55
+  - first:
+      213: -4173314937139282457
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_56
+  - first:
+      213: 1221845639786188129
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_57
+  - first:
+      213: 5991998886119554655
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_58
+  - first:
+      213: -7120561078303055055
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_59
+  - first:
+      213: 4895170119374192793
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_60
+  - first:
+      213: 8433475808763474264
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_61
+  - first:
+      213: -5219179320796193964
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_62
+  - first:
+      213: 1839667183298205356
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_63
+  - first:
+      213: -2115488286709393511
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_64
+  - first:
+      213: 791470215075396578
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_65
+  - first:
+      213: -2701452452967603665
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_66
+  - first:
+      213: 261808874920745230
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_67
+  - first:
+      213: 4389546872284586501
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_68
+  - first:
+      213: -5887354532282964488
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_69
+  - first:
+      213: 8352731937589219699
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_70
+  - first:
+      213: -2106930716561631647
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_71
+  - first:
+      213: 3900337083198558377
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_72
+  - first:
+      213: -8405241316736087983
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_73
+  - first:
+      213: -7437754168734206681
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_74
+  - first:
+      213: -2678792555954885088
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_75
+  - first:
+      213: -5105960511928323800
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_76
+  - first:
+      213: 4384584613319225680
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_77
+  - first:
+      213: -590160129803664310
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_78
+  - first:
+      213: 1338329818531715998
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_79
+  - first:
+      213: -1853200958739411720
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_80
+  - first:
+      213: 1258317265157443428
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_81
+  - first:
+      213: 8239256298786503961
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_82
+  - first:
+      213: 8382503197726584363
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_83
+  - first:
+      213: -4969551939027912826
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_84
+  - first:
+      213: 4094279232543114363
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_85
+  - first:
+      213: 3412173473885290390
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_86
+  - first:
+      213: 5965658961441957311
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_87
+  - first:
+      213: -3104913383945609121
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_88
+  - first:
+      213: -1949991338378128598
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_89
+  - first:
+      213: 3740675806907040536
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_90
+  - first:
+      213: -2032944865594092988
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_91
+  - first:
+      213: -4096594600862022073
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_92
+  - first:
+      213: -841438802493884780
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_93
+  - first:
+      213: -4881583532452448167
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_94
+  - first:
+      213: -2565007248998473933
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_95
+  - first:
+      213: -657048407706642296
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_96
+  - first:
+      213: 8195084214557584200
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_97
+  - first:
+      213: -3785909574619061565
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_98
+  - first:
+      213: 1521743354590176534
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_99
+  - first:
+      213: -1074355235584825411
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_100
+  - first:
+      213: 55161944313888119
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_101
+  - first:
+      213: 3272650373234467038
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_102
+  - first:
+      213: 9184712813143053350
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_103
+  - first:
+      213: 3356831303403871139
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_104
+  - first:
+      213: 3532785498477604961
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_105
+  - first:
+      213: 1408116407374365968
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_106
+  - first:
+      213: -6256766673651292404
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_107
+  - first:
+      213: -6809970449943791550
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_108
+  - first:
+      213: 413705743064240021
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_109
+  - first:
+      213: 720269383758932984
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_110
+  - first:
+      213: 6285597462370050096
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_111
+  - first:
+      213: -7151206785678966649
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_112
+  - first:
+      213: 185023361773755942
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_113
+  - first:
+      213: -1606170719136057086
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_114
+  - first:
+      213: 1663976668002519390
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_115
+  - first:
+      213: -7397274259979769484
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_116
+  - first:
+      213: -1112767582438346367
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_117
+  - first:
+      213: 4539908510722763464
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_118
+  - first:
+      213: 6924498474408957511
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_119
+  - first:
+      213: -1503182140606908637
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_120
+  - first:
+      213: 8329193574503984800
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_121
+  - first:
+      213: 1581356399268511889
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_122
+  - first:
+      213: 3547393115088126066
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_123
+  - first:
+      213: 2742646834884533724
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_124
+  - first:
+      213: 7715546667722520166
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_125
+  - first:
+      213: -6054198537311572869
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_126
+  - first:
+      213: -6195709958527030186
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_127
+  - first:
+      213: -7904270148625412037
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_128
+  - first:
+      213: 4450832917049342649
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_129
+  - first:
+      213: -967683762143817148
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_130
+  - first:
+      213: -2882930169565190887
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_131
+  - first:
+      213: -8597961829957815019
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_132
+  - first:
+      213: 7389820298432791838
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_133
+  - first:
+      213: -5595264519882275000
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_134
+  - first:
+      213: -3643147958491614355
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_135
+  - first:
+      213: -8495770234266699540
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_136
+  - first:
+      213: 7016875773288778888
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_137
+  - first:
+      213: -8653439980795427249
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_138
+  - first:
+      213: 1106874358911629646
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_139
+  - first:
+      213: 812543951338309037
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_140
+  - first:
+      213: 8244344579762452161
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_141
+  - first:
+      213: -9016160859049183538
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_142
+  - first:
+      213: 7128143589851795852
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_143
+  - first:
+      213: -3144673517943755113
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_144
+  - first:
+      213: -7691099048341352850
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_145
+  - first:
+      213: 1168396244352345558
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_146
+  - first:
+      213: -1877428760089527356
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_147
+  - first:
+      213: -1669944667623315218
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_148
+  - first:
+      213: -9155108005855647198
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_149
+  - first:
+      213: -4840316189526109227
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_150
+  - first:
+      213: -695449924886699553
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_151
+  - first:
+      213: -1490329993103077
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_152
+  - first:
+      213: -7929843471451662664
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_153
+  - first:
+      213: -1016154472648399694
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_154
+  - first:
+      213: 3074824625745695345
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_155
+  - first:
+      213: 6127321636349137170
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_156
+  - first:
+      213: 3201083377882848534
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_157
+  - first:
+      213: -4773782734048888884
+    second: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_158
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WindowsStoreApps
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_0
+      rect:
+        serializedVersion: 2
+        x: 36
+        y: 4713
+        width: 1121
+        height: 864
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6fc997903dc2551b0800000000000000
+      internalID: -5668575271067214602
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_1
+      rect:
+        serializedVersion: 2
+        x: 1956
+        y: 4713
+        width: 1121
+        height: 864
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7e541e6b777cab5b0800000000000000
+      internalID: -5351745890193160729
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_2
+      rect:
+        serializedVersion: 2
+        x: 3876
+        y: 4713
+        width: 1121
+        height: 864
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: be45744f0479ff2c0800000000000000
+      internalID: -4395628406058298133
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_3
+      rect:
+        serializedVersion: 2
+        x: 5820
+        y: 4884
+        width: 73
+        height: 22
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 347890e36e3d2ec30800000000000000
+      internalID: 4387301972849035075
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_4
+      rect:
+        serializedVersion: 2
+        x: 6057
+        y: 4712
+        width: 1168
+        height: 864
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2d20f517354615400800000000000000
+      internalID: 311140158812390098
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_5
+      rect:
+        serializedVersion: 2
+        x: 7716
+        y: 4645
+        width: 1725
+        height: 864
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 87f23bb2e539c7a60800000000000000
+      internalID: 7673169897801854840
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_6
+      rect:
+        serializedVersion: 2
+        x: 9461
+        y: 4868
+        width: 17
+        height: 18
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5d8da89b00b60a050800000000000000
+      internalID: 5809761170164996309
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_7
+      rect:
+        serializedVersion: 2
+        x: 9470
+        y: 4885
+        width: 19
+        height: 15
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1ad012a4d4c1c1bd0800000000000000
+      internalID: -2658218561773695583
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_8
+      rect:
+        serializedVersion: 2
+        x: 5837
+        y: 4805
+        width: 154
+        height: 69
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 91c2f7e9eee924e80800000000000000
+      internalID: -8195813624162341863
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_9
+      rect:
+        serializedVersion: 2
+        x: 5954
+        y: 4763
+        width: 121
+        height: 36
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e8c404da25a76b2a0800000000000000
+      internalID: -6722050898291307378
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_10
+      rect:
+        serializedVersion: 2
+        x: 9311
+        y: 4630
+        width: 21
+        height: 18
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a9e84824ccbdeae30800000000000000
+      internalID: 4516789146634981018
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_11
+      rect:
+        serializedVersion: 2
+        x: 9408
+        y: 4645
+        width: 13
+        height: 20
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 33847c0a73a3155b0800000000000000
+      internalID: -5381456069136005069
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_12
+      rect:
+        serializedVersion: 2
+        x: 9467
+        y: 4648
+        width: 14
+        height: 20
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 15a451b320b4c72c0800000000000000
+      internalID: -4432585460286141871
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_13
+      rect:
+        serializedVersion: 2
+        x: 9449
+        y: 4620
+        width: 13
+        height: 14
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c967033491a523d10800000000000000
+      internalID: 2103843040483374748
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_14
+      rect:
+        serializedVersion: 2
+        x: 9377
+        y: 4555
+        width: 23
+        height: 42
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1c5e08e575992d360800000000000000
+      internalID: 7192980155390813633
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_15
+      rect:
+        serializedVersion: 2
+        x: 1607
+        y: 3138
+        width: 13
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 74d6ee5a104acda70800000000000000
+      internalID: 8853131294489341255
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_16
+      rect:
+        serializedVersion: 2
+        x: 1722
+        y: 3142
+        width: 15
+        height: 29
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 77b63ff02222537d0800000000000000
+      internalID: -2939405652097537161
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_17
+      rect:
+        serializedVersion: 2
+        x: 1729
+        y: 3134
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 89e76b96b14acf2f0800000000000000
+      internalID: -937694184755265896
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_18
+      rect:
+        serializedVersion: 2
+        x: 3527
+        y: 3138
+        width: 13
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8ab63b743d36e3ab0800000000000000
+      internalID: -5026470375006704728
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_19
+      rect:
+        serializedVersion: 2
+        x: 3642
+        y: 3142
+        width: 15
+        height: 29
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8d542ef6194af60f0800000000000000
+      internalID: -1121496837637650984
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_20
+      rect:
+        serializedVersion: 2
+        x: 3649
+        y: 3134
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9fe5a5015e552afc0800000000000000
+      internalID: -3485128719321112839
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_21
+      rect:
+        serializedVersion: 2
+        x: 5447
+        y: 3138
+        width: 13
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 549b54876e47a6f00800000000000000
+      internalID: 1110828791309384005
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_22
+      rect:
+        serializedVersion: 2
+        x: 5562
+        y: 3142
+        width: 15
+        height: 29
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 253a1f9838f722b60800000000000000
+      internalID: 7719872914198209362
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_23
+      rect:
+        serializedVersion: 2
+        x: 5569
+        y: 3134
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1063553da1f8dfa00800000000000000
+      internalID: 791946454864573953
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_24
+      rect:
+        serializedVersion: 2
+        x: 7367
+        y: 3138
+        width: 13
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5a0246d8c768a61a0800000000000000
+      internalID: -6815487216565608283
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_25
+      rect:
+        serializedVersion: 2
+        x: 7482
+        y: 3142
+        width: 15
+        height: 29
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 964fdf0a7e9f93980800000000000000
+      internalID: -8558534843607157655
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_26
+      rect:
+        serializedVersion: 2
+        x: 7489
+        y: 3134
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 14ae01aee7f4f0a50800000000000000
+      internalID: 6489492994575624769
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_27
+      rect:
+        serializedVersion: 2
+        x: 9287
+        y: 3138
+        width: 13
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cf14ed9f43012faa0800000000000000
+      internalID: -6128818323181387268
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_28
+      rect:
+        serializedVersion: 2
+        x: 9402
+        y: 3142
+        width: 15
+        height: 29
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1ae9d2eb775277de0800000000000000
+      internalID: -1335557568270066015
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_29
+      rect:
+        serializedVersion: 2
+        x: 9409
+        y: 3134
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c05b27d24a56a0030800000000000000
+      internalID: 3461691019399181580
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_30
+      rect:
+        serializedVersion: 2
+        x: 738
+        y: 2789
+        width: 1073
+        height: 864
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 89f571c96c6490f40800000000000000
+      internalID: 5695161022622949272
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_31
+      rect:
+        serializedVersion: 2
+        x: 1856
+        y: 3013
+        width: 19
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 07533e3f8f978ff20800000000000000
+      internalID: 3456646824157459824
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_32
+      rect:
+        serializedVersion: 2
+        x: 2658
+        y: 2789
+        width: 1073
+        height: 864
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7236ceb5c4e6b7360800000000000000
+      internalID: 7168444506129064743
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_33
+      rect:
+        serializedVersion: 2
+        x: 3776
+        y: 3013
+        width: 19
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e45bd8f1d54feb0c0800000000000000
+      internalID: -4557937092053846706
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_34
+      rect:
+        serializedVersion: 2
+        x: 4578
+        y: 2789
+        width: 1073
+        height: 864
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3a50e8f1527c8d550800000000000000
+      internalID: 6185913050450494883
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_35
+      rect:
+        serializedVersion: 2
+        x: 5696
+        y: 3013
+        width: 19
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5de6d47f62d3a9050800000000000000
+      internalID: 5808021907014774485
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_36
+      rect:
+        serializedVersion: 2
+        x: 6498
+        y: 2789
+        width: 1073
+        height: 864
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e1215ee1e262c0de0800000000000000
+      internalID: -1365674607471422946
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_37
+      rect:
+        serializedVersion: 2
+        x: 7616
+        y: 3013
+        width: 19
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6c85f3aa6b22f7570800000000000000
+      internalID: 8466523992415492294
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_38
+      rect:
+        serializedVersion: 2
+        x: 8418
+        y: 2789
+        width: 1073
+        height: 864
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: babc1a4711ab5bc20800000000000000
+      internalID: 3221685692587428779
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_39
+      rect:
+        serializedVersion: 2
+        x: 9536
+        y: 3013
+        width: 19
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c81c1ec7e953ab970800000000000000
+      internalID: 8771382179073737100
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_40
+      rect:
+        serializedVersion: 2
+        x: 46
+        y: 2955
+        width: 22
+        height: 29
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d01e83103388cc9e0800000000000000
+      internalID: -1599754014978154227
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_41
+      rect:
+        serializedVersion: 2
+        x: 119
+        y: 2943
+        width: 42
+        height: 28
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cf1cd3b64b01fddf0800000000000000
+      internalID: -153385495227940356
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_42
+      rect:
+        serializedVersion: 2
+        x: 1966
+        y: 2955
+        width: 22
+        height: 29
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0e69fb8a0c3c3f5c0800000000000000
+      internalID: -4182784396664793376
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_43
+      rect:
+        serializedVersion: 2
+        x: 2039
+        y: 2943
+        width: 42
+        height: 28
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c0daac1dc28527920800000000000000
+      internalID: 2986546452421586188
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_44
+      rect:
+        serializedVersion: 2
+        x: 3886
+        y: 2955
+        width: 22
+        height: 29
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e5e2c081e6d4a8fe0800000000000000
+      internalID: -1186050416613511586
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_45
+      rect:
+        serializedVersion: 2
+        x: 3959
+        y: 2943
+        width: 42
+        height: 28
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d566a37bcda21e160800000000000000
+      internalID: 7052965618894136925
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_46
+      rect:
+        serializedVersion: 2
+        x: 5806
+        y: 2955
+        width: 22
+        height: 29
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d7076881e47e0cd30800000000000000
+      internalID: 4449810754446979197
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_47
+      rect:
+        serializedVersion: 2
+        x: 5879
+        y: 2943
+        width: 42
+        height: 28
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bea9acdead0f17620800000000000000
+      internalID: 2770260068892580587
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_48
+      rect:
+        serializedVersion: 2
+        x: 7726
+        y: 2955
+        width: 22
+        height: 29
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bebb0e35eaa88ca60800000000000000
+      internalID: 7694552444698672107
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_49
+      rect:
+        serializedVersion: 2
+        x: 7799
+        y: 2943
+        width: 42
+        height: 28
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4be0b0daba5851290800000000000000
+      internalID: -7920277397272064332
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_50
+      rect:
+        serializedVersion: 2
+        x: 113
+        y: 2911
+        width: 17
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 56c77d68781193140800000000000000
+      internalID: 4699806959918349413
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_51
+      rect:
+        serializedVersion: 2
+        x: 129
+        y: 2910
+        width: 32
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ff69c5e747dd56a80800000000000000
+      internalID: -8474123631421778177
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_52
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 2920
+        width: 21
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 03146b7b7f5775bd0800000000000000
+      internalID: -2641512949629959888
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_53
+      rect:
+        serializedVersion: 2
+        x: 2033
+        y: 2911
+        width: 17
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ca1280d62fcb261d0800000000000000
+      internalID: -3358914622667611732
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_54
+      rect:
+        serializedVersion: 2
+        x: 2049
+        y: 2910
+        width: 32
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0a4ecb0eaddfca2e0800000000000000
+      internalID: -2113035008628431712
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_55
+      rect:
+        serializedVersion: 2
+        x: 2062
+        y: 2920
+        width: 21
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 34b62cbe34b63f7b0800000000000000
+      internalID: -5191688005965681853
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_56
+      rect:
+        serializedVersion: 2
+        x: 3953
+        y: 2911
+        width: 17
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7ed3bf30d286516c0800000000000000
+      internalID: -4173314937139282457
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_57
+      rect:
+        serializedVersion: 2
+        x: 3969
+        y: 2910
+        width: 32
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 16dc0d1c22ed4f010800000000000000
+      internalID: 1221845639786188129
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_58
+      rect:
+        serializedVersion: 2
+        x: 3982
+        y: 2920
+        width: 21
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f5e31bd6d3bd72350800000000000000
+      internalID: 5991998886119554655
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_59
+      rect:
+        serializedVersion: 2
+        x: 5873
+        y: 2911
+        width: 17
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1332646fc6fae2d90800000000000000
+      internalID: -7120561078303055055
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_60
+      rect:
+        serializedVersion: 2
+        x: 5889
+        y: 2910
+        width: 32
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 990c760b9432fe340800000000000000
+      internalID: 4895170119374192793
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_61
+      rect:
+        serializedVersion: 2
+        x: 5902
+        y: 2920
+        width: 21
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 851723bc099b90570800000000000000
+      internalID: 8433475808763474264
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_62
+      rect:
+        serializedVersion: 2
+        x: 7793
+        y: 2911
+        width: 17
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 45bd0e46f00c197b0800000000000000
+      internalID: -5219179320796193964
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_63
+      rect:
+        serializedVersion: 2
+        x: 7809
+        y: 2910
+        width: 32
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ca6de656e8fc78910800000000000000
+      internalID: 1839667183298205356
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_64
+      rect:
+        serializedVersion: 2
+        x: 7822
+        y: 2920
+        width: 21
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 997df209c9644a2e0800000000000000
+      internalID: -2115488286709393511
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_65
+      rect:
+        serializedVersion: 2
+        x: 170
+        y: 2870
+        width: 52
+        height: 49
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2ebfedb97fddbfa00800000000000000
+      internalID: 791470215075396578
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_66
+      rect:
+        serializedVersion: 2
+        x: 2090
+        y: 2870
+        width: 52
+        height: 49
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f2222439e43828ad0800000000000000
+      internalID: -2701452452967603665
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_67
+      rect:
+        serializedVersion: 2
+        x: 4010
+        y: 2870
+        width: 52
+        height: 49
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e0912bcd8c122a300800000000000000
+      internalID: 261808874920745230
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_68
+      rect:
+        serializedVersion: 2
+        x: 5930
+        y: 2870
+        width: 52
+        height: 49
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 502237f9f9dcaec30800000000000000
+      internalID: 4389546872284586501
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_69
+      rect:
+        serializedVersion: 2
+        x: 7850
+        y: 2870
+        width: 52
+        height: 49
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8f5ec74de3aeb4ea0800000000000000
+      internalID: -5887354532282964488
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_70
+      rect:
+        serializedVersion: 2
+        x: 283
+        y: 2816
+        width: 136
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 371d01c417ddae370800000000000000
+      internalID: 8352731937589219699
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_71
+      rect:
+        serializedVersion: 2
+        x: 597
+        y: 2820
+        width: 52
+        height: 24
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1661cf02dada2c2e0800000000000000
+      internalID: -2106930716561631647
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_72
+      rect:
+        serializedVersion: 2
+        x: 663
+        y: 2813
+        width: 18
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9a0555c89e7c02630800000000000000
+      internalID: 3900337083198558377
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_73
+      rect:
+        serializedVersion: 2
+        x: 2203
+        y: 2816
+        width: 136
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 15842882e859a5b80800000000000000
+      internalID: -8405241316736087983
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_74
+      rect:
+        serializedVersion: 2
+        x: 2517
+        y: 2820
+        width: 52
+        height: 24
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 725baed8df9c7c890800000000000000
+      internalID: -7437754168734206681
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_75
+      rect:
+        serializedVersion: 2
+        x: 2583
+        y: 2813
+        width: 18
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 02e295bfc5403dad0800000000000000
+      internalID: -2678792555954885088
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_76
+      rect:
+        serializedVersion: 2
+        x: 4123
+        y: 2816
+        width: 136
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 821375987fbf329b0800000000000000
+      internalID: -5105960511928323800
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_77
+      rect:
+        serializedVersion: 2
+        x: 4437
+        y: 2820
+        width: 52
+        height: 24
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 051398ca97c29dc30800000000000000
+      internalID: 4384584613319225680
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_78
+      rect:
+        serializedVersion: 2
+        x: 4503
+        y: 2813
+        width: 18
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a44447e1d745fc7f0800000000000000
+      internalID: -590160129803664310
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_79
+      rect:
+        serializedVersion: 2
+        x: 6043
+        y: 2816
+        width: 136
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e9b55e111e3b29210800000000000000
+      internalID: 1338329818531715998
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_80
+      rect:
+        serializedVersion: 2
+        x: 6357
+        y: 2820
+        width: 52
+        height: 24
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8fc8ce4fb8b1846e0800000000000000
+      internalID: -1853200958739411720
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_81
+      rect:
+        serializedVersion: 2
+        x: 6423
+        y: 2813
+        width: 18
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 46f4374c2e0767110800000000000000
+      internalID: 1258317265157443428
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_82
+      rect:
+        serializedVersion: 2
+        x: 7963
+        y: 2816
+        width: 136
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 91db19643f7b75270800000000000000
+      internalID: 8239256298786503961
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_83
+      rect:
+        serializedVersion: 2
+        x: 8277
+        y: 2820
+        width: 52
+        height: 24
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b2ea115fe32a45470800000000000000
+      internalID: 8382503197726584363
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_84
+      rect:
+        serializedVersion: 2
+        x: 8343
+        y: 2813
+        width: 18
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 687336d57da980bb0800000000000000
+      internalID: -4969551939027912826
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_85
+      rect:
+        serializedVersion: 2
+        x: 1783
+        y: 2778
+        width: 12
+        height: 14
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b74cdf2054dc1d830800000000000000
+      internalID: 4094279232543114363
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_86
+      rect:
+        serializedVersion: 2
+        x: 3703
+        y: 2778
+        width: 12
+        height: 14
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 69f71fe22b97a5f20800000000000000
+      internalID: 3412173473885290390
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_87
+      rect:
+        serializedVersion: 2
+        x: 5623
+        y: 2778
+        width: 12
+        height: 14
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fb5afdfc7374ac250800000000000000
+      internalID: 5965658961441957311
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_88
+      rect:
+        serializedVersion: 2
+        x: 7543
+        y: 2778
+        width: 12
+        height: 14
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f50e0935ab129e4d0800000000000000
+      internalID: -3104913383945609121
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_89
+      rect:
+        serializedVersion: 2
+        x: 9463
+        y: 2778
+        width: 12
+        height: 14
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a2312e0953d30f4e0800000000000000
+      internalID: -1949991338378128598
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_90
+      rect:
+        serializedVersion: 2
+        x: 1729
+        y: 2581
+        width: 19
+        height: 172
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8138792d3dc89e330800000000000000
+      internalID: 3740675806907040536
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_91
+      rect:
+        serializedVersion: 2
+        x: 1822
+        y: 2708
+        width: 12
+        height: 15
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4425f4e6a6789c3e0800000000000000
+      internalID: -2032944865594092988
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_92
+      rect:
+        serializedVersion: 2
+        x: 1904
+        y: 2619
+        width: 16
+        height: 23
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 74606da4ae8f527c0800000000000000
+      internalID: -4096594600862022073
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_93
+      rect:
+        serializedVersion: 2
+        x: 3649
+        y: 2581
+        width: 19
+        height: 172
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4963f150edb9254f0800000000000000
+      internalID: -841438802493884780
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_94
+      rect:
+        serializedVersion: 2
+        x: 3742
+        y: 2708
+        width: 12
+        height: 15
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 95876c614a1214cb0800000000000000
+      internalID: -4881583532452448167
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_95
+      rect:
+        serializedVersion: 2
+        x: 3824
+        y: 2619
+        width: 16
+        height: 23
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 33fd42d3f73476cd0800000000000000
+      internalID: -2565007248998473933
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_96
+      rect:
+        serializedVersion: 2
+        x: 5569
+        y: 2581
+        width: 19
+        height: 172
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 888d86254f1b1e6f0800000000000000
+      internalID: -657048407706642296
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_97
+      rect:
+        serializedVersion: 2
+        x: 5662
+        y: 2708
+        width: 12
+        height: 15
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 84bad197ca9cab170800000000000000
+      internalID: 8195084214557584200
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_98
+      rect:
+        serializedVersion: 2
+        x: 5744
+        y: 2619
+        width: 16
+        height: 23
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3c2a41dec4fb57bc0800000000000000
+      internalID: -3785909574619061565
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_99
+      rect:
+        serializedVersion: 2
+        x: 7489
+        y: 2581
+        width: 19
+        height: 172
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 615a8a9b4815e1510800000000000000
+      internalID: 1521743354590176534
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_100
+      rect:
+        serializedVersion: 2
+        x: 7582
+        y: 2708
+        width: 12
+        height: 15
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: db7a26cfa9f1711f0800000000000000
+      internalID: -1074355235584825411
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_101
+      rect:
+        serializedVersion: 2
+        x: 7664
+        y: 2619
+        width: 16
+        height: 23
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 77df2fffe79f3c000800000000000000
+      internalID: 55161944313888119
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_102
+      rect:
+        serializedVersion: 2
+        x: 9409
+        y: 2581
+        width: 19
+        height: 172
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ed0a0badc2aca6d20800000000000000
+      internalID: 3272650373234467038
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_103
+      rect:
+        serializedVersion: 2
+        x: 9502
+        y: 2708
+        width: 12
+        height: 15
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 624de5f04a7a67f70800000000000000
+      internalID: 9184712813143053350
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_104
+      rect:
+        serializedVersion: 2
+        x: 9584
+        y: 2619
+        width: 16
+        height: 23
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3ab9c42094cd59e20800000000000000
+      internalID: 3356831303403871139
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_105
+      rect:
+        serializedVersion: 2
+        x: 1607
+        y: 1218
+        width: 13
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 160b86081b9f60130800000000000000
+      internalID: 3532785498477604961
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_106
+      rect:
+        serializedVersion: 2
+        x: 1722
+        y: 1222
+        width: 15
+        height: 29
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 015c2f77962aa8310800000000000000
+      internalID: 1408116407374365968
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_107
+      rect:
+        serializedVersion: 2
+        x: 1729
+        y: 1214
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c07238e2cdf7b29a0800000000000000
+      internalID: -6256766673651292404
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_108
+      rect:
+        serializedVersion: 2
+        x: 3527
+        y: 1218
+        width: 13
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2487130e4ff1e71a0800000000000000
+      internalID: -6809970449943791550
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_109
+      rect:
+        serializedVersion: 2
+        x: 3642
+        y: 1222
+        width: 15
+        height: 29
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 59f02e07e27cdb500800000000000000
+      internalID: 413705743064240021
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_110
+      rect:
+        serializedVersion: 2
+        x: 3649
+        y: 1214
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8fb6a893039eef900800000000000000
+      internalID: 720269383758932984
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_111
+      rect:
+        serializedVersion: 2
+        x: 5447
+        y: 1218
+        width: 13
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 030e9a9e69dea3750800000000000000
+      internalID: 6285597462370050096
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_112
+      rect:
+        serializedVersion: 2
+        x: 5562
+        y: 1222
+        width: 15
+        height: 29
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7800e30315fc1cc90800000000000000
+      internalID: -7151206785678966649
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_113
+      rect:
+        serializedVersion: 2
+        x: 5569
+        y: 1214
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 62e5ca964c5519200800000000000000
+      internalID: 185023361773755942
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_114
+      rect:
+        serializedVersion: 2
+        x: 738
+        y: 869
+        width: 1073
+        height: 864
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 209f245ad3cb5b9e0800000000000000
+      internalID: -1606170719136057086
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_115
+      rect:
+        serializedVersion: 2
+        x: 1856
+        y: 1093
+        width: 19
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e5904d2a6f1a71710800000000000000
+      internalID: 1663976668002519390
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_116
+      rect:
+        serializedVersion: 2
+        x: 2658
+        y: 869
+        width: 1073
+        height: 864
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 479e3c3c04a975990800000000000000
+      internalID: -7397274259979769484
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_117
+      rect:
+        serializedVersion: 2
+        x: 3776
+        y: 1093
+        width: 19
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 181313b87c7ae80f0800000000000000
+      internalID: -1112767582438346367
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_118
+      rect:
+        serializedVersion: 2
+        x: 4578
+        y: 869
+        width: 1073
+        height: 864
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8ca276eacbef00f30800000000000000
+      internalID: 4539908510722763464
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_119
+      rect:
+        serializedVersion: 2
+        x: 5696
+        y: 1093
+        width: 19
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 74651e6cca2c81060800000000000000
+      internalID: 6924498474408957511
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_120
+      rect:
+        serializedVersion: 2
+        x: 46
+        y: 1035
+        width: 22
+        height: 29
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 327f96caecf932be0800000000000000
+      internalID: -1503182140606908637
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_121
+      rect:
+        serializedVersion: 2
+        x: 119
+        y: 1023
+        width: 42
+        height: 28
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0aea6c11d6d379370800000000000000
+      internalID: 8329193574503984800
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_122
+      rect:
+        serializedVersion: 2
+        x: 1966
+        y: 1035
+        width: 22
+        height: 29
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 190c0b9444b12f510800000000000000
+      internalID: 1581356399268511889
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_123
+      rect:
+        serializedVersion: 2
+        x: 2039
+        y: 1023
+        width: 42
+        height: 28
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2708e774e3fda3130800000000000000
+      internalID: 3547393115088126066
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_124
+      rect:
+        serializedVersion: 2
+        x: 3886
+        y: 1035
+        width: 22
+        height: 29
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cdd54a1e3c6df0620800000000000000
+      internalID: 2742646834884533724
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_125
+      rect:
+        serializedVersion: 2
+        x: 3959
+        y: 1023
+        width: 42
+        height: 28
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 666bc89c0d0231b60800000000000000
+      internalID: 7715546667722520166
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_126
+      rect:
+        serializedVersion: 2
+        x: 113
+        y: 991
+        width: 17
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b7caadfb18a2bfba0800000000000000
+      internalID: -6054198537311572869
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_127
+      rect:
+        serializedVersion: 2
+        x: 129
+        y: 990
+        width: 32
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 65c65a67e9a640aa0800000000000000
+      internalID: -6195709958527030186
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_128
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 1000
+        width: 21
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b30557ead246e4290800000000000000
+      internalID: -7904270148625412037
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_129
+      rect:
+        serializedVersion: 2
+        x: 2033
+        y: 991
+        width: 17
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9ba775fd4f884cd30800000000000000
+      internalID: 4450832917049342649
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_130
+      rect:
+        serializedVersion: 2
+        x: 2049
+        y: 990
+        width: 32
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 442118eceb81292f0800000000000000
+      internalID: -967683762143817148
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_131
+      rect:
+        serializedVersion: 2
+        x: 2062
+        y: 1000
+        width: 21
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9156fc20946cdf7d0800000000000000
+      internalID: -2882930169565190887
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_132
+      rect:
+        serializedVersion: 2
+        x: 3953
+        y: 991
+        width: 17
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5153ff40547eda880800000000000000
+      internalID: -8597961829957815019
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_133
+      rect:
+        serializedVersion: 2
+        x: 3969
+        y: 990
+        width: 32
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e15ce02986aed8660800000000000000
+      internalID: 7389820298432791838
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_134
+      rect:
+        serializedVersion: 2
+        x: 3982
+        y: 1000
+        width: 21
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 847021c6090a952b0800000000000000
+      internalID: -5595264519882275000
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_135
+      rect:
+        serializedVersion: 2
+        x: 170
+        y: 950
+        width: 52
+        height: 49
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d63fae5eb30f07dc0800000000000000
+      internalID: -3643147958491614355
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_136
+      rect:
+        serializedVersion: 2
+        x: 2090
+        y: 950
+        width: 52
+        height: 49
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ce832350cf5f81a80800000000000000
+      internalID: -8495770234266699540
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_137
+      rect:
+        serializedVersion: 2
+        x: 4010
+        y: 950
+        width: 52
+        height: 49
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 88c0cebb653f06160800000000000000
+      internalID: 7016875773288778888
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_138
+      rect:
+        serializedVersion: 2
+        x: 283
+        y: 896
+        width: 136
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f4686837f2ec8e780800000000000000
+      internalID: -8653439980795427249
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_139
+      rect:
+        serializedVersion: 2
+        x: 597
+        y: 900
+        width: 52
+        height: 24
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e497aed6d586c5f00800000000000000
+      internalID: 1106874358911629646
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_140
+      rect:
+        serializedVersion: 2
+        x: 663
+        y: 893
+        width: 18
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: da589ef2b6cb64b00800000000000000
+      internalID: 812543951338309037
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_141
+      rect:
+        serializedVersion: 2
+        x: 2203
+        y: 896
+        width: 136
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1c678a207bbc96270800000000000000
+      internalID: 8244344579762452161
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_142
+      rect:
+        serializedVersion: 2
+        x: 2517
+        y: 900
+        width: 52
+        height: 24
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ec6b796e77920e280800000000000000
+      internalID: -9016160859049183538
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_143
+      rect:
+        serializedVersion: 2
+        x: 2583
+        y: 893
+        width: 18
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c81181514d04ce260800000000000000
+      internalID: 7128143589851795852
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_144
+      rect:
+        serializedVersion: 2
+        x: 4123
+        y: 896
+        width: 136
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 79e626cb810eb54d0800000000000000
+      internalID: -3144673517943755113
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_145
+      rect:
+        serializedVersion: 2
+        x: 4437
+        y: 900
+        width: 52
+        height: 24
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e6ec44b2a2ab34590800000000000000
+      internalID: -7691099048341352850
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_146
+      rect:
+        serializedVersion: 2
+        x: 4503
+        y: 893
+        width: 18
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6d5a58d913af63010800000000000000
+      internalID: 1168396244352345558
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_147
+      rect:
+        serializedVersion: 2
+        x: 1783
+        y: 858
+        width: 12
+        height: 14
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4cbf2cf5d7802f5e0800000000000000
+      internalID: -1877428760089527356
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_148
+      rect:
+        serializedVersion: 2
+        x: 3703
+        y: 858
+        width: 12
+        height: 14
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ee821cb2c2a23d8e0800000000000000
+      internalID: -1669944667623315218
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_149
+      rect:
+        serializedVersion: 2
+        x: 5623
+        y: 858
+        width: 12
+        height: 14
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 22aa3a646c582f080800000000000000
+      internalID: -9155108005855647198
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_150
+      rect:
+        serializedVersion: 2
+        x: 1729
+        y: 661
+        width: 19
+        height: 172
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5d359ba121eb3dcb0800000000000000
+      internalID: -4840316189526109227
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_151
+      rect:
+        serializedVersion: 2
+        x: 1822
+        y: 788
+        width: 12
+        height: 15
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fd16e0c5af34956f0800000000000000
+      internalID: -695449924886699553
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_152
+      rect:
+        serializedVersion: 2
+        x: 1904
+        y: 699
+        width: 16
+        height: 23
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b19b9228d84bafff0800000000000000
+      internalID: -1490329993103077
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_153
+      rect:
+        serializedVersion: 2
+        x: 3649
+        y: 661
+        width: 19
+        height: 172
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8b65ca7706983f190800000000000000
+      internalID: -7929843471451662664
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_154
+      rect:
+        serializedVersion: 2
+        x: 3742
+        y: 788
+        width: 12
+        height: 15
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2b42ed414e4e5e1f0800000000000000
+      internalID: -1016154472648399694
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_155
+      rect:
+        serializedVersion: 2
+        x: 3824
+        y: 699
+        width: 16
+        height: 23
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 172123cb4b8fbaa20800000000000000
+      internalID: 3074824625745695345
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_156
+      rect:
+        serializedVersion: 2
+        x: 5569
+        y: 661
+        width: 19
+        height: 172
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 211d727709e980550800000000000000
+      internalID: 6127321636349137170
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_157
+      rect:
+        serializedVersion: 2
+        x: 5662
+        y: 788
+        width: 12
+        height: 15
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 61d5d134f588c6c20800000000000000
+      internalID: 3201083377882848534
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_158
+      rect:
+        serializedVersion: 2
+        x: 5744
+        y: 699
+        width: 16
+        height: 23
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cc77f1e55ed10cdb0800000000000000
+      internalID: -4773782734048888884
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 755222db6eab99e47bb064111d3ffe09
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_0: -5668575271067214602
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_1: -5351745890193160729
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_10: 4516789146634981018
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_100: -1074355235584825411
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_101: 55161944313888119
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_102: 3272650373234467038
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_103: 9184712813143053350
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_104: 3356831303403871139
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_105: 3532785498477604961
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_106: 1408116407374365968
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_107: -6256766673651292404
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_108: -6809970449943791550
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_109: 413705743064240021
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_11: -5381456069136005069
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_110: 720269383758932984
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_111: 6285597462370050096
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_112: -7151206785678966649
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_113: 185023361773755942
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_114: -1606170719136057086
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_115: 1663976668002519390
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_116: -7397274259979769484
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_117: -1112767582438346367
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_118: 4539908510722763464
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_119: 6924498474408957511
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_12: -4432585460286141871
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_120: -1503182140606908637
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_121: 8329193574503984800
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_122: 1581356399268511889
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_123: 3547393115088126066
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_124: 2742646834884533724
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_125: 7715546667722520166
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_126: -6054198537311572869
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_127: -6195709958527030186
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_128: -7904270148625412037
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_129: 4450832917049342649
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_13: 2103843040483374748
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_130: -967683762143817148
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_131: -2882930169565190887
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_132: -8597961829957815019
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_133: 7389820298432791838
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_134: -5595264519882275000
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_135: -3643147958491614355
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_136: -8495770234266699540
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_137: 7016875773288778888
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_138: -8653439980795427249
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_139: 1106874358911629646
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_14: 7192980155390813633
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_140: 812543951338309037
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_141: 8244344579762452161
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_142: -9016160859049183538
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_143: 7128143589851795852
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_144: -3144673517943755113
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_145: -7691099048341352850
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_146: 1168396244352345558
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_147: -1877428760089527356
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_148: -1669944667623315218
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_149: -9155108005855647198
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_15: 8853131294489341255
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_150: -4840316189526109227
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_151: -695449924886699553
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_152: -1490329993103077
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_153: -7929843471451662664
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_154: -1016154472648399694
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_155: 3074824625745695345
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_156: 6127321636349137170
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_157: 3201083377882848534
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_158: -4773782734048888884
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_16: -2939405652097537161
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_17: -937694184755265896
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_18: -5026470375006704728
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_19: -1121496837637650984
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_2: -4395628406058298133
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_20: -3485128719321112839
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_21: 1110828791309384005
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_22: 7719872914198209362
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_23: 791946454864573953
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_24: -6815487216565608283
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_25: -8558534843607157655
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_26: 6489492994575624769
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_27: -6128818323181387268
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_28: -1335557568270066015
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_29: 3461691019399181580
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_3: 4387301972849035075
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_30: 5695161022622949272
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_31: 3456646824157459824
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_32: 7168444506129064743
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_33: -4557937092053846706
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_34: 6185913050450494883
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_35: 5808021907014774485
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_36: -1365674607471422946
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_37: 8466523992415492294
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_38: 3221685692587428779
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_39: 8771382179073737100
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_4: 311140158812390098
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_40: -1599754014978154227
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_41: -153385495227940356
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_42: -4182784396664793376
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_43: 2986546452421586188
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_44: -1186050416613511586
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_45: 7052965618894136925
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_46: 4449810754446979197
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_47: 2770260068892580587
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_48: 7694552444698672107
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_49: -7920277397272064332
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_5: 7673169897801854840
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_50: 4699806959918349413
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_51: -8474123631421778177
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_52: -2641512949629959888
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_53: -3358914622667611732
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_54: -2113035008628431712
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_55: -5191688005965681853
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_56: -4173314937139282457
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_57: 1221845639786188129
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_58: 5991998886119554655
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_59: -7120561078303055055
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_6: 5809761170164996309
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_60: 4895170119374192793
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_61: 8433475808763474264
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_62: -5219179320796193964
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_63: 1839667183298205356
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_64: -2115488286709393511
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_65: 791470215075396578
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_66: -2701452452967603665
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_67: 261808874920745230
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_68: 4389546872284586501
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_69: -5887354532282964488
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_7: -2658218561773695583
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_70: 8352731937589219699
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_71: -2106930716561631647
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_72: 3900337083198558377
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_73: -8405241316736087983
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_74: -7437754168734206681
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_75: -2678792555954885088
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_76: -5105960511928323800
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_77: 4384584613319225680
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_78: -590160129803664310
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_79: 1338329818531715998
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_8: -8195813624162341863
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_80: -1853200958739411720
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_81: 1258317265157443428
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_82: 8239256298786503961
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_83: 8382503197726584363
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_84: -4969551939027912826
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_85: 4094279232543114363
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_86: 3412173473885290390
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_87: 5965658961441957311
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_88: -3104913383945609121
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_89: -1949991338378128598
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_9: -6722050898291307378
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_90: 3740675806907040536
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_91: -2032944865594092988
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_92: -4096594600862022073
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_93: -841438802493884780
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_94: -4881583532452448167
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_95: -2565007248998473933
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_96: -657048407706642296
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_97: 8195084214557584200
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_98: -3785909574619061565
+      LCB_Sinner_Ishmael_Skill_2-ezgif.com-gif-to-sprite-converter (3) 1_99: 1521743354590176534
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
