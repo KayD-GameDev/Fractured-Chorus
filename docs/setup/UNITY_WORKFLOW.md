@@ -26,7 +26,7 @@ Assets/FracturedChorus/
 ├── Data/ScriptableObjects/
 │   └── Presets/            # .asset: unit, skill, encounter
 ├── Scenes/                 # CombatPrototype + SCENE_SETUP.md
-├── RunMap/                 # Node graph (P2)
+├── RunMap/                 # Node graph — MapGenerator, RunMapUIView (P2 MVP)
 ├── Narrative/              # Dialogue / story scenes (P2)
 ├── Audio/ Music/ SFX/
 ├── Art/
@@ -199,4 +199,4 @@ python scripts/verify_combat_scene_sync.py
 
 ## Phase gate
 
-Combat Unity = **P2**. Mọi thay đổi canon gameplay/story → Notion Decision Log trước khi implement.
+Combat Unity = **P2**. Run map scene = **P2 MVP** (`RunMapPrototype.unity`). Mọi thay đổi canon gameplay/story → Notion Decision Log trước khi implement.

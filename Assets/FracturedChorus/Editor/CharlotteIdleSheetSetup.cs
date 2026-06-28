@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.U2D.Sprites;
 using UnityEngine;
 
 namespace FracturedChorus.Editor
@@ -115,7 +116,7 @@ namespace FracturedChorus.Editor
 
             importer.textureType = TextureImporterType.Sprite;
             importer.spriteImportMode = SpriteImportMode.Multiple;
-            importer.spritePixelsToUnits = PixelsPerUnit;
+            importer.spritePixelsPerUnit = PixelsPerUnit;
             importer.alphaIsTransparency = true;
             importer.mipmapEnabled = false;
             importer.filterMode = FilterMode.Bilinear;
@@ -133,9 +134,34 @@ namespace FracturedChorus.Editor
                 };
             }
 
-            importer.spritesheet = metas;
+            ApplySpriteRects(importer, metas);
             EditorUtility.SetDirty(importer);
             importer.SaveAndReimport();
+        }
+
+        private static void ApplySpriteRects(TextureImporter importer, SpriteMetaData[] metas)
+        {
+            var factory = new SpriteDataProviderFactories();
+            factory.Init();
+            var dataProvider = factory.GetSpriteEditorDataProviderFromObject(importer);
+            dataProvider.InitSpriteEditorDataProvider();
+
+            var spriteRects = new SpriteRect[metas.Length];
+            for (var i = 0; i < metas.Length; i++)
+            {
+                var meta = metas[i];
+                spriteRects[i] = new SpriteRect
+                {
+                    name = meta.name,
+                    rect = meta.rect,
+                    alignment = (SpriteAlignment)meta.alignment,
+                    pivot = meta.pivot,
+                    border = meta.border
+                };
+            }
+
+            dataProvider.SetSpriteRects(spriteRects);
+            dataProvider.Apply();
         }
 
         private static List<Sprite> LoadOrderedIdleSprites()

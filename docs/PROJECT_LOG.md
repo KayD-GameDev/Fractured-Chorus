@@ -9,6 +9,27 @@ Newest first.
 
 ---
 
+## 2026-06-28 — Unity: Run Map prototype scene (StS clone 7×15 + F16)
+
+**Focus:** code (Unity) + docs
+
+**Owner:** Khoa
+
+**Done**
+- **`RunMap/` module:** `MapGenerator` (path gen ×6, prune, fixed F1/F9/F15, random types + rules, boss F16), `MapGraph`, `RunState`, `NodeTypeAssigner`, `PathValidator`.
+- **UI:** `RunMapUIView`, `MapNodeView`, `MapConnectionLineView` — scroll map dọc, click path, highlight cam.
+- **Scene:** menu **Fractured Chorus → Create Run Map Prototype Scene** → `RunMapPrototype.unity`; doc `RUNMAP_SCENE_SETUP.md`.
+- **Demo map:** `GenerateDemoReference()` khớp `STS_PATHS` / locations trong `build_fc_diagrams_drawio.py`.
+- **`MapTemplateSO`:** toggle reference demo vs procedural seed.
+
+**Decisions**
+- Node naming FC: Battle / Event / Elite / Camp / Relay / Treasure / Boss Oni (không dùng tên StS thuần).
+- Play mặc định demo reference map (seed 42) để so sánh với draw.io; procedural khi tắt flag trên SO.
+
+**Refs:** `RunMap/README.md`, `RUNMAP_SCENE_SETUP.md`, StS ref workshop + YouTube trong scene doc
+
+---
+
 ## 2026-06-27 — Unity: folder animation theo tên canon (Coda · Ren · Charlotte)
 
 **Focus:** art pipeline + docs

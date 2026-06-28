@@ -1,6 +1,6 @@
 # Fractured Chorus — Trạng thái dự án
 
-**Cập nhật:** 2026-06-27 (Unity character animation folders + party bar)  
+**Cập nhật:** 2026-06-28 (Unity run map prototype)  
 **Repo:** `C:\Users\admin\Projects\fractured-chorus` (docs mirror)  
 **Unity:** `F:\Unity_Project\Fractured Chorus` · scene `CombatPrototype.unity` · GitHub remote **Fractured-Chorus1**  
 **Log:** [`PROJECT_LOG.md`](PROJECT_LOG.md) · [`LOGGING.md`](LOGGING.md)
@@ -80,6 +80,7 @@ Preset SO vẫn `UnitPreset_Mage|Ren|Tank` — xem `Art/Characters/README.md`.
 | Battle sprite Ren/Tank/Mage (`UnitPresetSO.battleSprite`) | 🟡 3/3 demo |
 | Audio beat map (`MusicBeatMapSO`, `CombatMusicController`) | 🟡 Stub/editor |
 | Run map / Morale / drag skill → beat slot | 🔲 |
+| **Run map prototype** — StS clone scene `RunMapPrototype.unity`, path click, demo STS_PATHS | 🟡 MVP |
 
 Chi tiết logic: [`setup/UNITY_WORKFLOW.md`](setup/UNITY_WORKFLOW.md) · log session: [`PROJECT_LOG.md`](PROJECT_LOG.md) (24–26/06).
 
