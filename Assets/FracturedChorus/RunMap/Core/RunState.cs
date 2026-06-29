@@ -4,18 +4,24 @@ namespace FracturedChorus.RunMap.Core
 {
     public sealed class RunState
     {
-        public int Seed { get; set; }
-        public int CurrentNodeId { get; set; } = -1;
-        public int CurrentFloor { get; set; }
-        public readonly List<int> VisitedPath = new List<int>();
+        public int Seed { get; private set; }
+        public int CurrentNodeId { get; private set; } = -1;
+        public int CurrentFloor { get; private set; }
+        public IReadOnlyList<int> VisitedPath => _visitedOrder;
+
+        private readonly List<int> _visitedOrder = new List<int>();
+        private readonly HashSet<int> _visitedIds = new HashSet<int>();
 
         public void BeginRun(int seed)
         {
             Seed = seed;
             CurrentNodeId = -1;
             CurrentFloor = 0;
-            VisitedPath.Clear();
+            _visitedOrder.Clear();
+            _visitedIds.Clear();
         }
+
+        public bool IsVisited(int nodeId) => _visitedIds.Contains(nodeId);
 
         public void EnterNode(MapNodeData node)
         {
@@ -27,9 +33,10 @@ namespace FracturedChorus.RunMap.Core
             CurrentNodeId = node.Id;
             CurrentFloor = node.IsBoss ? MapLayoutConstants.BossFloor : node.Floor;
             node.Visited = true;
-            if (!VisitedPath.Contains(node.Id))
+
+            if (_visitedIds.Add(node.Id))
             {
-                VisitedPath.Add(node.Id);
+                _visitedOrder.Add(node.Id);
             }
         }
 
@@ -46,12 +53,23 @@ namespace FracturedChorus.RunMap.Core
             }
 
             var current = graph.GetNode(CurrentNodeId);
-            if (current == null)
+            return current != null && current.Outgoing.Contains(target.Id);
+        }
+
+        /// <summary>Cho phép chọn lại node boss hiện tại để mở cổng trận.</summary>
+        public bool CanSelectNode(MapGraph graph, MapNodeData target)
+        {
+            if (target == null || target.Cleared)
             {
-                return target.IsStart;
+                return false;
             }
 
-            return current.Outgoing.Contains(target.Id);
+            if (CurrentNodeId == target.Id && (target.IsBoss || target.Type == MapNodeType.Boss))
+            {
+                return true;
+            }
+
+            return CanTravelTo(graph, target);
         }
     }
 }

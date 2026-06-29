@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using FracturedChorus.Data;
 
 namespace FracturedChorus.RunMap.Core
 {
@@ -14,51 +15,42 @@ namespace FracturedChorus.RunMap.Core
         private const int BossColumn = 3;
         private const int MaxGenerationAttempts = 400;
 
-        public static MapGraph Generate(int seed, int pathCount = MapLayoutConstants.DefaultPathCount)
+        public static MapGraph Generate(int seed, int pathCount = MapLayoutConstants.DefaultPathCount, NodeTypeAssigner.WeightEntry[] weights = null)
         {
-            var rng = new System.Random(seed);
-            var graph = new MapGraph();
-            graph.Reset(seed);
-
+            var rng = new Random(seed);
             var paths = GeneratePaths(rng, pathCount);
-            var active = PathValidator.CollectActiveCells(paths);
-
-            foreach (var (floor, column) in active.OrderBy(c => c.floor).ThenBy(c => c.column))
-            {
-                graph.AddNode(floor, column, MapNodeType.Battle);
-            }
-
-            WirePathEdges(graph, paths);
-
-            var boss = graph.AddNode(MapLayoutConstants.BossFloor, BossColumn, MapNodeType.Boss, isBoss: true);
-            foreach (var preBoss in graph.NodesOnFloor(MapLayoutConstants.FloorCount))
-            {
-                graph.Connect(preBoss.Id, boss.Id);
-            }
-
+            var graph = BuildGraphFromPaths(seed, paths);
             NodeTypeAssigner.ApplyFixedFloors(graph);
-            NodeTypeAssigner.AssignRandomTypes(graph, rng);
-
+            NodeTypeAssigner.AssignRandomTypes(graph, rng, weights);
             return graph;
         }
 
         /// <summary>Demo map cố định — khớp STS_PATHS trong build_fc_diagrams_drawio.py.</summary>
         public static MapGraph GenerateDemoReference(int seed = 42)
         {
-            var graph = new MapGraph();
-            graph.Reset(seed);
-
-            var paths = ReferencePaths();
-            BuildFromPaths(graph, paths);
+            var graph = BuildGraphFromPaths(seed, ReferencePaths());
             ApplyReferenceLocations(graph);
             return graph;
         }
 
-        private static void BuildFromPaths(MapGraph graph, IReadOnlyList<int[]> paths)
+        public static MapGraph GenerateFromTemplate(MapTemplateSO template, int seed)
         {
-            var active = PathValidator.CollectActiveCells(paths);
+            if (template != null && template.useReferenceDemoOnPlay)
+            {
+                return GenerateDemoReference(seed);
+            }
 
-            foreach (var (floor, column) in active.OrderBy(c => c.floor).ThenBy(c => c.column))
+            var pathCount = template != null ? template.pathCount : MapLayoutConstants.DefaultPathCount;
+            var weights = template != null ? NodeTypeAssigner.WeightsFromTemplate(template) : null;
+            return Generate(seed, pathCount, weights);
+        }
+
+        private static MapGraph BuildGraphFromPaths(int seed, IReadOnlyList<int[]> paths)
+        {
+            var graph = new MapGraph();
+            graph.Reset(seed);
+
+            foreach (var (floor, column) in PathValidator.CollectActiveCells(paths).OrderBy(c => c.floor).ThenBy(c => c.column))
             {
                 graph.AddNode(floor, column, MapNodeType.Battle);
             }
@@ -70,11 +62,13 @@ namespace FracturedChorus.RunMap.Core
             {
                 graph.Connect(preBoss.Id, boss.Id);
             }
+
+            return graph;
         }
 
-        private static List<int[]> GeneratePaths(System.Random rng, int pathCount)
+        private static List<int[]> GeneratePaths(Random rng, int pathCount)
         {
-            var paths = new List<int[]>();
+            var paths = new List<int[]>(pathCount);
             var signatures = new HashSet<string>();
             var startColumns = BuildStartColumns(rng, pathCount);
 
@@ -87,42 +81,36 @@ namespace FracturedChorus.RunMap.Core
             while (paths.Count < pathCount && attempts < MaxGenerationAttempts)
             {
                 attempts++;
-                var startCol = rng.Next(0, MapLayoutConstants.ColumnCount);
-                TryAddPath(paths, signatures, GenerateSinglePath(rng, startCol));
+                TryAddPath(paths, signatures, GenerateSinglePath(rng, rng.Next(0, MapLayoutConstants.ColumnCount)));
             }
 
             attempts = 0;
             while (paths.Count < pathCount && paths.Count > 0 && attempts < MaxGenerationAttempts)
             {
                 attempts++;
-                var source = paths[rng.Next(paths.Count)];
-                TryAddPath(paths, signatures, MutatePath(rng, source));
+                TryAddPath(paths, signatures, MutatePath(rng, paths[rng.Next(paths.Count)]));
             }
 
             return paths;
         }
 
-        private static List<int> BuildStartColumns(System.Random rng, int pathCount)
+        private static List<int> BuildStartColumns(Random rng, int pathCount)
         {
             var innerColumns = Enumerable.Range(1, MapLayoutConstants.ColumnCount - 2).ToList();
             Shuffle(rng, innerColumns);
 
-            var uniqueStarts = rng.Next(MapLayoutConstants.MinStartNodes, MapLayoutConstants.MaxStartNodes + 1);
-            uniqueStarts = Math.Min(uniqueStarts, innerColumns.Count);
+            var uniqueStarts = Math.Min(
+                rng.Next(MapLayoutConstants.MinStartNodes, MapLayoutConstants.MaxStartNodes + 1),
+                innerColumns.Count);
 
             var startPool = innerColumns.Take(uniqueStarts).ToList();
-            var assigned = new List<int>();
+            var assigned = new List<int>(pathCount);
 
             for (var i = 0; i < pathCount; i++)
             {
-                if (rng.NextDouble() < 0.75 || assigned.Count == 0)
-                {
-                    assigned.Add(startPool[rng.Next(startPool.Count)]);
-                }
-                else
-                {
-                    assigned.Add(rng.Next(0, MapLayoutConstants.ColumnCount));
-                }
+                assigned.Add(rng.NextDouble() < 0.75 || assigned.Count == 0
+                    ? startPool[rng.Next(startPool.Count)]
+                    : rng.Next(0, MapLayoutConstants.ColumnCount));
             }
 
             return assigned;
@@ -145,7 +133,7 @@ namespace FracturedChorus.RunMap.Core
             return true;
         }
 
-        private static int[] GenerateSinglePath(System.Random rng, int startCol)
+        private static int[] GenerateSinglePath(Random rng, int startCol)
         {
             startCol = ClampColumn(startCol);
             var path = new int[MapLayoutConstants.FloorCount];
@@ -167,7 +155,7 @@ namespace FracturedChorus.RunMap.Core
             return path;
         }
 
-        private static int[] MutatePath(System.Random rng, int[] source)
+        private static int[] MutatePath(Random rng, int[] source)
         {
             if (source == null || source.Length == 0)
             {
@@ -229,7 +217,7 @@ namespace FracturedChorus.RunMap.Core
             return options;
         }
 
-        private static int PickColumnTowardCenter(System.Random rng, List<int> options, int centerColumn)
+        private static int PickColumnTowardCenter(Random rng, List<int> options, int centerColumn)
         {
             if (options.Count == 1)
             {
@@ -237,14 +225,13 @@ namespace FracturedChorus.RunMap.Core
             }
 
             options.Sort();
-            var weights = new List<float>(options.Count);
             var total = 0f;
+            var weights = new float[options.Count];
 
-            foreach (var col in options)
+            for (var i = 0; i < options.Count; i++)
             {
-                var distance = Math.Abs(col - centerColumn);
-                var weight = 1f / (1f + distance);
-                weights.Add(weight);
+                var weight = 1f / (1f + Math.Abs(options[i] - centerColumn));
+                weights[i] = weight;
                 total += weight;
             }
 
@@ -281,7 +268,7 @@ namespace FracturedChorus.RunMap.Core
             return builder.ToString();
         }
 
-        private static void Shuffle(System.Random rng, IList<int> list)
+        private static void Shuffle(Random rng, IList<int> list)
         {
             for (var i = list.Count - 1; i > 0; i--)
             {
@@ -324,25 +311,22 @@ namespace FracturedChorus.RunMap.Core
                     continue;
                 }
 
-                if (node.Floor == 1)
+                switch (node.Floor)
                 {
-                    node.Type = MapNodeType.Battle;
-                }
-                else if (node.Floor == 9)
-                {
-                    node.Type = MapNodeType.Treasure;
-                }
-                else if (node.Floor == MapLayoutConstants.FloorCount)
-                {
-                    node.Type = MapNodeType.Camp;
-                }
-                else if (locations.TryGetValue((node.Floor, node.Column), out var code))
-                {
-                    node.Type = StsCodeToType(code);
-                }
-                else
-                {
-                    node.Type = MapNodeType.Battle;
+                    case 1:
+                        node.Type = MapNodeType.Battle;
+                        break;
+                    case 9:
+                        node.Type = MapNodeType.Treasure;
+                        break;
+                    case MapLayoutConstants.FloorCount:
+                        node.Type = MapNodeType.Camp;
+                        break;
+                    default:
+                        node.Type = locations.TryGetValue((node.Floor, node.Column), out var code)
+                            ? StsCodeToType(code)
+                            : MapNodeType.Battle;
+                        break;
                 }
             }
         }

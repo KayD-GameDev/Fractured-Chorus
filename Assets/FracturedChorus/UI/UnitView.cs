@@ -65,6 +65,27 @@ namespace FracturedChorus.UI
             return transform.position + Vector3.right * 0.5f;
         }
 
+        /// <summary>Anchor đỉnh đầu nhân vật — dùng đặt bảng skill phía trên unit.</summary>
+        public Vector3 GetSkillPanelAboveAnchorWorld()
+        {
+            ResolveSpriteRendererReference();
+            ResolveBodyColliderReference();
+
+            if (spriteRenderer != null && spriteRenderer.sprite != null)
+            {
+                var bounds = spriteRenderer.bounds;
+                return new Vector3(bounds.center.x, bounds.max.y, bounds.center.z);
+            }
+
+            if (bodyCollider != null)
+            {
+                var bounds = bodyCollider.bounds;
+                return new Vector3(bounds.center.x, bounds.max.y, bounds.center.z);
+            }
+
+            return transform.position + Vector3.up * 0.8f;
+        }
+
         public UnitPresetSO ResolvePreset()
         {
             if (preset != null)

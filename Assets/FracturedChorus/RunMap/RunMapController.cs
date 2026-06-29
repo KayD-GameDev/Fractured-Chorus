@@ -1,4 +1,4 @@
-using FracturedChorus.Data;
+using System.Collections;
 using FracturedChorus.RunMap.Core;
 using FracturedChorus.RunMap.UI;
 using UnityEngine;
@@ -12,18 +12,60 @@ namespace FracturedChorus.RunMap
         [SerializeField] private Text statusLabel;
         [SerializeField] private Text seedLabel;
 
-        public MapGraph Graph { get; private set; }
-        public RunState State { get; private set; } = new RunState();
+        [Header("Scene flow")]
+        [SerializeField] private string bossCombatSceneName = RunMapSceneCatalog.CombatPrototype;
+        [SerializeField] private float bossSceneLoadDelaySec = 0.35f;
 
-        private void OnEnable()
+        public MapGraph Graph { get; private set; }
+        public RunState State { get; } = new RunState();
+
+        private bool _bootStarted;
+        private bool _loadingBossScene;
+        private Coroutine _bossLoadCoroutine;
+
+        private void Awake()
         {
-            if (mapView != null)
+            mapView ??= GetComponentInChildren<RunMapUIView>(true);
+            BindNodeClickHandlers();
+        }
+
+        private void Start()
+        {
+            if (_bootStarted || Graph != null)
             {
-                mapView.NodeClicked += HandleNodeClicked;
+                return;
+            }
+
+            _bootStarted = true;
+            StartCoroutine(BootRunMap());
+        }
+
+        private void OnEnable() => BindNodeClickHandlers();
+
+        private void OnDisable()
+        {
+            UnbindNodeClickHandlers();
+
+            if (_bossLoadCoroutine != null)
+            {
+                StopCoroutine(_bossLoadCoroutine);
+                _bossLoadCoroutine = null;
             }
         }
 
-        private void OnDisable()
+        private void BindNodeClickHandlers()
+        {
+            mapView ??= GetComponentInChildren<RunMapUIView>(true);
+            if (mapView == null)
+            {
+                return;
+            }
+
+            mapView.NodeClicked -= HandleNodeClicked;
+            mapView.NodeClicked += HandleNodeClicked;
+        }
+
+        private void UnbindNodeClickHandlers()
         {
             if (mapView != null)
             {
@@ -31,18 +73,95 @@ namespace FracturedChorus.RunMap
             }
         }
 
-        public void Initialize(MapGraph graph, int seed)
+        private IEnumerator BootRunMap()
         {
-            Graph = graph;
-            State.BeginRun(seed);
-
-            if (mapView != null)
+            mapView ??= GetComponentInChildren<RunMapUIView>(true);
+            if (mapView == null)
             {
-                mapView.BuildMap(graph);
-                mapView.RefreshInteraction(graph, State);
+                Debug.LogError("[Fractured Chorus] RunMapController: không tìm thấy RunMapUIView trong scene.");
+                yield break;
             }
 
+            BindNodeClickHandlers();
+
+            if (!mapView.isActiveAndEnabled)
+            {
+                mapView.gameObject.SetActive(true);
+            }
+
+            var bootstrap = GetComponent<RunMapBootstrap>();
+            var seed = bootstrap != null ? bootstrap.ResolveSeed() : 42;
+            MapGraph graph;
+
+            try
+            {
+                var template = bootstrap != null ? bootstrap.Template : null;
+                graph = MapGenerator.GenerateFromTemplate(template, seed);
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[Fractured Chorus] MapGenerator failed: {ex.Message}\n{ex.StackTrace}");
+                yield break;
+            }
+
+            var procedural = bootstrap == null || bootstrap.Template == null || !bootstrap.Template.useReferenceDemoOnPlay;
+            LogEliteDensity(graph);
+            Debug.Log(
+                $"[Fractured Chorus] Run map generated — seed {seed}, nodes {graph.Nodes.Count}, procedural={procedural}");
+
+            const int maxFrames = 24;
+            for (var i = 0; i < maxFrames; i++)
+            {
+                yield return null;
+                Canvas.ForceUpdateCanvases();
+                if (mapView.IsViewportReady)
+                {
+                    break;
+                }
+            }
+
+            if (!mapView.IsViewportReady)
+            {
+                Debug.LogWarning("[Fractured Chorus] Viewport chưa layout xong — build map anyway.");
+            }
+
+            Initialize(graph, seed);
+            SyncLegendPanel();
+        }
+
+        public void Initialize(MapGraph graph, int seed)
+        {
+            mapView ??= GetComponentInChildren<RunMapUIView>(true);
+            if (mapView == null)
+            {
+                Debug.LogError("[Fractured Chorus] RunMapController.Initialize: mapView null.");
+                return;
+            }
+
+            BindNodeClickHandlers();
+
+            Graph = graph;
+            State.BeginRun(seed);
+            mapView.BuildMap(graph);
+            mapView.RefreshInteraction(graph, State);
             UpdateLabels("Chọn node F1 để bắt đầu run.");
+        }
+
+        private static void SyncLegendPanel()
+        {
+            var panel = GameObject.Find("LegendPanel");
+            if (panel == null)
+            {
+                return;
+            }
+
+            var legendView = panel.GetComponent<RunMapLegendPanelView>();
+            if (legendView == null)
+            {
+                legendView = panel.AddComponent<RunMapLegendPanelView>();
+            }
+
+            legendView.Apply();
         }
 
         private void HandleNodeClicked(MapNodeView view)
@@ -53,18 +172,96 @@ namespace FracturedChorus.RunMap
             }
 
             var node = view.BoundNode;
-            if (!State.CanTravelTo(Graph, node))
+            if (!State.CanSelectNode(Graph, node))
             {
                 UpdateLabels("Node không reachable — phải đi theo path liền kề.");
                 return;
             }
 
-            State.EnterNode(node);
-            mapView.RefreshInteraction(Graph, State);
-            mapView.ScrollToNode(node);
+            var isBoss = node.IsBoss || node.Type == MapNodeType.Boss;
+            var reopenBoss = isBoss && State.CurrentNodeId == node.Id;
 
-            var floorText = node.IsBoss ? "F16 Boss" : $"F{node.Floor}";
-            UpdateLabels($"Đã vào {MapNodePalette.DisplayName(node.Type)} ({floorText}). Chọn node kế tiếp.");
+            if (!reopenBoss)
+            {
+                State.EnterNode(node);
+                mapView.RefreshInteraction(Graph, State);
+                mapView.ScrollToNode(node);
+            }
+
+            if (isBoss)
+            {
+                Debug.Log("[Fractured Chorus] Boss node selected — loading combat scene.");
+                UpdateLabels("Vào trận Oni F16…");
+                BeginBossCombatTransition();
+                return;
+            }
+
+            UpdateLabels($"Đã vào {MapNodePalette.DisplayName(node.Type)} (F{node.Floor}). Chọn node kế tiếp.");
+        }
+
+        private void BeginBossCombatTransition()
+        {
+            if (_loadingBossScene)
+            {
+                return;
+            }
+
+            _loadingBossScene = true;
+
+            if (_bossLoadCoroutine != null)
+            {
+                StopCoroutine(_bossLoadCoroutine);
+            }
+
+            _bossLoadCoroutine = StartCoroutine(LoadBossCombatSceneDeferred());
+        }
+
+        private IEnumerator LoadBossCombatSceneDeferred()
+        {
+            if (bossSceneLoadDelaySec > 0f)
+            {
+                yield return new WaitForSecondsRealtime(bossSceneLoadDelaySec);
+            }
+
+            var loaded = RunMapSceneLoader.LoadByName(bossCombatSceneName);
+            if (!loaded)
+            {
+                _loadingBossScene = false;
+                _bossLoadCoroutine = null;
+                UpdateLabels("Không load được CombatPrototype — kiểm tra Build Settings.");
+            }
+        }
+
+        private static void LogEliteDensity(MapGraph graph)
+        {
+            if (graph == null)
+            {
+                return;
+            }
+
+            var total = 0;
+            var elites = 0;
+            foreach (var node in graph.Nodes)
+            {
+                if (node.IsBoss)
+                {
+                    continue;
+                }
+
+                total++;
+                if (node.Type == MapNodeType.Elite)
+                {
+                    elites++;
+                }
+            }
+
+            if (total == 0)
+            {
+                return;
+            }
+
+            var pct = 100f * elites / total;
+            Debug.Log($"[Fractured Chorus] Map elite density — {elites}/{total} ({pct:F0}%), target 25–35%.");
         }
 
         private void UpdateLabels(string status)
@@ -82,9 +279,11 @@ namespace FracturedChorus.RunMap
 
         public void WireView(RunMapUIView view, Text status, Text seed)
         {
+            UnbindNodeClickHandlers();
             mapView = view;
             statusLabel = status;
             seedLabel = seed;
+            BindNodeClickHandlers();
         }
     }
 }

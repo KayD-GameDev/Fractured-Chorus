@@ -18,6 +18,108 @@ namespace FracturedChorus.Editor
         private const string ScenePath = "Assets/FracturedChorus/Scenes/RunMapPrototype.unity";
         private const string TemplateAssetPath = "Assets/FracturedChorus/Data/ScriptableObjects/Presets/MapTemplate_Default.asset";
 
+        [MenuItem("Fractured Chorus/Upgrade Run Map Legend Panel")]
+        public static void UpgradeRunMapLegendPanel()
+        {
+            var panelGo = GameObject.Find("LegendPanel");
+            if (panelGo == null)
+            {
+                EditorUtility.DisplayDialog(
+                    "Upgrade Legend Panel",
+                    "Không tìm thấy LegendPanel trong scene active. Mở RunMapPrototype hoặc chạy Setup Run Map Scene Hierarchy.",
+                    "OK");
+                return;
+            }
+
+            Undo.RegisterFullObjectHierarchyUndo(panelGo, "Upgrade Run Map Legend Panel");
+            RebuildLegendPanel(panelGo);
+            EditorSceneManager.MarkSceneDirty(panelGo.scene);
+            Selection.activeGameObject = panelGo;
+            Debug.Log("[Fractured Chorus] Legend panel upgraded — Save scene.");
+        }
+
+        [MenuItem("Fractured Chorus/Save Run Map Scene Upgrades")]
+        public static void SaveRunMapSceneUpgrades()
+        {
+            var panelGo = GameObject.Find("LegendPanel");
+            if (panelGo != null)
+            {
+                Undo.RegisterFullObjectHierarchyUndo(panelGo, "Upgrade Run Map Legend Panel");
+                RebuildLegendPanel(panelGo);
+            }
+
+            EnsureScrollDriverInScene();
+            EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
+            Debug.Log("[Fractured Chorus] Run map scene upgraded — Save scene (Ctrl+S).");
+        }
+
+        /// <summary>Mở RunMapPrototype, rebuild legend + scroll driver, save (batch / CI).</summary>
+        public static void BatchSaveRunMapScene()
+        {
+            if (!System.IO.File.Exists(ScenePath))
+            {
+                Debug.LogError($"[Fractured Chorus] Scene not found: {ScenePath}");
+                EditorApplication.Exit(1);
+                return;
+            }
+
+            var scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            var panelGo = GameObject.Find("LegendPanel");
+            if (panelGo != null)
+            {
+                RebuildLegendPanel(panelGo);
+            }
+
+            EnsureScrollDriverInScene();
+            EditorSceneManager.SaveScene(scene);
+            AssetDatabase.SaveAssets();
+            Debug.Log("[Fractured Chorus] RunMapPrototype saved (legend + scroll).");
+            EditorApplication.Exit(0);
+        }
+
+        /// <summary>Legacy batch entry — legend only.</summary>
+        public static void BatchSaveRunMapLegendPanel() => BatchSaveRunMapScene();
+
+        private static void EnsureScrollDriverInScene()
+        {
+            var scrollGo = GameObject.Find("MapScrollView");
+            if (scrollGo == null)
+            {
+                return;
+            }
+
+            var scroll = scrollGo.GetComponent<ScrollRect>();
+            if (scroll == null)
+            {
+                return;
+            }
+
+            var driver = scrollGo.GetComponent<RunMapScrollDriver>() ?? scrollGo.AddComponent<RunMapScrollDriver>();
+            SetSerializedField(driver, "scrollRect", scroll);
+            driver.ApplyScrollFeel();
+            EditorUtility.SetDirty(driver);
+
+            var mapView = Object.FindAnyObjectByType<RunMapUIView>();
+            if (mapView != null)
+            {
+                SetSerializedField(mapView, "scrollDriver", driver);
+                EditorUtility.SetDirty(mapView);
+            }
+        }
+
+        private static void RebuildLegendPanel(GameObject panelGo)
+        {
+            for (var i = panelGo.transform.childCount - 1; i >= 0; i--)
+            {
+                Object.DestroyImmediate(panelGo.transform.GetChild(i).gameObject);
+            }
+
+            StretchRect(panelGo, new Vector2(0.74f, 0.06f), new Vector2(0.96f, 0.94f), Vector2.zero, Vector2.zero);
+            EnsureLegendPanelChrome(panelGo);
+            PopulateLegendPanelContent(panelGo.transform);
+            panelGo.GetComponent<RunMapLegendPanelView>()?.Apply();
+        }
+
         [MenuItem("Fractured Chorus/Setup Run Map Scene Hierarchy")]
         public static void SetupRunMapSceneHierarchy()
         {
@@ -50,7 +152,7 @@ namespace FracturedChorus.Editor
             var scroll = CreateMapScrollView(canvas.transform, out var mapView, out var contentRect);
             var legend = CreateLegendPanel(canvas.transform);
 
-            WireBootstrap(bootstrap, controller, mapView);
+            WireBootstrap(bootstrap, controller);
             WireController(controller, mapView, topBar.status, topBar.seed);
 
             EditorSceneManager.MarkSceneDirty(root.scene);
@@ -189,7 +291,12 @@ namespace FracturedChorus.Editor
             scroll.horizontal = false;
             scroll.vertical = true;
             scroll.movementType = ScrollRect.MovementType.Clamped;
+
+            var scrollDriver = Undo.AddComponent<RunMapScrollDriver>(scrollGo);
+            scrollDriver.ApplyScrollFeel();
+
             SetSerializedField(mapView, "scrollRect", scroll);
+            SetSerializedField(mapView, "scrollDriver", scrollDriver);
 
             return scroll;
         }
@@ -216,7 +323,7 @@ namespace FracturedChorus.Editor
             fillImg.sprite = UiCircleSpriteUtil.Circle;
             fillImg.color = Color.white;
 
-            var label = CreateText("Label", go.transform, "?", 14, TextAnchor.MiddleCenter);
+            var label = CreateText("Label", go.transform, "?", MapLayoutConstants.NodeLabelFontSize(MapNodeType.Battle, false), TextAnchor.MiddleCenter);
             StretchRect(label.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
 
             var button = go.AddComponent<Button>();
@@ -232,6 +339,7 @@ namespace FracturedChorus.Editor
             var go = CreateUiObject("ConnectionTemplate", parent);
             go.SetActive(false);
             var image = go.AddComponent<Image>();
+            image.sprite = UiCircleSpriteUtil.White;
             image.raycastTarget = false;
             image.color = new Color(0.2f, 0.2f, 0.2f, 0.85f);
             var line = Undo.AddComponent<MapConnectionLineView>(go);
@@ -242,11 +350,53 @@ namespace FracturedChorus.Editor
         private static GameObject CreateLegendPanel(Transform canvas)
         {
             var panel = CreateUiObject("LegendPanel", canvas);
-            StretchRect(panel, new Vector2(0.8f, 0.05f), new Vector2(0.98f, 0.95f), Vector2.zero, Vector2.zero);
-            panel.AddComponent<Image>().color = new Color(0.1f, 0.11f, 0.13f, 0.94f);
+            StretchRect(panel, new Vector2(0.74f, 0.06f), new Vector2(0.96f, 0.94f), Vector2.zero, Vector2.zero);
+            EnsureLegendPanelChrome(panel);
+            PopulateLegendPanelContent(panel.transform);
+            return panel;
+        }
 
-            var title = CreateText("LegendTitle", panel.transform, "Node types (FC)", 16, TextAnchor.UpperLeft);
-            StretchRect(title.gameObject, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(12f, -36f), new Vector2(-12f, -8f));
+        private static void EnsureLegendPanelChrome(GameObject panel)
+        {
+            var image = panel.GetComponent<Image>();
+            if (image == null)
+            {
+                image = panel.AddComponent<Image>();
+            }
+
+            image.color = new Color(0.1f, 0.11f, 0.13f, 0.94f);
+
+            var vlg = panel.GetComponent<VerticalLayoutGroup>();
+            if (vlg == null)
+            {
+                vlg = panel.AddComponent<VerticalLayoutGroup>();
+            }
+
+            vlg.padding = new RectOffset(22, 22, 28, 22);
+            vlg.spacing = MapLayoutConstants.LegendVerticalSpacing;
+            vlg.childAlignment = TextAnchor.UpperLeft;
+            vlg.childControlWidth = false;
+            vlg.childControlHeight = true;
+            vlg.childForceExpandWidth = false;
+            vlg.childForceExpandHeight = false;
+
+            var views = panel.GetComponents<RunMapLegendPanelView>();
+            if (views.Length == 0)
+            {
+                panel.AddComponent<RunMapLegendPanelView>();
+            }
+            else
+            {
+                for (var i = 1; i < views.Length; i++)
+                {
+                    Object.DestroyImmediate(views[i]);
+                }
+            }
+        }
+
+        private static void PopulateLegendPanelContent(Transform panel)
+        {
+            CreateLegendTitle(panel, "Node types (FC)", MapLayoutConstants.LegendTitleFontSize);
 
             var entries = new[]
             {
@@ -259,51 +409,163 @@ namespace FracturedChorus.Editor
                 (MapNodeType.Boss, "Boss — Oni F16")
             };
 
-            for (var i = 0; i < entries.Length; i++)
+            foreach (var (type, desc) in entries)
             {
-                var y = -56f - i * 36f;
-                CreateLegendRow(panel.transform, entries[i].Item1, entries[i].Item2, y);
+                CreateLegendRow(panel, type, desc);
             }
 
-            var hint = CreateText("Hint", panel.transform,
-                "Scroll map · click node F1 → đi theo path · đường cam = path đã chọn\nRef: StS 7×15 + boss · docs/diagrams",
-                11, TextAnchor.UpperLeft);
-            StretchRect(hint.gameObject, new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(12f, 12f), new Vector2(-12f, 120f));
+            CreateLegendFlexibleSpacer(panel);
 
-            return panel;
+            var hint = CreateText(
+                "Hint",
+                panel,
+                "Scroll map · click F1 → đi theo path\nĐường cam = path đã chọn · StS 7×15 + boss F16",
+                MapLayoutConstants.LegendHintFontSize,
+                TextAnchor.UpperLeft);
+            hint.color = new Color(0.62f, 0.65f, 0.7f);
+            hint.lineSpacing = MapLayoutConstants.LegendHintLineSpacing;
+            AddLayoutElement(hint.gameObject, minHeight: MapLayoutConstants.LegendHintMinHeight, flexibleHeight: 0f);
         }
 
-        private static void CreateLegendRow(Transform parent, MapNodeType type, string desc, float y)
+        private static void CreateLegendTitle(Transform parent, string text, int fontSize)
+        {
+            var title = CreateText("LegendTitle", parent, text, fontSize, TextAnchor.MiddleLeft);
+            title.fontStyle = FontStyle.Bold;
+            title.color = new Color(0.92f, 0.94f, 0.96f);
+            AddLayoutElement(title.gameObject, minHeight: MapLayoutConstants.LegendTitleHeight, flexibleHeight: 0f);
+        }
+
+        private static void CreateLegendFlexibleSpacer(Transform parent)
+        {
+            var spacer = CreateUiObject("LegendSpacer", parent);
+            AddLayoutElement(spacer, minHeight: 0f, flexibleHeight: 0f);
+        }
+
+        private static void CreateLegendRow(Transform parent, MapNodeType type, string desc)
         {
             var row = CreateUiObject($"Legend_{type}", parent);
-            var rect = row.GetComponent<RectTransform>();
-            rect.anchorMin = new Vector2(0f, 1f);
-            rect.anchorMax = new Vector2(1f, 1f);
-            rect.pivot = new Vector2(0.5f, 1f);
-            rect.anchoredPosition = new Vector2(0f, y);
-            rect.sizeDelta = new Vector2(-24f, 28f);
+            AddLayoutElement(
+                row,
+                minHeight: MapLayoutConstants.LegendRowMinHeight,
+                flexibleHeight: 0f,
+                flexibleWidth: 0f);
 
-            var dot = CreateUiObject("Dot", row.transform);
-            var dotRect = dot.GetComponent<RectTransform>();
-            dotRect.anchorMin = new Vector2(0f, 0.5f);
-            dotRect.anchorMax = new Vector2(0f, 0.5f);
-            dotRect.anchoredPosition = new Vector2(18f, 0f);
-            dotRect.sizeDelta = new Vector2(16f, 16f);
-            var dotImg = dot.AddComponent<Image>();
-            dotImg.sprite = UiCircleSpriteUtil.Circle;
-            dotImg.color = MapNodePalette.FillColor(type);
+            var rowFitter = row.AddComponent<ContentSizeFitter>();
+            rowFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+            rowFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-            var text = CreateText("Desc", row.transform, desc, 12, TextAnchor.MiddleLeft);
-            StretchRect(text.gameObject, new Vector2(0f, 0f), new Vector2(1f, 1f), new Vector2(40f, 0f), Vector2.zero);
+            var rowRect = row.GetComponent<RectTransform>();
+            rowRect.anchorMin = new Vector2(0f, 1f);
+            rowRect.anchorMax = new Vector2(0f, 1f);
+            rowRect.pivot = new Vector2(0f, 1f);
+
+            var hlg = row.AddComponent<HorizontalLayoutGroup>();
+            hlg.spacing = MapLayoutConstants.LegendRowHorizontalSpacing;
+            hlg.childAlignment = TextAnchor.MiddleLeft;
+            hlg.childControlWidth = true;
+            hlg.childControlHeight = true;
+            hlg.childForceExpandWidth = false;
+            hlg.childForceExpandHeight = false;
+            hlg.padding = new RectOffset(6, 6, 4, 4);
+
+            var dot = CreateLegendSwatchDot(row.transform, type, MapLayoutConstants.LegendDotSize);
+
+            var label = CreateText("Desc", row.transform, desc, MapLayoutConstants.LegendDescFontSize, TextAnchor.MiddleLeft);
+            label.color = new Color(0.88f, 0.9f, 0.93f);
+            label.horizontalOverflow = HorizontalWrapMode.Overflow;
+            AddLayoutElement(
+                label.gameObject,
+                minHeight: 0f,
+                flexibleWidth: 0f,
+                flexibleHeight: 0f);
+            var descFitter = label.gameObject.AddComponent<ContentSizeFitter>();
+            descFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+            descFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
         }
 
-        private static void WireBootstrap(RunMapBootstrap bootstrap, RunMapController controller, RunMapUIView mapView)
+        /// <summary>Swatch giống node: viền StrokeColor + lõi FillColor.</summary>
+        private static GameObject CreateLegendSwatchDot(Transform parent, MapNodeType type, float diameter)
+        {
+            var dot = CreateUiObject("Dot", parent);
+            AddLayoutElement(
+                dot,
+                minWidth: diameter,
+                minHeight: diameter,
+                preferredWidth: diameter,
+                preferredHeight: diameter,
+                flexibleWidth: 0f,
+                flexibleHeight: 0f);
+
+            var dotRect = dot.GetComponent<RectTransform>();
+            dotRect.sizeDelta = new Vector2(diameter, diameter);
+
+            var fitter = dot.AddComponent<AspectRatioFitter>();
+            fitter.aspectMode = AspectRatioFitter.AspectMode.WidthControlsHeight;
+            fitter.aspectRatio = 1f;
+
+            var strokeGo = CreateUiObject("Stroke", dot.transform);
+            StretchRect(strokeGo, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            var strokeImg = strokeGo.AddComponent<Image>();
+            strokeImg.sprite = UiCircleSpriteUtil.Circle;
+            strokeImg.color = MapNodePalette.StrokeColor(type);
+            strokeImg.raycastTarget = false;
+
+            var inset = diameter * (3f / MapLayoutConstants.NodeDiameter);
+            var fillGo = CreateUiObject("Fill", dot.transform);
+            StretchRect(fillGo, Vector2.zero, Vector2.one, new Vector2(inset, inset), new Vector2(-inset, -inset));
+            var fillImg = fillGo.AddComponent<Image>();
+            fillImg.sprite = UiCircleSpriteUtil.Circle;
+            fillImg.color = MapNodePalette.FillColor(type);
+            fillImg.raycastTarget = false;
+
+            return dot;
+        }
+
+        private static void AddLayoutElement(
+            GameObject go,
+            float minWidth = -1f,
+            float minHeight = -1f,
+            float preferredWidth = -1f,
+            float preferredHeight = -1f,
+            float flexibleWidth = -1f,
+            float flexibleHeight = -1f)
+        {
+            var le = go.GetComponent<LayoutElement>() ?? go.AddComponent<LayoutElement>();
+            if (minWidth >= 0f)
+            {
+                le.minWidth = minWidth;
+            }
+
+            if (minHeight >= 0f)
+            {
+                le.minHeight = minHeight;
+            }
+
+            if (preferredWidth >= 0f)
+            {
+                le.preferredWidth = preferredWidth;
+            }
+
+            if (preferredHeight >= 0f)
+            {
+                le.preferredHeight = preferredHeight;
+            }
+
+            if (flexibleWidth >= 0f)
+            {
+                le.flexibleWidth = flexibleWidth;
+            }
+
+            if (flexibleHeight >= 0f)
+            {
+                le.flexibleHeight = flexibleHeight;
+            }
+        }
+
+        private static void WireBootstrap(RunMapBootstrap bootstrap, RunMapController controller)
         {
             var template = EnsureDefaultMapTemplateAsset();
             SetSerializedField(bootstrap, "template", template);
-            SetSerializedField(bootstrap, "controller", controller);
-            SetSerializedField(bootstrap, "mapView", mapView);
-            SetSerializedField(bootstrap, "respectSceneAuthoring", true);
             SetSerializedField(bootstrap, "randomizeSeedOnPlay", true);
         }
 

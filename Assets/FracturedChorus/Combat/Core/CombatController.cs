@@ -13,6 +13,7 @@ namespace FracturedChorus.Combat.Core
         [SerializeField] private BeatTimelineUIView timelineView;
         [SerializeField] private SkillPanelUIView skillPanelView;
         [SerializeField] private CombatExecuteOverlayUIView executeOverlay;
+        [SerializeField] private GuardInputController guardInput;
 
         private CombatSession _session;
         private BeatTimelineEngine _timeline;
@@ -43,6 +44,8 @@ namespace FracturedChorus.Combat.Core
             }
 
             executeOverlay?.Bind(StartRound);
+
+            WireGuardInput();
 
             _session.OnPhaseChanged += HandlePhaseChanged;
             _session.OnActionAssigned += HandleActionAssigned;
@@ -104,6 +107,24 @@ namespace FracturedChorus.Combat.Core
             }
 
             timelineView?.BeginRoundPlayback();
+        }
+
+        private void WireGuardInput()
+        {
+            if (guardInput == null)
+            {
+                guardInput = GetComponent<GuardInputController>();
+                if (guardInput == null)
+                {
+                    guardInput = gameObject.AddComponent<GuardInputController>();
+                }
+            }
+
+            if (_session != null && guardInput != null)
+            {
+                _session.GuardHeldSinceQuery = guardInput.HeldThroughBeatSince;
+                _session.GuardBlockRemainingDamage = guardInput.BlockedDamageRemaining;
+            }
         }
 
         private void UpdateExecuteOverlayVisibility(CombatPhase phase)

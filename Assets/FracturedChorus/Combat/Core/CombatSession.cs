@@ -14,20 +14,6 @@ namespace FracturedChorus.Combat.Core
 {
     public class CombatSession
     {
-        private enum ScanActionKind
-        {
-            PlayerAttack,
-            EnemyAttack
-        }
-
-        private struct ScanAction
-        {
-            public ScanActionKind Kind;
-            public AgendaEntry Entry;
-            public EnemyTelegraph Telegraph;
-            public float Priority;
-        }
-
         public DualGrid Grid { get; private set; }
         public BeatTimelineEngine Timeline { get; private set; }
         public CombatPhase Phase => Timeline?.Phase ?? CombatPhase.Planning;
@@ -43,6 +29,23 @@ namespace FracturedChorus.Combat.Core
         private readonly HashSet<int> _resolvedBeats = new();
         private int _lastTelegraphPlanTriggerBeat = -1;
         public PhaseAvTracker PhaseAv { get; } = new();
+
+        /// <summary>
+        /// Guard mới: trả về true nếu người chơi đã giữ Spacebar liên tục từ trước/đầu beat (tham số =
+        /// realtime lúc beat đòn quái bắt đầu) cho tới khi đòn resolve ở cuối beat.
+        /// </summary>
+        public Func<float, bool> GuardHeldSinceQuery;
+
+        /// <summary>Phần damage còn lại khi block thành công (0 = chặn hoàn toàn).</summary>
+        public float GuardBlockRemainingDamage { get; set; } = 0f;
+
+        private struct PendingEnemyHit
+        {
+            public EnemyTelegraph Telegraph;
+            public float ScheduledTime;
+        }
+
+        private readonly List<PendingEnemyHit> _pendingEnemyHits = new();
 
         /// <summary>True only before Execute — player may drag units onto grid cells.</summary>
         public bool AllowPlayerReposition { get; private set; } = true;
@@ -138,6 +141,7 @@ namespace FracturedChorus.Combat.Core
         public void BeginPlanningRound()
         {
             _resolvedBeats.Clear();
+            _pendingEnemyHits.Clear();
             _lastTelegraphPlanTriggerBeat = -1;
             AllowPlayerReposition = true;
             Timeline.ResetForPlanning();
@@ -175,7 +179,7 @@ namespace FracturedChorus.Combat.Core
         }
 
         /// <summary>
-        /// Gọi khi scan bar đi qua một beat — resolve guard, player attack, enemy telegraph ngay tại beat đó.
+        /// Gọi khi scan bar đi qua một beat — resolve player attack, enemy telegraph (guard = giữ Spacebar).
         /// </summary>
         public void ResolveBeatAtScan(int beatIndex)
         {
@@ -192,35 +196,82 @@ namespace FracturedChorus.Combat.Core
             var telegraph = Timeline.GetTelegraphAtBeat(beatIndex);
             var entries = Timeline.GetEntriesAtBeat(beatIndex);
 
-            var guardTiming = ResolveGuardTimingOnBeat(beatIndex, entries);
-            if (guardTiming.HasValue)
+            // Đòn quái của các beat đỏ trước đó đã trôi hết cửa sổ beat → resolve (chấm guard).
+            FlushPendingEnemyHits(beatIndex);
+
+            ResolvePlayerAttacksAtBeat(beatIndex, entries, telegraph);
+
+            // Đòn quái tại beat này: defer tới cuối beat (resolve khi scan sang beat sau)
+            // để người chơi có trọn beat đỏ mà giữ Spacebar block.
+            if (telegraph != null && telegraph.Unit != null && telegraph.Unit.IsAlive && telegraph.Skill != null)
             {
-                Debug.Log($"[Guard] Active @ beat {beatIndex} → {guardTiming.Value}");
+                _pendingEnemyHits.Add(new PendingEnemyHit
+                {
+                    Telegraph = telegraph,
+                    ScheduledTime = Time.unscaledTime
+                });
             }
 
-            var actions = BuildScanActions(beatIndex, entries, telegraph);
-            actions.Sort((a, b) => a.Priority.CompareTo(b.Priority));
+            TryEndEncounterIfDecided();
+        }
 
-            foreach (var action in actions)
+        private void ResolvePlayerAttacksAtBeat(int beatIndex, IReadOnlyList<AgendaEntry> entries,
+            EnemyTelegraph telegraph)
+        {
+            var players = new List<AgendaEntry>();
+            foreach (var entry in entries)
+            {
+                if (entry.Unit.Side == GridSide.Player && entry.Skill != null && !entry.Skill.IsGuard)
+                {
+                    players.Add(entry);
+                }
+            }
+
+            players.Sort((a, b) => a.Unit.ActionPriority.CompareTo(b.Unit.ActionPriority));
+
+            var enemyBeat = telegraph?.BeatIndex ?? beatIndex;
+            foreach (var entry in players)
             {
                 if (IsEncounterOver)
                 {
                     break;
                 }
 
-                if (action.Kind == ScanActionKind.PlayerAttack)
+                var timing = BeatTimingResolver.Resolve(entry.BeatIndex, enemyBeat);
+                ResolvePlayerAttack(entry, timing);
+            }
+        }
+
+        private void FlushPendingEnemyHits(int currentBeat)
+        {
+            for (var i = 0; i < _pendingEnemyHits.Count;)
+            {
+                var hit = _pendingEnemyHits[i];
+                if (hit.Telegraph.BeatIndex < currentBeat)
                 {
-                    var enemyBeat = telegraph?.BeatIndex ?? beatIndex;
-                    var timing = BeatTimingResolver.Resolve(action.Entry.BeatIndex, enemyBeat);
-                    ResolvePlayerAttack(action.Entry, timing);
+                    _pendingEnemyHits.RemoveAt(i);
+                    ResolveEnemyHit(hit);
                 }
                 else
                 {
-                    ResolveEnemyTelegraph(action.Telegraph, guardTiming);
+                    i++;
                 }
             }
+        }
 
-            TryEndEncounterIfDecided();
+        private void FlushAllPendingEnemyHits()
+        {
+            if (_pendingEnemyHits.Count == 0)
+            {
+                return;
+            }
+
+            var hits = _pendingEnemyHits.ToArray();
+            _pendingEnemyHits.Clear();
+            foreach (var hit in hits)
+            {
+                ResolveEnemyHit(hit);
+            }
         }
 
         private bool TryEndEncounterIfDecided()
@@ -251,60 +302,9 @@ namespace FracturedChorus.Combat.Core
                     ResolveBeatAtScan(beat);
                 }
             }
-        }
 
-        private static BeatTiming? ResolveGuardTimingOnBeat(int beat, IReadOnlyList<AgendaEntry> entries)
-        {
-            BeatTiming? best = null;
-
-            foreach (var entry in entries)
-            {
-                if (entry.Unit.Side != GridSide.Player || entry.Skill == null || !entry.Skill.IsGuard)
-                {
-                    continue;
-                }
-
-                var timing = BeatTimingResolver.Resolve(entry.BeatIndex, beat);
-                if (!best.HasValue || timing.GetMultiplier() > best.Value.GetMultiplier())
-                {
-                    best = timing;
-                }
-            }
-
-            return best;
-        }
-
-        private static List<ScanAction> BuildScanActions(int beat, IReadOnlyList<AgendaEntry> entries,
-            EnemyTelegraph telegraph)
-        {
-            var actions = new List<ScanAction>();
-
-            foreach (var entry in entries)
-            {
-                if (entry.Unit.Side != GridSide.Player || entry.Skill == null || entry.Skill.IsGuard)
-                {
-                    continue;
-                }
-
-                actions.Add(new ScanAction
-                {
-                    Kind = ScanActionKind.PlayerAttack,
-                    Entry = entry,
-                    Priority = entry.Unit.ActionPriority
-                });
-            }
-
-            if (telegraph != null && telegraph.Unit != null && telegraph.Unit.IsAlive && telegraph.Skill != null)
-            {
-                actions.Add(new ScanAction
-                {
-                    Kind = ScanActionKind.EnemyAttack,
-                    Telegraph = telegraph,
-                    Priority = telegraph.Unit.ActionPriority
-                });
-            }
-
-            return actions;
+            FlushAllPendingEnemyHits();
+            TryEndEncounterIfDecided();
         }
 
         private void ResolvePlayerAttack(AgendaEntry entry, BeatTiming timing)
@@ -329,9 +329,10 @@ namespace FracturedChorus.Combat.Core
             }
         }
 
-        private void ResolveEnemyTelegraph(EnemyTelegraph telegraph, BeatTiming? guardTimingOnBeat)
+        private void ResolveEnemyHit(PendingEnemyHit hit)
         {
-            if (telegraph.Unit == null || telegraph.Skill == null || !telegraph.Unit.IsAlive)
+            var telegraph = hit.Telegraph;
+            if (telegraph == null || telegraph.Unit == null || telegraph.Skill == null || !telegraph.Unit.IsAlive)
             {
                 return;
             }
@@ -367,11 +368,16 @@ namespace FracturedChorus.Combat.Core
                     HarmonyElementResolver.GetRelation(telegraph.Unit.Stats.Element, target.Stats.Element));
 
             var finalDamage = damageResult.FinalDamage;
-            if (guardTimingOnBeat.HasValue)
+            if (GuardHeldSinceQuery != null && GuardHeldSinceQuery(hit.ScheduledTime))
             {
-                finalDamage = BeatTimingResolver.ApplyGuardReduction(finalDamage, guardTimingOnBeat.Value);
+                var blocked = finalDamage;
+                finalDamage *= Mathf.Clamp01(GuardBlockRemainingDamage);
                 Debug.Log(
-                    $"[Guard] Block @ beat {telegraph.BeatIndex} ({guardTimingOnBeat.Value}) → dmg {damageResult.FinalDamage:F0} → {finalDamage:F0}");
+                    $"[Guard] SPACE block @ beat {telegraph.BeatIndex} → dmg {blocked:F0} → {finalDamage:F0}");
+            }
+            else
+            {
+                Debug.Log($"[Guard] No block @ beat {telegraph.BeatIndex} (Spacebar chưa giữ trọn beat đỏ)");
             }
 
             target.TakeDamage(finalDamage);

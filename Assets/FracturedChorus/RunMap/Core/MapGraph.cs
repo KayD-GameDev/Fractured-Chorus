@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 
 namespace FracturedChorus.RunMap.Core
 {
@@ -11,12 +10,14 @@ namespace FracturedChorus.RunMap.Core
 
         private readonly List<MapNodeData> _nodes = new List<MapNodeData>();
         private readonly Dictionary<int, MapNodeData> _byId = new Dictionary<int, MapNodeData>();
+        private readonly Dictionary<(int floor, int column), MapNodeData> _byCell = new Dictionary<(int, int), MapNodeData>();
 
         public void Reset(int seed)
         {
             Seed = seed;
             _nodes.Clear();
             _byId.Clear();
+            _byCell.Clear();
             BossNode = null;
         }
 
@@ -32,6 +33,12 @@ namespace FracturedChorus.RunMap.Core
             };
             _nodes.Add(node);
             _byId[node.Id] = node;
+
+            if (!isBoss)
+            {
+                _byCell[(floor, column)] = node;
+            }
+
             if (isBoss)
             {
                 BossNode = node;
@@ -42,7 +49,7 @@ namespace FracturedChorus.RunMap.Core
 
         public void Connect(int fromId, int toId)
         {
-            if (!_byId.TryGetValue(fromId, out var from) || !_byId.TryGetValue(toId, out var to))
+            if (!_byId.TryGetValue(fromId, out var from) || !_byId.TryGetValue(toId, out _))
             {
                 return;
             }
@@ -52,20 +59,28 @@ namespace FracturedChorus.RunMap.Core
                 from.Outgoing.Add(toId);
             }
 
-            if (!to.Incoming.Contains(fromId))
+            if (!_byId[toId].Incoming.Contains(fromId))
             {
-                to.Incoming.Add(fromId);
+                _byId[toId].Incoming.Add(fromId);
             }
         }
 
         public MapNodeData GetNode(int id) => _byId.TryGetValue(id, out var node) ? node : null;
 
-        public IEnumerable<MapNodeData> NodesOnFloor(int floor) =>
-            _nodes.Where(n => !n.IsBoss && n.Floor == floor);
+        public MapNodeData FindNode(int floor, int column) =>
+            _byCell.TryGetValue((floor, column), out var node) ? node : null;
+
+        public IEnumerable<MapNodeData> NodesOnFloor(int floor)
+        {
+            foreach (var node in _nodes)
+            {
+                if (!node.IsBoss && node.Floor == floor)
+                {
+                    yield return node;
+                }
+            }
+        }
 
         public IEnumerable<MapNodeData> StartNodes() => NodesOnFloor(1);
-
-        public MapNodeData FindNode(int floor, int column) =>
-            _nodes.FirstOrDefault(n => !n.IsBoss && n.Floor == floor && n.Column == column);
     }
 }

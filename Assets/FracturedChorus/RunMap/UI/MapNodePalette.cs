@@ -5,28 +5,36 @@ namespace FracturedChorus.RunMap.UI
 {
     public static class MapNodePalette
     {
-        public static Color FillColor(MapNodeType type) => type switch
+        // Brand stroke colors (legend + map node ring) — 2026 spec
+        private static readonly Color BattleStroke = Hex("#AA4E49");
+        private static readonly Color EventStroke = Hex("#82B366");
+        private static readonly Color EliteStroke = Hex("#795F86");
+        private static readonly Color CampStroke = Hex("#D6B657");
+        private static readonly Color RelayStroke = Hex("#D79B00");
+        private static readonly Color TreasureStroke = Hex("#7091C0");
+        private static readonly Color BossStroke = Hex("#C0463E");
+        private static readonly Color BossFill = new Color(0.12f, 0.12f, 0.2f);
+
+        public static Color FillColor(MapNodeType type)
         {
-            MapNodeType.Battle => new Color(0.973f, 0.808f, 0.8f),
-            MapNodeType.Event => new Color(0.835f, 0.91f, 0.831f),
-            MapNodeType.Elite => new Color(0.882f, 0.835f, 0.906f),
-            MapNodeType.Camp => new Color(1f, 0.949f, 0.8f),
-            MapNodeType.Relay => new Color(1f, 0.902f, 0.8f),
-            MapNodeType.Treasure => new Color(0.855f, 0.91f, 0.988f),
-            MapNodeType.Boss => new Color(0.102f, 0.102f, 0.18f),
-            _ => Color.gray
-        };
+            if (type == MapNodeType.Boss)
+            {
+                return BossFill;
+            }
+
+            return LightenFill(StrokeColor(type));
+        }
 
         public static Color StrokeColor(MapNodeType type) => type switch
         {
-            MapNodeType.Battle => new Color(0.722f, 0.329f, 0.314f),
-            MapNodeType.Event => new Color(0.51f, 0.702f, 0.4f),
-            MapNodeType.Elite => new Color(0.588f, 0.451f, 0.651f),
-            MapNodeType.Camp => new Color(0.839f, 0.714f, 0.337f),
-            MapNodeType.Relay => new Color(0.843f, 0.608f, 0f),
-            MapNodeType.Treasure => new Color(0.424f, 0.557f, 0.749f),
-            MapNodeType.Boss => new Color(0.722f, 0.329f, 0.314f),
-            _ => Color.white
+            MapNodeType.Battle => BattleStroke,
+            MapNodeType.Event => EventStroke,
+            MapNodeType.Elite => EliteStroke,
+            MapNodeType.Camp => CampStroke,
+            MapNodeType.Relay => RelayStroke,
+            MapNodeType.Treasure => TreasureStroke,
+            MapNodeType.Boss => BossStroke,
+            _ => Color.gray
         };
 
         public static string Label(MapNodeType type) => type switch
@@ -52,5 +60,13 @@ namespace FracturedChorus.RunMap.UI
             MapNodeType.Boss => "Oni",
             _ => type.ToString()
         };
+
+        private static Color LightenFill(Color stroke, float whiteMix = 0.52f) =>
+            Color.Lerp(stroke, Color.white, whiteMix);
+
+        private static Color Hex(string html)
+        {
+            return ColorUtility.TryParseHtmlString(html, out var color) ? color : Color.white;
+        }
     }
 }

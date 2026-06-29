@@ -6,10 +6,10 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
-    guid: 8c9cfa26abfee488c85f1582747f6a02
+    path: Assets/FracturedChorus/Scenes/RunMapPrototype.unity
+    guid: 9e221f76e321b6f468f489f5e752ad29
   - enabled: 1
     path: Assets/FracturedChorus/Scenes/CombatPrototype.unity
-    guid: 473d73a89b3fe6e4fbbe71c354823504
+    guid: 860d2bb53d505fc4492cd34788679ba3
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}

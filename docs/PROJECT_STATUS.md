@@ -1,6 +1,6 @@
 # Fractured Chorus — Trạng thái dự án
 
-**Cập nhật:** 2026-06-28 (Run Map layout + procedural + docs sync)  
+**Cập nhật:** 2026-06-29 (Combat: skill panel radial, thẻ quái, guard Spacebar)  
 **Repo:** `C:\Users\admin\Projects\fractured-chorus` (docs mirror)  
 **Unity:** `F:\Unity_Project\Fractured Chorus` · scenes `CombatPrototype.unity` · `RunMapPrototype.unity` · GitHub remote **Fractured-Chorus1**  
 **Log:** [`PROJECT_LOG.md`](PROJECT_LOG.md) · [`LOGGING.md`](LOGGING.md)
@@ -72,7 +72,10 @@ Preset SO vẫn `UnitPreset_Mage|Ren|Tank` — xem `Art/Characters/README.md`.
 | Target cột **C1→C2→C3**, trong cột Tank→DPS→Mage | ✅ |
 | Timeline **105 beat / 10 phase**, carousel + scan bar | ✅ MVP |
 | Phase AV budget (150/100) · Base AV = priority only | ✅ |
-| Skill panel + dismiss backdrop, slow **0.25×** khi panel mở | ✅ |
+| **Skill panel radial** — 3 ô Top/Left/Right (W/A/D) + token kéo, hiện tại con trỏ | ✅ |
+| Skill panel dismiss backdrop, slow **0.25×** khi panel mở | ✅ |
+| **Thẻ quái** bên trái (`EnemyStatusBarUIView`) — logic như party card | ✅ |
+| **Guard = giữ Spacebar** trọn beat đòn quái (bỏ ô Guard skill) | ✅ |
 | Enemy telegraph **đỏ** · random mỗi **beat đầu phase** | ✅ |
 | Scene-first authoring (`respectSceneAuthoring`, collider tay) | ✅ |
 | **Party status bar** — thẻ Hierarchy-first, spacing 1.25px, icon hệ art, Tank ngoài cùng phải | ✅ MVP |

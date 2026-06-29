@@ -17,11 +17,11 @@ namespace FracturedChorus.Data
         public int defaultSeed = 42;
 
         [Header("Node type weights (random roll)")]
-        [Range(0f, 1f)] public float battleWeight = 0.45f;
-        [Range(0f, 1f)] public float eliteWeight = 0.16f;
-        [Range(0f, 1f)] public float eventWeight = 0.22f;
+        [Range(0f, 1f)] public float battleWeight = 0.26f;
+        [Range(0f, 1f)] public float eliteWeight = 0.32f;
+        [Range(0f, 1f)] public float eventWeight = 0.17f;
         [Range(0f, 1f)] public float relayWeight = 0.05f;
         [Range(0f, 1f)] public float campWeight = 0.06f;
-        [Range(0f, 1f)] public float treasureWeight = 0.06f;
+        [Range(0f, 1f)] public float treasureWeight = 0.14f;
     }
 }

@@ -18,14 +18,25 @@ namespace FracturedChorus.RunMap.UI
 
         private void Awake()
         {
-            if (button == null)
-            {
-                button = GetComponent<Button>();
-            }
-
+            button ??= GetComponent<Button>();
             if (button != null)
             {
                 button.onClick.AddListener(() => Clicked?.Invoke(this));
+            }
+
+            EnsureCircleSprites();
+        }
+
+        private void EnsureCircleSprites()
+        {
+            if (fillImage != null && fillImage.sprite == null)
+            {
+                fillImage.sprite = UiCircleSpriteUtil.Circle;
+            }
+
+            if (strokeImage != null && strokeImage.sprite == null)
+            {
+                strokeImage.sprite = UiCircleSpriteUtil.Circle;
             }
         }
 
@@ -65,26 +76,18 @@ namespace FracturedChorus.RunMap.UI
             if (fillImage != null)
             {
                 fillImage.color = fill;
-                if (fillImage.sprite == null)
-                {
-                    fillImage.sprite = UiCircleSpriteUtil.Circle;
-                }
             }
 
             if (strokeImage != null)
             {
                 strokeImage.color = stroke;
-                if (strokeImage.sprite == null)
-                {
-                    strokeImage.sprite = UiCircleSpriteUtil.Circle;
-                }
             }
 
             if (labelText != null)
             {
                 labelText.text = MapNodePalette.Label(BoundNode.Type);
                 labelText.color = BoundNode.Type == MapNodeType.Boss ? Color.white : new Color(0.2f, 0.2f, 0.25f);
-                labelText.fontSize = BoundNode.IsBoss ? 22 : 14;
+                labelText.fontSize = MapLayoutConstants.NodeLabelFontSize(BoundNode.Type, BoundNode.IsBoss);
                 labelText.fontStyle = BoundNode.IsBoss ? FontStyle.Bold : FontStyle.Normal;
             }
 

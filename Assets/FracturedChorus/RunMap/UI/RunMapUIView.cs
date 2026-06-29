@@ -9,6 +9,13 @@ namespace FracturedChorus.RunMap.UI
 {
     public class RunMapUIView : MonoBehaviour
     {
+        private static readonly Vector2 BottomAnchor = new Vector2(0.5f, 0f);
+        private static readonly Color DefaultEdgeColor = new Color(0.42f, 0.44f, 0.48f, 1f);
+        private static readonly Color VisitedEdgeColor = new Color(0.95f, 0.55f, 0.12f, 1f);
+        private static readonly Color PreviewEdgeColor = new Color(0.95f, 0.72f, 0.28f, 0.95f);
+        private static readonly Color FloorLabelColor = new Color(0.55f, 0.58f, 0.62f);
+        private static Font s_floorLabelFont;
+
         [Header("Layers")]
         [SerializeField] private RectTransform connectionsLayer;
         [SerializeField] private RectTransform nodesLayer;
@@ -17,173 +24,171 @@ namespace FracturedChorus.RunMap.UI
         [SerializeField] private MapConnectionLineView connectionTemplate;
 
         [Header("Layout")]
-        [SerializeField] private float nodeSpacingX = MapLayoutConstants.NodeSpacingX;
-        [SerializeField] private float nodeSpacingY = MapLayoutConstants.NodeSpacingY;
-        [SerializeField] private float nodeDiameter = MapLayoutConstants.NodeDiameter;
         [SerializeField] private bool fitToViewport = true;
         [SerializeField] private ScrollRect scrollRect;
+        [SerializeField] private RunMapScrollDriver scrollDriver;
+
+        [Header("Scroll follow")]
+        [SerializeField] [Range(0.2f, 0.6f)] private float nodeViewportAnchor = 0.38f;
 
         [Header("Path visuals")]
         [SerializeField] private float baseLineThickness = 4f;
         [SerializeField] private float visitedLineThickness = 7f;
         [SerializeField] private float previewLineThickness = 5.5f;
 
-        private float _contentWidth;
-        private float _contentHeight;
+        private readonly RunMapLayoutMetrics _layout = new RunMapLayoutMetrics();
         private readonly Dictionary<int, MapNodeView> _nodeViews = new Dictionary<int, MapNodeView>();
         private readonly List<MapConnectionLineView> _connectionViews = new List<MapConnectionLineView>();
         private readonly List<Text> _floorLabels = new List<Text>();
 
-        public IReadOnlyDictionary<int, MapNodeView> NodeViews => _nodeViews;
-        public event System.Action<MapNodeView> NodeClicked;
+        private float _contentWidth;
+        private float _contentHeight;
+        private Coroutine _layoutCoroutine;
+        private MapGraph _boundGraph;
 
-        public void ApplyAuthoringPolicy(bool preserve)
+        public IReadOnlyDictionary<int, MapNodeView> NodeViews => _nodeViews;
+
+        /// <summary>Scroll viewport đã có kích thước — tránh build map khi layout = 0.</summary>
+        public bool IsViewportReady
         {
-            // Kept for bootstrap compatibility; layout always rebuilds from graph at Play.
+            get
+            {
+                EnsureScrollRect();
+                if (scrollRect?.viewport == null)
+                {
+                    return false;
+                }
+
+                var rect = scrollRect.viewport.rect;
+                return rect.width > 10f && rect.height > 10f;
+            }
         }
+
+        public event System.Action<MapNodeView> NodeClicked;
 
         public void BuildMap(MapGraph graph)
         {
-            ClearDynamicContent();
-            FitLayoutToViewport();
-            ComputeContentSize(out _contentWidth, out _contentHeight);
-            ApplyContentRect();
-            ConfigureLayers(_contentWidth, _contentHeight);
-
-            CreateFloorLabels(graph);
-            CreateConnections(graph);
-            CreateNodes(graph);
-            if (nodesLayer != null)
+            _boundGraph = graph;
+            if (nodeTemplate != null)
             {
-                nodesLayer.SetAsLastSibling();
+                nodeTemplate.gameObject.SetActive(false);
             }
 
-            StartCoroutine(ScrollToBottomDeferred());
-        }
+            ClearDynamicContent();
 
-        public void WireScrollRect(ScrollRect scroll) => scrollRect = scroll;
+            EnsureScrollRect();
+            _layout.FitToViewport(scrollRect, fitToViewport);
+            _layout.ComputeContentSize(out _contentWidth, out _contentHeight);
+            ApplyContentRect();
+            ResolveLayers();
+            ConfigureLayers(_contentWidth, _contentHeight, connectionsLayer, nodesLayer, floorLabelsLayer);
+
+            CreateFloorLabels();
+            CreateConnections(graph);
+            CreateNodes(graph);
+            EnsureMapLayerOrder();
+
+            Canvas.ForceUpdateCanvases();
+
+            Debug.Log($"[Fractured Chorus] RunMapUIView built — nodes {_nodeViews.Count}, edges {_connectionViews.Count}.");
+
+            StartLayoutCoroutine(ScrollToBottomDeferred());
+        }
 
         public void RefreshInteraction(MapGraph graph, RunState runState)
         {
-            var pathSet = new HashSet<int>(runState.VisitedPath);
+            var currentId = runState.CurrentNodeId;
+
             foreach (var pair in _nodeViews)
             {
                 var node = graph.GetNode(pair.Key);
-                var reachable = runState.CanTravelTo(graph, node);
-                var current = pair.Key == runState.CurrentNodeId;
-                pair.Value.RefreshVisual(reachable, pathSet.Contains(pair.Key), current);
+                if (node == null)
+                {
+                    continue;
+                }
+
+                pair.Value.RefreshVisual(
+                    runState.CanSelectNode(graph, node),
+                    runState.IsVisited(pair.Key),
+                    pair.Key == currentId);
             }
 
-            RefreshConnectionHighlights(graph, runState);
+            RefreshConnectionHighlights(runState);
         }
 
         public void ScrollToNode(MapNodeData node, bool immediate = false)
         {
+            if (node == null)
+            {
+                return;
+            }
+
+            EnsureScrollDriver();
+            scrollDriver?.ScrollToNormalized(ComputeNormalizedForNode(node), immediate);
+        }
+
+        private void EnsureScrollRect()
+        {
+            scrollRect ??= GetComponentInParent<ScrollRect>();
+        }
+
+        private void EnsureScrollDriver()
+        {
+            EnsureScrollRect();
             if (scrollRect == null)
             {
-                scrollRect = GetComponentInParent<ScrollRect>();
-            }
-
-            if (scrollRect == null || node == null)
-            {
                 return;
             }
 
-            if (immediate)
+            scrollDriver ??= scrollRect.GetComponent<RunMapScrollDriver>();
+            if (scrollDriver == null)
             {
-                ApplyScrollToNode(node);
+                scrollDriver = scrollRect.gameObject.AddComponent<RunMapScrollDriver>();
             }
-            else
-            {
-                StartCoroutine(ScrollToNodeDeferred(node));
-            }
+
+            scrollDriver.ApplyScrollFeel();
         }
 
-        public Vector2 NodeAnchoredPosition(MapNodeData node)
+        private void StartLayoutCoroutine(IEnumerator routine)
         {
-            var gridOriginX = GridOriginX;
-            var baseY = MapLayoutConstants.ContentPaddingBottom;
-
-            if (node.IsBoss)
+            if (_layoutCoroutine != null)
             {
-                var bossColumn = (MapLayoutConstants.ColumnCount - 1) * 0.5f;
-                var bossY = MapLayoutConstants.FloorCount * nodeSpacingY + MapLayoutConstants.BossYOffset;
-                return new Vector2(gridOriginX + bossColumn * nodeSpacingX, baseY + bossY);
+                StopCoroutine(_layoutCoroutine);
             }
 
-            var x = gridOriginX + node.Column * nodeSpacingX;
-            var y = baseY + (node.Floor - 1) * nodeSpacingY;
-            return new Vector2(x, y);
+            _layoutCoroutine = StartCoroutine(routine);
         }
 
-        private float GridOriginX =>
-            -((MapLayoutConstants.ColumnCount - 1) * 0.5f * nodeSpacingX);
-
-        private float NodeVisualDiameter(MapNodeData node) =>
-            node.IsBoss ? MapLayoutConstants.BossNodeDiameter : nodeDiameter;
-
-        private void FitLayoutToViewport()
+        private float ComputeNormalizedForNode(MapNodeData node)
         {
-            if (!fitToViewport)
+            if (scrollRect?.content == null || scrollRect.viewport == null)
             {
-                return;
+                return 0f;
             }
 
-            if (scrollRect == null)
+            var contentHeight = scrollRect.content.rect.height;
+            var viewportHeight = scrollRect.viewport.rect.height;
+            var scrollable = contentHeight - viewportHeight;
+            if (scrollable <= 1f)
             {
-                scrollRect = GetComponentInParent<ScrollRect>();
+                return 0f;
             }
 
-            if (scrollRect?.viewport == null)
-            {
-                return;
-            }
-
-            Canvas.ForceUpdateCanvases();
-            var viewport = scrollRect.viewport.rect;
-            if (viewport.width <= 10f || viewport.height <= 10f)
-            {
-                return;
-            }
-
-            var gridSpan = MapLayoutConstants.ColumnCount - 1;
-            var labelGutter = 52f;
-            var usableWidth = viewport.width * 0.94f - labelGutter * 2f;
-            nodeSpacingX = usableWidth / gridSpan;
-            nodeSpacingX = Mathf.Clamp(nodeSpacingX, 78f, 148f);
-
-            nodeSpacingY = viewport.height / 5.25f;
-            nodeSpacingY = Mathf.Clamp(nodeSpacingY, 68f, 108f);
-
-            nodeDiameter = nodeSpacingX * 0.36f;
-            nodeDiameter = Mathf.Clamp(nodeDiameter, 34f, 50f);
-        }
-
-        private void ComputeContentSize(out float width, out float height)
-        {
-            var gridWidth = (MapLayoutConstants.ColumnCount - 1) * nodeSpacingX;
-            var labelGutter = nodeSpacingX * 0.6f;
-            width = gridWidth + labelGutter * 2f;
-
-            var bossCenterY = MapLayoutConstants.ContentPaddingBottom +
-                              MapLayoutConstants.FloorCount * nodeSpacingY +
-                              MapLayoutConstants.BossYOffset;
-            height = bossCenterY +
-                     MapLayoutConstants.BossNodeDiameter * 0.6f +
-                     MapLayoutConstants.ContentPaddingTop;
+            var nodeY = _layout.NodePosition(node).y;
+            var targetOffset = nodeY - viewportHeight * nodeViewportAnchor;
+            return Mathf.Clamp01(targetOffset / scrollable);
         }
 
         private void ApplyContentRect()
         {
-            var rect = transform as RectTransform;
-            if (rect == null)
+            if (transform is not RectTransform rect)
             {
                 return;
             }
 
-            rect.pivot = new Vector2(0.5f, 0f);
-            rect.anchorMin = new Vector2(0.5f, 0f);
-            rect.anchorMax = new Vector2(0.5f, 0f);
+            rect.pivot = BottomAnchor;
+            rect.anchorMin = BottomAnchor;
+            rect.anchorMax = BottomAnchor;
             rect.anchoredPosition = Vector2.zero;
             rect.sizeDelta = new Vector2(_contentWidth, _contentHeight);
         }
@@ -197,22 +202,23 @@ namespace FracturedChorus.RunMap.UI
                     continue;
                 }
 
-                layer.anchorMin = new Vector2(0.5f, 0f);
-                layer.anchorMax = new Vector2(0.5f, 0f);
-                layer.pivot = new Vector2(0.5f, 0f);
+                layer.anchorMin = BottomAnchor;
+                layer.anchorMax = BottomAnchor;
+                layer.pivot = BottomAnchor;
                 layer.anchoredPosition = Vector2.zero;
                 layer.sizeDelta = new Vector2(width, height);
             }
         }
 
-        private void ConfigureLayers(float width, float height)
-        {
-            ConfigureLayers(width, height, connectionsLayer, nodesLayer, floorLabelsLayer);
-        }
-
         private void ClearDynamicContent()
         {
-            StopAllCoroutines();
+            if (_layoutCoroutine != null)
+            {
+                StopCoroutine(_layoutCoroutine);
+                _layoutCoroutine = null;
+            }
+
+            scrollDriver?.StopScrollAnimation();
 
             foreach (var view in _nodeViews.Values)
             {
@@ -224,14 +230,8 @@ namespace FracturedChorus.RunMap.UI
 
             _nodeViews.Clear();
 
-            foreach (var line in _connectionViews)
-            {
-                if (line != null && line != connectionTemplate)
-                {
-                    Destroy(line.gameObject);
-                }
-            }
-
+            ClearConnectionClones(connectionsLayer);
+            ClearConnectionClones(nodesLayer);
             _connectionViews.Clear();
 
             foreach (var label in _floorLabels)
@@ -245,34 +245,34 @@ namespace FracturedChorus.RunMap.UI
             _floorLabels.Clear();
         }
 
-        private void CreateFloorLabels(MapGraph graph)
+        private void CreateFloorLabels()
         {
-            var labelX = GridOriginX - nodeSpacingX * 0.58f;
-            var fontSize = Mathf.RoundToInt(Mathf.Clamp(nodeSpacingX * 0.16f, 12f, 16f));
+            var labelX = _layout.FloorLabelX;
+            var fontSize = _layout.FloorLabelFontSize;
 
             for (var floor = 1; floor <= MapLayoutConstants.FloorCount; floor++)
             {
-                CreateFloorLabel($"F{floor}", new Vector2(labelX, NodeAnchoredPositionForFloor(floor).y), fontSize);
+                CreateFloorLabel($"F{floor}", new Vector2(labelX, _layout.FloorPosition(floor).y), fontSize);
             }
 
-            if (graph.BossNode != null)
+            if (_boundGraph?.BossNode != null)
             {
-                var bossPos = NodeAnchoredPosition(graph.BossNode);
-                CreateFloorLabel("F16", new Vector2(labelX, bossPos.y), fontSize);
+                CreateFloorLabel(
+                    "F16",
+                    new Vector2(labelX, _layout.NodePosition(_boundGraph.BossNode).y),
+                    fontSize);
             }
         }
-
-        private Vector2 NodeAnchoredPositionForFloor(int floor) =>
-            NodeAnchoredPosition(new MapNodeData { Floor = floor, Column = 0 });
 
         private void CreateFloorLabel(string text, Vector2 anchoredPos, int fontSize)
         {
             var parent = floorLabelsLayer != null ? floorLabelsLayer : transform;
             var go = new GameObject(text, typeof(RectTransform));
             go.transform.SetParent(parent, false);
+
             var rect = go.GetComponent<RectTransform>();
-            rect.anchorMin = new Vector2(0.5f, 0f);
-            rect.anchorMax = new Vector2(0.5f, 0f);
+            rect.anchorMin = BottomAnchor;
+            rect.anchorMax = BottomAnchor;
             rect.pivot = new Vector2(1f, 0.5f);
             rect.sizeDelta = new Vector2(48f, 20f);
             rect.anchoredPosition = anchoredPos;
@@ -280,30 +280,45 @@ namespace FracturedChorus.RunMap.UI
             var label = go.AddComponent<Text>();
             label.text = text;
             label.fontSize = fontSize;
-            label.color = new Color(0.55f, 0.58f, 0.62f);
+            label.color = FloorLabelColor;
             label.alignment = TextAnchor.MiddleRight;
-            label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            label.font = s_floorLabelFont ??= Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             _floorLabels.Add(label);
         }
 
         private void CreateNodes(MapGraph graph)
         {
+            if (nodeTemplate == null)
+            {
+                Debug.LogError("[Fractured Chorus] RunMapUIView: NodeTemplate chưa gán — chạy Setup Run Map Scene Hierarchy.");
+                return;
+            }
+
+            if (graph == null || graph.Nodes.Count == 0)
+            {
+                Debug.LogError("[Fractured Chorus] RunMapUIView: MapGraph rỗng — kiểm tra MapTemplate / MapGenerator.");
+                nodeTemplate.gameObject.SetActive(false);
+                return;
+            }
+
             var parent = nodesLayer != null ? nodesLayer : transform;
 
             foreach (var node in graph.Nodes)
             {
-                var clone = Instantiate(
-                    nodeTemplate != null ? nodeTemplate.gameObject : CreateFallbackNode(parent),
-                    parent);
-                clone.SetActive(true);
-                var view = clone.GetComponent<MapNodeView>();
+                var clone = InstantiateNodeFromTemplate(parent);
+                if (clone == null)
+                {
+                    continue;
+                }
 
+                var view = clone.GetComponent<MapNodeView>();
                 var rect = view.GetComponent<RectTransform>();
-                rect.anchorMin = new Vector2(0.5f, 0f);
-                rect.anchorMax = new Vector2(0.5f, 0f);
+
+                rect.anchorMin = BottomAnchor;
+                rect.anchorMax = BottomAnchor;
                 rect.pivot = new Vector2(0.5f, 0.5f);
-                rect.anchoredPosition = NodeAnchoredPosition(node);
-                var diameter = NodeVisualDiameter(node);
+                rect.anchoredPosition = _layout.NodePosition(node);
+                var diameter = _layout.NodeVisualDiameter(node);
                 rect.sizeDelta = new Vector2(diameter, diameter);
 
                 view.Bind(node);
@@ -312,27 +327,28 @@ namespace FracturedChorus.RunMap.UI
                 _nodeViews[node.Id] = view;
             }
 
-            if (nodeTemplate != null)
-            {
-                nodeTemplate.gameObject.SetActive(false);
-            }
+            nodeTemplate.gameObject.SetActive(false);
         }
 
-        private GameObject CreateFallbackNode(Transform parent)
+        private GameObject InstantiateNodeFromTemplate(Transform parent)
         {
-            var go = new GameObject("Node", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
-            go.transform.SetParent(parent, false);
-            return go;
+            var clone = Instantiate(nodeTemplate.gameObject, parent);
+            if (!clone.activeSelf)
+            {
+                clone.SetActive(true);
+            }
+
+            return clone;
         }
 
         private void CreateConnections(MapGraph graph)
         {
-            var edgeColor = new Color(0.28f, 0.3f, 0.34f, 0.9f);
-            // Vẽ line cùng layer với node để tránh lệch transform khi scroll.
-            var parent = nodesLayer != null ? nodesLayer : connectionsLayer != null ? connectionsLayer : transform;
+            var parent = ResolveConnectionsParent();
 
             foreach (var node in graph.Nodes)
             {
+                var fromPos = _layout.NodePosition(node);
+
                 foreach (var toId in node.Outgoing)
                 {
                     var to = graph.GetNode(toId);
@@ -341,84 +357,130 @@ namespace FracturedChorus.RunMap.UI
                         continue;
                     }
 
-                    var clone = Instantiate(
-                        connectionTemplate != null
-                            ? connectionTemplate.gameObject
-                            : CreateFallbackLine(parent),
-                        parent);
-                    clone.SetActive(true);
-                    clone.transform.SetSiblingIndex(0);
-                    var line = clone.GetComponent<MapConnectionLineView>();
-
-                    line.SetEndpoints(
-                        NodeAnchoredPosition(node),
-                        NodeAnchoredPosition(to),
-                        edgeColor,
-                        baseLineThickness);
-                    line.name = $"Edge_{node.Id}_to_{toId}";
+                    var line = SpawnConnectionLine(parent);
+                    line.BindEdge(node.Id, toId);
+                    line.SetEndpoints(fromPos, _layout.NodePosition(to), DefaultEdgeColor, baseLineThickness);
                     _connectionViews.Add(line);
                 }
             }
 
-            if (connectionTemplate != null)
+            connectionTemplate?.gameObject.SetActive(false);
+        }
+
+        private void ResolveLayers()
+        {
+            var content = transform as RectTransform;
+            connectionsLayer ??= content?.Find("ConnectionsLayer") as RectTransform;
+            nodesLayer ??= content?.Find("NodesLayer") as RectTransform;
+            floorLabelsLayer ??= content?.Find("FloorLabelsLayer") as RectTransform;
+        }
+
+        private Transform ResolveConnectionsParent()
+        {
+            ResolveLayers();
+            return connectionsLayer != null ? connectionsLayer : nodesLayer != null ? nodesLayer : transform;
+        }
+
+        private void EnsureMapLayerOrder()
+        {
+            ResolveLayers();
+            var index = 0;
+            if (connectionsLayer != null)
             {
-                connectionTemplate.gameObject.SetActive(false);
+                connectionsLayer.SetSiblingIndex(index++);
+            }
+
+            if (floorLabelsLayer != null)
+            {
+                floorLabelsLayer.SetSiblingIndex(index++);
+            }
+
+            nodesLayer?.SetAsLastSibling();
+        }
+
+        private void ClearConnectionClones(RectTransform layer)
+        {
+            if (layer == null)
+            {
+                return;
+            }
+
+            for (var i = layer.childCount - 1; i >= 0; i--)
+            {
+                var child = layer.GetChild(i);
+                var line = child.GetComponent<MapConnectionLineView>();
+                if (line != null && line != connectionTemplate)
+                {
+                    Destroy(child.gameObject);
+                }
             }
         }
 
-        private GameObject CreateFallbackLine(Transform parent)
+        private MapConnectionLineView SpawnConnectionLine(Transform parent)
         {
+            if (connectionTemplate != null)
+            {
+                var clone = Instantiate(connectionTemplate.gameObject, parent);
+                if (!clone.activeSelf)
+                {
+                    clone.SetActive(true);
+                }
+
+                return clone.GetComponent<MapConnectionLineView>();
+            }
+
             var go = new GameObject("Connection", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(MapConnectionLineView));
             go.transform.SetParent(parent, false);
             var image = go.GetComponent<Image>();
+            image.sprite = UiCircleSpriteUtil.White;
             image.raycastTarget = false;
-            go.GetComponent<MapConnectionLineView>().WireImage(image);
-            return go;
+            var line = go.GetComponent<MapConnectionLineView>();
+            line.WireImage(image);
+            return line;
         }
 
-        private void RefreshConnectionHighlights(MapGraph graph, RunState runState)
+        private void RefreshConnectionHighlights(RunState runState)
         {
-            var pathSet = new HashSet<int>(runState.VisitedPath);
+            if (_boundGraph == null)
+            {
+                return;
+            }
+
             var currentId = runState.CurrentNodeId;
 
-            for (var i = 0; i < _connectionViews.Count; i++)
+            foreach (var line in _connectionViews)
             {
-                var line = _connectionViews[i];
-                if (line == null)
+                if (line == null || line.FromNodeId < 0)
                 {
                     continue;
                 }
 
-                var parts = line.name.Split('_');
-                if (parts.Length < 4 || !int.TryParse(parts[1], out var fromId) || !int.TryParse(parts[3], out var toId))
-                {
-                    continue;
-                }
-
-                var onVisitedPath = pathSet.Contains(fromId) && pathSet.Contains(toId);
+                var fromId = line.FromNodeId;
+                var toId = line.ToNodeId;
+                var onVisitedPath = runState.IsVisited(fromId) && runState.IsVisited(toId);
                 var isPreview = currentId >= 0 && fromId == currentId;
 
-                var color = new Color(0.28f, 0.3f, 0.34f, 0.9f);
+                var color = DefaultEdgeColor;
                 var thickness = baseLineThickness;
 
                 if (onVisitedPath)
                 {
-                    color = new Color(0.95f, 0.55f, 0.12f, 1f);
+                    color = VisitedEdgeColor;
                     thickness = visitedLineThickness;
                 }
                 else if (isPreview)
                 {
-                    color = new Color(0.95f, 0.72f, 0.28f, 0.95f);
+                    color = PreviewEdgeColor;
                     thickness = previewLineThickness;
                 }
 
-                var fromNode = graph.GetNode(fromId);
-                var toNode = graph.GetNode(toId);
+                var fromNode = _boundGraph.GetNode(fromId);
+                var toNode = _boundGraph.GetNode(toId);
                 if (fromNode != null && toNode != null)
                 {
                     line.SetEndpoints(
-                        NodeAnchoredPosition(fromNode),
-                        NodeAnchoredPosition(toNode),
+                        _layout.NodePosition(fromNode),
+                        _layout.NodePosition(toNode),
                         color,
                         thickness);
                 }
@@ -434,54 +496,11 @@ namespace FracturedChorus.RunMap.UI
                 LayoutRebuilder.ForceRebuildLayoutImmediate(scrollRect.content);
             }
 
-            ApplyScrollNormalized(0f);
+            EnsureScrollDriver();
+            scrollDriver?.ScrollToNormalized(0f, immediate: false, useInitialTiming: true);
+            _layoutCoroutine = null;
         }
 
-        private IEnumerator ScrollToNodeDeferred(MapNodeData node)
-        {
-            yield return null;
-            Canvas.ForceUpdateCanvases();
-            ApplyScrollToNode(node);
-        }
-
-        private void ApplyScrollToNode(MapNodeData node)
-        {
-            if (scrollRect?.content == null || scrollRect.viewport == null)
-            {
-                return;
-            }
-
-            var contentHeight = scrollRect.content.rect.height;
-            var viewportHeight = scrollRect.viewport.rect.height;
-            if (contentHeight <= viewportHeight + 1f)
-            {
-                ApplyScrollNormalized(0f);
-                return;
-            }
-
-            var nodeY = NodeAnchoredPosition(node).y;
-            var normalized = nodeY / (contentHeight - viewportHeight);
-            ApplyScrollNormalized(Mathf.Clamp01(normalized * 0.85f));
-        }
-
-        private void ApplyScrollNormalized(float bottomNormalized)
-        {
-            if (scrollRect == null)
-            {
-                scrollRect = GetComponentInParent<ScrollRect>();
-            }
-
-            if (scrollRect == null)
-            {
-                return;
-            }
-
-            scrollRect.verticalNormalizedPosition = bottomNormalized;
-        }
-
-        private void OnNodeClicked(MapNodeView view)
-        {
-            NodeClicked?.Invoke(view);
-        }
+        private void OnNodeClicked(MapNodeView view) => NodeClicked?.Invoke(view);
     }
 }

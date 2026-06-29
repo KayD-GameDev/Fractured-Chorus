@@ -9,6 +9,46 @@ Newest first.
 
 ---
 
+## 2026-06-29 — Combat: skill panel radial, thẻ quái, guard Spacebar
+
+**Focus:** code (Unity)
+
+**Owner:** Khoa
+
+**Done**
+- **Skill panel radial:** bỏ list nút dọc → 3 ô tròn **Top=W / Left=A / Right=D** quanh tâm. Bảng nổi **trên đầu nhân vật** đang chọn (pivot đáy-giữa, clamp trong canvas). Giữ tính năng cũ: title, dismiss backdrop, slow-mo 0.25× khi mở, toggle, kiểm tra Phase AV. (`SkillPanelUIView`, `SkillRadialSlotView`, `SkillCenterTokenView`)
+- **Kéo token chọn skill:** object tròn ở tâm — kéo-thả vào ô để arm skill (ngoài click + phím W/A/D).
+- **Thẻ quái góc phải trên:** `EnemyStatusBarUIView` xếp ngang (mọc phải→trái), tái dùng `PartyMemberCardView` (avatar, bar máu, badge hệ) — bind từ `Grid.EnemyUnits`. Bootstrap tự tạo runtime, mượn CardTemplate của party bar.
+- **Guard = giữ Spacebar:** bỏ ô Guard khỏi bảng skill. Đòn quái nay **defer tới cuối beat đỏ** mới resolve; block nếu người chơi giữ Space **liên tục từ đầu beat** (`GuardInputController.HeldThroughBeatSince`). `CombatSession` dùng pending-hit + `GuardHeldSinceQuery`. Mặc định chặn 100% damage (chỉnh được).
+
+**Decisions**
+- Guard không còn là skill/beat assignment; lọc `IsGuard` khỏi panel nên unit còn đúng 3 skill → khớp 3 ô radial.
+- Đòn quái resolve ở **cuối beat** (không phải đầu beat) để "giữ Space trọn beat đỏ" mới chặn được — fix lỗi guard không ăn.
+- Block full (remaining 0) theo yêu cầu "giữ hết beat = block damage"; `blockedDamageRemaining` để tinh chỉnh.
+
+**Refs:** `UI/SkillPanelUIView.cs`, `UI/SkillRadialSlotView.cs`, `UI/SkillCenterTokenView.cs`, `UI/EnemyStatusBarUIView.cs`, `Combat/Core/GuardInputController.cs`, `Combat/Core/CombatSession.cs`, `Combat/Core/CombatController.cs`, `Combat/Bootstrap/CombatPrototypeBootstrap.cs`
+
+---
+
+## 2026-06-28 — Run Map: refactor + tối ưu code
+
+**Focus:** code (Unity) + docs
+
+**Owner:** Khoa
+
+**Done**
+- **`RunMapLayoutMetrics`:** tách layout/spacing/content size khỏi `RunMapUIView`.
+- **`MapGraph`:** lookup `(floor, column)` O(1); bỏ LINQ `FindNode`.
+- **`MapGenerator`:** gom `BuildGraphFromPaths`; `GenerateFromTemplate()` + weights từ `MapTemplateSO`.
+- **`RunState`:** `HashSet` visited + `IsVisited()` — không rebuild HashSet mỗi refresh.
+- **`MapConnectionLineView`:** `BindEdge(from, to)` — bỏ parse tên GameObject.
+- **`RunMapUIView`:** cache màu edge, font label; bỏ field dead (`connectionsLayer`, `ApplyAuthoringPolicy`).
+- **`RunMapBootstrap`:** gọn seed + generation qua template API.
+
+**Refs:** `RunMap/`, `RUNMAP_SCENE_SETUP.md`
+
+---
+
 ## 2026-06-28 — Run Map: layout scroll, procedural seed, edge sync
 
 **Focus:** code (Unity) + docs
