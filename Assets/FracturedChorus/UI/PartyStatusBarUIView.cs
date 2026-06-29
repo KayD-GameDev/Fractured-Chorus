@@ -26,6 +26,20 @@ namespace FracturedChorus.UI
 
         public int BoundUnitCount => _spawnedCards.Count;
 
+        /// <summary>Template thẻ — dùng lại cho thanh thẻ quái.</summary>
+        public PartyMemberCardView CardTemplate
+        {
+            get
+            {
+                if (cardTemplate == null)
+                {
+                    WireReferences();
+                }
+
+                return cardTemplate;
+            }
+        }
+
         private void Awake()
         {
             WireReferences();

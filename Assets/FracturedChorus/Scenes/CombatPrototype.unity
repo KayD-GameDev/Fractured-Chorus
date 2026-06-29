@@ -1532,7 +1532,7 @@ Transform:
   m_GameObject: {fileID: 243897080}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.7, z: 0}
+  m_LocalPosition: {x: 0, y: 0.8, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3658,8 +3658,6 @@ MonoBehaviour:
   buttonContainer: {fileID: 670898130}
   titleLabel: {fileID: 993624847}
   worldCamera: {fileID: 272797785}
-  screenPaddingPx: 1.5
-  preserveSceneLayout: 1
   dismissBackdrop: {fileID: 0}
 --- !u!224 &463385829
 RectTransform:
@@ -5361,6 +5359,7 @@ MonoBehaviour:
   timelineView: {fileID: 1236853536}
   skillPanelView: {fileID: 463385828}
   executeOverlay: {fileID: 2120607402}
+  guardInput: {fileID: 0}
 --- !u!114 &707156460
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5377,6 +5376,7 @@ MonoBehaviour:
   timelineView: {fileID: 1236853536}
   skillPanelView: {fileID: 463385828}
   partyStatusBarView: {fileID: 1326051294}
+  enemyStatusBarView: {fileID: 0}
   executeOverlay: {fileID: 2120607402}
   unitsRoot: {fileID: 0}
   gridRoot: {fileID: 0}
@@ -10386,7 +10386,7 @@ Transform:
   m_GameObject: {fileID: 2120607354}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.7, z: 0}
+  m_LocalPosition: {x: 0, y: 0.79, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

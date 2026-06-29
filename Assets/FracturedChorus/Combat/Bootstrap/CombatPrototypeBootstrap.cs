@@ -17,6 +17,7 @@ namespace FracturedChorus.Combat.Bootstrap
         [SerializeField] private BeatTimelineUIView timelineView;
         [SerializeField] private SkillPanelUIView skillPanelView;
         [SerializeField] private PartyStatusBarUIView partyStatusBarView;
+        [SerializeField] private EnemyStatusBarUIView enemyStatusBarView;
         [SerializeField] private CombatExecuteOverlayUIView executeOverlay;
         [SerializeField] private Transform unitsRoot;
         [SerializeField] private Transform gridRoot;
@@ -83,11 +84,85 @@ namespace FracturedChorus.Combat.Bootstrap
                 executeOverlay, _boardDrag);
 
             RefreshPartyStatusBar();
+            EnsureEnemyStatusBar();
 
             if (skillPanelView != null && !skillPanelView.gameObject.activeSelf)
             {
                 skillPanelView.Hide();
             }
+        }
+
+        private void EnsureEnemyStatusBar()
+        {
+            if (partyStatusBarView == null)
+            {
+                return;
+            }
+
+            var template = partyStatusBarView.CardTemplate;
+            if (template == null)
+            {
+                Debug.LogWarning("[Bootstrap] No party card template — bỏ qua thanh thẻ quái.");
+                return;
+            }
+
+            if (enemyStatusBarView == null)
+            {
+                enemyStatusBarView = FindAnyObjectByType<EnemyStatusBarUIView>();
+            }
+
+            if (enemyStatusBarView == null)
+            {
+                enemyStatusBarView = CreateEnemyStatusBar();
+            }
+
+            if (enemyStatusBarView == null)
+            {
+                return;
+            }
+
+            enemyStatusBarView.SetCardTemplate(template);
+            enemyStatusBarView.BindFromSession(_session);
+        }
+
+        private EnemyStatusBarUIView CreateEnemyStatusBar()
+        {
+            var canvasRect = ResolveUiCanvasRect();
+            if (canvasRect == null)
+            {
+                Debug.LogWarning("[Bootstrap] Không tìm thấy Canvas cho thanh thẻ quái.");
+                return null;
+            }
+
+            var go = new GameObject("EnemyStatusBarUI", typeof(RectTransform));
+            var rect = go.GetComponent<RectTransform>();
+            rect.SetParent(canvasRect, false);
+            rect.anchorMin = new Vector2(1f, 1f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.pivot = new Vector2(1f, 1f);
+            rect.anchoredPosition = new Vector2(-12f, -12f);
+            rect.sizeDelta = new Vector2(420f, 128f);
+
+            var view = go.AddComponent<EnemyStatusBarUIView>();
+            view.EnsureRow();
+            return view;
+        }
+
+        private RectTransform ResolveUiCanvasRect()
+        {
+            var walk = partyStatusBarView != null ? partyStatusBarView.transform.parent : null;
+            while (walk != null)
+            {
+                if (walk.GetComponent<Canvas>() != null)
+                {
+                    return walk as RectTransform;
+                }
+
+                walk = walk.parent;
+            }
+
+            var anyCanvas = FindAnyObjectByType<Canvas>();
+            return anyCanvas != null ? anyCanvas.transform as RectTransform : null;
         }
 
         private CombatExecuteOverlayUIView ResolveExecuteOverlay()
@@ -172,6 +247,11 @@ namespace FracturedChorus.Combat.Bootstrap
             if (partyStatusBarView == null)
             {
                 partyStatusBarView = FindAnyObjectByType<PartyStatusBarUIView>();
+            }
+
+            if (enemyStatusBarView == null)
+            {
+                enemyStatusBarView = FindAnyObjectByType<EnemyStatusBarUIView>();
             }
 
             if (executeOverlay == null)
