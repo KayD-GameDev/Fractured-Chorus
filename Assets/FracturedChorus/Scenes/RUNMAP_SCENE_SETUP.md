@@ -1,6 +1,6 @@
 # RunMapPrototype — Scene setup (StS clone)
 
-Logic trong **MonoBehaviour `.cs`**. Layout layer chỉnh trong **Hierarchy**; lúc Play `RunMapUIView` rebuild map (node + edge) theo seed và **fit viewport**.
+Logic trong **MonoBehaviour `.cs`**. Layout layer chỉnh trong **Hierarchy**; lúc Play `RunMapController` boot map → `RunMapUIView` rebuild node + edge theo seed và **fit viewport**.
 
 **Tham khảo:** Slay the Spire map (7 cột × 15 tầng + boss F16) · [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=2830078257) · [YouTube](https://www.youtube.com/watch?v=7HYu7QXBuCY) · `docs/diagrams/Fractured-Chorus-Run-Map-Node.drawio`
 
@@ -12,7 +12,9 @@ Logic trong **MonoBehaviour `.cs`**. Layout layer chỉnh trong **Hierarchy**; l
 
 1. Mở Unity `F:\Unity_Project\Fractured Chorus`
 2. Mở scene `RunMapPrototype.unity` **hoặc** menu **Fractured Chorus → Create Run Map Prototype Scene**
-3. **File → Build Settings → Add Open Scenes**
+3. **File → Build Settings** — phải có:
+   - `RunMapPrototype.unity`
+   - `CombatPrototype.unity`
 4. Chờ compile → **Play**
 
 Menu bổ sung: **Fractured Chorus → Setup Run Map Scene Hierarchy** (tạo lại hierarchy trên scene hiện tại).
@@ -22,24 +24,25 @@ Menu bổ sung: **Fractured Chorus → Setup Run Map Scene Hierarchy** (tạo l�
 ## Hierarchy
 
 ```
-RunMapRoot                    ← RunMapBootstrap + RunMapController
-└── RunMapCanvas
+RunMapRoot                    ← RunMapBootstrap (settings) + RunMapController (boot + click)
+└── RunMapCanvas              ← scale (1,1,1); Screen Space Camera
     ├── TopBar                ← title, seed, status
-    ├── MapScrollView         ← ScrollRect dọc (StS: F1 đáy → scroll lên boss)
+    ├── MapScrollView         ← ScrollRect + RunMapScrollDriver (scroll 50%)
     │   └── Viewport
     │       └── MapContent    ← RunMapUIView (fitToViewport)
-    │           ├── ConnectionsLayer   ← template inactive (edge runtime spawn vào NodesLayer)
-    │           ├── NodesLayer         ← NodeTemplate + runtime nodes + connection lines
+    │           ├── ConnectionsLayer   ← edge clones (template inactive ở đây)
+    │           ├── NodesLayer         ← NodeTemplate + runtime nodes
     │           └── FloorLabelsLayer   ← F1…F16 labels
-    └── LegendPanel
+    └── LegendPanel           ← RunMapLegendPanelView (font/màu/spacing runtime)
 EventSystem
 Main Camera
 ```
 
-**Quy tắc layout (2026-06-28):**
-- `MapContent` + mọi layer con: **anchor/pivot đáy** `(0.5, 0)` — tọa độ Y tính từ **đáy** content (F1 thấp, F16 cao).
-- **Connection lines** spawn trong `NodesLayer` (cùng parent với node) — scroll đồng bộ.
-- `MapConnectionLineView` dùng anchor đáy `(0.5, 0)` — **không** dùng center anchor `(0.5, 0.5)` (gây lệch ~nửa chiều cao map).
+**Quy tắc layout (2026-06-28+):**
+- `MapContent` + mọi layer con: **anchor/pivot đáy** `(0.5, 0)` — Y từ đáy (F1 thấp, F16 cao).
+- **Connection lines** spawn vào **`ConnectionsLayer`** (layer order: connections → labels → nodes).
+- `MapConnectionLineView`: anchor đáy `(0.5, 0)`; `Image` dùng `UiCircleSpriteUtil.White` (Unity 6 không vẽ line nếu sprite null).
+- Map **chỉ build lúc Play** — `RunMapController.Start()` → coroutine `BootRunMap()` (không phụ thuộc `RunMapBootstrap.Start()`).
 
 ---
 
@@ -47,22 +50,42 @@ Main Camera
 
 | Bước | Hành vi |
 |------|---------|
-| Vào scene | `MapGenerator.Generate(seed)` — **procedural** mặc định; seed random mỗi Play |
-| Scroll ban đầu | Camera/content ở **đáy** — **F1** hiện trong viewport |
-| Scroll lên | Xem F2…F15 → **Boss F16** (node to, icon ♪) |
-| Click F1 | Bắt đầu run; edge đã đi **cam đậm**; edge kế tiếp **cam nhạt** |
+| Vào scene | `MapGenerator.GenerateFromTemplate()` — **procedural** mặc định; seed random mỗi Play |
+| Scroll ban đầu | Content ở **đáy** — **F1** trong viewport; scroll chậm **50%** (`RunMapScrollDriver`) |
+| Scroll lên | F2…F15 → **Boss F16** (node **58px**, icon ♪) |
+| Click F1 | Bắt đầu run; edge visited **cam đậm**; preview **cam nhạt** |
 | Click tiếp | Chỉ node **reachable** (outgoing edge); auto-scroll theo node |
-| F15 → F16 | Mọi Camp F15 nối về **một** boss duy nhất |
+| F15 → F16 | Mọi Camp F15 nối về **một** boss |
+| **Click boss F16** | Status *"Vào trận Oni F16…"* → ~0.35s → load **`CombatPrototype`** (`RunMapSceneLoader`) |
 
-### MapTemplate_Default (`Assets/FracturedChorus/Data/ScriptableObjects/Presets/`)
+**Lưu ý boss:** Phải đi path tới F16 (reachable từ F15 Camp). Click lại node boss khi đang đứng tại đó vẫn trigger load.
 
-| Flag | Mặc định | Ý nghĩa |
-|------|----------|---------|
-| **Use Reference Demo On Play** | `off` | Bật → map cố định khớp `STS_PATHS` draw.io (debug) |
-| **Randomize Seed On Play** | `on` | Mỗi Play seed mới → layout path khác |
-| **Default Seed** | `42` | Dùng khi tắt randomize |
+Console log mẫu:
+```
+[Fractured Chorus] Run map generated — seed XXXXX, procedural=True
+[Fractured Chorus] Map elite density — N/M (25–35%), target 25–35%.
+[Fractured Chorus] RunMapUIView built — nodes N, edges N.
+[Fractured Chorus] Boss node selected — loading combat scene.
+[Fractured Chorus] Load scene index … (CombatPrototype).
+```
 
-Console log: `[Fractured Chorus] Run map generated — seed XXXXX, procedural=True`
+---
+
+## MapTemplate_Default
+
+Path: `Assets/FracturedChorus/Data/ScriptableObjects/Presets/MapTemplate_Default.asset`
+
+| Flag / weight | Mặc định | Ý nghĩa |
+|---------------|----------|---------|
+| **Use Reference Demo On Play** | `off` | Bật → map cố định `STS_PATHS` (debug) |
+| **Randomize Seed On Play** | `on` | Seed mới mỗi Play |
+| **Default Seed** | `42` | Khi tắt randomize |
+| battleWeight | 0.26 | Roll loại node (floors ngẫu nhiên) |
+| **eliteWeight** | **0.32** | + validate **25–35%** elite trên toàn map (trừ boss) |
+| eventWeight | 0.17 | |
+| relay / camp / treasure | 0.05 / 0.06 / 0.14 | |
+
+Fixed floors: **F1 Battle · F9 Treasure · F15 Camp** — không roll.
 
 ---
 
@@ -71,13 +94,13 @@ Console log: `[Fractured Chorus] Run map generated — seed XXXXX, procedural=Tr
 1. Lưới 7×15 + boss F16  
 2. **6 path** unique (signature hash) — random walk ±1 cột, mutate nếu trùng  
 3. Prune node không thuộc path  
-4. Gán cố định: **F1 Battle · F9 Treasure · F15 Camp**  
-5. Gán ngẫu nhiên + rule override (StS)  
-6. **Boss F16** — 1 node giữa; mọi F15 → boss  
+4. Gán cố định F1 / F9 / F15  
+5. Roll loại + rule StS (`NodeTypeAssigner.ValidateRules` + **elite density 25–35%**)  
+6. Boss F16 — 1 node giữa; mọi F15 → boss  
 
 Demo reference: `MapGenerator.GenerateDemoReference(seed)` — chỉ khi bật flag trên SO.
 
-Chi tiết design: `scripts/build_fc_diagrams_drawio.py` (GitHub `fractured-chorus`).
+Chi tiết: `scripts/build_fc_diagrams_drawio.py` (repo `fractured-chorus`).
 
 ---
 
@@ -86,18 +109,21 @@ Chi tiết design: `scripts/build_fc_diagrams_drawio.py` (GitHub `fractured-chor
 | Class | Vai trò |
 |-------|---------|
 | `MapTemplateSO` | Grid, path count, seed flags, type weights |
-| `MapGenerator` | Path gen ×6, prune, boss, type assign |
-| `MapGraph` / `MapNodeData` | Runtime graph |
-| `RunState` | Current node, visited path |
-| `NodeTypeAssigner` | Roll loại + rule re-roll |
+| `MapGenerator` | Path gen ×6, prune, boss, `GenerateFromTemplate()` |
+| `MapGraph` / `MapNodeData` | Runtime graph; lookup `(floor, column)` O(1) |
+| `RunState` | Current node, visited; `CanSelectNode` (re-click boss) |
+| `NodeTypeAssigner` | Roll loại, rules, **elite 25–35%** |
 | `PathValidator` | Connectivity F1 → boss |
-| `RunMapLayoutMetrics` | Spacing, node Y bottom-origin, content size |
-| `RunMapUIView` | Layout bottom-origin, fit viewport, vẽ node/edge |
-| `MapNodeView` / `MapConnectionLineView` | Node button + UI line |
-| `RunMapController` | Click → travel, scroll follow |
-| `RunMapBootstrap` | Resolve seed, generate, init |
+| `RunMapLayoutMetrics` | Spacing bottom-origin, content size, `fitToViewport` |
+| `RunMapUIView` | Build node/edge, path highlight, layer order |
+| `MapNodeView` / `MapConnectionLineView` | Node UI; line sprite + bottom anchor |
+| `RunMapLegendPanelView` | Legend font 20px, dot stroke+fill, spacing compact |
+| `RunMapScrollDriver` | Scroll 50%, smooth follow node |
+| `RunMapController` | Boot map, click travel, **boss → combat scene** |
+| `RunMapBootstrap` | Seed + `MapTemplateSO` (settings only) |
+| `RunMapSceneCatalog` / `RunMapSceneLoader` | Tên scene + load theo build index |
 
-**UC:** UC-01 Start Run · UC-02 Select Contract · UC-12 Navigate Map
+**UC:** UC-01 Start Run · UC-02 Select Contract · UC-12 Navigate Map · UC-09 Boss Oni (entry từ map)
 
 ---
 
@@ -107,11 +133,13 @@ Chi tiết design: `scripts/build_fc_diagrams_drawio.py` (GitHub `fractured-chor
 |----|-----|---------|
 | Battle | Monster (M) | F1 cố định |
 | Event | ? | |
-| Elite | Elite (E) | |
-| Camp | Rest | F15 cố định |
+| Elite | Elite (E) | **25–35%** nodes (non-boss) |
+| Camp | Rest | F15 cố định; icon **+25%** vs node thường |
 | Relay | Shop | |
 | Treasure | Treasure (T) | F9 cố định |
-| Boss Oni | Boss | F16 — **58px**, 1 node |
+| Boss Oni | Boss | F16 — **58px**, load `CombatPrototype` |
+
+Icon scale: base × **1.75**; Camp thêm × **1.25**; boss glyph lớn hơn (`MapLayoutConstants`).
 
 ---
 
@@ -119,9 +147,22 @@ Chi tiết design: `scripts/build_fc_diagrams_drawio.py` (GitHub `fractured-chor
 
 | Trạng thái | Edge |
 |------------|------|
-| Mặc định | Xám, ~4px |
-| Đã đi (visited path) | Cam đậm, ~7px |
-| Preview (từ node hiện tại) | Cam nhạt, ~5.5px |
+| Mặc định | Xám ~4px |
+| Visited path | Cam đậm ~7px |
+| Preview (từ node hiện tại) | Cam nhạt ~5.5px |
+
+---
+
+## Legend panel
+
+| Constant | Giá trị |
+|----------|---------|
+| Desc font | 20px |
+| VLG spacing | 13.5px |
+| HLG dot↔text | 17.5px |
+| Dot | 34px, màu `MapNodePalette` (stroke + fill giống node map) |
+
+Menu **Fractured Chorus → Upgrade Run Map Legend Panel** — rebuild + Save scene.
 
 ---
 
@@ -130,11 +171,11 @@ Chi tiết design: `scripts/build_fc_diagrams_drawio.py` (GitHub `fractured-chor
 | Object | Chỉnh gì |
 |--------|----------|
 | `MapScrollView` | Vùng map (~2%–78% màn hình) |
-| `LegendPanel` | ~80%–98% bên phải |
-| `NodeTemplate` | Model node (inactive) |
+| `LegendPanel` | ~74%–96% bên phải |
+| `RunMapRoot` → `bossCombatSceneName` | Mặc định `CombatPrototype` |
 | `RunMapUIView.fitToViewport` | Bật = spacing scale theo viewport lúc Play |
 
-Sau sửa Hierarchy → **Save scene**. Play rebuild map runtime — không cần giữ node clone cũ.
+Sau sửa Hierarchy → **Save scene**. Play rebuild map — không giữ clone runtime cũ.
 
 ---
 
@@ -142,15 +183,15 @@ Sau sửa Hierarchy → **Save scene**. Play rebuild map runtime — không cầ
 
 | Triệu chứng | Nguyên nhân / fix |
 |-------------|-------------------|
-| F1 ở **trên** thay vì đáy | Layer stretch + pivot giữa → chạy **Setup Run Map Scene Hierarchy** hoặc đảm bảo layer anchor `(0.5, 0)` |
-| Edge chỉ hiện từ ~F10 | Line dùng center anchor → đã fix `MapConnectionLineView` anchor đáy; lines trong `NodesLayer` |
-| Map F1/F2 y chang mỗi Play | `MapTemplate_Default` vẫn bật **Use Reference Demo On Play** → tắt |
-| Scroll không hết map | `ComputeContentSize()` — content height phải ≥ boss Y + padding |
-| Scroll giật / snap khi click node | `RunMapScrollDriver` — smooth scroll; tự gắn trên `MapScrollView` lúc Play |
-| Seed luôn 42 | Tắt **Use Override Seed** trên `RunMapBootstrap`; bật **Randomize Seed On Play** |
-| Console **ADTM: Control thread waiting… timed out** | Cảnh báo **nội bộ Unity** khi recompile/import asset (thường sau khi thêm/sửa script). **Không phải lỗi RunMap.** Chờ compile xong; nếu lặp lại: đóng Unity → xóa `Library/` → mở lại project |
-| Scene view chỉ thấy 1 node xám + template | **Bình thường ở Edit mode** — map đầy đủ chỉ build khi **Play** (`RunMapBootstrap` → `InitializeDeferred`) |
-| Play nhưng map trống | Console có `NodeTemplate chưa gán` → chạy **Setup Run Map Scene Hierarchy** |
+| **Không thấy connection lines** | Template `Image` thiếu sprite → code gán `UiCircleSpriteUtil.White`; edges trên `ConnectionsLayer` |
+| **Boss click không vào combat** | Build Settings thiếu `CombatPrototype`; boss chưa reachable; Console lỗi `RunMapSceneLoader` |
+| F1 ở **trên** thay vì đáy | Layer anchor `(0.5, 0)` — **Setup Run Map Scene Hierarchy** |
+| Map trống khi Play | `RunMapController` disabled; Console `NodeTemplate chưa gán` → Setup hierarchy |
+| Scene view chỉ template | **Bình thường Edit mode** — map full khi **Play** |
+| Seed luôn 42 | Bật **Randomize Seed On Play** trên template / bootstrap |
+| Legend giãn quá rộng | Chạy **Upgrade Run Map Legend Panel**; `RunMapLegendPanelView.Apply()` lúc Play |
+| `RunMapCanvas` scale 0 | Set scale **(1,1,1)** — scene đã patch; reload scene |
+| ADTM thread timeout | Cảnh báo Unity khi recompile — chờ compile xong |
 
 ---
 
@@ -158,7 +199,7 @@ Sau sửa Hierarchy → **Save scene**. Play rebuild map runtime — không cầ
 
 | Menu | Khi nào |
 |------|---------|
-| **Create Run Map Prototype Scene** | Scene mới + save `RunMapPrototype.unity` |
-| **Setup Run Map Scene Hierarchy** | Rebuild hierarchy trên scene active |
-| **Upgrade Run Map Legend Panel** | Phóng to legend bên phải (font, dot tròn, màu, spacing) — không xóa map |
-| **BatchSaveRunMapLegendPanel** (executeMethod) | Ghi legend mới thẳng vào `RunMapPrototype.unity` |
+| **Create Run Map Prototype Scene** | Scene mới + save |
+| **Setup Run Map Scene Hierarchy** | Rebuild hierarchy |
+| **Upgrade Run Map Legend Panel** | Font/spacing/màu legend |
+| **Save Run Map Scene Upgrades** | Ghi thay đổi editor vào scene file |
