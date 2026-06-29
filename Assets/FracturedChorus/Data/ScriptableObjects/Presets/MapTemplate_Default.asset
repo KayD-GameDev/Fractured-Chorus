@@ -19,9 +19,9 @@ MonoBehaviour:
   useReferenceDemoOnPlay: 0
   randomizeSeedOnPlay: 1
   defaultSeed: 42
-  battleWeight: 0.45
-  eliteWeight: 0.16
-  eventWeight: 0.22
+  battleWeight: 0.26
+  eliteWeight: 0.32
+  eventWeight: 0.17
   relayWeight: 0.05
   campWeight: 0.06
-  treasureWeight: 0.06
+  treasureWeight: 0.14

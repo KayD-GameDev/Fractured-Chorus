@@ -9,6 +9,25 @@ Newest first.
 
 ---
 
+## 2026-06-28 — Run Map: refactor + tối ưu code
+
+**Focus:** code (Unity) + docs
+
+**Owner:** Khoa
+
+**Done**
+- **`RunMapLayoutMetrics`:** tách layout/spacing/content size khỏi `RunMapUIView`.
+- **`MapGraph`:** lookup `(floor, column)` O(1); bỏ LINQ `FindNode`.
+- **`MapGenerator`:** gom `BuildGraphFromPaths`; `GenerateFromTemplate()` + weights từ `MapTemplateSO`.
+- **`RunState`:** `HashSet` visited + `IsVisited()` — không rebuild HashSet mỗi refresh.
+- **`MapConnectionLineView`:** `BindEdge(from, to)` — bỏ parse tên GameObject.
+- **`RunMapUIView`:** cache màu edge, font label; bỏ field dead (`connectionsLayer`, `ApplyAuthoringPolicy`).
+- **`RunMapBootstrap`:** gọn seed + generation qua template API.
+
+**Refs:** `RunMap/`, `RUNMAP_SCENE_SETUP.md`
+
+---
+
 ## 2026-06-28 — Run Map: layout scroll, procedural seed, edge sync
 
 **Focus:** code (Unity) + docs

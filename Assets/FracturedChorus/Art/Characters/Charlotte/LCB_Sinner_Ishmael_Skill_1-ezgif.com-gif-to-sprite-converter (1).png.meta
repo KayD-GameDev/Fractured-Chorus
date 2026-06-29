@@ -174,7 +174,7 @@ TextureImporter:
         width: 837
         height: 967
       alignment: 9
-      pivot: {x: 0.7, y: 0.5}
+      pivot: {x: 0.7134743, y: 0.45334768}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -196,7 +196,7 @@ TextureImporter:
         width: 837
         height: 967
       alignment: 9
-      pivot: {x: 0.7, y: 0.5}
+      pivot: {x: 0.73593175, y: 0.44946012}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -214,11 +214,11 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 2781
-        y: 1747
+        y: 1751
         width: 837
         height: 967
       alignment: 9
-      pivot: {x: 0.7, y: 0.5}
+      pivot: {x: 0.7269484, y: 0.45334792}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -235,12 +235,12 @@ TextureImporter:
       name: LCB_Sinner_Ishmael_Skill_1-ezgif.com-gif-to-sprite-converter (1)_3
       rect:
         serializedVersion: 2
-        x: 3854
-        y: 1754
+        x: 3859
+        y: 1756
         width: 1255
         height: 725
       alignment: 9
-      pivot: {x: 0.67, y: 0.5}
+      pivot: {x: 0.6849775, y: 0.5829654}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -257,12 +257,12 @@ TextureImporter:
       name: LCB_Sinner_Ishmael_Skill_1-ezgif.com-gif-to-sprite-converter (1)_4
       rect:
         serializedVersion: 2
-        x: 5147
-        y: 1750
+        x: 5132
+        y: 1752
         width: 1051
         height: 731
       alignment: 9
-      pivot: {x: 0.8, y: 0.5}
+      pivot: {x: 0.7856917, y: 0.5719988}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -284,7 +284,7 @@ TextureImporter:
         width: 1051
         height: 731
       alignment: 9
-      pivot: {x: 0.80761784, y: 0.5}
+      pivot: {x: 0.7818036, y: 0.57254344}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -306,7 +306,7 @@ TextureImporter:
         width: 1051
         height: 731
       alignment: 9
-      pivot: {x: 0.80404055, y: 0.5}
+      pivot: {x: 0.7839037, y: 0.58606666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -328,7 +328,7 @@ TextureImporter:
         width: 1051
         height: 731
       alignment: 9
-      pivot: {x: 0.7825792, y: 0.5}
+      pivot: {x: 0.7897327, y: 0.5887159}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -350,7 +350,7 @@ TextureImporter:
         width: 1051
         height: 731
       alignment: 9
-      pivot: {x: 0.7825787, y: 0.5}
+      pivot: {x: 0.7863614, y: 0.58372134}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -372,7 +372,7 @@ TextureImporter:
         width: 1051
         height: 731
       alignment: 9
-      pivot: {x: 0.7933093, y: 0.5}
+      pivot: {x: 0.7898346, y: 0.579023}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -401,6 +401,7 @@ TextureImporter:
     nameFileIdTable:
       LCB_Sinner_Ishmael_Skill_1-ezgif.com-gif-to-sprite-converter (1)_0: -2279726170448293518
       LCB_Sinner_Ishmael_Skill_1-ezgif.com-gif-to-sprite-converter (1)_1: -8312723446222007967
+      LCB_Sinner_Ishmael_Skill_1-ezgif.com-gif-to-sprite-converter (1)_10: -1401859445
       LCB_Sinner_Ishmael_Skill_1-ezgif.com-gif-to-sprite-converter (1)_2: -213571216698543884
       LCB_Sinner_Ishmael_Skill_1-ezgif.com-gif-to-sprite-converter (1)_3: -3186676139238835276
       LCB_Sinner_Ishmael_Skill_1-ezgif.com-gif-to-sprite-converter (1)_4: 5072619157336021060

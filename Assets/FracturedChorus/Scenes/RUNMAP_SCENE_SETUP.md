@@ -91,6 +91,7 @@ Chi tiết design: `scripts/build_fc_diagrams_drawio.py` (GitHub `fractured-chor
 | `RunState` | Current node, visited path |
 | `NodeTypeAssigner` | Roll loại + rule re-roll |
 | `PathValidator` | Connectivity F1 → boss |
+| `RunMapLayoutMetrics` | Spacing, node Y bottom-origin, content size |
 | `RunMapUIView` | Layout bottom-origin, fit viewport, vẽ node/edge |
 | `MapNodeView` / `MapConnectionLineView` | Node button + UI line |
 | `RunMapController` | Click → travel, scroll follow |
@@ -145,7 +146,11 @@ Sau sửa Hierarchy → **Save scene**. Play rebuild map runtime — không cầ
 | Edge chỉ hiện từ ~F10 | Line dùng center anchor → đã fix `MapConnectionLineView` anchor đáy; lines trong `NodesLayer` |
 | Map F1/F2 y chang mỗi Play | `MapTemplate_Default` vẫn bật **Use Reference Demo On Play** → tắt |
 | Scroll không hết map | `ComputeContentSize()` — content height phải ≥ boss Y + padding |
+| Scroll giật / snap khi click node | `RunMapScrollDriver` — smooth scroll; tự gắn trên `MapScrollView` lúc Play |
 | Seed luôn 42 | Tắt **Use Override Seed** trên `RunMapBootstrap`; bật **Randomize Seed On Play** |
+| Console **ADTM: Control thread waiting… timed out** | Cảnh báo **nội bộ Unity** khi recompile/import asset (thường sau khi thêm/sửa script). **Không phải lỗi RunMap.** Chờ compile xong; nếu lặp lại: đóng Unity → xóa `Library/` → mở lại project |
+| Scene view chỉ thấy 1 node xám + template | **Bình thường ở Edit mode** — map đầy đủ chỉ build khi **Play** (`RunMapBootstrap` → `InitializeDeferred`) |
+| Play nhưng map trống | Console có `NodeTemplate chưa gán` → chạy **Setup Run Map Scene Hierarchy** |
 
 ---
 
@@ -155,3 +160,5 @@ Sau sửa Hierarchy → **Save scene**. Play rebuild map runtime — không cầ
 |------|---------|
 | **Create Run Map Prototype Scene** | Scene mới + save `RunMapPrototype.unity` |
 | **Setup Run Map Scene Hierarchy** | Rebuild hierarchy trên scene active |
+| **Upgrade Run Map Legend Panel** | Phóng to legend bên phải (font, dot tròn, màu, spacing) — không xóa map |
+| **BatchSaveRunMapLegendPanel** (executeMethod) | Ghi legend mới thẳng vào `RunMapPrototype.unity` |
