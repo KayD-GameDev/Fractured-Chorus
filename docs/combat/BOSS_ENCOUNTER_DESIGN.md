@@ -1,7 +1,7 @@
 # Boss Encounter — Stat, Skill & Combat Pacing
 
 > **Trạng thái:** Stat/boss lock · **cơ chế gameplay → xem [COMBAT_MECHANICS.md](./COMBAT_MECHANICS.md)**  
-> **Ngữ cảnh:** Party Lv 15 vs Boss Lv 18 · scene boss đầu · nhạc Eternal Spark (Cadence Remix)  
+> **Ngữ cảnh:** Party Lv 15 vs Boss Lv 18 · scene boss đầu · nhạc **Eternal Spark (Cadence Remix)** · **619 beat** (`EternalSpark_CadenceRemix_beats.csv` + pad t=0 → `MusicBeatMapSO.BeatCount`)  
 > **Illustrations:** `docs/combat/illustrations/`  
 > **Code hiện tại:** DamageCalculator, PhaseAvTracker *(deprecated)*, EnemyTelegraph, UnitStatBlockSO
 
@@ -13,7 +13,7 @@
 |------|---------|
 | **STR** | Máu (party) · sát thương đánh tay và skill vật lý |
 | **Ma** | Sát thương skill phép |
-| **Heartbeat** | Thứ tự Planning · beat bar W · telegraph intel · planning latency — xem [COMBAT_MECHANICS.md §7](./COMBAT_MECHANICS.md#7-heartbeat-hb--4-vai-trò) |
+| **Heartbeat** | Thứ tự Planning · beat bar W · telegraph intel · planning latency — xem [COMBAT_MECHANICS.md §10](./COMBAT_MECHANICS.md#10-heartbeat-hb--4-vai-trò) |
 | **Endurance (EN)** | Giảm sát thương nhận vào · scale reactive Guard |
 
 ### Chỉ số phụ
@@ -42,7 +42,7 @@ Advantage ×1.5    Disadvantage ×0.5
 | **Ma** | 8.8 | 6.4 | 50 |
 | **HB** | 167 | 127 | 147 |
 | **EN** | 10.8 | 18.2 | 9.8 |
-| Element | Melody | Rhythm | Harmony |
+| Element | Melody (**Active** Cycle Shift) | Rhythm | Harmony |
 | Dmg type | Physical | Physical | Magical |
 | Base Luck | 18% | 8% | 16% |
 | Crit Mult | ×1.35 | ×1.15 | ×1.30 |
@@ -51,6 +51,8 @@ Advantage ×1.5    Disadvantage ×0.5
 | Planning latency | 1 | 1 | 1 |
 
 Tổng HP party = 447 · Chi tiết Lv1→18: [CHARACTER_LEVEL_PROGRESS.md](./CHARACTER_LEVEL_PROGRESS.md)
+
+> **§13 auto Lv15 = 536 HP** (pure growth, no manual). §2 = **optimal manual build** (−17%) — dùng cho boss tune & sim.
 
 ### Công thức HP
 
@@ -62,18 +64,32 @@ Coda:      HP = STR × 2.0 + Ma × 0.35 + 15
 
 ---
 
-## 3. Boss Lv 18 — The Pulse
+## 3. Boss Lv 18 — The Pulse (3 target)
 
-> Boss **không có HB**. Dùng **Pulse** — quyết định spawn trên timeline + tỉ lệ nốt Tím/Xanh/Đỏ.
+> Boss **không có HB**. **Thân** spawn nốt CORE (dmg HP) · **Micro** / **Mắt** spawn nốt pressure (buff/debuff, không dmg HP). Chi tiết: [COMBAT_MECHANICS.md §5–§6](./COMBAT_MECHANICS.md#5-boss-anatomy--thân--micro--mắt).
+
+### Thân (CORE) — win condition
 
 | Stat | Giá trị | Vai trò |
 |------|---------|---------|
-| STR | 88 | Raw dmg khi nốt chạm impact line |
-| Ma | 24 | Skill dmg phép (nếu có) |
+| STR | **58** | Raw dmg nốt CORE leak |
+| Ma | 24 | Skill phép (future) |
 | EN | 20 | EnduranceFactor khi bị đánh |
-| HP | 3000 | Máu boss |
-| **Pulse** | **130** | Spawn density — min gap beat |
-| Element | Rhythm | Pre-condition |
+| HP | **1680** | Pool chính — **0 = thắng** |
+| **Pulse** | **130** | Spawn gap nốt CORE |
+| Element | Rhythm | Harmony vs party |
+
+### Micro · Mắt (optional kill)
+
+| Target | HP | EN | Element | Leak effect |
+|--------|-----|-----|---------|-------------|
+| **Micro** | **280** | 12 | Harmony | Boss `Resonance` +1 (+6% STR/stack, max 3) |
+| **Mắt** | **200** | 10 | Melody | Party `Dissonance` +1 (−12% guard/stack, max 3) |
+
+- Counter Perfect nốt mini → **MiniDmg** + gỡ 1 stack · **không leak = không dmg HP**
+- Chết Micro → hết spawn Micro + clear `Resonance` · chết Mắt → hết Eye + clear `Dissonance`
+
+![Boss 3 target timeline](./illustrations/combat-boss-3-target-timeline.svg)
 
 ### Pulse → spawn gap
 
@@ -84,29 +100,52 @@ effectivePulse = pulse × phaseScale
 
 | Phase | Pulse scale | Min gap (Pulse 130) |
 |-------|-------------|---------------------|
-| Opening | ×0.85 | **5 beat** |
+| Opening | ×0.75 | **5 beat** |
 | Mid | ×1.0 | **3 beat** |
-| Enrage | ×1.25 | **3 beat** |
+| Enrage | ×1.15 | **3 beat** |
 
 ### Note color weights (normalized)
 
 | Phase | Tím | Xanh | Đỏ |
 |-------|-----|------|-----|
-| Opening | 5% | 25% | **70%** |
-| Mid | 20% | 40% | 40% |
-| Enrage | **50%** | 30% | 20% |
+| Opening | **0%** | 34% | **66%** |
+| Mid | 10% | 40% | 50% |
+| Enrage | **38%** | 33% | 33% |
 
-Boss Rhythm → Coda Advantage ×1.5 · Ren Disadvantage ×0.5
+### Leak damage (nốt CORE không counter)
 
-**Asset:** `StatBlock_Boss_Pulse` · `UnitPreset_Boss_Pulse`
+| Màu | Mult trên boss hit |
+|-----|-------------------|
+| Tím | ×1.35 |
+| Xanh | ×1.15 |
+| Đỏ | ×1.0 |
+
+`Resonance` stack nhân thêm vào STR effective khi tính CORE leak.
+
+**Ren vs CORE:** dùng **Active element** (Cycle Shift) — không còn cố định ×0.5. Coda ×1.5 · Charlotte ×1.0.
+
+**Asset:** `StatBlock_Boss_Pulse` (Core) · `StatBlock_Boss_Micro` · `StatBlock_Boss_Eye` · `UnitPreset_Boss_Pulse`
+
+### Balance targets (Monte Carlo · `Tools/simulate-boss-run.js` · **619 beat**)
+
+> ⚠ Sim hiện tại **chỉ model CORE mono HP 2160** (proxy difficulty ≈ CORE 1680 + áp lực mini). Mini + Cycle Shift **chưa** trong sim.
+
+| Skill tier | Win rate | Win beat p50 | % bài | Ghi chú |
+|------------|----------|--------------|-------|---------|
+| Learning (55% counter · 35% guard) | **~5%** | ~382 | ~62% | First clear không kỳ vọng |
+| Competent (70% · 50%) | **~41%** | ~371 | ~60% | Cần học kit + guard |
+| Good (82% · 65%) | **~85%** | ~367 | **~59%** | Target mastery — leak ~62% |
+
+> Tune 2026-06-30 v2: CORE **1680** / STR **58** (sim mono ≈ Good ~85%). v3 thêm Micro/Mắt — rebalance sim pending.
 
 ---
 
 ## 4. Công thức sát thương
 
 ```
-Raw   = Random(tier) × AttackPower × 10
-Final = Raw × 1/(4×√EN) × BeatTiming × Harmony × CritMult
+Raw        = Random(tier) × AttackPower × 10
+CoreFinal  = Raw × 1/(4×√EN_core) × BeatTiming × Harmony × CritMult
+MiniDmg    = Raw × 1/(4×√EN_mini) × BeatTiming × 0.85 × CritMult
 ```
 
 | Tier | Random |
@@ -115,9 +154,16 @@ Final = Raw × 1/(4×√EN) × BeatTiming × Harmony × CritMult
 | 2 Signature | 0.90–1.10 |
 | 3 Burst | 1.10–1.50 |
 
+| Target | Harmony | BeatTiming |
+|--------|---------|------------|
+| **CORE** | Ren **Active** · Charlotte Rhythm · Coda Harmony | §8 COMBAT_MECHANICS |
+| **Micro / Mắt** | **Bỏ qua** | Perfect full · Early/Late ×0.5 |
+
+Dmg skill theo target: [SKILL_KIT.md](./SKILL_KIT.md)
+
 ### Reactive Guard (Space)
 
-Không còn skill Guard. Xem [COMBAT_MECHANICS.md §6](./COMBAT_MECHANICS.md#6-reactive-guard-space).
+Không còn skill Guard. Xem [COMBAT_MECHANICS.md §9](./COMBAT_MECHANICS.md#9-reactive-guard-space).
 
 | Timing (±1 beat) | Giảm dmg |
 |------------------|----------|
@@ -136,9 +182,11 @@ Không còn skill Guard. Xem [COMBAT_MECHANICS.md §6](./COMBAT_MECHANICS.md#6-r
 
 | Char | Basic | Counter | Burst/Support |
 |------|-------|---------|---------------|
-| Ren | Strike 1-1-1 | Riposte 2-3-1 | Finale 1-2-2 |
-| Charlotte | Ram 1-1-1 | Bulwark 2-2-2 | Hold 1-3-2 |
-| Coda | Pulse 1-1-1 | Arc 1-3-1 | Cadence 2-1-2 |
+| Ren | Strike 1-1-1 | Crosscut 2-2-2 | Finale 2-3-3 |
+| Charlotte | Ram 1-1-1 | Anchor 2-2-2 | Bulwark 2-2-3 |
+| Coda | Pulse 1-1-1 | Mend 2-1-2 | Encore 1-1-1 |
+
+Chi tiết effect: [SKILL_KIT.md](./SKILL_KIT.md)
 
 ### Map sang code
 
@@ -264,12 +312,12 @@ Max manual points per stat: 10
 | Lv | Ren | Charlotte | Coda |
 |----|-----|-----------|------|
 | 1 | Strike | Ram | Pulse |
-| 3 | — | Bulwark | — |
-| 4 | Riposte | — | — |
-| 5 | — | — | Arc |
-| 9 | — | Hold the Line | — |
+| 3 | — | Anchor | — |
+| 4 | Crosscut | — | — |
+| 5 | — | — | Mend |
+| 9 | — | Bulwark | — |
 | 10 | Finale | — | — |
-| 11 | — | — | Cadence |
+| 11 | — | — | Encore |
 
 > Charlotte unlock sớm nhất (tank cần counter tool early) → Ren → Coda muộn nhất (support complexity ramp slowly).
 
@@ -295,14 +343,17 @@ Max manual points per stat: 10
 
 ## 14. Việc cần làm
 
-> Chi tiết implementation: [COMBAT_MECHANICS.md §11](./COMBAT_MECHANICS.md#11-map-sang-code-delta)
+> Chi tiết implementation: [COMBAT_MECHANICS.md §14](./COMBAT_MECHANICS.md#14-map-sang-code-delta)
 
 ### P0
 
+- [ ] Boss 3 target + note tag CORE/MICRO/EYE
+- [ ] Ren Cycle Shift + Active element dmg
+- [ ] Mini pressure (`Resonance` / `Dissonance`)
 - [ ] COMBAT_MECHANICS.md — Planning pause + dual BGM
 - [ ] 3-row timeline UI + boss note row
 - [ ] Skill S1/S/S2 footprint
-- [ ] Boss note HP (Tím/Xanh/Đỏ) + degrade
+- [ ] Boss note HP (Tím/Xanh/Đỏ) CORE + degrade
 - [ ] Bỏ PhaseAvTracker
 - [ ] Reactive Space guard
 
@@ -324,4 +375,5 @@ Max manual points per stat: 10
 | 2026-06-29 | Overhaul Section 13 — Stat allocation system, HB conversion (+5/point), auto-growth reduced, example builds |
 | 2026-06-30 | **COMBAT_MECHANICS.md** — Planning/Execute loop, boss notes, HB roles, kit 3 skill |
 | 2026-06-30 | BOSS_ENCOUNTER_DESIGN.md — deprecate cycle/AV/Guard, link mechanics doc, update stats/todos |
-| 2026-06-30 | Rebuild party stats Lv15 optimal · Boss Pulse stat (no HB) · Ma field · BossStatBlockSO |
+| 2026-06-30 | Boss 3 target · Ren Cycle Shift · CoreFinal/MiniDmg · skill dmg tables |
+| 2026-06-30 | Retune Good ~85% · sync 619 beat |

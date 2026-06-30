@@ -36,16 +36,16 @@ Intro 3s
 | 1 | Ren |
 | 2 | Charlotte |
 | 3 | Coda |
-| 4 (chung) | Boss notes |
+| 4 (chung) | Boss notes — tag nguồn: **CORE** · **MICRO** · **EYE** |
 
 - **Cùng beat, khác row** → hợp lệ (chồng counter multi-hit)
 - **Cùng row** → skill mới bắt đầu sau S2 skill trước; S1 không được nằm trong vùng S2 cũ
+- Nốt **CORE** vs **MICRO** / **EYE** dùng chung row 4 nhưng **icon + viền màu** khác nhau (xem §5–§6)
 
 ### Impact Line (thanh đỏ)
 
-- Nốt boss spawn từ phía impact line, di chuyển về impact line
-- **Dmg lên player** chỉ khi nốt **chạm impact line**
-- Không counter kịp → **Space guard** (reactive)
+- Nốt **CORE** chạm impact line → dmg HP (Space guard giảm)
+- Nốt **MICRO** / **EYE** chạm impact line → **pressure only** (§6), không guard được effect
 
 ---
 
@@ -123,10 +123,99 @@ Tím(3) ──1 hit──► Xanh(2) ──1 hit──► Đỏ(1) ──1 hit�
 - Random từ impact line trở đi
 - Khoảng cách tối thiểu giữa đợt: **3–4 beat** (tunable)
 - Không theo cycle — pattern có trọng số theo boss phase
+- Chỉ áp dụng cho nốt **CORE** (Thân). Nốt **MICRO** / **EYE** spawn theo lịch riêng (§6)
 
 ---
 
-## 5. Counter timing (skill)
+## 5. Boss anatomy — Thân · Micro · Mắt
+
+The Pulse = **3 target** trên cùng encounter (3 unit logic, 1 boss row telegraph).
+
+| Target | Tên | Vai trò combat | HP (Lv18) |
+|--------|-----|----------------|-----------|
+| **CORE** | **Thân** | Nốt gây **dmg HP party** khi leak · pool HP chính | **1680** |
+| **MICRO** | **Micro** | Nốt **không dmg HP** · leak → **buff boss** hoặc bị counter → **dmg Micro + gỡ buff** | **280** |
+| **EYE** | **Mắt** | Nốt **không dmg HP** · leak → **debuff party** hoặc bị counter → **dmg Mắt + gỡ debuff** | **200** |
+
+```
+Tổng pool tuỳ chọn = 2160 (core-only sim) + 480 mini = 2640 nếu hạ cả 3
+Win condition mặc định: CORE HP = 0 (Micro/Mắt chết = áp lực giảm, không bắt buộc)
+```
+
+| Target | Element | EN | Ghi chú |
+|--------|---------|-----|---------|
+| CORE | Rhythm | 20 | Harmony ×1.5 Coda · ×0.5 Ren @ Melody |
+| MICRO | Harmony | 12 | Counter dmg dùng `MiniDmg` (§7) |
+| EYE | Melody | 10 | Counter dmg dùng `MiniDmg` (§7) |
+
+**Telegraph:** mỗi nốt row 4 có badge `CORE` (đỏ đậm) · `◈ MICRO` (tím nhạt) · `◇ EYE` (xanh lạnh). HB intel: Ren thấy tag nguồn · Coda thấy tag + effect icon · Charlotte chỉ “có mini hay không”.
+
+→ Xem `illustrations/combat-boss-3-target-timeline.svg`
+
+---
+
+## 6. Mini pressure notes (Micro · Mắt)
+
+> **Khác CORE:** leak mini **không trừ HP party** · **không** dùng Space guard cho effect mini (guard vẫn chỉ giảm dmg nốt CORE).
+
+### Resolve @ impact line
+
+| Kết quả | CORE note | MICRO / EYE note |
+|---------|-----------|------------------|
+| **Perfect counter** | −1 hit + dmg CORE (§7) | **MiniDmg** lên pool Micro/Mắt + **xóa 1 stack** buff/debuff tương ứng |
+| **Leak (không counter)** | Dmg HP party + leak mult | **Không dmg HP** · áp dụng **pressure effect** (bảng dưới) |
+| Late / Early counter | Không −hit · dmg giảm | Không MiniDmg · **vẫn leak pressure** như fail |
+
+### Pressure effects (The Pulse Lv18)
+
+| Nguồn | Leak (fail) | Counter (Perfect) |
+|-------|-------------|-------------------|
+| **◈ MICRO** | Boss **`Resonance`** +1 stack (max 3): STR boss +6%/stack cho nốt CORE kế | −1 `Resonance` stack (nếu có) · MiniDmg |
+| **◇ EYE** | Party **`Dissonance`** +1 stack (max 3): reactive Guard −12%/stack (chỉ nốt CORE) | −1 `Dissonance` trên target bị aim · MiniDmg |
+
+- Spawn mini: **không** chiếm slot màu Tím/Xanh/Đỏ của CORE — mỗi mini có **hit = 1** (chỉ Đỏ logic), không degrade
+- Min gap riêng: Micro mỗi **8–12 beat** · Mắt mỗi **10–14 beat** (phase Mid+ tăng tần suất)
+- Micro chết → hết spawn Micro + clear `Resonance` · Mắt chết → hết spawn Eye + clear `Dissonance` party
+
+---
+
+## 7. Element triangle & Ren Cycle Shift
+
+```
+Rhythm → Melody → Harmony → Rhythm
+Advantage ×1.5    Disadvantage ×0.5    Neutral ×1.0
+```
+
+**Harmony chỉ áp dmg lên CORE** (Thân Rhythm). MiniDmg **bỏ qua** Harmony.
+
+### Ren — Cycle Shift (chỉ **Strike** basic)
+
+| | |
+|--|--|
+| **Base element** | Melody (Ren cố định identity) |
+| **Active element** | Hệ **đang dùng** cho mọi skill Ren — bắt đầu Melody |
+| **Trigger** | Mỗi lần **Strike** resolve xong (hết S2) → xoay **Melody → Rhythm → Harmony → Melody** |
+
+```
+Melody ──Strike──► Rhythm ──Strike──► Harmony ──Strike──► Melody …
+         Crosscut / Finale dùng Active element lúc bắt đầu S1 — không xoay
+```
+
+**Arc 1 vs The Pulse (Rhythm CORE):**
+
+| Active | vs CORE | Gợi ý |
+|--------|---------|-------|
+| Melody | ×0.5 | Mở trận / setup |
+| Rhythm | ×1.0 | 1 basic để lên neutral |
+| Harmony | ×1.5 | Dump Crosscut / Finale |
+
+UI: icon hệ nhỏ cạnh portrait Ren + pulse khi Strike xoay.
+
+Charlotte (Rhythm) vs CORE luôn ×1.0 · Coda (Harmony) vs CORE ×1.5 · không xoay.
+
+---
+
+## 8. Counter timing (skill)
 
 So sánh beat **S active** vs beat **nốt boss**:
 
@@ -140,13 +229,19 @@ So sánh beat **S active** vs beat **nốt boss**:
 Công thức dmg giữ nguyên:
 
 ```
-Raw   = Random(tier) × AttackPower × 10
-Final = Raw × 1/(4×√EN) × BeatTiming × Harmony × CritMult
+Raw        = Random(tier) × AttackPower × 10
+CoreFinal  = Raw × 1/(4×√EN_core) × BeatTiming × Harmony(active, CORE) × CritMult
+MiniDmg    = Raw × 1/(4×√EN_mini) × BeatTiming × 0.85 × CritMult   // không Harmony
 ```
+
+| Target | BeatTiming | Harmony |
+|--------|------------|---------|
+| CORE | §8 bảng timing | Ren Active element · Charlotte Rhythm · Coda Harmony |
+| MICRO / EYE | Perfect = full · Late/Early = ×0.5 · Off = ×0.01 | **Bỏ qua** |
 
 ---
 
-## 6. Reactive Guard (Space)
+## 9. Reactive Guard (Space)
 
 **Không còn skill Guard.** Player guard chủ động khi nốt còn sót chạy về impact line.
 
@@ -157,20 +252,21 @@ Final = Raw × 1/(4×√EN) × BeatTiming × Harmony × CritMult
 | Off-beat | **0%** |
 
 ```
-DmgTaken = BossRaw × (1 − GuardReduction) × EnduranceFactor
+DmgTaken = BossRaw × (1 − GuardReduction − DissonancePenalty) × EnduranceFactor
+DissonancePenalty = 0.12 × DissonanceStacks   // Eye leak, max 3
 ```
 
 EN vẫn scale reduction qua `EnduranceFactor`.
 
 ---
 
-## 7. Heartbeat (HB) — 4 vai trò
+## 10. Heartbeat (HB) — 4 vai trò
 
 | # | Vai trò | Cơ chế |
 |---|---------|--------|
 | 1 | Thứ tự Planning | HB cao → trước |
 | 2 | Beat bar width **W** | Công thức §3 |
-| 3 | **Telegraph intel** (lúc Planning, timeline chung) | Ren: màu + hit + beat chính xác · Coda: màu + hit, beat ±1 · Charlotte: cảnh báo mờ |
+| 3 | **Telegraph intel** | Ren: màu + hit + beat + **note tag CORE/MICRO/EYE** · Coda: tag + effect icon · Charlotte: mini presence |
 | 4 | **Planning latency** | Công thức §3 |
 | — | UI assist khi kéo skill | Ren: highlight Perfect · Coda: ±1 · Charlotte: presence only |
 
@@ -178,17 +274,17 @@ EN vẫn scale reduction qua `EnduranceFactor`.
 
 ---
 
-## 8. Kit skill (3 skill / nhân vật)
+## 11. Kit skill (3 skill / nhân vật)
 
-> Chi tiết: [SKILL_KIT.md](./SKILL_KIT.md)
+> Chi tiết dmg số: [SKILL_KIT.md](./SKILL_KIT.md)
 
-### Ren — DPS · Melody
+### Ren — DPS · Cycle Shift
 
 | # | Tên | S1–S–S2 | Effect |
 |---|-----|---------|--------|
-| 1 | Strike | 1–1–1 | Basic dmg |
-| 2 | Crosscut | 2–2–2 | 2 beat counter |
-| 3 | Finale | 2–3–3 | 3 beat counter, S2 dài |
+| 1 | Strike | 1–1–1 | Basic dmg · **+1 bước Cycle Shift** |
+| 2 | Crosscut | 2–2–2 | 2 beat counter · dmg theo **Active element** |
+| 3 | Finale | 2–3–3 | 3 beat counter · dmg theo **Active element** |
 
 ### Charlotte — Tank · Rhythm
 
@@ -208,11 +304,13 @@ EN vẫn scale reduction qua `EnduranceFactor`.
 
 ---
 
-## 9. Walkthrough — beat 9–11
+## 12. Walkthrough — beat 9–11 (+ mini @ 12)
 
-**Spawn:** beat 9 Tím(3) · beat 10 Đỏ(1) · beat 11 Đỏ(1)
+**Spawn:** beat 9 Tím CORE(3) · beat 10 Đỏ CORE(1) · beat 11 Đỏ CORE(1) · beat 12 **◈ MICRO**(1)
 
-**Ren** S1:1 S:3 S2:2 @ 8–13:
+**Ren** mở trận Active = Melody (×0.5 vs CORE). **Strike** @ 7–9 → dmg thấp · sau S2 Active = **Rhythm**.
+
+**Ren Crosscut** @ 8–13 (Active Rhythm ×1.0):
 
 | Beat | Kết quả |
 |------|---------|
@@ -226,16 +324,19 @@ EN vẫn scale reduction qua `EnduranceFactor`.
 |------|---------|
 | 9 | Xanh +1 hit → **Đỏ** (1 hit còn) |
 
-**Hết skill** → Space guard nốt Đỏ @ beat 9 khi chạm impact line.
+**Beat 12 MICRO:** Perfect Crosscut hit → MiniDmg + **`Resonance` không lên**. Nếu miss → **`Resonance` +1** (boss STR +6%), **0 dmg HP**.
+
+**Hết skill** → Space guard nốt Đỏ CORE @ beat 9 khi chạm impact line.
 
 → Xem `illustrations/combat-note-walkthrough-example.png`
 
 ---
 
-## 10. Illustrations
+## 13. Illustrations
 
 | File | Nội dung |
 |------|----------|
+| `combat-boss-3-target-timeline.svg` | CORE / MICRO / EYE trên row 4 · resolve @ impact |
 | `combat-timeline-3-rows.png` | Timeline 3 row + boss notes |
 | `combat-planning-execute-music.png` | Planning vs Execute + dual BGM |
 | `combat-hb-roles-comparison.png` | HB 4 vai trò |
@@ -245,15 +346,20 @@ EN vẫn scale reduction qua `EnduranceFactor`.
 
 ---
 
-## 11. Map sang code (delta)
+## 14. Map sang code (delta)
 
 | Thiết kế mới | Code hiện tại | Action |
 |--------------|---------------|--------|
+| Boss 3 target (Core/Micro/Eye) | Single boss HP | P0 |
+| Note tag CORE / MICRO / EYE | Single telegraph | P0 |
+| Ren Cycle Shift | Fixed element | P0 |
+| Mini pressure (no HP leak) | N/A | P0 |
 | Planning pause + dual music | Single BGM | P0 |
 | 3-row timeline | 1 agenda list | P0 |
 | S1/S/S2 footprint | Chưa có | P0 |
 | Note HP (tím/xanh/đỏ) | EnemyTelegraph 1-hit | P0 |
 | Bỏ PhaseAvTracker | PhaseAvTracker 150/100 | P0 remove |
+| `Resonance` / `Dissonance` stacks | N/A | P1 |
 | Reactive Space guard | GuardHeldSinceQuery | P1 refactor |
 | HB → W, intel, latency | HB → BaseAv only | P1 |
 | Async per-char planning | Batch planning | P1 |
@@ -264,4 +370,6 @@ EN vẫn scale reduction qua `EnduranceFactor`.
 
 | Ngày | Nội dung |
 |------|----------|
+| 2026-06-30 | Illustration `combat-boss-3-target-timeline.svg` |
+| 2026-06-30 | Boss 3 target · Mini pressure · Ren Cycle Shift · CoreFinal vs MiniDmg |
 | 2026-06-30 | Tạo doc — Planning/Execute loop, boss notes, HB roles, kit 3 skill, illustrations |

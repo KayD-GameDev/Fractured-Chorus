@@ -25,25 +25,47 @@
 
 ---
 
-## Ren — DPS · Melody · Physical
+## Ren — DPS · Cycle Shift · Physical
 
-| # | Tên | S1-S-S2 | Tier | Effect | Timeline |
-|---|-----|---------|------|--------|----------|
-| 1 | **Strike** | 1-1-1 | 1 | Damage | 1 nốt / lần dùng |
-| 2 | **Crosscut** | 2-2-2 | 2 | Damage | 2 beat S → counter tối đa 2 nốt (1 hit/beat) |
-| 3 | **Finale** | 2-3-3 | 3 | Damage burst | 3 beat S → 3 nốt, S2 dài (lock row) |
+> **Cycle Shift:** mỗi **Strike** xong → Active element xoay Melody → Rhythm → Harmony. Crosscut / Finale dùng Active @ S1, không xoay. Xem [COMBAT_MECHANICS.md §7](./COMBAT_MECHANICS.md#7-element-triangle--ren-cycle-shift).
+
+| # | Tên | S1-S-S2 | Tier | Effect | Target |
+|---|-----|---------|------|--------|--------|
+| 1 | **Strike** | 1-1-1 | 1 | Damage + **Cycle Shift** | CORE · Mini |
+| 2 | **Crosscut** | 2-2-2 | 2 | Damage · 2 counter hit | CORE · Mini |
+| 3 | **Finale** | 2-3-3 | 3 | Damage burst · 3 counter hit | CORE · Mini |
 
 **Asset:** `ren_basic` · `ren_skill` · `ren_ult`
+
+### Ren — dmg tham chiếu Lv15 (avg roll · Perfect · vs The Pulse)
+
+| Skill | Active | vs CORE | vs MICRO/EYE |
+|-------|--------|---------|--------------|
+| Strike | Melody | **~11** | **~14** MiniDmg |
+| Strike | Rhythm | **~22** | **~14** |
+| Strike | Harmony | **~33** | **~14** |
+| Crosscut / beat | Melody | **~12** | **~15** |
+| Crosscut / beat | Rhythm | **~23** | **~15** |
+| Crosscut / beat | Harmony | **~35** | **~15** |
+| Finale / beat | Harmony | **~46** | **~20** |
+
+*Coda Harmony ×1.5 vs CORE ≈ **~39** Pulse · Charlotte Rhythm ≈ **~18** Ram.*
 
 ---
 
 ## Charlotte — Tank · Rhythm · Physical
 
-| # | Tên | S1-S-S2 | Tier | Effect | Timeline |
-|---|-----|---------|------|--------|----------|
-| 1 | **Ram** | 1-1-1 | 1 | Damage | Basic threat |
-| 2 | **Anchor** | 2-2-2 | 2 | **DelayBossNote +2** | Beat S đầu: đẩy nốt boss @ beat đó +2 beat |
-| 3 | **Bulwark** | 2-2-3 | 2 | **Shield 65 + counter** | Shield lúc S bắt đầu · dmg mỗi beat S · S2 dài |
+| # | Tên | S1-S-S2 | Tier | Effect | Target |
+|---|-----|---------|------|--------|--------|
+| 1 | **Ram** | 1-1-1 | 1 | Damage | CORE · Mini |
+| 2 | **Anchor** | 2-2-2 | 2 | **DelayBossNote +2** (CORE only) | CORE telegraph |
+| 3 | **Bulwark** | 2-2-3 | 2 | **Shield 65** + counter dmg | CORE · Mini |
+
+| Skill | vs CORE | vs MICRO/EYE |
+|-------|---------|--------------|
+| Ram | **~18** | **~12** MiniDmg |
+| Anchor | — | — |
+| Bulwark / beat | **~20** | **~13** |
 
 **Asset:** `tank_basic` · `tank_skill` · `tank_ult`
 
@@ -51,11 +73,17 @@
 
 ## Coda — Support · Harmony · Magical
 
-| # | Tên | S1-S-S2 | Tier | Effect | Timeline |
-|---|-----|---------|------|--------|----------|
-| 1 | **Pulse** | 1-1-1 | 1 | Damage (Ma) | 1 nốt |
-| 2 | **Mend** | 2-1-2 | 2 | **Heal** 25 + Ma×0.5 | Hồi 1 ally · cast giữa S ngắn |
-| 3 | **Encore** | 1-1-1 | 2 | **ReduceS2 −1** | Skill kế tiếp của 1 ally: S2 −1 beat |
+| # | Tên | S1-S-S2 | Tier | Effect | Target |
+|---|-----|---------|------|--------|--------|
+| 1 | **Pulse** | 1-1-1 | 1 | Damage (Ma) | CORE · Mini |
+| 2 | **Mend** | 2-1-2 | 2 | **Heal** 25 + Ma×0.5 | Ally |
+| 3 | **Encore** | 1-1-1 | 2 | **ReduceS2 −1** | Ally |
+
+| Skill | vs CORE | vs MICRO/EYE |
+|-------|---------|--------------|
+| Pulse | **~39** (×1.5 Harmony) | **~26** MiniDmg |
+| Mend | — (~50 HP heal) | — |
+| Encore | — | — |
 
 **Asset:** `mage_basic` · `mage_skill` · `mage_ult`
 
@@ -65,11 +93,15 @@
 
 | Kind | Mô tả |
 |------|-------|
-| `Damage` | Counter + dmg theo tier / AttackPower |
+| `Damage` | Counter + **CoreFinal** vs CORE |
+| `MiniDamage` | Counter Perfect vs MICRO/EYE note → **MiniDmg** pool |
 | `Heal` | `effectValue + Ma×0.5` |
 | `Shield` | `effectValue` HP buffer (Bulwark: 65) |
 | `ReduceS2` | Giảm S2 skill placement kế tiếp |
-| `DelayBossNote` | Đẩy telegraph boss +N beat |
+| `DelayBossNote` | Đẩy telegraph **CORE** +N beat |
+| `CycleShift` | Ren Strike: xoay Active element (§7 mechanics) |
+| `PurgeResonance` | Counter Micro: −1 boss `Resonance` stack |
+| `PurgeDissonance` | Counter Eye: −1 party `Dissonance` stack |
 
 ---
 
@@ -101,5 +133,14 @@
 ## Chưa làm (runtime P0)
 
 - [ ] UI hiển thị S1/S/S2 khác màu trên segment
-- [ ] Counter degrade boss note HP (Tím/Xanh/Đỏ)
+- [ ] Counter degrade boss note HP (Tím/Xanh/Đỏ) — **CORE only**
+- [ ] Note tag CORE / MICRO / EYE trên row 4
+- [ ] Ren Active element + Cycle Shift animation
+- [ ] Mini pressure resolve (`Resonance` / `Dissonance`)
 - [ ] Pick ally target cho Mend / Encore (hiện auto first ally)
+
+## Changelog
+
+| Ngày | Nội dung |
+|------|----------|
+| 2026-06-30 | Cycle Shift · CoreFinal vs MiniDmg · dmg table · effect kinds mới |
