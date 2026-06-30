@@ -34,22 +34,23 @@ Advantage ×1.5    Disadvantage ×0.5
 
 ---
 
-## 2. Chỉ số party Lv 15
+## 2. Chỉ số party Lv 15 (optimal build)
 
 | | Ren (DPS) | Charlotte (Tank) | Coda (Support) |
 |--|-----------|------------------|----------------|
-| **STR** | 74 | 55 | 22 |
-| **Ma** | 16 | 12 | 82 |
-| **HB** | 172 | 128 | 156 |
-| **EN** | 12 | 26 | 10 |
+| **STR** | 42 | 35 | 20 |
+| **Ma** | 8.8 | 6.4 | 50 |
+| **HB** | 167 | 127 | 147 |
+| **EN** | 10.8 | 18.2 | 9.8 |
 | Element | Melody | Rhythm | Harmony |
 | Dmg type | Physical | Physical | Magical |
 | Base Luck | 18% | 8% | 16% |
 | Crit Mult | ×1.35 | ×1.15 | ×1.30 |
-| **HP** | 178 | 380 | 111 |
-| Beat bar W | 9 | 7 | 8 |
+| **HP** | 114 | 260 | 73 |
+| Beat bar W | 8 | 7 | 8 |
+| Planning latency | 1 | 1 | 1 |
 
-Tổng HP party = 669
+Tổng HP party = 447 · Chi tiết Lv1→18: [CHARACTER_LEVEL_PROGRESS.md](./CHARACTER_LEVEL_PROGRESS.md)
 
 ### Công thức HP
 
@@ -63,28 +64,41 @@ Coda:      HP = STR × 2.0 + Ma × 0.35 + 15
 
 ## 3. Boss Lv 18 — The Pulse
 
-| Stat | Giá trị |
-|------|---------|
-| STR | 88 |
-| Ma | 24 |
-| HB | 138 |
-| EN | 20 |
-| HP | 3000 |
-| Element | Rhythm |
+> Boss **không có HB**. Dùng **Pulse** — quyết định spawn trên timeline + tỉ lệ nốt Tím/Xanh/Đỏ.
+
+| Stat | Giá trị | Vai trò |
+|------|---------|---------|
+| STR | 88 | Raw dmg khi nốt chạm impact line |
+| Ma | 24 | Skill dmg phép (nếu có) |
+| EN | 20 | EnduranceFactor khi bị đánh |
+| HP | 3000 | Máu boss |
+| **Pulse** | **130** | Spawn density — min gap beat |
+| Element | Rhythm | Pre-condition |
+
+### Pulse → spawn gap
+
+```
+minGap = clamp(5 − ⌊(effectivePulse − 80) / 25⌋, 3, 5)
+effectivePulse = pulse × phaseScale
+```
+
+| Phase | Pulse scale | Min gap (Pulse 130) |
+|-------|-------------|---------------------|
+| Opening | ×0.85 | **5 beat** |
+| Mid | ×1.0 | **3 beat** |
+| Enrage | ×1.25 | **3 beat** |
+
+### Note color weights (normalized)
+
+| Phase | Tím | Xanh | Đỏ |
+|-------|-----|------|-----|
+| Opening | 5% | 25% | **70%** |
+| Mid | 20% | 40% | 40% |
+| Enrage | **50%** | 30% | 20% |
 
 Boss Rhythm → Coda Advantage ×1.5 · Ren Disadvantage ×0.5
 
-### Pattern (cập nhật)
-
-- Nốt spawn random từ impact line, min gap 3–4 beat
-- Màu nốt = hit còn lại: Tím(3) · Xanh(2) · Đỏ(1) — xem [COMBAT_MECHANICS.md §4](./COMBAT_MECHANICS.md#4-boss-notes--màu--hit-còn-lại-cùng-1-beat)
-- Phase enrage: tăng tần suất nốt Tím / multi-spawn
-
-| Phase | Hành vi |
-|-------|---------|
-| Mở đầu | Chủ yếu Đỏ, gap rộng |
-| Mid | Thêm Xanh, gap 3–4 beat |
-| Enrage | Tím + spawn dày, cần chồng multi-row counter |
+**Asset:** `StatBlock_Boss_Pulse` · `UnitPreset_Boss_Pulse`
 
 ---
 
@@ -131,15 +145,17 @@ Không còn skill Guard. Xem [COMBAT_MECHANICS.md §6](./COMBAT_MECHANICS.md#6-r
 | Thiết kế mới | Code hiện tại |
 |--------------|---------------|
 | COMBAT_MECHANICS.md | PhaseAvTracker, batch planning, 1-row timeline |
-| STR / Ma | strength + strengthType |
-| HP từ STR | maxHp nhập tay |
+| STR / Ma | strength + ma + strengthType |
+| HP từ STR/Ma | maxHp nhập tay |
+| Boss Pulse | BossStatBlockSO.pulse + color weights |
 | 3 skill, no Guard | Kit 4 skill cũ |
 
 | Asset | Preset |
 |-------|--------|
-| Ren | UnitPreset_Ren |
-| Charlotte | UnitPreset_Tank |
-| Coda | UnitPreset_Mage |
+| Ren | UnitPreset_Ren · StatBlock_Ren |
+| Charlotte | UnitPreset_Tank · StatBlock_Tank |
+| Coda | UnitPreset_Mage · StatBlock_Mage |
+| The Pulse | UnitPreset_Boss_Pulse · StatBlock_Boss_Pulse |
 
 ---
 
@@ -308,3 +324,4 @@ Max manual points per stat: 10
 | 2026-06-29 | Overhaul Section 13 — Stat allocation system, HB conversion (+5/point), auto-growth reduced, example builds |
 | 2026-06-30 | **COMBAT_MECHANICS.md** — Planning/Execute loop, boss notes, HB roles, kit 3 skill |
 | 2026-06-30 | BOSS_ENCOUNTER_DESIGN.md — deprecate cycle/AV/Guard, link mechanics doc, update stats/todos |
+| 2026-06-30 | Rebuild party stats Lv15 optimal · Boss Pulse stat (no HB) · Ma field · BossStatBlockSO |
