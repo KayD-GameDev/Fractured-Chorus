@@ -1,3 +1,4 @@
+using FracturedChorus.Combat.Damage;
 using FracturedChorus.Combat.Grid;
 using FracturedChorus.Combat.Units;
 using FracturedChorus.Data;
@@ -17,6 +18,7 @@ namespace FracturedChorus.Combat.Bootstrap
                 CreateSpawn(GetPresetByKey("ren"), GridSide.Player, 2, 2),
                 CreateSpawn(GetPresetByKey("mage"), GridSide.Player, 2, 3),
                 CreateSpawn(GetPresetByKey("grunt_left"), GridSide.Enemy, 2, 1),
+                CreateSpawnInternal(GetPresetByKey("boss_despair"), GridSide.Enemy, 1, 1),
                 CreateSpawn(GetPresetByKey("grunt_right"), GridSide.Enemy, 2, 3)
             };
             return encounter;
@@ -27,6 +29,7 @@ namespace FracturedChorus.Combat.Bootstrap
             var assetKey = key switch
             {
                 "grunt_left" or "grunt_right" => "grunt",
+                "boss_despair" => "Boss_Despair",
                 _ => key
             };
 
@@ -43,7 +46,23 @@ namespace FracturedChorus.Combat.Bootstrap
                 "mage" => CreateMagePreset(),
                 "grunt_left" => CreateGruntPreset("grunt_left"),
                 "grunt_right" => CreateGruntPreset("grunt_right"),
+                "boss_despair" => CreateBossDespairPreset(),
                 _ => CreateGruntPreset(key ?? "grunt")
+            };
+        }
+
+        private static EncounterUnitSpawn CreateSpawnInternal(
+            UnitPresetSO preset,
+            GridSide side,
+            int row,
+            int column)
+        {
+            return new EncounterUnitSpawn
+            {
+                preset = preset,
+                side = side,
+                row = row,
+                column = column
             };
         }
 
@@ -92,6 +111,32 @@ namespace FracturedChorus.Combat.Bootstrap
             preset.stats = UnitStats.CreateMagePreset();
             preset.placeholderColor = new Color(0.65f, 0.35f, 0.95f);
             preset.skills = CreateStandardKit("mage", "Pulse", "Arc", "Cataclysm", "Ward");
+            return preset;
+        }
+
+        private static UnitPresetSO CreateBossDespairPreset()
+        {
+            var preset = ScriptableObject.CreateInstance<UnitPresetSO>();
+            preset.unitId = "boss_despair";
+            preset.displayName = "Knight of Despair";
+            preset.role = UnitRole.Boss;
+            preset.stats = new UnitStats
+            {
+                Element = HarmonyElement.Rhythm,
+                StrengthType = DamageType.Physical,
+                Strength = 58f,
+                Endurance = 20f,
+                HeartBeat = 130,
+                BaseLuck = 5f,
+                CritMultiplier = 1.1f,
+                MaxHp = 1680,
+                BaseSpeed = 8
+            };
+            preset.placeholderColor = new Color(0.45f, 0.2f, 0.55f);
+            preset.skills = new[]
+            {
+                CreateGruntStrike("boss_despair_core", "Core Strike")
+            };
             return preset;
         }
 
