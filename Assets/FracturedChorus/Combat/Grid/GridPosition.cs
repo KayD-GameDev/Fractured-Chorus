@@ -18,7 +18,7 @@ namespace FracturedChorus.Combat.Grid
 
         public bool IsValid()
         {
-            return Row is >= 0 and <= 2 && Column is >= 0 and <= 2;
+            return Row >= 0 && Row < DualGrid.Rows && Column >= 0 && Column < DualGrid.Columns;
         }
 
         public override string ToString()

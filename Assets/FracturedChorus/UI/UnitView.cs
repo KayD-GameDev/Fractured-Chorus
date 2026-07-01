@@ -101,7 +101,7 @@ namespace FracturedChorus.UI
             return null;
         }
         public GridSide Side => side;
-        public bool IsPlacedOnGrid => HoneycombIndex.IsValidIndex(row) && HoneycombIndex.IsValidIndex(column);
+        public bool IsPlacedOnGrid => new GridPosition(side, row, column).IsValid();
         public GridPosition GridPosition => new GridPosition(side, row, column);
 
         public void SetGridCoordinates(int gridRow, int gridColumn)

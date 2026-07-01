@@ -7,7 +7,12 @@ namespace FracturedChorus.UI
     /// </summary>
     public static class PartyCardLayout
     {
-        public const float CardStepX = 100f;
+        /// <summary>Chiều rộng thẻ (px) — khớp CardTemplate trong scene.</summary>
+        public const float CardWidth = 115f;
+        /// <summary>Khoảng cách giữa 2 thẻ (px).</summary>
+        public const float CardGap = 2f;
+        /// <summary>Bước X giữa 2 thẻ liền kề = rộng thẻ + khoảng cách.</summary>
+        public const float CardStepX = CardWidth + CardGap;
         public const float BadgeSize = 22f;
         public const float BadgeIconInset = 4f;
         public const float BadgeAnchorX = -4f;

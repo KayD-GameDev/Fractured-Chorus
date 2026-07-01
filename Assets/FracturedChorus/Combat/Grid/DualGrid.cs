@@ -6,10 +6,10 @@ namespace FracturedChorus.Combat.Grid
 {
     public class DualGrid
     {
-        public const int Rows = 3;
+        public const int Rows = 2;
         public const int Columns = 3;
-        public const int MaxPlayerUnits = 5;
-        public const int MaxEnemyUnits = 9;
+        public const int MaxPlayerUnits = 4;
+        public const int MaxEnemyUnits = 6;
 
         private readonly Dictionary<GridPosition, GridCell> _cells = new();
         private readonly List<CombatUnit> _playerUnits = new();

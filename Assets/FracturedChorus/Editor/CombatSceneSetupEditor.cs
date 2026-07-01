@@ -1,4 +1,6 @@
 #if UNITY_EDITOR
+using System.Collections.Generic;
+using System.Linq;
 using FracturedChorus.Combat.Bootstrap;
 using FracturedChorus.Combat.Core;
 using FracturedChorus.Combat.Grid;
@@ -843,13 +845,45 @@ namespace FracturedChorus.Editor
             }
 
             var floorSprite = HexSpriteUtil.ResolveHexagonFlatTop();
+            var allMarkers = gridRoot.GetComponentsInChildren<GridCellMarker>(true);
 
-            foreach (var marker in gridRoot.GetComponentsInChildren<GridCellMarker>(true))
+            var deleted = 0;
+            foreach (var side in new[] { GridSide.Player, GridSide.Enemy })
             {
-                marker.SnapToLayoutPosition(SideGap);
-                marker.SetFloorSprite(floorSprite);
-                marker.RebuildVisuals();
-                EditorUtility.SetDirty(marker.gameObject);
+                // Nhóm ô theo hàng dựa trên Y hiện tại, sắp từ TRÊN xuống DƯỚI.
+                var rows = allMarkers
+                    .Where(m => m != null && m.Side == side)
+                    .GroupBy(m => Mathf.Round(m.transform.position.y * 4f) / 4f)
+                    .OrderByDescending(g => g.Key)
+                    .ToList();
+
+                for (var rowIndex = 0; rowIndex < rows.Count; rowIndex++)
+                {
+                    // Chỉ giữ DualGrid.Rows hàng trên cùng; hàng dưới cùng bị xoá khỏi scene.
+                    if (rowIndex >= DualGrid.Rows)
+                    {
+                        foreach (var marker in rows[rowIndex])
+                        {
+                            Undo.DestroyObjectImmediate(marker.gameObject);
+                            deleted++;
+                        }
+
+                        continue;
+                    }
+
+                    // Re-index hàng còn lại về 0-based (row 0 = trên) để khớp code lưới.
+                    foreach (var marker in rows[rowIndex])
+                    {
+                        Undo.RecordObject(marker.transform, "Rebuild Hex Board");
+                        Undo.RecordObject(marker, "Rebuild Hex Board");
+                        marker.gameObject.SetActive(true);
+                        marker.Configure(side, rowIndex, marker.Column);
+                        marker.SnapToLayoutPosition(SideGap);
+                        marker.SetFloorSprite(floorSprite);
+                        marker.RebuildVisuals();
+                        EditorUtility.SetDirty(marker.gameObject);
+                    }
+                }
             }
 
             foreach (var view in Object.FindObjectsByType<UnitView>(FindObjectsInactive.Include))
@@ -859,13 +893,18 @@ namespace FracturedChorus.Editor
                     view.PlaceOnGrid(pos);
                 }
 
+                if (!view.IsPlacedOnGrid)
+                {
+                    continue;
+                }
+
                 var world = HexBoardLayout.GetWorldPosition(view.GridPosition, SideGap);
                 view.transform.position = new Vector3(world.x, world.y, -0.05f);
                 EditorUtility.SetDirty(view.gameObject);
             }
 
             EditorSceneManager.MarkSceneDirty(gridRoot.scene);
-            Debug.Log("[Fractured Chorus] Hex board updated (Hexagon Flat Top 1.5×). Save scene. Xóa object mẫu 'Hexagon Flat Top' ở root nếu không cần.");
+            Debug.Log($"[Fractured Chorus] Hex board rebuilt 2×3. Đã xoá {deleted} ô hàng DƯỚI cùng, giữ 2 hàng trên (units + top), re-index về R0(top)/R1(units) + snap toạ độ đã lưu. Lưu scene.");
         }
 
         private static Sprite CreatePlaceholderSprite()

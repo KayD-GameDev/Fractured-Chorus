@@ -31,8 +31,6 @@ namespace FracturedChorus.Combat.Bootstrap
 
         [Header("Grid layout")]
         [SerializeField] private float sideGap = HexBoardLayout.DefaultSideGap;
-        [Tooltip("Giữ Transform/visual mọi object scene khi Play. Tắt chỉ khi cần snap lại lưới công thức.")]
-        [SerializeField] private bool respectSceneAuthoring = true;
 
         private CombatSession _session;
         private DualGrid _grid;
@@ -309,31 +307,17 @@ namespace FracturedChorus.Combat.Bootstrap
                 return;
             }
 
-            if (respectSceneAuthoring)
-            {
-                WireSceneGrid();
-                return;
-            }
-
-            var floorSprite = HexSpriteUtil.ResolveHexagonFlatTop();
+            // Scene là nguồn chuẩn của layout (đã dựng 2×3 qua menu "Rebuild Hex Board Grid").
+            // Runtime chỉ chuẩn bị visual/collider; ẩn an toàn ô ngoài phạm vi nếu còn sót.
             foreach (var marker in gridRoot.GetComponentsInChildren<GridCellMarker>(true))
             {
-                marker.SnapToLayoutPosition(sideGap);
-
-                if (floorSprite != null && marker.transform.Find("Hexagon Flat Top") == null)
+                if (!marker.Position.IsValid())
                 {
-                    marker.SetFloorSprite(floorSprite);
+                    marker.gameObject.SetActive(false);
+                    continue;
                 }
 
                 marker.PrepareForPlay();
-            }
-        }
-
-        private void WireSceneGrid()
-        {
-            foreach (var marker in gridRoot.GetComponentsInChildren<GridCellMarker>(true))
-            {
-                marker.HideLegacyMeshOnly();
             }
         }
 
@@ -364,11 +348,6 @@ namespace FracturedChorus.Combat.Bootstrap
 
                 view.PlaceOnGrid(pos);
                 view.Bind(unit);
-
-                if (!respectSceneAuthoring)
-                {
-                    SyncUnitTransformFromSceneOrCell(view);
-                }
             }
         }
 
@@ -425,22 +404,6 @@ namespace FracturedChorus.Combat.Bootstrap
             return true;
         }
 
-        private void SyncUnitTransformFromSceneOrCell(UnitView view)
-        {
-            if (view == null)
-            {
-                return;
-            }
-
-            if (TryFindCellFromWorldPosition(view.FeetWorldPosition, view.Side, out var sceneCell)
-                && sceneCell.Equals(view.GridPosition))
-            {
-                return;
-            }
-
-            AlignUnitViewToGridCell(view);
-        }
-
         private void CacheGridCellTransforms()
         {
             _cellByPosition = new Dictionary<GridPosition, Transform>();
@@ -453,29 +416,6 @@ namespace FracturedChorus.Combat.Bootstrap
             {
                 _cellByPosition[marker.Position] = marker.transform;
             }
-        }
-
-        private void AlignUnitViewToGridCell(UnitView view)
-        {
-            if (view == null)
-            {
-                return;
-            }
-
-            var gridPos = view.GridPosition;
-            Vector3 worldPos;
-
-            if (_cellByPosition != null && _cellByPosition.TryGetValue(gridPos, out var cellTransform))
-            {
-                worldPos = cellTransform.position;
-            }
-            else
-            {
-                worldPos = HexBoardLayout.GetWorldPosition(gridPos, sideGap);
-            }
-
-            var depth = gridPos.Row * 0.1f + gridPos.Column * 0.05f;
-            view.SnapFeetTo(new Vector3(worldPos.x, worldPos.y, 0f), -0.05f + depth);
         }
 
         private void SpawnUnitsFromEncounter(EncounterDefinitionSO encounter)

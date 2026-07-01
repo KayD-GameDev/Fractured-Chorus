@@ -12,8 +12,9 @@ namespace FracturedChorus.Editor
         public const float SlotWidth = 52f;
         public const float SlotHeight = 64f;
 
-        public const float PartyCardWidth = 72f;
-        public const float PartyCardHeight = 96f;
+        public const float PartyCardWidth = 115f;
+        public const float PartyCardHeight = 167f;
+        public const float PartyBarWidth = 713f;
 
         public static BeatTimelineUIView BuildTimeline(Transform canvasTransform)
         {
@@ -58,7 +59,7 @@ namespace FracturedChorus.Editor
             barRect.anchorMax = new Vector2(0f, 1f);
             barRect.pivot = new Vector2(0f, 1f);
             barRect.anchoredPosition = new Vector2(12f, -12f);
-            barRect.sizeDelta = new Vector2(400f, PartyCardHeight);
+            barRect.sizeDelta = new Vector2(PartyBarWidth, PartyCardHeight);
 
             var cardsRowGo = CreateUiObject("CardsRow", barGo.transform);
             var cardsRowRect = cardsRowGo.GetComponent<RectTransform>();

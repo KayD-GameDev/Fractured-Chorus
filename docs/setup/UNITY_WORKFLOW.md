@@ -66,8 +66,8 @@ Nếu chưa có asset: `CombatPrototypeBootstrap` tạo **demo encounter runtime
 
 | Hạng mục | Giá trị |
 |----------|---------|
-| Player grid | 3×3 honeycomb, **max 5** units |
-| Enemy grid | 3×3 mirror, **max 9** units |
+| Player grid | **2×3** honeycomb (2 hàng × 3 cột), **max 4** units |
+| Enemy grid | **2×3** mirror, **max 6** units |
 | Timeline | **105 beats / 10 phases** (phase 1 = 15 ô, sau = 10 ô/phase) |
 | **Planning flow** | (1) **EXECUTE** overlay — kéo formation / **swap** ally; (2) sau EXECUTE — click unit → skill panel |
 | UI MVP | Carousel timeline + skill panel + EXECUTE + **party status bar** (góc trái trên) |
@@ -147,7 +147,7 @@ CombatCanvas/PartyStatusBarUI     ← PartyStatusBarUIView (preserveSceneLayout)
 | UC-04 Execute Skill | EXECUTE → scan resolve; skill assign at beat |
 | FR-02 Beat Timeline | 105-beat engine + carousel UI + EXECUTE gate |
 | FR-07 Damage | `UnitStatBlockSO` + `DamageCalculator` (Harmony, crit) |
-| FR-03 Dual Grid | Honeycomb 3×3 + front-column targeting |
+| FR-03 Dual Grid | Honeycomb **2×3** + front-column targeting |
 
 Deferred: UC-05 Interrupt, Morale/Affliction, Posture/Clash, UC-09 Boss.
 

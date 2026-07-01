@@ -9,6 +9,28 @@ Newest first.
 
 ---
 
+## 2026-07-01 — Combat: grid 2×3, party 4, party bar resize, fix kéo tank
+
+**Focus:** code (Unity)
+
+**Owner:** Khoa
+
+**Done**
+- **Grid 2 hàng × 3 cột:** `DualGrid.Rows = 2` (cột giữ 3), bỏ hàng dưới cũ. `GridPosition.IsValid` theo `DualGrid.Rows/Columns`; `UnitView.IsPlacedOnGrid` dùng `GridPosition.IsValid`. `HexBoardLayout` còn 2 hàng (hàng đơn vị index 1 giữ y=0, hàng còn lại phía trên). **Scene = nguồn chuẩn:** xoá hẳn ô hàng dưới cũ + đặt lại vị trí ô/unit ngay trong scene qua menu **Rebuild Hex Board Grid (scene)** (`Undo.DestroyObjectImmediate` ô ngoài phạm vi). Bootstrap chỉ `PrepareForPlay` ô hợp lệ, không snap/không ghi đè Transform (ẩn an toàn nếu còn sót ô thừa).
+- **Party tối đa 4:** `DualGrid.MaxPlayerUnits = 4`, `MaxEnemyUnits = 6`, `PartyStatusBarUIView.MaxPartyCards = 4`.
+- **Party status bar 713×167, thẻ 115×167, khoảng cách 2.0px:** `PartyCardLayout.CardWidth=115`, `CardGap=2`, `CardStepX=117`; scene `PartyStatusBarUI`/`CardTemplate` sizeDelta + LayoutElement; `cardSpacing=2`. Editor `TimelineHierarchyBuilder` cập nhật hằng số. *(2026-07-01: gap 0.75→1.5→2.0)*
+- **Toạ độ board cố định:** quét scene → chốt toạ độ 12 ô (world + local) trong `docs/combat/BOARD_GRID_LAYOUT.md`; scene khớp 100% `HexBoardLayout` ⇒ không trôi sau mỗi lần gen.
+- **Menu Rebuild Hex Board đổi hành vi:** nhóm ô theo Y, **giữ 2 hàng trên (top+units), xoá hàng dưới cùng**, re-index về R0(top)/R1(units) + snap toạ độ đã lưu + SetActive ô giữ lại. *(2026-07-01: theo yêu cầu xoá R0 dưới, hiện R2 top)*
+- **Fix kéo tank (Charlotte):** sprite lớn nhưng BoxCollider2D thân hẹp → bấm dễ trượt. `BoardDragController.PickUnitAtScreen` thêm fallback `PickNearestUnit` (chọn unit gần con trỏ nhất trong `cellPickRadius` khi OverlapPoint trượt).
+
+**Decisions**
+- **Sửa trong scene, không phải runtime:** ô hàng dưới bị xoá hẳn khỏi scene (không `SetActive(false)` lúc Play). Menu **Rebuild Hex Board Grid (scene)** dọn ô thừa + snap ô/unit về margin 2×3, sau đó lưu scene. Play tôn trọng layout scene.
+- Idle clip của tank chỉ key `m_Sprite` (không key vị trí) → Animator không phải nguyên nhân lỗi kéo.
+
+**Refs:** `Combat/Grid/DualGrid.cs`, `GridPosition.cs`, `HexBoardLayout.cs`, `Combat/Bootstrap/CombatPrototypeBootstrap.cs`, `UI/UnitView.cs`, `BoardDragController.cs`, `PartyCardLayout.cs`, `PartyStatusBarUIView.cs`, `Editor/TimelineHierarchyBuilder.cs`, `Scenes/CombatPrototype.unity`
+
+---
+
 ## 2026-06-29 — Combat: skill panel radial, thẻ quái, guard Spacebar
 
 **Focus:** code (Unity)

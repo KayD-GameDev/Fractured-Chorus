@@ -1,6 +1,6 @@
 # Fractured Chorus — Trạng thái dự án
 
-**Cập nhật:** 2026-06-29 (Combat: skill panel radial, thẻ quái, guard Spacebar)  
+**Cập nhật:** 2026-07-01 (Combat: grid 2×3, party 4, party bar 713×167, fix kéo tank)  
 **Repo:** `C:\Users\admin\Projects\fractured-chorus` (docs mirror)  
 **Unity:** `F:\Unity_Project\Fractured Chorus` · scenes `CombatPrototype.unity` · `RunMapPrototype.unity` · GitHub remote **Fractured-Chorus1**  
 **Log:** [`PROJECT_LOG.md`](PROJECT_LOG.md) · [`LOGGING.md`](LOGGING.md)
@@ -64,7 +64,7 @@ Preset SO vẫn `UnitPreset_Mage|Ren|Tank` — xem `Art/Characters/README.md`.
 
 | Module | Trạng thái |
 |--------|------------|
-| Dual Grid 3×3 honeycomb, margin `Board-margin.drawio` | ✅ MVP |
+| Dual Grid **2×3** honeycomb (2 hàng × 3 cột), margin `Board-margin.drawio` | ✅ MVP |
 | **EXECUTE** overlay — khóa UI/timeline trước khi bắt đầu round | ✅ |
 | Pre-EXECUTE **drag formation** · post-EXECUTE **click → skill panel** | ✅ |
 | `UnitStatBlockSO` + Resources presets (Ren/Tank/Mage/Grunt) | ✅ |

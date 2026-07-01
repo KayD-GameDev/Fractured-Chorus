@@ -15,8 +15,8 @@ namespace FracturedChorus.UI
     /// </summary>
     public class PartyStatusBarUIView : MonoBehaviour
     {
-        public const int MaxPartyCards = 5;
-        public const float DefaultCardSpacing = PartyCardLayout.CardStepX;
+        public const int MaxPartyCards = 4;
+        public const float DefaultCardSpacing = PartyCardLayout.CardGap;
 
         [SerializeField] private RectTransform cardsRow;
         [SerializeField] private PartyMemberCardView cardTemplate;
@@ -63,9 +63,12 @@ namespace FracturedChorus.UI
             }
 
             if (Mathf.Approximately(cardSpacing, 1f) || Mathf.Approximately(cardSpacing, 1.25f) ||
-                Mathf.Approximately(cardSpacing, 85f) || Mathf.Approximately(cardSpacing, 95f))
+                Mathf.Approximately(cardSpacing, 0.75f) || Mathf.Approximately(cardSpacing, 1.5f) ||
+                Mathf.Approximately(cardSpacing, 85f) || Mathf.Approximately(cardSpacing, 95f) ||
+                Mathf.Approximately(cardSpacing, 100f) || Mathf.Approximately(cardSpacing, 115.75f) ||
+                Mathf.Approximately(cardSpacing, 116.5f) || Mathf.Approximately(cardSpacing, 117f))
             {
-                cardSpacing = PartyCardLayout.CardStepX;
+                cardSpacing = PartyCardLayout.CardGap;
             }
 
             ApplyCardSpacing();
@@ -280,7 +283,7 @@ namespace FracturedChorus.UI
                 }
             }
 
-            return new Vector2(80f, 115f);
+            return new Vector2(PartyCardLayout.CardWidth, 167f);
         }
 
         private void SpawnCard(CombatUnit unit, UnitPresetSO preset)
@@ -303,7 +306,7 @@ namespace FracturedChorus.UI
 
             if (size.x <= 0f || size.y <= 0f)
             {
-                size = new Vector2(80f, 115f);
+                size = new Vector2(PartyCardLayout.CardWidth, 167f);
             }
 
             rect.anchorMin = new Vector2(0f, 1f);

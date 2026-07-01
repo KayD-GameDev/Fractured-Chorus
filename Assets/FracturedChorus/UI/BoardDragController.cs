@@ -318,6 +318,49 @@ namespace FracturedChorus.UI
                 best = view;
             }
 
+            if (best != null)
+            {
+                return best;
+            }
+
+            // Fallback: sprite lớn nhưng collider thân hẹp (vd Charlotte/tank) dễ bấm trượt.
+            // Chọn unit gần con trỏ nhất trong bán kính nhỏ để vẫn kéo được.
+            return PickNearestUnit(new Vector2(world.x, world.y));
+        }
+
+        private UnitView PickNearestUnit(Vector2 point)
+        {
+            UnitView best = null;
+            var bestDist = cellPickRadius;
+
+            foreach (var view in UnityEngine.Object.FindObjectsByType<UnitView>(FindObjectsInactive.Exclude))
+            {
+                if (view == null || view.Unit == null || !view.Unit.IsAlive)
+                {
+                    continue;
+                }
+
+                var collider = view.GetComponent<Collider2D>();
+                float dist;
+                if (collider != null)
+                {
+                    var closest = collider.ClosestPoint(point);
+                    dist = Vector2.Distance(point, closest);
+                }
+                else
+                {
+                    dist = Vector2.Distance(point, new Vector2(view.transform.position.x, view.transform.position.y));
+                }
+
+                if (dist > bestDist)
+                {
+                    continue;
+                }
+
+                bestDist = dist;
+                best = view;
+            }
+
             return best;
         }
 
