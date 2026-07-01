@@ -2837,7 +2837,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.102, g: 0.102, b: 0.18, a: 1}
+  m_Color: {r: 0.00000009131881, g: 0, b: 0.7660377, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -3138,10 +3138,10 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
-    m_FontSize: 18
+    m_FontSize: 25
     m_FontStyle: 0
     m_BestFit: 0
-    m_MinSize: 10
+    m_MinSize: 2
     m_MaxSize: 40
     m_Alignment: 0
     m_AlignByGeometry: 0
@@ -3149,8 +3149,8 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "Scroll map \xB7 click node F1 \u2192 \u0111i theo path \xB7 \u0111\u01B0\u1EDDng
-    cam = path \u0111\xE3 ch\u1ECDn\nRef: StS 7\xD715 + boss \xB7 docs/diagrams"
+  m_Text: "Scroll map \n\xB7 click node F1 \u2192 \u0111i theo path \n\xB7 \u0111\u01B0\u1EDDng
+    cam = path \u0111\xE3 ch\u1ECDn"
 --- !u!222 &2015868401
 CanvasRenderer:
   m_ObjectHideFlags: 0
