@@ -1,0 +1,38 @@
+---
+description: Luôn điền Summary khi git commit
+alwaysApply: true
+---
+
+# Git commit — Summary bắt buộc
+
+Khi user yêu cầu commit, message **phải có Summary** (dòng subject đầu tiên):
+
+```
+Summary một dòng — why, không what liệt kê file
+
+Body tùy chọn — bullet ngắn nếu commit nhiều mục.
+```
+
+## Summary
+
+- 1 câu, ≤72 ký tự, focus **why**
+- Imperative mood (Add, Update, Fix, Sync…)
+- Không để trống, không chỉ ghi "update" / "fix"
+
+## Body (khi cần)
+
+- Bullet các thay đổi chính
+- Tách Summary và Body bằng 1 dòng trống
+
+## Ví dụ
+
+```
+Sync combat docs with Planning/Execute mechanics.
+
+- Add SKILL_KIT.md and Lv15 stat tables
+- Regenerate CHARACTER_LEVEL_PROGRESS
+```
+
+## HEREDOC
+
+Luôn truyền đủ Summary + body qua HEREDOC; dòng đầu = Summary.
