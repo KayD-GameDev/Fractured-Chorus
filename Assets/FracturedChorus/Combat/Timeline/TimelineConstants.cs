@@ -2,10 +2,13 @@ namespace FracturedChorus.Combat.Timeline
 {
     public static class TimelineConstants
     {
-        public const int PhaseCount = 30;
         public const int Phase1SlotCount = 16;
         public const int LaterPhaseSlotCount = 16;
-        public const int TotalBeats = Phase1SlotCount + (PhaseCount - 1) * LaterPhaseSlotCount;
+
+        /// <summary>Eternal Spark beat map: 618 CSV markers + t=0 pad (MusicBeatMapSO.ParseCsvTimes).</summary>
+        public const int TotalBeats = 619;
+
+        public const int PhaseCount = 39;
 
         /// <summary>Fallback when UI has not reported visible slot count yet.</summary>
         public const int DefaultVisibleBeatHint = 20;
@@ -49,6 +52,10 @@ namespace FracturedChorus.Combat.Timeline
 
             startBeat = Phase1SlotCount + (phaseIndex - 1) * LaterPhaseSlotCount;
             count = LaterPhaseSlotCount;
+            if (startBeat + count > TotalBeats)
+            {
+                count = System.Math.Max(0, TotalBeats - startBeat);
+            }
         }
 
         /// <summary>First beat of each phase: 0, 15, 25, 35, …</summary>

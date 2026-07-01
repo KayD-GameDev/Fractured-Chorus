@@ -144,7 +144,7 @@ BeatTimelineUI
 
 ### Phase divider
 
-Vạch trắng **PhaseDivider** trên từng ô sau beat 15, 31, 47… (mỗi **16 beat** một phase). Hiện cấu hình **30 phase × 16 = 480 beat** (`TimelineConstants.PhaseCount` / `TotalBeats`). Trôi qua vạch quét cùng content — không cần setup thêm.
+Vạch trắng **PhaseDivider** trên từng ô sau beat 15, 31, 47… (mỗi **16 beat** một phase). **`TimelineConstants.TotalBeats = 619`** — khớp `MusicBeatMapSO` Eternal Spark (618 CSV marker + pad t=0). **39 phase** (phase cuối 11 beat).
 
 ---
 
@@ -197,7 +197,7 @@ Menu **Fractured Chorus → Setup Combat Scene Hierarchy** → chọn **Tạo l�
 | 2026-06-26 | **Party status bar:** clone từ `CardTemplate` (max 5); spacing 1px; thứ tự Mage→Ren→Tank; badge hệ tròn (bỏ `RoleBadge`); swap formation refresh bar; menu Find/Remove Missing Scripts. |
 | 2026-06-25 | **Độ rộng ô theo giây**: `width = span × pixelsPerSecond` (data-driven từ `MusicBeatMapSO`); scroll lái bằng musical beat → px/giây không đổi (mượt, khớp nhạc). Render-all `TotalBeats` ô + `RectMask2D`; `childControlWidth = true`. |
 | 2026-06-25 | **Hiệu ứng quét nâng cấp** (mọi nốt): rìa → tâm chớp (`SmoothStep`) → tắt dần theo thời gian; làm mượt cả fade-in/out (`scanFadeInDuration` / `scanFadeOutDuration`). Bỏ `scanAlignThreshold`. |
-| 2026-06-25 | **30 phase** (`PhaseCount = 30`, `TotalBeats = 480`) để chạy hết bài không gián đoạn. Charlotte (Tank) máu = 3000 để test (`StatBlock_Tank` + `UnitStats.CreateTankPreset`). |
+| 2026-06-25 | **39 phase** · `TotalBeats = 619` (Eternal Spark beat map) — chạy hết bài không cắt sớm @ 480. |
 | 2026-06-25 | **Scene-first:** `respectSceneAuthoring`, `preserveSceneCollider`; `UnitFeetAnchor` (Transform only); input `Physics2DRaycaster`. Drag pre-EXECUTE / click post-EXECUTE qua `BoardDragController`. Import sprite Ren/Tank/Mage. |
 | 2026-06-24 | **EXECUTE** overlay — khóa timeline/skill trước round; `AllowPlayerReposition` gate. Stat blocks + Resources presets. UI skill rename Skill 1/2. |
 | 2026-06-23 | Skill panel mở: `SetSkillPanelOpen` → scroll 0.25× + `CombatMusicController` pitch 0.25× (music sync). |
