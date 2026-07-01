@@ -5,6 +5,7 @@ namespace FracturedChorus.Combat.Units
         Tank,
         Dps,
         Mage,
-        Grunt
+        Grunt,
+        Boss
     }
 }

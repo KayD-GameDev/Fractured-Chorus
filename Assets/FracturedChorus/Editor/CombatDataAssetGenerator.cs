@@ -41,9 +41,76 @@ namespace FracturedChorus.Editor
             CreatePreset("UnitPreset_Grunt", "grunt", "Grunt", UnitRole.Grunt, gruntBlock,
                 new[] { gruntStrike }, new Color(0.85f, 0.25f, 0.2f));
 
+            CreateBossDespairAssets();
+
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log("[Fractured Chorus] Stat blocks + presets in Resources/StatBlocks and Resources/UnitPresets.");
+        }
+
+        [MenuItem("Fractured Chorus/Create Boss — Knight of Despair Assets")]
+        public static void CreateBossDespairAssetsMenu()
+        {
+            CreateBossDespairAssets();
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log("[Fractured Chorus] Boss assets: StatBlock_Boss_Despair, UnitPreset_Boss_Despair, boss_despair_core.");
+        }
+
+        public static void CreateBossDespairAssets()
+        {
+            EnsureFolder(StatBlockFolder);
+            EnsureFolder(PresetFolder);
+            EnsureFolder(SkillFolder);
+
+            var bossBlock = CreateStatBlock(
+                "StatBlock_Boss_Despair",
+                HarmonyElement.Rhythm,
+                DamageType.Physical,
+                58f,
+                20f,
+                130,
+                5f,
+                1.1f,
+                1680,
+                8);
+
+            var coreStrike = CreateSkillAsset(
+                "boss_despair_core",
+                "Core Strike",
+                SkillSlotKind.BasicAttack,
+                1,
+                ActionGlowType.Attack,
+                0);
+
+            var battleSprite = LoadKnightOfDespairSprite();
+            var preset = CreatePreset(
+                "UnitPreset_Boss_Despair",
+                "boss_despair",
+                "Knight of Despair",
+                UnitRole.Boss,
+                bossBlock,
+                new[] { coreStrike },
+                new Color(0.45f, 0.2f, 0.55f));
+            preset.battleSprite = battleSprite;
+            preset.portraitSprite = battleSprite;
+            EditorUtility.SetDirty(preset);
+        }
+
+        private static Sprite LoadKnightOfDespairSprite()
+        {
+            const string path = "Assets/FracturedChorus/Art/Characters/The_Knight_of_Despair_Idle_Sprite.png";
+            var assets = AssetDatabase.LoadAllAssetsAtPath(path);
+            foreach (var asset in assets)
+            {
+                if (asset is Sprite sprite)
+                {
+                    return sprite;
+                }
+            }
+
+            Debug.LogWarning($"[Fractured Chorus] Knight sprite not found at {path}");
+            return null;
         }
 
         private static void EnsureFolder(string path)
