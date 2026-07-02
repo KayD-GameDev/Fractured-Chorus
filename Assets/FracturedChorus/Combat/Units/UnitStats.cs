@@ -61,18 +61,19 @@ namespace FracturedChorus.Combat.Units
             return block != null ? block.ToRuntimeStats() : new UnitStats();
         }
 
+        // Baseline = Lv15 optimal build (xem docs/combat/CHARACTER_LEVEL_PROGRESS.md).
         public static UnitStats CreateRenPreset()
         {
             return new UnitStats
             {
                 Element = HarmonyElement.Melody,
                 StrengthType = DamageType.Physical,
-                Strength = 100f,
-                Endurance = 10f,
-                HeartBeat = 160,
-                BaseLuck = 15f,
-                CritMultiplier = 1.2f,
-                MaxHp = 80,
+                Strength = 42f,
+                Endurance = 10.8f,
+                HeartBeat = 167,
+                BaseLuck = 18f,
+                CritMultiplier = 1.35f,
+                MaxHp = 114,
                 BaseSpeed = 12
             };
         }
@@ -83,12 +84,12 @@ namespace FracturedChorus.Combat.Units
             {
                 Element = HarmonyElement.Rhythm,
                 StrengthType = DamageType.Physical,
-                Strength = 80f,
-                Endurance = 15f,
-                HeartBeat = 140,
-                BaseLuck = 10f,
-                CritMultiplier = 1.1f,
-                MaxHp = 3000,
+                Strength = 35f,
+                Endurance = 18.2f,
+                HeartBeat = 127,
+                BaseLuck = 8f,
+                CritMultiplier = 1.15f,
+                MaxHp = 260,
                 BaseSpeed = 8
             };
         }
@@ -99,12 +100,12 @@ namespace FracturedChorus.Combat.Units
             {
                 Element = HarmonyElement.Harmony,
                 StrengthType = DamageType.Magical,
-                Strength = 100f,
-                Endurance = 8f,
-                HeartBeat = 150,
-                BaseLuck = 12f,
-                CritMultiplier = 1.25f,
-                MaxHp = 70,
+                Strength = 50f,
+                Endurance = 9.8f,
+                HeartBeat = 147,
+                BaseLuck = 16f,
+                CritMultiplier = 1.3f,
+                MaxHp = 73,
                 BaseSpeed = 10
             };
         }

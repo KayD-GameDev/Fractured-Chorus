@@ -29,18 +29,26 @@ Intro 3s
 
 ## 2. Timeline UI
 
-### Layout
+### Layout (character lanes)
 
-| Row | Nội dung |
+Timeline giữ **một hàng cột beat duy nhất**. Trên đó overlay **N dòng kẻ (lane) ngang** — mỗi lane cho **một thành viên party còn sống** (lấy từ `Grid.PlayerUnits`, tối đa 4). Lane 0 ở trên cùng, cách đều theo chiều cao viewport, tô màu + nhãn theo `PlaceholderColor`/`DisplayName` của unit.
+
+| Lớp | Nội dung |
 |-----|----------|
-| 1 | Ren |
-| 2 | Charlotte |
-| 3 | Coda |
-| 4 (chung) | Boss notes — tag nguồn: **CORE** · **MICRO** · **EYE** |
+| Cột beat (chung) | Boss telegraph notes — tag nguồn: **CORE** · **MICRO** · **EYE** |
+| Lane 0..N-1 | 1 dòng kẻ / party member; skill của unit hiển thị bằng **marker** đặt tại `(beat x, lane y)` |
 
-- **Cùng beat, khác row** → hợp lệ (chồng counter multi-hit)
-- **Cùng row** → skill mới bắt đầu sau S2 skill trước; S1 không được nằm trong vùng S2 cũ
-- Nốt **CORE** vs **MICRO** / **EYE** dùng chung row 4 nhưng **icon + viền màu** khác nhau (xem §5–§6)
+- **Player action** không còn vẽ trong ô beat nữa → render thành **`TimelineLaneMarkerView`** trên lane của unit (chip tròn: nền = màu unit, viền glow theo `ActionGlowType`, nhãn tên skill). Marker mới có animation "bay vào lane" (scale + trượt lên ~0.18s).
+- **Boss notes** vẫn nằm trên hàng beat chung như cũ (không có lane riêng).
+- **Cùng beat, khác lane** → hợp lệ (nhiều unit hành động cùng beat).
+- Nốt **CORE** vs **MICRO** / **EYE** dùng chung hàng beat nhưng **icon + viền màu** khác nhau (xem §5–§6).
+
+### Đặt skill — 2 cách (cả hai đều dùng)
+
+1. **Kéo-thả tay:** kéo skill từ ô radial (`SkillRadialSlotView` → `IBeginDrag/IDrag/IEndDrag`) → ghost bám con trỏ + preview marker mờ trên lane; thả trúng một beat trên timeline → gán skill cho unit hiện tại tại beat đó (`CombatController.AssignSkillAtScreenPoint` → `BeatTimelineUIView.TryGetBeatAtScreenPoint` → `TryAssignPlayerAction`).
+2. **Bấm phím / click (W·A·D):** arm skill như cũ; khi scan bar chạm beat hiện tại thì auto-gán, marker animate vào lane.
+
+Lane số lượng đồng bộ động theo party sống (rebuild khi có unit chết/đổi đội hình); marker chỉ animate cho entry mới, refresh/scroll không animate lại.
 
 ### Impact Line (thanh đỏ)
 

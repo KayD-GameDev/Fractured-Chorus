@@ -21,9 +21,10 @@ namespace FracturedChorus.Editor
             EnsureFolder(PresetFolder);
             EnsureFolder(SkillFolder);
 
-            var renBlock = CreateStatBlock("StatBlock_Ren", HarmonyElement.Melody, DamageType.Physical, 100, 10, 160, 15, 1.2f, 80, 12);
-            var tankBlock = CreateStatBlock("StatBlock_Tank", HarmonyElement.Rhythm, DamageType.Physical, 80, 15, 140, 10, 1.1f, 120, 8);
-            var mageBlock = CreateStatBlock("StatBlock_Mage", HarmonyElement.Harmony, DamageType.Magical, 100, 8, 150, 12, 1.25f, 70, 10);
+            // Baseline = Lv15 optimal build (xem docs/combat/CHARACTER_LEVEL_PROGRESS.md).
+            var renBlock = CreateStatBlock("StatBlock_Ren", HarmonyElement.Melody, DamageType.Physical, 42, 10.8f, 167, 18, 1.35f, 114, 12);
+            var tankBlock = CreateStatBlock("StatBlock_Tank", HarmonyElement.Rhythm, DamageType.Physical, 35, 18.2f, 127, 8, 1.15f, 260, 8);
+            var mageBlock = CreateStatBlock("StatBlock_Mage", HarmonyElement.Harmony, DamageType.Magical, 50, 9.8f, 147, 16, 1.3f, 73, 10);
             var gruntBlock = CreateStatBlock("StatBlock_Grunt", HarmonyElement.Rhythm, DamageType.Physical, 60, 8, 120, 5, 1.1f, 150, 9);
 
             var renSkills = CreateStandardSkills("ren", "Strike", "Riposte", "Finale", "Guard");

@@ -16,10 +16,10 @@ MonoBehaviour:
   element: 1
   elementBadgeIcon: {fileID: 21300000, guid: 6abecfe215a87ed41972a95d31b6adc1, type: 3}
   strengthType: 0
-  strength: 100
-  endurance: 10
-  heartBeat: 160
-  baseLuck: 15
-  critMultiplier: 1.2
-  maxHp: 80
+  strength: 42
+  endurance: 10.8
+  heartBeat: 167
+  baseLuck: 18
+  critMultiplier: 1.35
+  maxHp: 114
   baseSpeed: 12
