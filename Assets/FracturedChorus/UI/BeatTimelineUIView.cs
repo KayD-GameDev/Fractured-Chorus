@@ -2,8 +2,10 @@ using FracturedChorus.Audio;
 using FracturedChorus.Combat.Core;
 using FracturedChorus.Combat.Grid;
 using FracturedChorus.Combat.Timeline;
+using FracturedChorus.Combat.Units;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -22,6 +24,7 @@ namespace FracturedChorus.UI
         [SerializeField] private Text avLabel;
         [SerializeField] private float slotWidth = 52f;
         [SerializeField] private float minSlotWidth = 14f;
+        [SerializeField] private float laneMarkerSize = 26f;
         [SerializeField] private bool autoPlayOnStart;
         [SerializeField] private float autoBeatInterval = 0.405405f;
         [SerializeField] private bool useMusicSync = true;
@@ -51,6 +54,14 @@ namespace FracturedChorus.UI
         private bool _isPlaybackActive;
         private int _lastHighlightedSlotIndex = -1;
         private float _roundStartMusicalBeat;
+
+        private RectTransform _laneLinesLayer;
+        private RectTransform _laneMarkersLayer;
+        private readonly List<CombatUnit> _laneUnits = new();
+        private readonly Dictionary<CombatUnit, int> _laneIndex = new();
+        private readonly List<RectTransform> _laneLines = new();
+        private readonly Dictionary<(CombatUnit unit, int beat), TimelineLaneMarkerView> _laneMarkers = new();
+        private TimelineLaneMarkerView _dropGhost;
 
         private static int TotalBeats => TimelineConstants.TotalBeats;
 
@@ -204,6 +215,7 @@ namespace FracturedChorus.UI
                 _session.OnEncounterEnded += HandleEncounterEnded;
             }
 
+            BuildLanes();
             PopulateAllSlots();
             RefreshPhaseHeader(0);
             RefreshPhaseAvLabel();
@@ -451,6 +463,7 @@ namespace FracturedChorus.UI
                 scanBar.anchoredPosition = new Vector2(scanX, 0f);
             }
 
+            SyncLaneMarkersScroll();
             UpdateScanHighlights();
         }
 
@@ -514,6 +527,378 @@ namespace FracturedChorus.UI
             }
 
             return lo;
+        }
+
+        // ---------------------------------------------------------------------
+        // Character lanes (dòng kẻ cho từng nhân vật) + skill markers
+        // ---------------------------------------------------------------------
+
+        private void EnsureLaneLayers()
+        {
+            if (viewport == null)
+            {
+                return;
+            }
+
+            if (_laneLinesLayer == null)
+            {
+                var go = new GameObject("LaneLines", typeof(RectTransform));
+                _laneLinesLayer = go.GetComponent<RectTransform>();
+                _laneLinesLayer.SetParent(viewport, false);
+                _laneLinesLayer.anchorMin = Vector2.zero;
+                _laneLinesLayer.anchorMax = Vector2.one;
+                _laneLinesLayer.offsetMin = Vector2.zero;
+                _laneLinesLayer.offsetMax = Vector2.zero;
+            }
+
+            if (_laneMarkersLayer == null)
+            {
+                var go = new GameObject("LaneMarkers", typeof(RectTransform));
+                _laneMarkersLayer = go.GetComponent<RectTransform>();
+                _laneMarkersLayer.SetParent(viewport, false);
+                _laneMarkersLayer.anchorMin = new Vector2(0f, 0f);
+                _laneMarkersLayer.anchorMax = new Vector2(0f, 1f);
+                _laneMarkersLayer.pivot = new Vector2(0f, 0.5f);
+                _laneMarkersLayer.offsetMin = Vector2.zero;
+                _laneMarkersLayer.offsetMax = Vector2.zero;
+            }
+
+            _laneMarkersLayer.SetAsLastSibling();
+            _laneMarkersLayer.sizeDelta = new Vector2(_contentWidthPx, 0f);
+        }
+
+        private void BuildLanes()
+        {
+            EnsureLaneLayers();
+
+            foreach (var line in _laneLines)
+            {
+                if (line != null)
+                {
+                    Destroy(line.gameObject);
+                }
+            }
+
+            _laneLines.Clear();
+            _laneUnits.Clear();
+            _laneIndex.Clear();
+
+            ClearLaneMarkers();
+
+            if (_session == null || _session.Grid == null || _laneLinesLayer == null)
+            {
+                return;
+            }
+
+            foreach (var unit in _session.Grid.PlayerUnits)
+            {
+                if (unit == null || !unit.IsAlive)
+                {
+                    continue;
+                }
+
+                _laneIndex[unit] = _laneUnits.Count;
+                _laneUnits.Add(unit);
+            }
+
+            var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            for (var i = 0; i < _laneUnits.Count; i++)
+            {
+                var unit = _laneUnits[i];
+
+                var lineGo = new GameObject($"Lane_{i}", typeof(RectTransform));
+                var lineRect = lineGo.GetComponent<RectTransform>();
+                lineRect.SetParent(_laneLinesLayer, false);
+                lineRect.anchorMin = new Vector2(0f, 0f);
+                lineRect.anchorMax = new Vector2(1f, 0f);
+                lineRect.pivot = new Vector2(0.5f, 0.5f);
+                lineRect.sizeDelta = new Vector2(0f, 2f);
+                var lineImage = lineGo.AddComponent<Image>();
+                var tint = unit.PlaceholderColor;
+                lineImage.color = new Color(tint.r, tint.g, tint.b, 0.35f);
+                lineImage.raycastTarget = false;
+
+                var labelGo = new GameObject("Label", typeof(RectTransform));
+                var labelRect = labelGo.GetComponent<RectTransform>();
+                labelRect.SetParent(lineRect, false);
+                labelRect.anchorMin = new Vector2(0f, 0.5f);
+                labelRect.anchorMax = new Vector2(0f, 0.5f);
+                labelRect.pivot = new Vector2(0f, 0.5f);
+                labelRect.anchoredPosition = new Vector2(4f, 8f);
+                labelRect.sizeDelta = new Vector2(90f, 14f);
+                var label = labelGo.AddComponent<Text>();
+                label.font = font;
+                label.fontSize = 10;
+                label.alignment = TextAnchor.MiddleLeft;
+                label.horizontalOverflow = HorizontalWrapMode.Overflow;
+                label.verticalOverflow = VerticalWrapMode.Overflow;
+                label.color = new Color(tint.r, tint.g, tint.b, 0.9f);
+                label.text = unit.DisplayName != null ? unit.DisplayName.ToUpperInvariant() : $"UNIT {i}";
+                label.raycastTarget = false;
+
+                _laneLines.Add(lineRect);
+            }
+
+            LayoutLanes();
+        }
+
+        private void EnsureLanesUpToDate()
+        {
+            if (_session == null || _session.Grid == null)
+            {
+                return;
+            }
+
+            var changed = false;
+            var idx = 0;
+            foreach (var unit in _session.Grid.PlayerUnits)
+            {
+                if (unit == null || !unit.IsAlive)
+                {
+                    continue;
+                }
+
+                if (idx >= _laneUnits.Count || _laneUnits[idx] != unit)
+                {
+                    changed = true;
+                    break;
+                }
+
+                idx++;
+            }
+
+            if (!changed && idx != _laneUnits.Count)
+            {
+                changed = true;
+            }
+
+            if (changed)
+            {
+                BuildLanes();
+            }
+        }
+
+        private void LayoutLanes()
+        {
+            if (viewport == null)
+            {
+                return;
+            }
+
+            var height = viewport.rect.height;
+            for (var i = 0; i < _laneLines.Count; i++)
+            {
+                if (_laneLines[i] == null)
+                {
+                    continue;
+                }
+
+                _laneLines[i].anchoredPosition = new Vector2(0f, GetLaneYFromBottom(i, height));
+            }
+        }
+
+        private float GetLaneYFromBottom(int laneIndex, float height)
+        {
+            var count = _laneUnits.Count;
+            if (count <= 0)
+            {
+                return height * 0.5f;
+            }
+
+            // Lane 0 ở TRÊN cùng, cách đều theo chiều cao viewport.
+            return height * (count - laneIndex) / (count + 1);
+        }
+
+        private float ContentXForBeat(int beat)
+        {
+            if (_slotOffsetPx == null || _slotWidths == null || beat < 0 || beat >= TotalBeats)
+            {
+                return 0f;
+            }
+
+            return _slotOffsetPx[beat] + _slotWidths[beat] * 0.5f;
+        }
+
+        private void ClearLaneMarkers()
+        {
+            foreach (var kvp in _laneMarkers)
+            {
+                if (kvp.Value != null)
+                {
+                    Destroy(kvp.Value.gameObject);
+                }
+            }
+
+            _laneMarkers.Clear();
+        }
+
+        public void RefreshLaneMarkers()
+        {
+            EnsureLaneLayers();
+            EnsureLanesUpToDate();
+
+            if (_laneMarkersLayer == null || _timeline == null || viewport == null)
+            {
+                return;
+            }
+
+            var height = viewport.rect.height;
+            var wanted = new HashSet<(CombatUnit unit, int beat)>();
+
+            foreach (var entry in _timeline.Agenda)
+            {
+                if (entry?.Unit == null || entry.Unit.Side != GridSide.Player || entry.Skill == null)
+                {
+                    continue;
+                }
+
+                if (!_laneIndex.TryGetValue(entry.Unit, out var laneIdx))
+                {
+                    continue;
+                }
+
+                var beat = entry.BeatIndex;
+                if (beat < 0 || beat >= TotalBeats)
+                {
+                    continue;
+                }
+
+                var key = (entry.Unit, beat);
+                wanted.Add(key);
+
+                var pos = new Vector2(ContentXForBeat(beat), GetLaneYFromBottom(laneIdx, height));
+                if (_laneMarkers.TryGetValue(key, out var existing) && existing != null)
+                {
+                    existing.SetContent(entry.Unit, entry.Skill);
+                    existing.SetLanePosition(pos, false);
+                }
+                else
+                {
+                    var marker = CreateLaneMarker();
+                    marker.SetContent(entry.Unit, entry.Skill);
+                    marker.SetLanePosition(pos, true);
+                    _laneMarkers[key] = marker;
+                }
+            }
+
+            var stale = new List<(CombatUnit unit, int beat)>();
+            foreach (var kvp in _laneMarkers)
+            {
+                if (!wanted.Contains(kvp.Key))
+                {
+                    stale.Add(kvp.Key);
+                }
+            }
+
+            foreach (var key in stale)
+            {
+                if (_laneMarkers.TryGetValue(key, out var marker) && marker != null)
+                {
+                    Destroy(marker.gameObject);
+                }
+
+                _laneMarkers.Remove(key);
+            }
+
+            SyncLaneMarkersScroll();
+        }
+
+        private TimelineLaneMarkerView CreateLaneMarker()
+        {
+            var go = new GameObject("LaneMarker", typeof(RectTransform));
+            var marker = go.AddComponent<TimelineLaneMarkerView>();
+            marker.Build(_laneMarkersLayer, laneMarkerSize);
+            return marker;
+        }
+
+        private void SyncLaneMarkersScroll()
+        {
+            if (_laneMarkersLayer == null || slotsRow == null)
+            {
+                return;
+            }
+
+            _laneMarkersLayer.anchoredPosition = new Vector2(slotsRow.anchoredPosition.x, 0f);
+        }
+
+        /// <summary>Screen point → beat index nếu con trỏ nằm trên timeline (dùng cho kéo-thả skill).</summary>
+        public bool TryGetBeatAtScreenPoint(Vector2 screen, out int beat)
+        {
+            beat = -1;
+
+            if (_laneMarkersLayer == null || viewport == null || !_slotsBuilt)
+            {
+                return false;
+            }
+
+            var cam = GetUiCameraForTimeline();
+            if (!RectTransformUtility.RectangleContainsScreenPoint(viewport, screen, cam))
+            {
+                return false;
+            }
+
+            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(_laneMarkersLayer, screen, cam, out var local))
+            {
+                return false;
+            }
+
+            var idx = FindSlotAtContentPos(local.x);
+            if (idx < 0)
+            {
+                return false;
+            }
+
+            beat = idx;
+            return true;
+        }
+
+        public void ShowDropGhost(CombatUnit unit, Vector2 screen)
+        {
+            EnsureLaneLayers();
+
+            if (_laneMarkersLayer == null || unit == null || viewport == null)
+            {
+                HideDropGhost();
+                return;
+            }
+
+            if (!_laneIndex.TryGetValue(unit, out var laneIdx) || !TryGetBeatAtScreenPoint(screen, out var beat))
+            {
+                HideDropGhost();
+                return;
+            }
+
+            if (_dropGhost == null)
+            {
+                _dropGhost = CreateLaneMarker();
+                _dropGhost.SetGhost(true);
+            }
+
+            _dropGhost.gameObject.SetActive(true);
+            _dropGhost.SetContent(unit, null);
+            _dropGhost.SetGhost(true);
+            var pos = new Vector2(ContentXForBeat(beat), GetLaneYFromBottom(laneIdx, viewport.rect.height));
+            _dropGhost.SetLanePosition(pos, false);
+        }
+
+        public void HideDropGhost()
+        {
+            if (_dropGhost != null)
+            {
+                _dropGhost.gameObject.SetActive(false);
+            }
+        }
+
+        private Camera GetUiCameraForTimeline()
+        {
+            var canvas = GetComponentInParent<Canvas>();
+            if (canvas == null)
+            {
+                return null;
+            }
+
+            canvas = canvas.rootCanvas;
+            return canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
         }
 
         private void ClearHighlightedSlot()
@@ -717,6 +1102,13 @@ namespace FracturedChorus.UI
             LayoutRebuilder.ForceRebuildLayoutImmediate(slotsRow);
 
             _lastViewportWidth = viewport.rect.width;
+
+            EnsureLaneLayers();
+            LayoutLanes();
+            if (_timeline != null)
+            {
+                RefreshLaneMarkers();
+            }
         }
 
         private void ApplyWidth(BeatSegmentView slot, float width)
@@ -970,6 +1362,8 @@ namespace FracturedChorus.UI
             {
                 PopulateSlot(_slots[i], i);
             }
+
+            RefreshLaneMarkers();
         }
 
         private void PopulateSlot(BeatSegmentView slot, int globalBeat)

@@ -4,21 +4,23 @@ using FracturedChorus.Combat.Core;
 using FracturedChorus.Combat.Units;
 using FracturedChorus.Data;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace FracturedChorus.UI
 {
     /// <summary>
-    /// Thanh thẻ quái ở góc phải trên màn hình — cùng logic thẻ với party (avatar, bar máu, badge hệ).
-    /// Tái dùng PartyMemberCardView; xếp ngang, mọc từ phải sang trái.
+    /// Thanh thẻ quái — cùng logic + kích thước thẻ với party (avatar, bar máu, badge hệ),
+    /// canh **cùng Y với thẻ players**. Tái dùng PartyMemberCardView; xếp ngang, mọc từ phải sang trái.
     /// </summary>
     public class EnemyStatusBarUIView : MonoBehaviour
     {
-        public const int MaxEnemyCards = 9;
+        public const int MaxEnemyCards = 6;
 
         [SerializeField] private RectTransform cardsRow;
         [SerializeField] private PartyMemberCardView cardTemplate;
-        [SerializeField] private Vector2 cardSize = new Vector2(80f, 115f);
-        [SerializeField] private float horizontalSpacing = 8f;
+        [Tooltip("Fallback khi template chưa có size — mặc định khớp thẻ party 115×167.")]
+        [SerializeField] private Vector2 cardSize = new Vector2(PartyCardLayout.CardWidth, 167f);
+        [SerializeField] private float horizontalSpacing = PartyCardLayout.CardGap;
 
         private readonly List<PartyMemberCardView> _spawnedCards = new();
 
@@ -51,7 +53,22 @@ namespace FracturedChorus.UI
             cardsRow.anchorMax = new Vector2(1f, 1f);
             cardsRow.pivot = new Vector2(1f, 1f);
             cardsRow.anchoredPosition = Vector2.zero;
-            cardsRow.sizeDelta = cardSize;
+            cardsRow.sizeDelta = GetCardSize();
+        }
+
+        /// <summary>Kích thước thẻ = template (khớp thẻ party), fallback về cardSize.</summary>
+        private Vector2 GetCardSize()
+        {
+            if (cardTemplate != null)
+            {
+                var templateRect = cardTemplate.transform as RectTransform;
+                if (templateRect != null && templateRect.sizeDelta.x > 0f && templateRect.sizeDelta.y > 0f)
+                {
+                    return templateRect.sizeDelta;
+                }
+            }
+
+            return cardSize;
         }
 
         public void BindFromSession(CombatSession session)
@@ -111,11 +128,18 @@ namespace FracturedChorus.UI
             var rect = card.transform as RectTransform;
             if (rect != null)
             {
+                // Anchor top-right, pivot top → thẻ quái canh **cùng đỉnh Y** với thẻ party (top-aligned).
                 rect.anchorMin = new Vector2(1f, 1f);
                 rect.anchorMax = new Vector2(1f, 1f);
                 rect.pivot = new Vector2(1f, 1f);
                 rect.localScale = Vector3.one;
-                rect.sizeDelta = cardSize;
+                rect.sizeDelta = GetCardSize();
+
+                var layoutElement = rect.GetComponent<LayoutElement>();
+                if (layoutElement != null)
+                {
+                    layoutElement.ignoreLayout = true;
+                }
             }
 
             card.WireReferences();
@@ -131,7 +155,7 @@ namespace FracturedChorus.UI
                 return;
             }
 
-            var step = cardSize.x + horizontalSpacing;
+            var step = GetCardSize().x + horizontalSpacing;
 
             // Mọc từ phải sang trái: thẻ đầu sát mép phải, các thẻ sau lùi trái.
             for (var i = 0; i < count; i++)

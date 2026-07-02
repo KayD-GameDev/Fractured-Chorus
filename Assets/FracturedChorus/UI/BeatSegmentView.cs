@@ -196,47 +196,17 @@ namespace FracturedChorus.UI
         {
             WireReferences();
 
-            var hasPlayer = playerEntry?.Skill != null;
+            // Player actions giờ hiển thị trên lane (dòng kẻ của unit), không vẽ trong ô beat nữa.
+            // Ô beat chỉ còn dùng để hiển thị telegraph của quái + trạng thái scan/rỗng.
             var hasEnemy = enemyTelegraph?.Skill != null;
 
-            if (!hasPlayer && !hasEnemy)
+            if (!hasEnemy)
             {
                 SetEmpty();
                 return;
             }
 
-            if (background != null)
-            {
-                background.color = hasEnemy
-                    ? new Color(0.28f, 0.1f, 0.1f, 0.95f)
-                    : new Color(0.18f, 0.16f, 0.24f, 0.95f);
-                _backgroundBaseColor = background.color;
-            }
-
-            if (hasPlayer)
-            {
-                if (glow != null)
-                {
-                    glow.color = GetGlowColor(playerEntry.Skill.glowType);
-                    _glowBaseColor = glow.color;
-                }
-
-                if (portrait != null)
-                {
-                    portrait.color = playerEntry.Unit?.PlaceholderColor ?? Color.gray;
-                }
-
-                if (actionLabel != null)
-                {
-                    actionLabel.text = hasEnemy
-                        ? $"{playerEntry.Skill.displayName.ToUpperInvariant()} | EN"
-                        : playerEntry.Skill.displayName.ToUpperInvariant();
-                }
-            }
-            else
-            {
-                SetSlot(new AgendaEntry(enemyTelegraph.Unit, enemyTelegraph.Skill, enemyTelegraph.BeatIndex), true);
-            }
+            SetSlot(new AgendaEntry(enemyTelegraph.Unit, enemyTelegraph.Skill, enemyTelegraph.BeatIndex), true);
         }
 
         private void SetSlot(AgendaEntry entry, bool isTelegraph)

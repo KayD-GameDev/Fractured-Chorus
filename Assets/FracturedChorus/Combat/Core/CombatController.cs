@@ -59,7 +59,7 @@ namespace FracturedChorus.Combat.Core
 
             if (skillPanelView != null)
             {
-                skillPanelView.Bind(_session, OnSkillArmed);
+                skillPanelView.Bind(_session, OnSkillArmed, AssignSkillAtScreenPoint, PreviewSkillDrop, HideSkillDropPreview);
                 skillPanelView.VisibilityChanged += OnSkillPanelVisibilityChanged;
             }
 
@@ -174,6 +174,44 @@ namespace FracturedChorus.Combat.Core
             _armedSkill = skill;
             timelineView?.RefreshPhaseAvLabel();
             return true;
+        }
+
+        /// <summary>Kéo-thả skill: gán vào beat dưới con trỏ trên timeline (lane của unit).</summary>
+        private bool AssignSkillAtScreenPoint(CombatUnit unit, SkillDefinitionSO skill, Vector2 screenPos)
+        {
+            if (_session == null || _session.Phase != CombatPhase.Planning || _session.AllowPlayerReposition)
+            {
+                return false;
+            }
+
+            if (unit == null || skill == null)
+            {
+                return false;
+            }
+
+            if (!_session.PhaseAv.CanAfford(skill.GetAvCost()))
+            {
+                return false;
+            }
+
+            if (timelineView == null || !timelineView.TryGetBeatAtScreenPoint(screenPos, out var beat))
+            {
+                return false;
+            }
+
+            _armedUnit = unit;
+            _armedSkill = skill;
+            return TryAssignArmedAtBeat(beat);
+        }
+
+        private void PreviewSkillDrop(CombatUnit unit, Vector2 screenPos)
+        {
+            timelineView?.ShowDropGhost(unit, screenPos);
+        }
+
+        private void HideSkillDropPreview()
+        {
+            timelineView?.HideDropGhost();
         }
 
         private bool TryAssignArmedAtBeat(int beatIndex)

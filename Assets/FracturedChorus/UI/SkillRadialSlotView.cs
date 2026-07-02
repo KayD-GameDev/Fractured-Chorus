@@ -1,6 +1,7 @@
 using System;
 using FracturedChorus.Data;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace FracturedChorus.UI
@@ -16,7 +17,7 @@ namespace FracturedChorus.UI
     /// <summary>
     /// Một ô kỹ năng tròn trên bảng radial. Click hoặc thả token vào để chọn skill.
     /// </summary>
-    public class SkillRadialSlotView : MonoBehaviour
+    public class SkillRadialSlotView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
     {
         private static readonly Color IdleColor = new Color(0.16f, 0.16f, 0.22f, 0.96f);
         private static readonly Color HighlightColor = new Color(0.95f, 0.62f, 0.25f, 1f);
@@ -26,6 +27,8 @@ namespace FracturedChorus.UI
         private Image _background;
         private Text _label;
         private Action _onSelect;
+        private SkillPanelUIView _panel;
+        private bool _dragging;
 
         public SkillRadialDirection Direction { get; private set; }
         public SkillDefinitionSO Skill { get; private set; }
@@ -33,11 +36,13 @@ namespace FracturedChorus.UI
         public bool HasSkill => Skill != null;
 
         public void Build(RectTransform parent, Vector2 anchoredPos, float size,
-            SkillRadialDirection direction, SkillDefinitionSO skill, string keyHint, Action onSelect)
+            SkillRadialDirection direction, SkillDefinitionSO skill, string keyHint, Action onSelect,
+            SkillPanelUIView panel = null)
         {
             Direction = direction;
             Skill = skill;
             _onSelect = onSelect;
+            _panel = panel;
 
             _rect = gameObject.GetComponent<RectTransform>();
             if (_rect == null)
@@ -120,6 +125,39 @@ namespace FracturedChorus.UI
             }
 
             _onSelect?.Invoke();
+        }
+
+        public void OnBeginDrag(PointerEventData eventData)
+        {
+            if (!HasSkill || _panel == null)
+            {
+                return;
+            }
+
+            _dragging = true;
+            _panel.BeginSkillDrag(Skill);
+            _panel.UpdateSkillDrag(eventData.position);
+        }
+
+        public void OnDrag(PointerEventData eventData)
+        {
+            if (!_dragging || _panel == null)
+            {
+                return;
+            }
+
+            _panel.UpdateSkillDrag(eventData.position);
+        }
+
+        public void OnEndDrag(PointerEventData eventData)
+        {
+            if (!_dragging || _panel == null)
+            {
+                return;
+            }
+
+            _dragging = false;
+            _panel.EndSkillDrag(Skill, eventData.position);
         }
     }
 }
