@@ -33,12 +33,16 @@ namespace FracturedChorus.UI
         private CombatUnit _currentUnit;
         private UnitView _currentUnitView;
         private Func<CombatUnit, SkillDefinitionSO, bool> _onSkillSelected;
+        private Func<CombatUnit, SkillDefinitionSO, Vector2, bool> _onSkillDroppedAtScreen;
+        private Action<CombatUnit, Vector2> _onSkillDragPreview;
+        private Action _onSkillDragEnd;
         private Coroutine _enableBackdropRoutine;
         private float _backdropDismissUnlockTime;
 
         private RectTransform _radialRoot;
         private readonly List<SkillRadialSlotView> _slots = new();
         private SkillCenterTokenView _token;
+        private GameObject _dragGhost;
 
         public event Action<bool> VisibilityChanged;
 
@@ -83,10 +87,17 @@ namespace FracturedChorus.UI
             }
         }
 
-        public void Bind(CombatSession session, Func<CombatUnit, SkillDefinitionSO, bool> onSkillSelected)
+        public void Bind(CombatSession session,
+            Func<CombatUnit, SkillDefinitionSO, bool> onSkillSelected,
+            Func<CombatUnit, SkillDefinitionSO, Vector2, bool> onSkillDroppedAtScreen = null,
+            Action<CombatUnit, Vector2> onSkillDragPreview = null,
+            Action onSkillDragEnd = null)
         {
             _session = session;
             _onSkillSelected = onSkillSelected;
+            _onSkillDroppedAtScreen = onSkillDroppedAtScreen;
+            _onSkillDragPreview = onSkillDragPreview;
+            _onSkillDragEnd = onSkillDragEnd;
         }
 
         public void ToggleForUnit(CombatUnit unit, UnitView unitView)
@@ -249,7 +260,7 @@ namespace FracturedChorus.UI
             var slotGo = new GameObject($"SkillSlot_{dir}");
             var slot = slotGo.AddComponent<SkillRadialSlotView>();
             var capturedSkill = skill;
-            slot.Build(_radialRoot, pos, SlotSize, dir, skill, keyHint, () => HandleSkillChosen(capturedSkill));
+            slot.Build(_radialRoot, pos, SlotSize, dir, skill, keyHint, () => HandleSkillChosen(capturedSkill), this);
             _slots.Add(slot);
         }
 
@@ -324,6 +335,115 @@ namespace FracturedChorus.UI
             best.SetHighlight(true);
             best.Select();
             return true;
+        }
+
+        // ---------------------------------------------------------------------
+        // Kéo skill từ ô radial → thả lên timeline (lane của unit)
+        // ---------------------------------------------------------------------
+
+        public void BeginSkillDrag(SkillDefinitionSO skill)
+        {
+            EnsureDragGhost(skill);
+        }
+
+        public void UpdateSkillDrag(Vector2 screenPos)
+        {
+            MoveDragGhost(screenPos);
+            _onSkillDragPreview?.Invoke(_currentUnit, screenPos);
+        }
+
+        public bool EndSkillDrag(SkillDefinitionSO skill, Vector2 screenPos)
+        {
+            DestroyDragGhost();
+            _onSkillDragEnd?.Invoke();
+
+            var consumed = _onSkillDroppedAtScreen?.Invoke(_currentUnit, skill, screenPos) ?? false;
+            if (consumed)
+            {
+                Hide();
+            }
+            else
+            {
+                _token?.ResetToHome();
+            }
+
+            return consumed;
+        }
+
+        private void EnsureDragGhost(SkillDefinitionSO skill)
+        {
+            var canvasRect = GetRootCanvasRectTransform();
+            if (canvasRect == null)
+            {
+                return;
+            }
+
+            if (_dragGhost == null)
+            {
+                _dragGhost = new GameObject("SkillDragGhost", typeof(RectTransform));
+                var rect = _dragGhost.GetComponent<RectTransform>();
+                rect.SetParent(canvasRect, false);
+                rect.sizeDelta = new Vector2(TokenSize, TokenSize);
+
+                var img = _dragGhost.AddComponent<Image>();
+                img.sprite = UiCircleSpriteUtil.Circle;
+                img.color = new Color(0.95f, 0.62f, 0.25f, 0.75f);
+                img.raycastTarget = false;
+
+                var labelGo = new GameObject("Label", typeof(RectTransform));
+                var labelRect = labelGo.GetComponent<RectTransform>();
+                labelRect.SetParent(rect, false);
+                labelRect.anchorMin = Vector2.zero;
+                labelRect.anchorMax = Vector2.one;
+                labelRect.offsetMin = new Vector2(2f, 2f);
+                labelRect.offsetMax = new Vector2(-2f, -2f);
+                var label = labelGo.AddComponent<Text>();
+                label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+                label.fontSize = 11;
+                label.alignment = TextAnchor.MiddleCenter;
+                label.horizontalOverflow = HorizontalWrapMode.Wrap;
+                label.verticalOverflow = VerticalWrapMode.Overflow;
+                label.color = Color.white;
+                label.raycastTarget = false;
+            }
+
+            var ghostLabel = _dragGhost.GetComponentInChildren<Text>();
+            if (ghostLabel != null)
+            {
+                ghostLabel.text = skill != null ? SkillUiNames.GetDisplayName(skill) : string.Empty;
+            }
+
+            _dragGhost.SetActive(true);
+            _dragGhost.transform.SetAsLastSibling();
+        }
+
+        private void MoveDragGhost(Vector2 screenPos)
+        {
+            if (_dragGhost == null)
+            {
+                return;
+            }
+
+            var canvasRect = GetRootCanvasRectTransform();
+            if (canvasRect == null)
+            {
+                return;
+            }
+
+            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                    canvasRect, screenPos, GetUiCamera(), out var local))
+            {
+                ((RectTransform)_dragGhost.transform).anchoredPosition = local;
+            }
+        }
+
+        private void DestroyDragGhost()
+        {
+            if (_dragGhost != null)
+            {
+                Destroy(_dragGhost);
+                _dragGhost = null;
+            }
         }
 
         private void Update()
@@ -579,6 +699,8 @@ namespace FracturedChorus.UI
             }
 
             HideDismissBackdrop();
+            DestroyDragGhost();
+            _onSkillDragEnd?.Invoke();
 
             if (panelRect != null && panelRect.gameObject.activeSelf)
             {

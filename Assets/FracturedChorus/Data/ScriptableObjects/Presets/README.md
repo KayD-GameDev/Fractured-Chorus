@@ -4,12 +4,14 @@
 
 **Create → Fractured Chorus → Unit Stat Block** — hoặc menu **Fractured Chorus → Create Default Stat Blocks & Presets**.
 
-| Asset | Element (pre-condition) | Ghi chú |
-|-------|-------------------------|---------|
-| `StatBlock_Ren` | Melody | **Physical** · Strength 100 |
-| `StatBlock_Tank` | Rhythm | **Physical** · Strength 80 |
-| `StatBlock_Mage` | Harmony | **Magical** · Strength 100 |
-| `StatBlock_Grunt` | Rhythm | **Physical** · Strength 60 |
+Baseline người chơi = **Lv15 optimal** (xem `docs/combat/CHARACTER_LEVEL_PROGRESS.md`).
+
+| Asset | Element (pre-condition) | Strength (attack power) | HB | EN | Luck% | Crit | HP |
+|-------|-------------------------|-------------------------|----|----|-------|------|----|
+| `StatBlock_Ren` | Melody | **Physical** · 42 | 167 | 10.8 | 18 | ×1.35 | 114 |
+| `StatBlock_Tank` (Charlotte) | Rhythm | **Physical** · 35 | 127 | 18.2 | 8 | ×1.15 | 260 |
+| `StatBlock_Mage` (Coda) | Harmony | **Magical** · 50 | 147 | 9.8 | 16 | ×1.3 | 73 |
+| `StatBlock_Grunt` | Rhythm | **Physical** · 60 | 120 | 8 | 5 | ×1.1 | 150 |
 
 Trong **Unit Stat Block**: chọn **Damage Type** (Physical/Magical) trước, rồi nhập **Strength**. Combat dùng loại dmg từ stat block — không còn field Magic riêng.
 

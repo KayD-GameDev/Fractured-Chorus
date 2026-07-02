@@ -120,7 +120,45 @@ namespace FracturedChorus.Combat.Bootstrap
             }
 
             enemyStatusBarView.SetCardTemplate(template);
+            AlignEnemyBarToPartyY();
             enemyStatusBarView.BindFromSession(_session);
+        }
+
+        /// <summary>Canh trục Y của thanh thẻ quái trùng với thanh thẻ party (cùng đỉnh + chiều cao).</summary>
+        private void AlignEnemyBarToPartyY()
+        {
+            if (partyStatusBarView == null || enemyStatusBarView == null)
+            {
+                return;
+            }
+
+            var partyRect = partyStatusBarView.transform as RectTransform;
+            var enemyRect = enemyStatusBarView.transform as RectTransform;
+            if (partyRect == null || enemyRect == null)
+            {
+                return;
+            }
+
+            // Giữ nguyên trục X (thẻ quái ở cạnh phải), chỉ đồng bộ trục Y theo thẻ players.
+            var anchorMin = enemyRect.anchorMin;
+            anchorMin.y = partyRect.anchorMin.y;
+            enemyRect.anchorMin = anchorMin;
+
+            var anchorMax = enemyRect.anchorMax;
+            anchorMax.y = partyRect.anchorMax.y;
+            enemyRect.anchorMax = anchorMax;
+
+            var pivot = enemyRect.pivot;
+            pivot.y = partyRect.pivot.y;
+            enemyRect.pivot = pivot;
+
+            var size = enemyRect.sizeDelta;
+            size.y = partyRect.sizeDelta.y;
+            enemyRect.sizeDelta = size;
+
+            var pos = enemyRect.anchoredPosition;
+            pos.y = partyRect.anchoredPosition.y;
+            enemyRect.anchoredPosition = pos;
         }
 
         private EnemyStatusBarUIView CreateEnemyStatusBar()

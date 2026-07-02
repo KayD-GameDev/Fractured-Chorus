@@ -9,6 +9,47 @@ Newest first.
 
 ---
 
+## 2026-07-01 — Combat: reset stat units (Lv15) + canh Y thẻ quái theo players
+
+**Focus:** code (Unity) · data
+
+**Owner:** Khoa
+
+**Done**
+- **Reset stat 3 nhân vật về baseline Lv15 optimal** (theo `docs/combat/CHARACTER_LEVEL_PROGRESS.md`):
+  - **Ren** (Melody · Physical): STR 42 · EN 10.8 · HB 167 · Luck 18% · Crit ×1.35 · HP 114.
+  - **Charlotte/Tank** (Rhythm · Physical): STR 35 · EN 18.2 · HB 127 · Luck 8% · Crit ×1.15 · HP 260.
+  - **Coda/Mage** (Harmony · **Magical**): STR(attack power)=Ma 50 · EN 9.8 · HB 147 · Luck 16% · Crit ×1.3 · HP 73.
+  - Sửa ở cả 3 nguồn: `Resources/StatBlocks/StatBlock_{Ren,Tank,Mage}.asset`, fallback `UnitStats.CreateRen/Tank/MagePreset`, và editor `CombatDataAssetGenerator`. Mage đổi `strengthType` → **Magical**. HB khớp W (8/8/7) & latency (1/1/1) trong COMBAT_MECHANICS §3.
+- **Thẻ quái canh cùng Y với thẻ players:** `EnemyStatusBarUIView` dùng **kích thước thẻ = template party (115×167)** + gap `PartyCardLayout.CardGap`, thẻ top-aligned (pivot 1,1). Bootstrap `AlignEnemyBarToPartyY()` copy trục Y (anchor/pivot/height/anchoredPosition.y) từ thanh party sang thanh quái, giữ cạnh phải cho quái ⇒ 2 hàng thẻ cùng đỉnh. `MaxEnemyCards` 9 → **6** (khớp `DualGrid.MaxEnemyUnits`).
+- **Rà soát cơ chế timeline beats (docs §2–§3):** xác nhận timeline 1 hàng beat + lane theo nhân vật (đã dựng) khớp thiết kế; boss notes ở hàng beat chung. Planning Window **W** + footprint **S1/S/S2** vẫn là P0 chưa implement (theo mục "Chưa làm" trong SKILL_KIT) — không đổi lần này.
+
+**Refs:** `Resources/StatBlocks/StatBlock_*.asset`, `Combat/Units/UnitStats.cs`, `Editor/CombatDataAssetGenerator.cs`, `Data/ScriptableObjects/Presets/README.md`, `UI/EnemyStatusBarUIView.cs`, `Combat/Bootstrap/CombatPrototypeBootstrap.cs`
+
+---
+
+## 2026-07-01 — Combat: timeline lanes theo nhân vật + kéo skill vào lane
+
+**Focus:** code (Unity)
+
+**Owner:** Khoa
+
+**Done**
+- **Dòng kẻ (lane) cho từng nhân vật:** `BeatTimelineUIView` giữ 1 hàng cột beat, overlay `LaneLines` + `LaneMarkers` dưới viewport. Mỗi party member còn sống (từ `Grid.PlayerUnits`, tối đa 4) = 1 lane ngang, cách đều theo chiều cao, tô màu/nhãn theo unit. Lane rebuild động khi đội hình đổi.
+- **Player action → marker trên lane:** action người chơi không vẽ trong ô beat nữa. `TimelineLaneMarkerView` mới (chip tròn: nền màu unit, glow theo `ActionGlowType`, nhãn skill) đặt tại `(beat x, lane y)`, có animation bay vào lane (~0.18s). `RefreshLaneMarkers` reuse marker theo key `(unit,beat)` — chỉ animate entry mới, scroll/refresh không animate lại. Markers layer sync x với `slotsRow` khi cuộn.
+- **Ô beat chỉ còn boss telegraph:** `BeatSegmentView.SetSlot` bỏ vẽ player entry, chỉ render telegraph quái + trạng thái scan/rỗng.
+- **Kéo skill từ radial → thả vào lane:** `SkillRadialSlotView` thành drag source (`IBeginDrag/IDrag/IEndDrag`) + ghost bám con trỏ. `SkillPanelUIView` thêm callback `onSkillDroppedAtScreen` / preview / drag-end; giữ nguyên đường click + phím W/A/D.
+- **Controller wiring:** `CombatController.AssignSkillAtScreenPoint` (check Phase AV → `TryGetBeatAtScreenPoint` → `TryAssignPlayerAction`), preview qua `ShowDropGhost`/`HideDropGhost`. Click/phím vẫn auto-gán tại scan beat rồi animate vào lane.
+
+**Decisions**
+- Lane count = số party member **đang sống** (không lane cho quái — quái vẫn nằm hàng beat chung).
+- Hỗ trợ **cả hai** cách đặt skill: kéo-thả tay + click/phím auto tại beat hiện tại.
+- Layer lane tạo runtime dưới `Viewport`, không bắt buộc sửa scene.
+
+**Refs:** `UI/BeatTimelineUIView.cs`, `UI/TimelineLaneMarkerView.cs` (mới), `UI/BeatSegmentView.cs`, `UI/SkillRadialSlotView.cs`, `UI/SkillPanelUIView.cs`, `Combat/Core/CombatController.cs`, `docs/combat/COMBAT_MECHANICS.md`
+
+---
+
 ## 2026-07-01 — Combat: grid 2×3, party 4, party bar resize, fix kéo tank
 
 **Focus:** code (Unity)
