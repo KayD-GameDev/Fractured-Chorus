@@ -75,15 +75,28 @@ namespace FracturedChorus.UI
 
         private void ApplyBadgeLayout()
         {
-            if (elementBadgeRing != null)
+            var badgeRect = elementBadgeRing != null
+                ? elementBadgeRing.rectTransform
+                : transform.Find("ElementBadge") as RectTransform;
+
+            if (badgeRect == null)
             {
-                PartyCardLayout.ApplyElementBadgeRect(elementBadgeRing.rectTransform);
+                return;
             }
-            else
+
+            // Scene đã set kích thước/vị trí badge (ví dụ 35×35 tại -6,-6) → tôn trọng, KHÔNG ép hằng số.
+            if (RectSizeUtil.IsAuthored(badgeRect))
             {
-                var badgeTransform = transform.Find("ElementBadge") as RectTransform;
-                PartyCardLayout.ApplyElementBadgeRect(badgeTransform);
+                return;
             }
+
+            // Fallback: chỉ khi CardTemplate trong scene chưa dựng badge.
+            PartyCardLayout.ApplyElementBadgeRect(badgeRect);
+
+            var iconRect = elementIcon != null
+                ? elementIcon.rectTransform
+                : transform.Find("ElementBadge/ElementIcon") as RectTransform;
+            PartyCardLayout.ApplyElementIconRect(iconRect);
         }
 
         public void Bind(CombatUnit unit, UnitPresetSO preset)
@@ -161,7 +174,7 @@ namespace FracturedChorus.UI
                 elementIcon.sprite = icon != null ? icon : UiCircleSpriteUtil.Circle;
                 elementIcon.color = hasArtIcon ? Color.white : HarmonyElementPalette.GetBadgeFill(element);
                 elementIcon.preserveAspect = true;
-                PartyCardLayout.ApplyElementIconRect(elementIcon.rectTransform);
+                // Hình học icon lấy từ scene (ElementIcon trong CardTemplate); chỉ fallback khi badge chưa authored.
             }
         }
 

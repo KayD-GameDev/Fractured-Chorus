@@ -256,6 +256,9 @@ namespace FracturedChorus.UI
                 }
             }
 
+            var cardSize = GetTemplateCardSize();
+            var cardScale = GetTemplateCardScale();
+            var cardStepX = GetCardStepX(cardSize, cardScale);
             var totalCards = activeCards.Count;
             for (var cardIndex = 0; cardIndex < totalCards; cardIndex++)
             {
@@ -266,38 +269,41 @@ namespace FracturedChorus.UI
                     continue;
                 }
 
-                PrepareCardRectForRowLayout(rect, GetTemplateCardSize());
-                rect.anchoredPosition = PartyCardLayout.GetCardAnchoredPosition(cardIndex, totalCards);
+                PrepareCardRectForRowLayout(rect, cardSize, cardScale);
+                rect.anchoredPosition = PartyCardLayout.GetCardAnchoredPosition(cardIndex, totalCards, cardStepX);
                 rect.SetSiblingIndex(cardIndex);
             }
         }
 
         private Vector2 GetTemplateCardSize()
         {
-            if (cardTemplate != null)
-            {
-                var templateRect = cardTemplate.transform as RectTransform;
-                if (templateRect != null && templateRect.sizeDelta.x > 0f && templateRect.sizeDelta.y > 0f)
-                {
-                    return templateRect.sizeDelta;
-                }
-            }
-
-            return new Vector2(PartyCardLayout.CardWidth, 167f);
+            var fallback = new Vector2(PartyCardLayout.CardWidth, PartyCardLayout.CardHeight);
+            return RectSizeUtil.ResolveSize(cardTemplate != null ? cardTemplate.transform as RectTransform : null, fallback);
         }
+
+        private Vector3 GetTemplateCardScale()
+        {
+            return RectSizeUtil.ResolveScale(cardTemplate != null ? cardTemplate.transform : null);
+        }
+
+        private float GetCardStepX(Vector2 cardSize, Vector3 cardScale) =>
+            PartyCardLayout.ComputeCardStepX(cardSize.x * cardScale.x, cardSpacing);
 
         private void SpawnCard(CombatUnit unit, UnitPresetSO preset)
         {
             var card = Instantiate(cardTemplate, cardsRow);
             card.gameObject.SetActive(true);
             card.name = $"Card_{unit.DisplayName}";
-            PrepareCardRectForRowLayout(card.transform as RectTransform, GetTemplateCardSize());
+            PrepareCardRectForRowLayout(
+                card.transform as RectTransform,
+                GetTemplateCardSize(),
+                GetTemplateCardScale());
             card.WireReferences();
             card.Bind(unit, preset);
             _spawnedCards.Add(card);
         }
 
-        private static void PrepareCardRectForRowLayout(RectTransform rect, Vector2 size)
+        private static void PrepareCardRectForRowLayout(RectTransform rect, Vector2 size, Vector3 scale)
         {
             if (rect == null)
             {
@@ -306,14 +312,14 @@ namespace FracturedChorus.UI
 
             if (size.x <= 0f || size.y <= 0f)
             {
-                size = new Vector2(PartyCardLayout.CardWidth, 167f);
+                size = new Vector2(PartyCardLayout.CardWidth, PartyCardLayout.CardHeight);
             }
 
             rect.anchorMin = new Vector2(0f, 1f);
             rect.anchorMax = new Vector2(0f, 1f);
             rect.pivot = new Vector2(0f, 1f);
             rect.sizeDelta = size;
-            rect.localScale = Vector3.one;
+            rect.localScale = scale;
 
             var layoutElement = rect.GetComponent<LayoutElement>();
             if (layoutElement == null)

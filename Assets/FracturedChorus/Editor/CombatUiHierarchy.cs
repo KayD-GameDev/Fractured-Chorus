@@ -433,6 +433,158 @@ namespace FracturedChorus.Editor
             Debug.Log("[Fractured Chorus] Party bar ready: CardTemplate only in CardsRow; runtime clones per party size. Save scene.");
         }
 
+        public static void EnsureEnemyCardsInHierarchy()
+        {
+            CleanupFixedEnemyCardsInHierarchy();
+
+            var enemyBar = Object.FindAnyObjectByType<EnemyStatusBarUIView>(FindObjectsInactive.Include);
+            if (enemyBar == null)
+            {
+                Debug.LogWarning("[Fractured Chorus] EnemyStatusBarUI not found — run Add Enemy Status Bar first.");
+                return;
+            }
+
+            enemyBar.WireReferences();
+
+            var cardsRow = enemyBar.transform.Find("CardsRow") as RectTransform;
+            if (cardsRow == null)
+            {
+                Debug.LogWarning("[Fractured Chorus] CardsRow missing under EnemyStatusBarUI.");
+                return;
+            }
+
+            var rowLayout = cardsRow.GetComponent<HorizontalLayoutGroup>();
+            if (rowLayout != null)
+            {
+                rowLayout.spacing = enemyBar.CardSpacing;
+                rowLayout.enabled = false;
+                EditorUtility.SetDirty(rowLayout);
+            }
+
+            var template = enemyBar.transform.Find("CardTemplate")?.GetComponent<PartyMemberCardView>();
+            if (template != null)
+            {
+                UpgradePartyCardTemplate(template);
+                template.gameObject.SetActive(false);
+            }
+
+            EditorUtility.SetDirty(enemyBar);
+
+            var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+            if (scene.IsValid() && scene.isLoaded)
+            {
+                EditorSceneManager.MarkSceneDirty(scene);
+            }
+
+            Debug.Log("[Fractured Chorus] Enemy bar ready: CardTemplate in Hierarchy; runtime clones per enemy count. Save scene.");
+        }
+
+        public static EnemyStatusBarUIView AddEnemyStatusBarToScene()
+        {
+            RenameBackgroundCanvasInScene();
+
+            var canvasTransform = ResolveCombatCanvasTransform();
+            if (canvasTransform == null)
+            {
+                Debug.LogWarning("[Fractured Chorus] CombatCanvas not found.");
+                return null;
+            }
+
+            var enemyBar = TimelineHierarchyBuilder.BuildEnemyStatusBar(canvasTransform);
+            EnsureEnemyCardsInHierarchy();
+
+            var bootstrap = Object.FindAnyObjectByType<CombatPrototypeBootstrap>();
+            if (bootstrap != null)
+            {
+                SetEnemyBarRef(bootstrap, "enemyStatusBarView", enemyBar);
+            }
+
+            var scene = canvasTransform.gameObject.scene;
+            if (scene.IsValid() && scene.isLoaded)
+            {
+                EditorSceneManager.MarkSceneDirty(scene);
+            }
+
+            Selection.activeGameObject = enemyBar.gameObject;
+            Debug.Log("[Fractured Chorus] EnemyStatusBarUI ready under CombatCanvas (top-right). Save scene.");
+            return enemyBar;
+        }
+
+        public static void CleanupFixedEnemyCardsInHierarchy()
+        {
+            var enemyBar = Object.FindAnyObjectByType<EnemyStatusBarUIView>(FindObjectsInactive.Include);
+            if (enemyBar == null)
+            {
+                return;
+            }
+
+            var cardsRow = enemyBar.transform.Find("CardsRow");
+            if (cardsRow == null)
+            {
+                return;
+            }
+
+            var template = enemyBar.transform.Find("CardTemplate");
+            var removed = 0;
+
+            for (var i = cardsRow.childCount - 1; i >= 0; i--)
+            {
+                var child = cardsRow.GetChild(i);
+                if (template != null && child == template)
+                {
+                    continue;
+                }
+
+                if (child.GetComponent<PartyMemberCardView>() == null)
+                {
+                    continue;
+                }
+
+                Undo.DestroyObjectImmediate(child.gameObject);
+                removed++;
+            }
+
+            if (removed > 0)
+            {
+                Debug.Log($"[Fractured Chorus] Removed {removed} fixed enemy card(s) from CardsRow — runtime clones from CardTemplate.");
+            }
+        }
+
+        private static void SetEnemyBarRef(CombatPrototypeBootstrap bootstrap, string fieldName, Object value)
+        {
+            var so = new SerializedObject(bootstrap);
+            var prop = so.FindProperty(fieldName);
+            if (prop == null)
+            {
+                return;
+            }
+
+            prop.objectReferenceValue = value;
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static void SetEnemyBarField(EnemyStatusBarUIView enemyBar, string fieldName, object value)
+        {
+            var so = new SerializedObject(enemyBar);
+            var prop = so.FindProperty(fieldName);
+            if (prop == null)
+            {
+                return;
+            }
+
+            switch (value)
+            {
+                case bool boolValue:
+                    prop.boolValue = boolValue;
+                    break;
+                case float floatValue:
+                    prop.floatValue = floatValue;
+                    break;
+            }
+
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
         public static void CleanupFixedPartyCardsInHierarchy()
         {
             var partyBar = Object.FindAnyObjectByType<PartyStatusBarUIView>(FindObjectsInactive.Include);

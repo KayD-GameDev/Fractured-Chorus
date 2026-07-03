@@ -18,16 +18,28 @@ namespace FracturedChorus.UI
     /// </summary>
     public class SkillPanelUIView : MonoBehaviour
     {
-        private const float PanelSize = 240f;
-        private const float SlotSize = 70f;
-        private const float TokenSize = 56f;
-        private const float Radius = 78f;
+        private const float FallbackPanelSize = 240f;
 
         [SerializeField] private RectTransform panelRect;
         [SerializeField] private RectTransform buttonContainer;
         [SerializeField] private Text titleLabel;
         [SerializeField] private Camera worldCamera;
         [SerializeField] private GameObject dismissBackdrop;
+
+        [Header("Radial layout — kích thước lấy từ panel trong scene; ratio chỉnh trong Inspector")]
+        [Tooltip("Giữ kích thước panel đã chỉnh trong Hierarchy; chỉ dùng fallback khi panel chưa set size.")]
+        [SerializeField] private bool preserveSceneLayout = true;
+        [SerializeField] private float fallbackPanelSize = FallbackPanelSize;
+        [SerializeField, Range(0.1f, 0.5f)] private float slotSizeRatio = 70f / FallbackPanelSize;
+        [SerializeField, Range(0.1f, 0.5f)] private float tokenSizeRatio = 56f / FallbackPanelSize;
+        [SerializeField, Range(0.1f, 0.5f)] private float radiusRatio = 78f / FallbackPanelSize;
+
+        // Kích thước panel hiệu dụng (đọc từ scene) — cập nhật mỗi lần ShowForUnit.
+        private float _panelSize = FallbackPanelSize;
+
+        private float SlotSize => _panelSize * slotSizeRatio;
+        private float TokenSize => _panelSize * tokenSizeRatio;
+        private float Radius => _panelSize * radiusRatio;
 
         private CombatSession _session;
         private CombatUnit _currentUnit;
@@ -174,12 +186,16 @@ namespace FracturedChorus.UI
                 return;
             }
 
-            // Radial là redesign cơ bản — luôn ép square + pivot tâm dù scene set preserveSceneLayout.
+            _panelSize = ResolvePanelSize();
+
             panelRect.anchorMin = new Vector2(0.5f, 0.5f);
             panelRect.anchorMax = new Vector2(0.5f, 0.5f);
             panelRect.pivot = new Vector2(0.5f, 0.5f);
-            panelRect.sizeDelta = new Vector2(PanelSize, PanelSize);
-            panelRect.localScale = Vector3.one;
+            if (!preserveSceneLayout)
+            {
+                // Chỉ ép size khi được phép; mặc định tôn trọng kích thước panel trong scene.
+                panelRect.sizeDelta = new Vector2(_panelSize, _panelSize);
+            }
 
             var bg = panelRect.GetComponent<Image>();
             if (bg != null)
@@ -190,6 +206,17 @@ namespace FracturedChorus.UI
             }
 
             ConfigureTitle();
+        }
+
+        /// <summary>Kích thước panel = size trong scene (nếu preserveSceneLayout), fallback khi chưa set.</summary>
+        private float ResolvePanelSize()
+        {
+            if (preserveSceneLayout)
+            {
+                return RectSizeUtil.ResolveMinExtent(panelRect, fallbackPanelSize);
+            }
+
+            return fallbackPanelSize;
         }
 
         private void ConfigureTitle()
@@ -204,7 +231,7 @@ namespace FracturedChorus.UI
             titleRect.anchorMax = new Vector2(0.5f, 1f);
             titleRect.pivot = new Vector2(0.5f, 1f);
             titleRect.anchoredPosition = new Vector2(0f, -6f);
-            titleRect.sizeDelta = new Vector2(PanelSize - 12f, 24f);
+            titleRect.sizeDelta = new Vector2(_panelSize - 12f, 24f);
             titleLabel.alignment = TextAnchor.MiddleCenter;
             titleLabel.raycastTarget = false;
         }
@@ -506,9 +533,9 @@ namespace FracturedChorus.UI
             }
         }
 
-        private static Vector2 TopPosition() => new Vector2(0f, Radius);
-        private static Vector2 LeftPosition() => new Vector2(-Radius * 0.866f, -Radius * 0.5f);
-        private static Vector2 RightPosition() => new Vector2(Radius * 0.866f, -Radius * 0.5f);
+        private Vector2 TopPosition() => new Vector2(0f, Radius);
+        private Vector2 LeftPosition() => new Vector2(-Radius * 0.866f, -Radius * 0.5f);
+        private Vector2 RightPosition() => new Vector2(Radius * 0.866f, -Radius * 0.5f);
 
         private void EnsureRadialRoot()
         {
@@ -524,7 +551,7 @@ namespace FracturedChorus.UI
             _radialRoot.anchorMax = new Vector2(0.5f, 0.5f);
             _radialRoot.pivot = new Vector2(0.5f, 0.5f);
             _radialRoot.anchoredPosition = new Vector2(0f, -10f);
-            _radialRoot.sizeDelta = new Vector2(PanelSize, PanelSize);
+            _radialRoot.sizeDelta = new Vector2(_panelSize, _panelSize);
         }
 
         private void ClearRadial()

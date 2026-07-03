@@ -227,6 +227,20 @@ namespace FracturedChorus.Editor
             ElementBadgeIconSetup.ApplyToStatBlocks();
         }
 
+        [MenuItem("Fractured Chorus/Add Enemy Status Bar (Hierarchy)")]
+        public static void AddEnemyStatusBarToScene()
+        {
+            CombatUiHierarchy.AddEnemyStatusBarToScene();
+            ElementBadgeIconSetup.ApplyToStatBlocks();
+        }
+
+        [MenuItem("Fractured Chorus/Setup Enemy Cards in Hierarchy")]
+        public static void SetupEnemyCardsInHierarchy()
+        {
+            CombatUiHierarchy.EnsureEnemyCardsInHierarchy();
+            ElementBadgeIconSetup.ApplyToStatBlocks();
+        }
+
         private static void SetRef(Object target, string field, Object value)
         {
             var so = new SerializedObject(target);

@@ -129,6 +129,14 @@ namespace FracturedChorus.Editor
             }
 
             CombatUiHierarchy.EnsurePartyCardsInHierarchy();
+            if (Object.FindAnyObjectByType<EnemyStatusBarUIView>(FindObjectsInactive.Include) == null)
+            {
+                CombatUiHierarchy.AddEnemyStatusBarToScene();
+            }
+            else
+            {
+                CombatUiHierarchy.EnsureEnemyCardsInHierarchy();
+            }
             ElementBadgeIconSetup.ApplyToStatBlocks();
 
             var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
