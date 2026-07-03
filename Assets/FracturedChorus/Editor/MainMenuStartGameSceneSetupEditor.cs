@@ -1176,6 +1176,7 @@ namespace FracturedChorus.Editor
             var scenes = new[]
             {
                 ScenePath,
+                "Assets/FracturedChorus/Scenes/PrologueVN.unity",
                 "Assets/FracturedChorus/Scenes/RunMapPrototype.unity",
                 "Assets/FracturedChorus/Scenes/CombatPrototype.unity"
             };

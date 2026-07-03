@@ -1,0 +1,190 @@
+using System.Collections;
+using FracturedChorus.Menu;
+using UnityEngine;
+
+namespace FracturedChorus.Narrative
+{
+    public class PrologueAudioController : MonoBehaviour
+    {
+        [SerializeField] private AudioClip bgmClip;
+        [SerializeField] private AudioClip butterflyWingsClip;
+        [SerializeField] private AudioClip typingClip;
+        [SerializeField] private AudioClip penSignClip;
+        [SerializeField] private float bgmVolume = 0.46f;
+        [SerializeField] private float butterflyVolume = 0.26f;
+        [SerializeField] private float typingVolume = 0.55f;
+        [SerializeField] private float penSignVolume = 0.7f;
+
+        private AudioSource _bgmSource;
+        private AudioSource _butterflySource;
+        private AudioSource _typingSource;
+        private AudioSource _sfxSource;
+        private bool _typingLineActive;
+
+        private void Awake()
+        {
+            _bgmSource = CreateSource("PrologueBgm", true, false);
+            _butterflySource = CreateSource("PrologueButterfly", true, false);
+            _typingSource = CreateSource("PrologueTyping", false, false);
+            _sfxSource = CreateSource("PrologueSfx", false, false);
+            ApplyMasterVolume();
+            MainMenuGameSettings.SettingsChanged += ApplyMasterVolume;
+        }
+
+        private void OnDestroy()
+        {
+            MainMenuGameSettings.SettingsChanged -= ApplyMasterVolume;
+        }
+
+        public void StartBgm()
+        {
+            if (bgmClip == null || _bgmSource == null)
+            {
+                return;
+            }
+
+            _bgmSource.clip = bgmClip;
+            _bgmSource.volume = bgmVolume * MainMenuGameSettings.MasterVolume;
+            _bgmSource.loop = true;
+            _bgmSource.Play();
+        }
+
+        public void StartButterflyWings()
+        {
+            if (butterflyWingsClip == null || _butterflySource == null)
+            {
+                return;
+            }
+
+            _butterflySource.clip = butterflyWingsClip;
+            _butterflySource.volume = butterflyVolume * MainMenuGameSettings.MasterVolume;
+            _butterflySource.loop = true;
+            _butterflySource.pitch = 1f;
+            _butterflySource.Play();
+
+            if (_bgmSource != null && _bgmSource.isPlaying)
+            {
+                _bgmSource.volume = bgmVolume * 0.82f * MainMenuGameSettings.MasterVolume;
+            }
+        }
+
+        public void StopButterflyWings()
+        {
+            if (_butterflySource != null && _butterflySource.isPlaying)
+            {
+                _butterflySource.Stop();
+            }
+
+            if (_bgmSource != null && _bgmSource.isPlaying)
+            {
+                _bgmSource.volume = bgmVolume * MainMenuGameSettings.MasterVolume;
+            }
+        }
+
+        public void BeginTypingLine()
+        {
+            if (typingClip == null || _typingSource == null)
+            {
+                return;
+            }
+
+            StopTypingLine();
+            _typingLineActive = true;
+            _typingSource.clip = typingClip;
+            _typingSource.loop = true;
+            _typingSource.time = 0f;
+            _typingSource.pitch = 1f;
+            _typingSource.volume = typingVolume * MainMenuGameSettings.MasterVolume;
+            _typingSource.Play();
+        }
+
+        public void StopTypingLine()
+        {
+            _typingLineActive = false;
+            if (_typingSource != null && _typingSource.isPlaying)
+            {
+                _typingSource.Stop();
+            }
+        }
+
+        public void PlayPenSign()
+        {
+            if (penSignClip == null || _sfxSource == null)
+            {
+                return;
+            }
+
+            _sfxSource.pitch = 1f;
+            _sfxSource.volume = penSignVolume * MainMenuGameSettings.MasterVolume;
+            _sfxSource.PlayOneShot(penSignClip);
+        }
+
+        public void FadeOutAll(float duration)
+        {
+            StopTypingLine();
+            StopAllCoroutines();
+            StartCoroutine(FadeRoutine(duration));
+        }
+
+        private IEnumerator FadeRoutine(float duration)
+        {
+            var elapsed = 0f;
+            var bgmStart = _bgmSource != null ? _bgmSource.volume : 0f;
+            var wingStart = _butterflySource != null ? _butterflySource.volume : 0f;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                var t = 1f - Mathf.Clamp01(elapsed / duration);
+                if (_bgmSource != null)
+                {
+                    _bgmSource.volume = bgmStart * t;
+                }
+
+                if (_butterflySource != null)
+                {
+                    _butterflySource.volume = wingStart * t;
+                }
+
+                yield return null;
+            }
+
+            if (_bgmSource != null)
+            {
+                _bgmSource.Stop();
+            }
+
+            StopButterflyWings();
+        }
+
+        private void ApplyMasterVolume()
+        {
+            if (_bgmSource != null && _bgmSource.isPlaying)
+            {
+                var duck = _butterflySource != null && _butterflySource.isPlaying ? 0.82f : 1f;
+                _bgmSource.volume = bgmVolume * duck * MainMenuGameSettings.MasterVolume;
+            }
+
+            if (_butterflySource != null && _butterflySource.isPlaying)
+            {
+                _butterflySource.volume = butterflyVolume * MainMenuGameSettings.MasterVolume;
+            }
+
+            if (_typingLineActive && _typingSource != null && _typingSource.isPlaying)
+            {
+                _typingSource.volume = typingVolume * MainMenuGameSettings.MasterVolume;
+            }
+        }
+
+        private AudioSource CreateSource(string sourceName, bool loop, bool playOnAwake)
+        {
+            var go = new GameObject(sourceName);
+            go.transform.SetParent(transform, false);
+            var source = go.AddComponent<AudioSource>();
+            source.playOnAwake = playOnAwake;
+            source.loop = loop;
+            source.spatialBlend = 0f;
+            return source;
+        }
+    }
+}

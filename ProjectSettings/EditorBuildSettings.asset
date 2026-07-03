@@ -7,6 +7,9 @@ EditorBuildSettings:
   m_Scenes:
   - enabled: 1
     path: Assets/FracturedChorus/Scenes/MainMenuStartGame.unity
+    guid: 465d5b554ad955f4ab4ad78e104bfbf9
+  - enabled: 1
+    path: Assets/FracturedChorus/Scenes/PrologueVN.unity
     guid: 00000000000000000000000000000000
   - enabled: 1
     path: Assets/FracturedChorus/Scenes/RunMapPrototype.unity
