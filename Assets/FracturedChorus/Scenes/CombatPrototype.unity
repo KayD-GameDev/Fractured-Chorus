@@ -6571,6 +6571,7 @@ MonoBehaviour:
   slotWidth: 52
   minSlotWidth: 14
   laneMarkerSize: 26
+  footprintDotSize: 16
   autoPlayOnStart: 0
   autoBeatInterval: 0.405405
   useMusicSync: 1
@@ -9482,7 +9483,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Deploy
+  m_Text: Begin
 --- !u!222 &2120607411
 CanvasRenderer:
   m_ObjectHideFlags: 0

@@ -11,7 +11,7 @@
 ```
 Dàn trận (kéo unit vào ô)
   → [Deploy] → nhạc chạy
-  → scan chạy hết beat 0 → INTRO-PAUSE NGAY TRƯỚC beat 1 (beat 1 chưa fire; nhạc + timeline dừng)
+  → scan cho beat 0 kêu + lướt qua vạch → INTRO-PAUSE tại localBeat 0.5 (trước khi beat 1 chạm vạch; nhạc + timeline dừng)
   → Player đặt skill lên lane (mỗi skill vẽ footprint: S1 xám · S màu · S2 xám)
   → auto tiếp khi cả đội đã xếp skill · hoặc bấm [Continue]
   → Execute (timeline + nhạc chạy tiếp từ chỗ dừng)
@@ -23,7 +23,7 @@ Dàn trận (kéo unit vào ô)
 | Giai đoạn | Timeline | Nhạc |
 |-----------|----------|------|
 | **Deploy** | Pause (chờ Deploy) | Chưa phát |
-| **Intro-pause** | Pause trước beat 1 (đã chạy hết beat 0, beat 1 chưa fire) | **Pause tại chỗ** (giữ vị trí bài) |
+| **Intro-pause** | Pause tại localBeat 0.5 (beat 0 đã kêu, trước khi beat 1 chạm vạch) | **Pause tại chỗ** (giữ vị trí bài) |
 | **Execute** | Chạy sync beat | Phát tiếp từ chỗ pause |
 
 - **Bỏ:** Phase AV budget chung party · cycle cố định · skill Guard trên kit
@@ -32,9 +32,10 @@ Dàn trận (kéo unit vào ô)
 ### Intro-pause (set up skill sau khi qua beat đầu tiên)
 
 - Player **dàn trận** xong → bấm **Deploy** → `CombatController.StartRound` khoá reposition + `PlayBossMusic` + `BeatTimelineUIView.BeginRoundPlayback`.
-- Scan chạy hết beat 0, **NGAY TRƯỚC khi xử lý beat `PlanningPauseAfterBeat`** (hằng số code = `1`, không bị scene serialize ghi đè; `-1` = tắt) → pause TRƯỚC khi fire beat đó (`ProcessCrossedBeats` kiểm tra pause trước `FireScanBeat`) → `EnterPlanningPause`:
+- Pause theo **vị trí phân số của vạch quét**: `BeatTimelineUIView.PlanningPauseLocalBeat` (hằng số code = `0.5`, đơn vị beat; không bị scene serialize ghi đè; `-1` = tắt). `0.5` = vạch quét nằm giữa beat 0 và beat 1 → beat 0 đã kêu + lướt qua vạch, **dừng NGAY TRƯỚC khi beat 1 chạm vạch** (nhạc dừng sớm hơn so với dừng tại beat 1). `TryEnterPlanningPauseByLocalBeat()` kiểm tra `_localBeat >= ngưỡng` trong scan loop → `EnterPlanningPause`:
   - `CombatMusicController.PausePlayback()` — pause AudioSource tại chỗ, beat nhạc đóng băng theo `source.time`.
   - `RefreshLaneMarkers()` — refresh markers + footprint ngay lúc pause để điểm tròn hiện đúng thời điểm nút Continue xuất hiện.
+  - `Debug.Log("[BeatTimeline] Intro-pause tại localBeat=…")` — xác nhận code mới đã chạy.
   - Timeline scan dừng, **không** gọi `FinishPlayback` (chưa Execute).
   - `CombatController.OnTimelinePlanningPause` hiện nút **Continue**.
 - **KHÔNG** hiện điểm tròn trống trên lane. Điểm tròn chỉ xuất hiện khi player **đặt skill** — vẽ footprint 3 pha (xem §3): **S1 = tròn xám · S = chip/tròn màu unit · S2 = tròn xám** (`BeatTimelineUIView.RefreshFootprintDots`, layer `LaneFootprint`).
@@ -401,6 +402,7 @@ EN vẫn scale reduction qua `EnduranceFactor`.
 
 | Ngày | Nội dung |
 |------|----------|
+| 2026-07-03 | Fix: intro-pause chuyển sang ngưỡng phân số `PlanningPauseLocalBeat=0.5` (dừng khi vạch quét ở giữa beat 0↔1, nhạc dừng SỚM hơn — trước khi beat 1 chạm vạch) thay vì dừng tại beat 1; thêm Debug.Log xác nhận recompile |
 | 2026-07-03 | Fix: pause kiểm tra TRƯỚC `FireScanBeat` → dừng ngay trước beat 1 (beat 1 chưa fire, trước cả beat player sắp set); footprint refresh ngay lúc `EnterPlanningPause` để điểm tròn hiện đúng khi Continue xuất hiện |
 | 2026-07-03 | Fix: pause-beat chuyển thành hằng số `PlanningPauseAfterBeat=1` (scan qua beat 0 rồi mới dừng, không dừng tức thì); nhãn nút do `CombatController` ép runtime (Deploy/Continue) chống scene serialize cũ |
 | 2026-07-03 | Intro-pause: scan dừng sau khi qua beat đầu tiên (pause tại beat 1) cho player set up skill; nhạc `PausePlayback/ResumePlayback`; auto-resume khi cả đội đã xếp skill hoặc bấm Continue |
