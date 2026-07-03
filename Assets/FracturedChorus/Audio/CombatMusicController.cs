@@ -145,6 +145,27 @@ namespace FracturedChorus.Audio
             }
         }
 
+        /// <summary>Đang phát nhưng bị tạm dừng (giữ nguyên vị trí bài) — dùng cho intro-pause planning.</summary>
+        public bool IsPaused => _playing && source != null && !source.isPlaying;
+
+        /// <summary>Tạm dừng nhạc tại chỗ (không reset). Beat nhạc đóng băng theo source.time.</summary>
+        public void PausePlayback()
+        {
+            if (source != null && source.isPlaying)
+            {
+                source.Pause();
+            }
+        }
+
+        /// <summary>Phát tiếp từ chỗ đã pause.</summary>
+        public void ResumePlayback()
+        {
+            if (_playing && source != null && !source.isPlaying)
+            {
+                source.UnPause();
+            }
+        }
+
         private void HandleLoopRegions()
         {
             var passEnd = ResolveFirstPassEndSec();

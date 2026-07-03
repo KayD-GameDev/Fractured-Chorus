@@ -54,7 +54,14 @@ namespace FracturedChorus.Combat.AI
             var pool = new List<int>(slotCount);
             for (var i = 0; i < slotCount; i++)
             {
-                pool.Add(startBeat + i);
+                var beat = startBeat + i;
+                // Luật: quái chỉ được đánh từ beat thứ 3 (TimelineConstants.EnemyFirstAttackBeat) trở đi.
+                if (beat < TimelineConstants.EnemyFirstAttackBeat)
+                {
+                    continue;
+                }
+
+                pool.Add(beat);
             }
 
             pickCount = Mathf.Min(pickCount, pool.Count);

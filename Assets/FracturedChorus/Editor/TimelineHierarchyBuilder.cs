@@ -83,9 +83,48 @@ namespace FracturedChorus.Editor
             return barUi;
         }
 
-        private static PartyMemberCardView CreatePartyCardTemplate(Transform parent)
+        public static EnemyStatusBarUIView BuildEnemyStatusBar(Transform canvasTransform)
         {
-            var cardGo = CreateUiObject("CardTemplate", parent);
+            var existing = canvasTransform.Find("EnemyStatusBarUI");
+            if (existing != null)
+            {
+                Object.DestroyImmediate(existing.gameObject);
+            }
+
+            var barGo = CreateUiObject("EnemyStatusBarUI", canvasTransform);
+            var barRect = barGo.GetComponent<RectTransform>();
+            barRect.anchorMin = new Vector2(1f, 1f);
+            barRect.anchorMax = new Vector2(1f, 1f);
+            barRect.pivot = new Vector2(1f, 1f);
+            barRect.anchoredPosition = new Vector2(-12f, -12f);
+            barRect.sizeDelta = new Vector2(PartyBarWidth, PartyCardHeight);
+
+            var cardsRowGo = CreateUiObject("CardsRow", barGo.transform);
+            var cardsRowRect = cardsRowGo.GetComponent<RectTransform>();
+            StretchFull(cardsRowRect);
+            var rowLayout = cardsRowGo.AddComponent<HorizontalLayoutGroup>();
+            rowLayout.spacing = EnemyStatusBarUIView.DefaultCardSpacing;
+            rowLayout.childAlignment = TextAnchor.UpperRight;
+            rowLayout.childControlWidth = false;
+            rowLayout.childControlHeight = false;
+            rowLayout.childForceExpandWidth = false;
+            rowLayout.childForceExpandHeight = false;
+            rowLayout.enabled = false;
+
+            var cardTemplate = CreatePartyCardTemplate(barGo.transform);
+            cardTemplate.gameObject.SetActive(false);
+
+            var barUi = barGo.AddComponent<EnemyStatusBarUIView>();
+            SetField(barUi, "cardsRow", cardsRowRect);
+            SetField(barUi, "cardTemplate", cardTemplate);
+            SetField(barUi, "cardSpacing", EnemyStatusBarUIView.DefaultCardSpacing);
+            barUi.WireReferences();
+            return barUi;
+        }
+
+        private static PartyMemberCardView CreatePartyCardTemplate(Transform parent, string templateName = "CardTemplate")
+        {
+            var cardGo = CreateUiObject(templateName, parent);
             var cardRect = cardGo.GetComponent<RectTransform>();
             cardRect.anchorMin = new Vector2(0f, 1f);
             cardRect.anchorMax = new Vector2(0f, 1f);
@@ -256,7 +295,7 @@ namespace FracturedChorus.Editor
             ApplyText(label);
             label.fontSize = 18;
             label.fontStyle = FontStyle.Bold;
-            label.text = "EXECUTE";
+            label.text = "Deploy";
 
             var overlay = overlayGo.AddComponent<CombatExecuteOverlayUIView>();
             SetField(overlay, "executeButton", button);

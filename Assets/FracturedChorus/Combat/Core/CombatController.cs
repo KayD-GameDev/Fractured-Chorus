@@ -10,6 +10,9 @@ namespace FracturedChorus.Combat.Core
 {
     public class CombatController : MonoBehaviour
     {
+        private const string DeployLabel = "Deploy";
+        private const string ResumeLabel = "Continue";
+
         [SerializeField] private BeatTimelineUIView timelineView;
         [SerializeField] private SkillPanelUIView skillPanelView;
         [SerializeField] private CombatExecuteOverlayUIView executeOverlay;
@@ -21,6 +24,7 @@ namespace FracturedChorus.Combat.Core
         private BoardDragController _boardDrag;
         private CombatUnit _armedUnit;
         private SkillDefinitionSO _armedSkill;
+        private bool _planningPaused;
 
         public CombatSession Session => _session;
 
@@ -43,7 +47,7 @@ namespace FracturedChorus.Combat.Core
                 executeOverlay = FindAnyObjectByType<CombatExecuteOverlayUIView>();
             }
 
-            executeOverlay?.Bind(StartRound);
+            BindDeployButton();
 
             WireGuardInput();
 
@@ -79,8 +83,15 @@ namespace FracturedChorus.Combat.Core
                 executeOverlay = FindAnyObjectByType<CombatExecuteOverlayUIView>();
             }
 
-            executeOverlay?.Bind(StartRound);
+            BindDeployButton();
             UpdateExecuteOverlayVisibility(_session?.Phase ?? CombatPhase.Planning);
+        }
+
+        /// <summary>Bind nút giữa về StartRound và ép nhãn "Deploy" (không phụ thuộc giá trị serialize có thể cũ).</summary>
+        private void BindDeployButton()
+        {
+            executeOverlay?.Bind(StartRound);
+            executeOverlay?.SetLabel(DeployLabel);
         }
 
         public void StartRound()
@@ -95,6 +106,7 @@ namespace FracturedChorus.Combat.Core
                 return;
             }
 
+            _planningPaused = false;
             _session.LockPlayerReposition();
             _boardDrag?.CancelActiveDrag();
             ClearArmedSkill();
@@ -146,6 +158,75 @@ namespace FracturedChorus.Combat.Core
             ClearArmedSkill();
             _session?.ConfirmPlanningAndExecute();
             timelineView?.RefreshAll();
+        }
+
+        /// <summary>Timeline gọi khi scan vừa qua nốt đầu tiên: mở planning cho player set up skill.</summary>
+        public void OnTimelinePlanningPause()
+        {
+            _planningPaused = true;
+            executeOverlay?.Bind(ResumeFromPlanningPause);
+            executeOverlay?.SetLabel(ResumeLabel);
+            executeOverlay?.SetVisible(true);
+        }
+
+        /// <summary>Phát tiếp bài nhạc sau intro-pause (bấm Continue hoặc auto khi cả đội đã xếp skill).</summary>
+        public void ResumeFromPlanningPause()
+        {
+            if (!_planningPaused)
+            {
+                return;
+            }
+
+            _planningPaused = false;
+            executeOverlay?.SetVisible(false);
+            BindDeployButton();
+            timelineView?.ResumeRoundPlayback();
+        }
+
+        private void MaybeAutoResumeAfterPlanning()
+        {
+            if (_planningPaused && AllPartyUnitsHaveActions())
+            {
+                ResumeFromPlanningPause();
+            }
+        }
+
+        private bool AllPartyUnitsHaveActions()
+        {
+            if (_session?.Grid == null || _session.Timeline == null)
+            {
+                return false;
+            }
+
+            var anyAlive = false;
+            foreach (var unit in _session.Grid.PlayerUnits)
+            {
+                if (unit == null || !unit.IsAlive)
+                {
+                    continue;
+                }
+
+                anyAlive = true;
+                if (!UnitHasAssignedAction(unit))
+                {
+                    return false;
+                }
+            }
+
+            return anyAlive;
+        }
+
+        private bool UnitHasAssignedAction(CombatUnit unit)
+        {
+            foreach (var entry in _session.Timeline.Agenda)
+            {
+                if (entry != null && entry.Unit == unit && entry.Skill != null)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private void OnScanBeatReached(int beatIndex)
@@ -263,6 +344,7 @@ namespace FracturedChorus.Combat.Core
         {
             timelineView?.RefreshBeat(entry.BeatIndex);
             timelineView?.RefreshAll();
+            MaybeAutoResumeAfterPlanning();
         }
 
         private void HandleUnitHpChanged(CombatUnit unit)
@@ -272,6 +354,7 @@ namespace FracturedChorus.Combat.Core
 
         private void HandleEncounterEnded()
         {
+            _planningPaused = false;
             ClearArmedSkill();
             skillPanelView?.Hide();
             timelineView?.StopTimelinePlayback();

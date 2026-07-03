@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.SkillDefinitionSO
   skillId: ren_ult
   displayName: Finale
-  description: 
+  description: 'Damage burst · 3 counter hit'
   slotKind: 2
   avCost: 50
   delay: 5
@@ -23,3 +23,6 @@ MonoBehaviour:
   targetType: 0
   glowType: 1
   baseDamage: 0
+  standingBeatsBefore: 2
+  activeBeats: 3
+  standingBeatsAfter: 3

@@ -97,13 +97,6 @@ namespace FracturedChorus.Combat.Bootstrap
                 return;
             }
 
-            var template = partyStatusBarView.CardTemplate;
-            if (template == null)
-            {
-                Debug.LogWarning("[Bootstrap] No party card template — bỏ qua thanh thẻ quái.");
-                return;
-            }
-
             if (enemyStatusBarView == null)
             {
                 enemyStatusBarView = FindAnyObjectByType<EnemyStatusBarUIView>();
@@ -111,15 +104,31 @@ namespace FracturedChorus.Combat.Bootstrap
 
             if (enemyStatusBarView == null)
             {
-                enemyStatusBarView = CreateEnemyStatusBar();
-            }
-
-            if (enemyStatusBarView == null)
-            {
+                Debug.LogWarning(
+                    "[Bootstrap] Không có EnemyStatusBarUI trong scene. " +
+                    "Chạy menu Fractured Chorus → Add Enemy Status Bar (Hierarchy), Save scene, rồi Play lại.");
                 return;
             }
 
-            enemyStatusBarView.SetCardTemplate(template);
+            enemyStatusBarView.WireReferences();
+
+            if (enemyStatusBarView.CardTemplate == null)
+            {
+                var partyTemplate = partyStatusBarView.CardTemplate;
+                if (partyTemplate != null)
+                {
+                    Debug.LogWarning(
+                        "[Bootstrap] EnemyStatusBarUI thiếu CardTemplate — tạm mượn template party. " +
+                        "Chạy Setup Enemy Cards in Hierarchy để có CardTemplate riêng trong scene.");
+                    enemyStatusBarView.SetCardTemplate(partyTemplate);
+                }
+                else
+                {
+                    Debug.LogWarning("[Bootstrap] Không có CardTemplate cho thẻ quái.");
+                    return;
+                }
+            }
+
             AlignEnemyBarToPartyY();
             enemyStatusBarView.BindFromSession(_session);
         }
@@ -159,46 +168,6 @@ namespace FracturedChorus.Combat.Bootstrap
             var pos = enemyRect.anchoredPosition;
             pos.y = partyRect.anchoredPosition.y;
             enemyRect.anchoredPosition = pos;
-        }
-
-        private EnemyStatusBarUIView CreateEnemyStatusBar()
-        {
-            var canvasRect = ResolveUiCanvasRect();
-            if (canvasRect == null)
-            {
-                Debug.LogWarning("[Bootstrap] Không tìm thấy Canvas cho thanh thẻ quái.");
-                return null;
-            }
-
-            var go = new GameObject("EnemyStatusBarUI", typeof(RectTransform));
-            var rect = go.GetComponent<RectTransform>();
-            rect.SetParent(canvasRect, false);
-            rect.anchorMin = new Vector2(1f, 1f);
-            rect.anchorMax = new Vector2(1f, 1f);
-            rect.pivot = new Vector2(1f, 1f);
-            rect.anchoredPosition = new Vector2(-12f, -12f);
-            rect.sizeDelta = new Vector2(420f, 128f);
-
-            var view = go.AddComponent<EnemyStatusBarUIView>();
-            view.EnsureRow();
-            return view;
-        }
-
-        private RectTransform ResolveUiCanvasRect()
-        {
-            var walk = partyStatusBarView != null ? partyStatusBarView.transform.parent : null;
-            while (walk != null)
-            {
-                if (walk.GetComponent<Canvas>() != null)
-                {
-                    return walk as RectTransform;
-                }
-
-                walk = walk.parent;
-            }
-
-            var anyCanvas = FindAnyObjectByType<Canvas>();
-            return anyCanvas != null ? anyCanvas.transform as RectTransform : null;
         }
 
         private CombatExecuteOverlayUIView ResolveExecuteOverlay()

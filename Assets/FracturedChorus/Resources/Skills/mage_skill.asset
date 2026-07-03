@@ -13,13 +13,16 @@ MonoBehaviour:
   m_Name: mage_skill
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.SkillDefinitionSO
   skillId: mage_skill
-  displayName: Arc
-  description: 
+  displayName: Mend
+  description: 'Heal 25 + Ma×0.5'
   slotKind: 1
   avCost: 25
   delay: 3
   skillTier: 2
   damageType: 1
-  targetType: 0
-  glowType: 0
+  targetType: 1
+  glowType: 2
   baseDamage: 0
+  standingBeatsBefore: 2
+  activeBeats: 1
+  standingBeatsAfter: 2

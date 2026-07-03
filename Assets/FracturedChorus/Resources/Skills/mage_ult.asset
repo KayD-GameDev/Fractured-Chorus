@@ -13,13 +13,16 @@ MonoBehaviour:
   m_Name: mage_ult
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.SkillDefinitionSO
   skillId: mage_ult
-  displayName: Cataclysm
-  description: 
+  displayName: Encore
+  description: 'ReduceS2 −1 (ally)'
   slotKind: 2
   avCost: 50
   delay: 5
-  skillTier: 3
+  skillTier: 2
   damageType: 1
-  targetType: 0
-  glowType: 1
+  targetType: 1
+  glowType: 2
   baseDamage: 0
+  standingBeatsBefore: 1
+  activeBeats: 1
+  standingBeatsAfter: 1
