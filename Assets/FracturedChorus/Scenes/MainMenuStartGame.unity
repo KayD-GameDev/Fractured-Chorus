@@ -3240,6 +3240,7 @@ GameObject:
   - component: {fileID: 1009477332}
   - component: {fileID: 1009477331}
   - component: {fileID: 1009477330}
+  - component: {fileID: 1009477333}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -3321,6 +3322,50 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1009477333
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1009477329}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a79441f348de89743a2939f4d699eac1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalCameraData
+  m_RenderShadows: 1
+  m_RequiresDepthTextureOption: 2
+  m_RequiresOpaqueTextureOption: 2
+  m_CameraType: 0
+  m_Cameras: []
+  m_RendererIndex: -1
+  m_VolumeLayerMask:
+    serializedVersion: 2
+    m_Bits: 1
+  m_VolumeTrigger: {fileID: 0}
+  m_VolumeFrameworkUpdateModeOption: 2
+  m_RenderPostProcessing: 0
+  m_Antialiasing: 0
+  m_AntialiasingQuality: 2
+  m_StopNaN: 0
+  m_Dithering: 0
+  m_ClearDepth: 1
+  m_AllowXRRendering: 1
+  m_AllowHDROutput: 1
+  m_UseScreenCoordOverride: 0
+  m_ScreenSizeOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_ScreenCoordScaleBias: {x: 0, y: 0, z: 0, w: 0}
+  m_RequiresDepthTexture: 0
+  m_RequiresColorTexture: 0
+  m_TaaSettings:
+    m_Quality: 3
+    m_FrameInfluence: 0.1
+    m_JitterScale: 1
+    m_MipBias: 0
+    m_VarianceClampScale: 0.9
+    m_ContrastAdaptiveSharpening: 0
+  m_Version: 2
 --- !u!1 &1056780271
 GameObject:
   m_ObjectHideFlags: 0
@@ -4837,12 +4882,14 @@ MonoBehaviour:
   menuFemaleVoiceClip: {fileID: 8300000, guid: e1b7d4a82c3f54b6a9d0e1f2a3b4c5d6, type: 3}
   menuMaleVoiceClip: {fileID: 8300000, guid: f2c8e5b93d4a65c7b0e1f2a3b4c5d6e7, type: 3}
   changeMenuSfxClip: {fileID: 8300000, guid: b4e7c8d91a2f43b6c5d0e1f2a3b4c5d6, type: 3}
+  buttonPressSfxClip: {fileID: 8300000, guid: c3d8e9f01a2b4c5d6e7f8091a2b3c4d5, type: 3}
   transitionDuration: 0.35
   menuTransitionFadeScale: 0.55
   bgmLeadInSeconds: 0.45
   bgmLeadInProgress: 0.48
   bgmDuckMultiplier: 0.28
   changeMenuSfxVolume: 1.45
+  buttonPressSfxVolume: 1
   editorPreview: 2
 --- !u!4 &1569243017
 Transform:
@@ -5767,7 +5814,7 @@ MonoBehaviour:
   m_MinValue: 0
   m_MaxValue: 1
   m_WholeNumbers: 0
-  m_Value: 1
+  m_Value: 0.85
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
