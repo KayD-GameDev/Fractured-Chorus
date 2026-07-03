@@ -71,8 +71,10 @@ namespace FracturedChorus.UI
 
         private static readonly Color StandingDotColor = new Color(0.55f, 0.55f, 0.6f, 0.85f);
 
-        // Pause sau khi scan ĐÃ QUA beat đầu tiên → dừng tại beat này (const để scene serialize không ghi đè). -1 = tắt.
-        private const int PlanningPauseAfterBeat = 1;
+        // Intro-pause theo vị trí vạch quét (đơn vị = beat, phân số). 0.5 = vạch nằm giữa beat 0 và beat 1:
+        // beat 0 đã kêu + lướt qua vạch, dừng TRƯỚC khi beat 1 chạm vạch. -1 = tắt.
+        // (const để scene serialize không ghi đè — chỉnh giá trị này để dời điểm dừng.)
+        private const float PlanningPauseLocalBeat = 0.5f;
 
         private static int TotalBeats => TimelineConstants.TotalBeats;
 
@@ -241,7 +243,7 @@ namespace FracturedChorus.UI
 
             _autoPlayCompleted = false;
             _pausedForPlanning = false;
-            _planningPauseArmed = PlanningPauseAfterBeat >= 0;
+            _planningPauseArmed = PlanningPauseLocalBeat >= 0f;
 
             if (_autoPlayRoutine != null)
             {
@@ -285,6 +287,7 @@ namespace FracturedChorus.UI
             musicController?.PausePlayback();
             ResetAllScanHighlights();
             RefreshLaneMarkers();
+            Debug.Log($"[BeatTimeline] Intro-pause tại localBeat={_localBeat:F2} (ngưỡng {PlanningPauseLocalBeat}). Continue để chạy tiếp.");
             FindAnyObjectByType<CombatController>()?.OnTimelinePlanningPause();
         }
 
@@ -336,6 +339,11 @@ namespace FracturedChorus.UI
                 ApplyScrollVisual(_totalScrollPx);
                 ProcessCrossedBeats();
 
+                if (TryEnterPlanningPauseByLocalBeat())
+                {
+                    break;
+                }
+
                 if (_session != null && _session.IsEncounterOver)
                 {
                     break;
@@ -374,6 +382,11 @@ namespace FracturedChorus.UI
                 _totalScrollPx = PxOfLocalBeat(_localBeat);
                 ApplyScrollVisual(_totalScrollPx);
                 ProcessCrossedBeats();
+
+                if (TryEnterPlanningPauseByLocalBeat())
+                {
+                    break;
+                }
 
                 if (_session != null && _session.IsEncounterOver)
                 {
@@ -489,22 +502,33 @@ namespace FracturedChorus.UI
 
             while (_lastFiredBeat < beatIndex)
             {
-                var next = _lastFiredBeat + 1;
-
-                // Dừng TRƯỚC khi xử lý beat mục tiêu → timeline dừng trước beat player sắp set, beat này chưa fire.
-                if (_planningPauseArmed && PlanningPauseAfterBeat >= 0 && next >= PlanningPauseAfterBeat)
-                {
-                    EnterPlanningPause();
-                    return;
-                }
-
-                FireScanBeat(next);
+                FireScanBeat(_lastFiredBeat + 1);
                 if (_session != null && _session.IsEncounterOver)
                 {
                     _isPlaybackActive = false;
                     return;
                 }
             }
+        }
+
+        /// <summary>
+        /// Intro-pause dựa trên vị trí vạch quét (phân số): cho beat 0 kêu + lướt qua vạch, rồi dừng
+        /// NGAY TRƯỚC khi beat kế chạm vạch. Trả về true nếu vừa pause.
+        /// </summary>
+        private bool TryEnterPlanningPauseByLocalBeat()
+        {
+            if (!_planningPauseArmed || PlanningPauseLocalBeat < 0f)
+            {
+                return false;
+            }
+
+            if (_localBeat < PlanningPauseLocalBeat)
+            {
+                return false;
+            }
+
+            EnterPlanningPause();
+            return true;
         }
 
         private void FireScanBeat(int beat)
