@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.SkillDefinitionSO
   skillId: ren_basic
   displayName: Strike
-  description: 
+  description: 'Damage + Cycle Shift'
   slotKind: 0
   avCost: 0
   delay: 2
