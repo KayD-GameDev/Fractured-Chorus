@@ -6,6 +6,7 @@ namespace FracturedChorus.RunMap
     public static class RunMapSceneLoader
     {
         private const string MainMenuStartGameScenePath = "Assets/FracturedChorus/Scenes/MainMenuStartGame.unity";
+        private const string PrologueVNScenePath = "Assets/FracturedChorus/Scenes/PrologueVN.unity";
         private const string CombatScenePath = "Assets/FracturedChorus/Scenes/CombatPrototype.unity";
         private const string RunMapScenePath = "Assets/FracturedChorus/Scenes/RunMapPrototype.unity";
 
@@ -45,6 +46,11 @@ namespace FracturedChorus.RunMap
             if (sceneName == RunMapSceneCatalog.MainMenuStartGame)
             {
                 return MainMenuStartGameScenePath;
+            }
+
+            if (sceneName == RunMapSceneCatalog.PrologueVN)
+            {
+                return PrologueVNScenePath;
             }
 
             if (sceneName == RunMapSceneCatalog.CombatPrototype)

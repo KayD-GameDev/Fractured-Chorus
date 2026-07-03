@@ -213,9 +213,9 @@ namespace FracturedChorus.Menu
             {
                 case MenuAction.NewGame:
                     SetStatus("Bắt đầu run mới…");
-                    if (!RunMapSceneLoader.LoadByName(RunMapSceneCatalog.RunMapPrototype))
+                    if (!RunMapSceneLoader.LoadByName(RunMapSceneCatalog.PrologueVN))
                     {
-                        SetStatus("Không load được Run Map.");
+                        SetStatus("Không load được Prologue.");
                     }
 
                     break;
