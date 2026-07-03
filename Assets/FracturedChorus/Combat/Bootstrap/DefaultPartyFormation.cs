@@ -36,6 +36,9 @@ namespace FracturedChorus.Combat.Bootstrap
                     case "grunt_right":
                         position = HoneycombIndex.FromDisplay(GridSide.Enemy, 2, 3);
                         return true;
+                    case "boss_despair":
+                        position = new GridPosition(GridSide.Enemy, 1, 1);
+                        return true;
                 }
             }
 

@@ -915,6 +915,143 @@ namespace FracturedChorus.Editor
             Debug.Log($"[Fractured Chorus] Hex board rebuilt 2×3. Đã xoá {deleted} ô hàng DƯỚI cùng, giữ 2 hàng trên (units + top), re-index về R0(top)/R1(units) + snap toạ độ đã lưu. Lưu scene.");
         }
 
+        [MenuItem("Fractured Chorus/Add Knight of Despair (Boss) to Scene")]
+        public static void AddKnightOfDespairToScene()
+        {
+            RunBossSceneSetup(saveScene: true, log: true);
+        }
+
+        public static void RunBossSceneSetupBatch()
+        {
+            EditorSceneManager.OpenScene("Assets/FracturedChorus/Scenes/CombatPrototype.unity");
+            RunBossSceneSetup(saveScene: true, log: true);
+        }
+
+        private static void RunBossSceneSetup(bool saveScene, bool log)
+        {
+            CombatDataAssetGenerator.CreateBossDespairAssets();
+            AssetDatabase.SaveAssets();
+
+            var preset = AssetDatabase.LoadAssetAtPath<UnitPresetSO>(
+                "Assets/FracturedChorus/Resources/UnitPresets/UnitPreset_Boss_Despair.asset");
+            if (preset == null)
+            {
+                Debug.LogError("[Fractured Chorus] UnitPreset_Boss_Despair missing after asset generation.");
+                return;
+            }
+
+            var unitsRoot = GameObject.Find("CombatRoot/World/Units")?.transform
+                ?? GameObject.Find("World/Units")?.transform;
+            if (unitsRoot == null)
+            {
+                Debug.LogError("[Fractured Chorus] Units root not found — open CombatPrototype scene first.");
+                return;
+            }
+
+            var bossCell = new GridPosition(GridSide.Enemy, 1, 1);
+            var bossWorld = HexBoardLayout.GetWorldPosition(bossCell, SideGap);
+
+            var existing = unitsRoot.Find("Unit_Knight of Despair");
+            if (existing != null)
+            {
+                var existingView = existing.GetComponent<UnitView>();
+                if (existingView != null)
+                {
+                    existingView.PlaceOnGrid(bossCell);
+                    existing.transform.position = new Vector3(bossWorld.x, bossWorld.y, -0.05f);
+                    EditorUtility.SetDirty(existingView);
+                }
+
+                EditorUtility.SetDirty(existing);
+                RegisterBossWithBootstrap(existingView);
+                EditorSceneManager.MarkSceneDirty(unitsRoot.gameObject.scene);
+
+                if (log)
+                {
+                    Debug.Log("[Fractured Chorus] Unit_Knight of Despair repositioned to Enemy R1 C1.");
+                }
+
+                if (saveScene)
+                {
+                    EditorSceneManager.SaveOpenScenes();
+                }
+
+                return;
+            }
+
+            var pos = bossCell;
+            var worldPos = bossWorld;
+
+            var unitGo = new GameObject("Unit_Knight of Despair");
+            Undo.RegisterCreatedObjectUndo(unitGo, "Add Knight of Despair");
+            unitGo.transform.SetParent(unitsRoot, false);
+            unitGo.transform.position = new Vector3(worldPos.x, worldPos.y, -0.05f);
+            unitGo.transform.localScale = Vector3.one * 0.2f;
+
+            var sr = unitGo.AddComponent<SpriteRenderer>();
+            sr.sprite = preset.battleSprite;
+            sr.sortingOrder = 10 + pos.Row;
+            sr.color = preset.battleSprite != null ? Color.white : preset.placeholderColor;
+
+            var view = Undo.AddComponent<UnitView>(unitGo);
+            SetSerializedField(view, "preset", preset);
+            SetSerializedField(view, "demoUnitKey", "boss_despair");
+            SetSerializedField(view, "side", (int)GridSide.Enemy);
+            view.PlaceOnGrid(pos);
+            view.EnsureInteractionColliders();
+            view.RefitBodyColliderToSprite();
+            EditorUtility.SetDirty(view);
+
+            RegisterBossWithBootstrap(view);
+            EditorSceneManager.MarkSceneDirty(unitsRoot.gameObject.scene);
+
+            if (saveScene)
+            {
+                EditorSceneManager.SaveOpenScenes();
+            }
+
+            if (log)
+            {
+                Debug.Log(
+                    "[Fractured Chorus] Added Knight of Despair at Enemy R1 C1. HP 1680 · STR 58 · Pulse 130.");
+            }
+        }
+
+        private static void RegisterBossWithBootstrap(UnitView bossView)
+        {
+            if (bossView == null)
+            {
+                return;
+            }
+
+            var bootstrap = Object.FindAnyObjectByType<CombatPrototypeBootstrap>();
+            if (bootstrap == null)
+            {
+                return;
+            }
+
+            var so = new SerializedObject(bootstrap);
+            var prop = so.FindProperty("unitViews");
+            if (prop == null || !prop.isArray)
+            {
+                return;
+            }
+
+            for (var i = 0; i < prop.arraySize; i++)
+            {
+                if (prop.GetArrayElementAtIndex(i).objectReferenceValue == bossView)
+                {
+                    so.ApplyModifiedPropertiesWithoutUndo();
+                    return;
+                }
+            }
+
+            prop.arraySize += 1;
+            prop.GetArrayElementAtIndex(prop.arraySize - 1).objectReferenceValue = bossView;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(bootstrap);
+        }
+
         private static Sprite CreatePlaceholderSprite()
         {
             var tex = new Texture2D(1, 1);
