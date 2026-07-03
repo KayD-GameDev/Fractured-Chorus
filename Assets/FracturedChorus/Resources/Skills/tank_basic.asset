@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.SkillDefinitionSO
   skillId: tank_basic
   displayName: Ram
-  description: 
+  description: 'Damage'
   slotKind: 0
   avCost: 0
   delay: 2

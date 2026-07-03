@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: ren_skill
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.SkillDefinitionSO
   skillId: ren_skill
-  displayName: Riposte
-  description: 
+  displayName: Crosscut
+  description: 'Damage · 2 counter hit'
   slotKind: 1
   avCost: 25
   delay: 3
@@ -23,3 +23,6 @@ MonoBehaviour:
   targetType: 0
   glowType: 0
   baseDamage: 0
+  standingBeatsBefore: 2
+  activeBeats: 2
+  standingBeatsAfter: 2

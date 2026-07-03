@@ -295,7 +295,7 @@ namespace FracturedChorus.Editor
             ApplyText(label);
             label.fontSize = 18;
             label.fontStyle = FontStyle.Bold;
-            label.text = "EXECUTE";
+            label.text = "Deploy";
 
             var overlay = overlayGo.AddComponent<CombatExecuteOverlayUIView>();
             SetField(overlay, "executeButton", button);

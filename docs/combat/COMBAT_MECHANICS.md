@@ -9,21 +9,44 @@
 ## 1. Vòng lặp combat
 
 ```
-Intro 3s
-  → Planning (pause timeline · nhạc 1 loop)
-  → [Execute] confirm
-  → Execute (timeline + nhạc 2 chạy)
+Dàn trận (kéo unit vào ô)
+  → [Deploy] → nhạc chạy
+  → scan chạy hết beat 0 → INTRO-PAUSE NGAY TRƯỚC beat 1 (beat 1 chưa fire; nhạc + timeline dừng)
+  → Player đặt skill lên lane (mỗi skill vẽ footprint: S1 xám · S màu · S2 xám)
+  → auto tiếp khi cả đội đã xếp skill · hoặc bấm [Continue]
+  → Execute (timeline + nhạc chạy tiếp từ chỗ dừng)
+  → quái CHỈ ra đòn từ beat thứ 3 (index 2) trở đi
   → S2 skill xong (+ latency) → Planning char đó
   → lặp đến hết trận
 ```
 
 | Giai đoạn | Timeline | Nhạc |
 |-----------|----------|------|
-| **Planning** | Pause | Nhạc 1 — soft/slow BGM, loop |
-| **Execute** | Chạy sync beat | Nhạc 1 dừng · Nhạc 2 — BGM gốc |
+| **Deploy** | Pause (chờ Deploy) | Chưa phát |
+| **Intro-pause** | Pause trước beat 1 (đã chạy hết beat 0, beat 1 chưa fire) | **Pause tại chỗ** (giữ vị trí bài) |
+| **Execute** | Chạy sync beat | Phát tiếp từ chỗ pause |
 
 - **Bỏ:** Phase AV budget chung party · cycle cố định · skill Guard trên kit
-- **Giữ:** Nút **Execute** mỗi lần plan (player confirm)
+- **Giữ:** Nút **Deploy** (dàn trận) → **Continue** (sau intro-pause). Nhãn do `CombatController` ép runtime (`DeployLabel`/`ResumeLabel`), không phụ thuộc giá trị serialize trong scene.
+
+### Intro-pause (set up skill sau khi qua beat đầu tiên)
+
+- Player **dàn trận** xong → bấm **Deploy** → `CombatController.StartRound` khoá reposition + `PlayBossMusic` + `BeatTimelineUIView.BeginRoundPlayback`.
+- Scan chạy hết beat 0, **NGAY TRƯỚC khi xử lý beat `PlanningPauseAfterBeat`** (hằng số code = `1`, không bị scene serialize ghi đè; `-1` = tắt) → pause TRƯỚC khi fire beat đó (`ProcessCrossedBeats` kiểm tra pause trước `FireScanBeat`) → `EnterPlanningPause`:
+  - `CombatMusicController.PausePlayback()` — pause AudioSource tại chỗ, beat nhạc đóng băng theo `source.time`.
+  - `RefreshLaneMarkers()` — refresh markers + footprint ngay lúc pause để điểm tròn hiện đúng thời điểm nút Continue xuất hiện.
+  - Timeline scan dừng, **không** gọi `FinishPlayback` (chưa Execute).
+  - `CombatController.OnTimelinePlanningPause` hiện nút **Continue**.
+- **KHÔNG** hiện điểm tròn trống trên lane. Điểm tròn chỉ xuất hiện khi player **đặt skill** — vẽ footprint 3 pha (xem §3): **S1 = tròn xám · S = chip/tròn màu unit · S2 = tròn xám** (`BeatTimelineUIView.RefreshFootprintDots`, layer `LaneFootprint`).
+- Session vẫn ở phase **Planning** suốt lúc pause → player kéo-thả / arm skill lên lane.
+- **Resume tự động:** mỗi lần gán skill (`HandleActionAssigned`) kiểm tra `AllPartyUnitsHaveActions()` — khi mọi unit còn sống đã có action trong agenda → `ResumeFromPlanningPause`.
+- **Resume tay:** bấm **Continue** → `ResumeFromPlanningPause` → `CombatMusicController.ResumePlayback()` (UnPause) + `BeatTimelineUIView.ResumeRoundPlayback` chạy tiếp scan từ `_localBeat` đã dừng.
+
+### Luật ra đòn của quái
+
+- Quái **chỉ được đặt telegraph (ra đòn) từ beat thứ 3** trở đi — `TimelineConstants.EnemyFirstAttackBeat = 2` (0-indexed).
+- `SimpleEnemyAI.PickRandomUniqueBeats` loại mọi beat `< EnemyFirstAttackBeat` khỏi pool → phase 0 bỏ beat 0 & 1, các phase sau không ảnh hưởng.
+- Khớp với intro-pause: beat 0 (intro) · beat 1 (pause / planning) · **beat 2 = quái bắt đầu đánh**.
 
 ---
 
@@ -378,6 +401,13 @@ EN vẫn scale reduction qua `EnduranceFactor`.
 
 | Ngày | Nội dung |
 |------|----------|
+| 2026-07-03 | Fix: pause kiểm tra TRƯỚC `FireScanBeat` → dừng ngay trước beat 1 (beat 1 chưa fire, trước cả beat player sắp set); footprint refresh ngay lúc `EnterPlanningPause` để điểm tròn hiện đúng khi Continue xuất hiện |
+| 2026-07-03 | Fix: pause-beat chuyển thành hằng số `PlanningPauseAfterBeat=1` (scan qua beat 0 rồi mới dừng, không dừng tức thì); nhãn nút do `CombatController` ép runtime (Deploy/Continue) chống scene serialize cũ |
+| 2026-07-03 | Intro-pause: scan dừng sau khi qua beat đầu tiên (pause tại beat 1) cho player set up skill; nhạc `PausePlayback/ResumePlayback`; auto-resume khi cả đội đã xếp skill hoặc bấm Continue |
+| 2026-07-03 | Nút dàn trận đổi chữ thành **Deploy** → sau intro-pause đổi thành **Continue** |
+| 2026-07-03 | Footprint skill: mỗi skill đặt lên lane vẽ **S1 tròn xám · S tròn/chip màu · S2 tròn xám** (`RefreshFootprintDots`); bỏ điểm tròn trống |
+| 2026-07-03 | Đổi tên kỹ năng theo SKILL_KIT (Crosscut/Finale · Anchor/Bulwark · Mend/Encore) + set footprint S1-S-S2 vào asset; UI hiện tên thật |
+| 2026-07-03 | Luật: quái chỉ ra đòn từ **beat thứ 3** (`TimelineConstants.EnemyFirstAttackBeat = 2`) |
 | 2026-06-30 | Illustration `combat-boss-3-target-timeline.svg` |
 | 2026-06-30 | Boss 3 target · Mini pressure · Ren Cycle Shift · CoreFinal vs MiniDmg |
 | 2026-06-30 | Tạo doc — Planning/Execute loop, boss notes, HB roles, kit 3 skill, illustrations |

@@ -32,6 +32,15 @@ namespace FracturedChorus.UI
             }
         }
 
+        /// <summary>Đặt chữ nút — nhãn do CombatController làm chủ ("Deploy" / "Continue").</summary>
+        public void SetLabel(string text)
+        {
+            if (labelText != null && !string.IsNullOrEmpty(text))
+            {
+                labelText.text = text;
+            }
+        }
+
         private Button ResolveExecuteButton()
         {
             var buttonTransform = transform.Find("ExecuteButton");

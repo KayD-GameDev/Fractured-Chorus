@@ -139,13 +139,63 @@ namespace FracturedChorus.Editor
             }
             ElementBadgeIconSetup.ApplyToStatBlocks();
 
+            CleanOrphanedUiLeftovers();
+            ApplyBeginLabelToExecuteOverlay();
+
             var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
             if (scene.IsValid() && scene.isLoaded)
             {
                 EditorSceneManager.SaveScene(scene);
             }
 
-            Debug.Log("[Fractured Chorus] Applied play-ready updates (input, colliders, sprites, grid, timeline) and saved scene.");
+            Debug.Log("[Fractured Chorus] Applied play-ready updates (input, colliders, sprites, grid, timeline, orphan cleanup, Deploy label) and saved scene.");
+        }
+
+        /// <summary>
+        /// Xoá các UI bị "rò" ra root scene (RectTransform không nằm dưới Canvas) — ví dụ HealthBarFill/Avatar/Border
+        /// bị tách khỏi thẻ khi chỉnh sửa. UI hợp lệ luôn phải nằm dưới một Canvas.
+        /// </summary>
+        private static void CleanOrphanedUiLeftovers()
+        {
+            var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+            if (!scene.IsValid() || !scene.isLoaded)
+            {
+                return;
+            }
+
+            var removed = 0;
+            foreach (var root in scene.GetRootGameObjects())
+            {
+                // RectTransform ở root mà không phải Canvas ⇒ UI mồ côi (leaked khỏi thẻ).
+                if (root.GetComponent<RectTransform>() != null && root.GetComponent<Canvas>() == null)
+                {
+                    Debug.LogWarning($"[Fractured Chorus] Xoá UI mồ côi ở root: '{root.name}'.");
+                    Object.DestroyImmediate(root);
+                    removed++;
+                }
+            }
+
+            if (removed > 0)
+            {
+                Debug.Log($"[Fractured Chorus] Đã dọn {removed} UI mồ côi khỏi root scene.");
+            }
+        }
+
+        /// <summary>Đổi nhãn nút Execute → "Deploy" cho pha dàn trận (đồng bộ với runtime).</summary>
+        private static void ApplyBeginLabelToExecuteOverlay()
+        {
+            foreach (var overlay in Object.FindObjectsByType<CombatExecuteOverlayUIView>(FindObjectsInactive.Include))
+            {
+                overlay.WireReferences();
+                var label = overlay.GetComponentInChildren<Text>(true);
+                if (label != null)
+                {
+                    label.text = "Deploy";
+                    EditorUtility.SetDirty(label);
+                }
+
+                EditorUtility.SetDirty(overlay);
+            }
         }
 
         [MenuItem("Fractured Chorus/Restore Scene/From SceneBackup (BU — honeycomb layout)")]
@@ -707,7 +757,7 @@ namespace FracturedChorus.Editor
             StretchFull(labelGo.GetComponent<RectTransform>());
             var label = labelGo.AddComponent<Text>();
             ApplyTextDefaults(label);
-            label.text = "EXECUTE";
+            label.text = "Deploy";
 
             var phaseGo = CreateUiObject("PhaseLabel", btnGo.transform);
             var phaseRect = phaseGo.GetComponent<RectTransform>();

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.SkillDefinitionSO
   skillId: mage_basic
   displayName: Pulse
-  description: 
+  description: 'Damage (Ma)'
   slotKind: 0
   avCost: 0
   delay: 2

@@ -13,6 +13,9 @@ namespace FracturedChorus.Combat.Timeline
         /// <summary>Fallback when UI has not reported visible slot count yet.</summary>
         public const int DefaultVisibleBeatHint = 20;
 
+        /// <summary>Quái chỉ được phép ra đòn (đặt telegraph) từ beat này trở đi — "beat thứ 3" = index 2.</summary>
+        public const int EnemyFirstAttackBeat = 2;
+
         /// <summary>Beat indices after which a phase divider is drawn (between 15|16, 25|26, …).</summary>
         public static bool IsPhaseDividerAfter(int beatIndex)
         {

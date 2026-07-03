@@ -11,12 +11,7 @@ namespace FracturedChorus.UI
                 return "Skill";
             }
 
-            return skill.slotKind switch
-            {
-                SkillSlotKind.Skill => "Skill 1",
-                SkillSlotKind.Ultimate => "Skill 2",
-                _ => skill.displayName
-            };
+            return !string.IsNullOrEmpty(skill.displayName) ? skill.displayName : skill.skillId;
         }
     }
 }

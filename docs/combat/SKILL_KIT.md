@@ -5,16 +5,21 @@
 
 ---
 
-## Footprint timeline
+## Footprint timeline — 3 pha (Standing 1 · Using · Standing 2)
 
 ```
-[S1 wind-up] → [S active × N] → [S2 recovery]
+[Standing Phase 1] → [Using Skill Phase × N] → [Standing Phase 2]
+      (S1)                    (S)                     (S2)
 ```
 
-- **Placement beat** = beat bắt đầu S1
+- Mỗi skill **luôn 3 pha**; hai **standing phase** giúp **chống spam skill liên tục giữa các beat** — xem [COMBAT_MECHANICS.md §3](./COMBAT_MECHANICS.md#3-skill-footprint--3-pha-standing-1--using--standing-2).
+- **Placement beat** = beat bắt đầu **Using (S)**; S1 nằm trước, S2 nằm sau.
 - **Counter hit** = mỗi beat thuộc S active (Perfect vs nốt boss)
 - **Toàn bộ S** phải nằm trong planning window W
 - Cùng row: footprint không overlap
+- **Số beat mỗi pha tùy skill của từng nhân vật** (cột `S1-S-S2` trong bảng kit dưới).
+- **Data code:** `SkillDefinitionSO.standingBeatsBefore` (S1) · `activeBeats` (S) · `standingBeatsAfter` (S2).
+- **UI:** S = chip màu unit · **S1/S2 = nút tròn xám** trên beat.
 
 | Ký hiệu | Ý nghĩa |
 |---------|---------|
@@ -132,7 +137,10 @@
 
 ## Chưa làm (runtime P0)
 
-- [ ] UI hiển thị S1/S/S2 khác màu trên segment
+- [x] UI hiển thị S1/S2 (nút tròn xám) + S (chip/tròn màu) trên lane — `BeatTimelineUIView.RefreshFootprintDots`
+- [x] Field footprint S1-S-S2 trong `SkillDefinitionSO`
+- [x] Set số beat S1-S-S2 + tên skill đúng bảng kit cho asset (`Resources/Skills/*`)
+- [ ] Enforce footprint chiếm slot (không cho chồng skill lên beat standing) + anti-spam
 - [ ] Counter degrade boss note HP (Tím/Xanh/Đỏ) — **CORE only**
 - [ ] Note tag CORE / MICRO / EYE trên row 4
 - [ ] Ren Active element + Cycle Shift animation
@@ -143,4 +151,6 @@
 
 | Ngày | Nội dung |
 |------|----------|
+| 2026-07-03 | Đổi tên asset skill đúng kit (ren_skill→Crosscut · tank_skill→Anchor · tank_ult→Bulwark · mage_skill→Mend · mage_ult→Encore) + set footprint S1-S-S2 · UI hiện tên thật (`SkillUiNames`) |
+| 2026-07-03 | Làm rõ 3 pha Standing 1 / Using / Standing 2 (chống spam) · field footprint `SkillDefinitionSO` · UI nút xám S1/S2 |
 | 2026-06-30 | Cycle Shift · CoreFinal vs MiniDmg · dmg table · effect kinds mới |
