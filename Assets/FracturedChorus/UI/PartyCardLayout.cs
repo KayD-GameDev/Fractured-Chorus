@@ -12,7 +12,7 @@ namespace FracturedChorus.UI
         /// <summary>Chiều cao thẻ (px) — fallback khi scene chưa gán CardTemplate.</summary>
         public const float CardHeight = 167f;
         /// <summary>Khoảng cách giữa 2 thẻ (px) — fallback; runtime ưu tiên cardSpacing trên PartyStatusBarUI.</summary>
-        public const float CardGap = 2f;
+        public const float CardGap = 2.75f;
         /// <summary>Bước X mặc định (editor) = rộng + gap cố định.</summary>
         public const float CardStepX = CardWidth + CardGap;
 
