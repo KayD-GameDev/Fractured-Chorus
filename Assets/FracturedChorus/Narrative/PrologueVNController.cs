@@ -56,6 +56,7 @@ namespace FracturedChorus.Narrative
         [SerializeField] private float openingFadeDuration = 1.05f;
         [SerializeField] private float disclaimerExitFadeDuration = 0.8f;
         [SerializeField] private float disclaimerExitHoldSeconds = 0.4f;
+        [SerializeField] private float butterflyFadeInDuration = 1.45f;
         [SerializeField] private string nextSceneName = RunMapSceneCatalog.RunMapPrototype;
         [SerializeField] private CanvasGroup choiceBackdrop;
         [SerializeField] private PrologueVNLayoutConfig layoutConfig;
@@ -67,6 +68,7 @@ namespace FracturedChorus.Narrative
         private string _pendingTypeText;
         private PrologueTypewriterView _activeTypewriter;
         [SerializeField] private int narrationFontSize = 40;
+        private Color _butterflyBaseColor = Color.white;
 
         private void Start()
         {
@@ -82,7 +84,9 @@ namespace FracturedChorus.Narrative
 
             if (butterflyBackground != null)
             {
+                _butterflyBaseColor = butterflyBackground.color;
                 butterflyBackground.gameObject.SetActive(false);
+                SetButterflyAlpha(0f);
             }
 
             if (dialoguePanel != null)
@@ -167,6 +171,7 @@ namespace FracturedChorus.Narrative
             if (butterflyBackground != null)
             {
                 butterflyBackground.gameObject.SetActive(true);
+                SetButterflyAlpha(0f);
             }
 
             audioController?.StartBgm();
@@ -175,10 +180,15 @@ namespace FracturedChorus.Narrative
             if (dialoguePanel != null)
             {
                 dialoguePanel.gameObject.SetActive(true);
-                dialoguePanel.alpha = 1f;
+                dialoguePanel.alpha = 0f;
             }
 
-            yield return FadeTo(0f, openingFadeDuration);
+            yield return FadeStoryReveal(openingFadeDuration, butterflyFadeInDuration);
+
+            if (dialoguePanel != null)
+            {
+                dialoguePanel.alpha = 1f;
+            }
 
             for (var i = 0; i < StoryLines.Length; i++)
             {
@@ -350,6 +360,44 @@ namespace FracturedChorus.Narrative
             }
 
             fadeOverlay.alpha = alpha;
+        }
+
+        private IEnumerator FadeStoryReveal(float overlayDuration, float butterflyDuration)
+        {
+            overlayDuration = Mathf.Max(0.01f, overlayDuration);
+            butterflyDuration = Mathf.Max(0.01f, butterflyDuration);
+            var startOverlay = fadeOverlay != null ? fadeOverlay.alpha : 1f;
+            SetButterflyAlpha(0f);
+
+            var elapsed = 0f;
+            var total = Mathf.Max(overlayDuration, butterflyDuration);
+            while (elapsed < total)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                if (fadeOverlay != null)
+                {
+                    var overlayT = Mathf.Clamp01(elapsed / overlayDuration);
+                    fadeOverlay.alpha = Mathf.Lerp(startOverlay, 0f, overlayT);
+                }
+
+                SetButterflyAlpha(Mathf.Clamp01(elapsed / butterflyDuration));
+                yield return null;
+            }
+
+            SetFade(0f);
+            SetButterflyAlpha(1f);
+        }
+
+        private void SetButterflyAlpha(float alpha)
+        {
+            if (butterflyBackground == null)
+            {
+                return;
+            }
+
+            var color = _butterflyBaseColor;
+            color.a = _butterflyBaseColor.a * Mathf.Clamp01(alpha);
+            butterflyBackground.color = color;
         }
 
         private void SetFade(float alpha)
