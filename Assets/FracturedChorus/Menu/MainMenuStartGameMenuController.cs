@@ -1,4 +1,3 @@
-using FracturedChorus.RunMap;
 using UnityEngine;
 using UnityEngine.UI;
 #if ENABLE_INPUT_SYSTEM
@@ -204,20 +203,17 @@ namespace FracturedChorus.Menu
                 return;
             }
 
-            if (playConfirmSfx)
+            var action = ResolveAction(option);
+            if (playConfirmSfx && action != MenuAction.NewGame)
             {
                 screenController?.PlayButtonPressSfx();
             }
 
-            switch (ResolveAction(option))
+            switch (action)
             {
                 case MenuAction.NewGame:
                     SetStatus("Bắt đầu run mới…");
-                    if (!RunMapSceneLoader.LoadByName(RunMapSceneCatalog.PrologueVN))
-                    {
-                        SetStatus("Không load được Prologue.");
-                    }
-
+                    screenController?.BeginNewGame();
                     break;
                 case MenuAction.LoadGame:
                     SetStatus("Chưa có dữ liệu lưu.");

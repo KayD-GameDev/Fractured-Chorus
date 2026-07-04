@@ -13,18 +13,20 @@ namespace FracturedChorus.Narrative
         public Vector2 signatureLineMin = new Vector2(0.29f, 0.125f);
         public Vector2 signatureLineMax = new Vector2(0.83f, 0.175f);
 
-        public void CaptureFrom(RectTransform nameField, RectTransform signatureField)
+        public void CaptureFrom(RectTransform paper, RectTransform nameField, RectTransform signatureField)
         {
             if (nameField != null)
             {
-                nameLineMin = nameField.anchorMin;
-                nameLineMax = nameField.anchorMax;
+                PrologueContractLayout.CaptureFieldAnchors(paper, nameField, out nameLineMin, out nameLineMax);
             }
 
             if (signatureField != null)
             {
-                signatureLineMin = signatureField.anchorMin;
-                signatureLineMax = signatureField.anchorMax;
+                PrologueContractLayout.CaptureFieldAnchors(
+                    paper,
+                    signatureField,
+                    out signatureLineMin,
+                    out signatureLineMax);
             }
         }
     }

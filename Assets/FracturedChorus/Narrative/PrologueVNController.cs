@@ -52,7 +52,10 @@ namespace FracturedChorus.Narrative
         [SerializeField] private PrologueChoiceView choiceView;
         [SerializeField] private PrologueContractView contractView;
         [SerializeField] private PrologueAudioController audioController;
-        [SerializeField] private float fadeDuration = 0.55f;
+        [SerializeField] private float fadeDuration = 0.85f;
+        [SerializeField] private float openingFadeDuration = 1.05f;
+        [SerializeField] private float disclaimerExitFadeDuration = 0.8f;
+        [SerializeField] private float disclaimerExitHoldSeconds = 0.4f;
         [SerializeField] private string nextSceneName = RunMapSceneCatalog.RunMapPrototype;
         [SerializeField] private CanvasGroup choiceBackdrop;
         [SerializeField] private PrologueVNLayoutConfig layoutConfig;
@@ -121,7 +124,7 @@ namespace FracturedChorus.Narrative
         private IEnumerator RunPrologueRoutine()
         {
             _running = true;
-            yield return FadeTo(0f, fadeDuration);
+            yield return FadeTo(0f, openingFadeDuration);
 
             yield return RunDisclaimerPhase();
             yield return RunButterflyStoryPhase();
@@ -150,6 +153,13 @@ namespace FracturedChorus.Narrative
             {
                 disclaimerText.gameObject.SetActive(false);
             }
+
+            yield return FadeTo(1f, disclaimerExitFadeDuration);
+
+            if (disclaimerExitHoldSeconds > 0f)
+            {
+                yield return new WaitForSecondsRealtime(disclaimerExitHoldSeconds);
+            }
         }
 
         private IEnumerator RunButterflyStoryPhase()
@@ -167,6 +177,8 @@ namespace FracturedChorus.Narrative
                 dialoguePanel.gameObject.SetActive(true);
                 dialoguePanel.alpha = 1f;
             }
+
+            yield return FadeTo(0f, openingFadeDuration);
 
             for (var i = 0; i < StoryLines.Length; i++)
             {

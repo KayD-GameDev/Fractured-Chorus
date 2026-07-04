@@ -242,6 +242,7 @@ namespace FracturedChorus.Editor
             var menuUiGroup = menuPanel.GetComponent<CanvasGroup>();
             var settingsOverlay = CreateSettingsOverlay(canvas.transform, controller);
             var archiveOverlay = CreateOffBeatArchiveOverlay(canvas.transform, controller);
+            var sceneFadeOverlay = EnsureSceneFadeOverlay(canvas.transform);
             EnsureMainMenuBgm(root.transform);
             EnsureMainMenuTitleVoice(root.transform);
             EnsureMainMenuTransitionSfx(root.transform);
@@ -250,7 +251,7 @@ namespace FracturedChorus.Editor
             mainMenuBackground.GetComponent<CanvasGroup>().alpha = 1f;
             menuUiGroup.alpha = 1f;
 
-            WireController(controller, attractLayer, mainMenuBackground, menuUiGroup, menuController, settingsOverlay, archiveOverlay);
+            WireController(controller, attractLayer, mainMenuBackground, menuUiGroup, menuController, settingsOverlay, archiveOverlay, sceneFadeOverlay);
             controller.SetEditorPreview(MainMenuStartGameController.MainMenuEditorPreview.Attract);
 
             Selection.activeGameObject = root;
@@ -263,7 +264,8 @@ namespace FracturedChorus.Editor
             CanvasGroup mainMenuUi,
             MainMenuStartGameMenuController menuController,
             CanvasGroup settingsOverlay,
-            CanvasGroup archiveOverlay)
+            CanvasGroup archiveOverlay,
+            CanvasGroup sceneFadeOverlay = null)
         {
             SetSerializedField(controller, "attractLayer", attractLayer.GetComponent<CanvasGroup>());
             SetSerializedField(controller, "mainMenuBackground", mainMenuBackground.GetComponent<CanvasGroup>());
@@ -272,7 +274,10 @@ namespace FracturedChorus.Editor
             SetSerializedField(controller, "configOverlayController", settingsOverlay.GetComponent<MainMenuConfigOverlayController>());
             SetSerializedField(controller, "offBeatArchiveOverlay", archiveOverlay);
             SetSerializedField(controller, "menuController", menuController);
+            SetSerializedField(controller, "sceneFadeOverlay", sceneFadeOverlay);
             SetSerializedField(controller, "transitionDuration", 0.35f);
+            SetSerializedField(controller, "newGameFadeDuration", 1.15f);
+            SetSerializedField(controller, "newGameFadeHoldSeconds", 0.35f);
             var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(MenuBgmPath);
             SetSerializedField(controller, "menuBgmClip", clip);
             SetSerializedField(menuController, "screenController", controller);
@@ -333,6 +338,29 @@ namespace FracturedChorus.Editor
             image.raycastTarget = false;
             group.alpha = 1f;
             return layerGo;
+        }
+
+        private static CanvasGroup EnsureSceneFadeOverlay(Transform canvas)
+        {
+            var existing = canvas.Find("SceneFadeOverlay");
+            if (existing != null && existing.TryGetComponent<CanvasGroup>(out var existingGroup))
+            {
+                return existingGroup;
+            }
+
+            var overlayGo = CreateUiObject("SceneFadeOverlay", canvas);
+            overlayGo.transform.SetAsLastSibling();
+            StretchRect(overlayGo, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+
+            var image = overlayGo.AddComponent<Image>();
+            image.color = Color.black;
+            image.raycastTarget = false;
+
+            var group = overlayGo.AddComponent<CanvasGroup>();
+            group.alpha = 0f;
+            group.interactable = false;
+            group.blocksRaycasts = false;
+            return group;
         }
 
         private static GameObject CreateMenuPanel(

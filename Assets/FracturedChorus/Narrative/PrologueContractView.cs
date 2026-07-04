@@ -200,8 +200,23 @@ namespace FracturedChorus.Narrative
             }
 
             ResolveReferences();
+            layoutConfig = config;
+
+            if (contractPaper == null)
+            {
+                return false;
+            }
+
+            var paperRect = contractPaper.rectTransform;
+            var nameRect = nameInput != null
+                ? nameInput.GetComponent<RectTransform>()
+                : nameValueText != null
+                    ? nameValueText.rectTransform
+                    : null;
+
             config.CaptureFrom(
-                nameInput != null ? nameInput.GetComponent<RectTransform>() : null,
+                paperRect,
+                nameRect,
                 signaturePad != null ? signaturePad.GetComponent<RectTransform>() : null);
             return true;
         }

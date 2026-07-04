@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using FracturedChorus.Narrative;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 
 namespace FracturedChorus.Editor
@@ -57,6 +58,9 @@ namespace FracturedChorus.Editor
 
             EditorGUILayout.Space(6f);
             EditorGUILayout.LabelField("Contract Layout", EditorStyles.boldLabel);
+            EditorGUILayout.HelpBox(
+                "Contract preview → kéo NameInput + SignaturePad → Capture. Kéo NameInput, không phải NameValue.",
+                MessageType.None);
 
             var layoutConfigProp = serializedObject.FindProperty("layoutConfig");
             EditorGUILayout.PropertyField(layoutConfigProp);
@@ -68,22 +72,35 @@ namespace FracturedChorus.Editor
             {
                 if (GUILayout.Button("Capture Contract Layout → Config"))
                 {
-                    controller.SetEditorPreview(PrologueVNController.PrologueEditorPreview.Contract);
                     var config = layoutConfigProp.objectReferenceValue as PrologueVNLayoutConfig;
-                    if (contractView != null && config != null && contractView.CaptureLayoutToConfig(config))
+                    if (contractView != null && config != null)
                     {
-                        EditorUtility.SetDirty(config);
-                        AssetDatabase.SaveAssets();
-                        Debug.Log($"[Fractured Chorus] Captured contract layout to {config.name}");
+                        Undo.RecordObject(config, "Capture Contract Layout");
+                        Undo.RecordObject(contractView, "Capture Contract Layout");
+
+                        if (contractView.CaptureLayoutToConfig(config))
+                        {
+                            contractView.ApplyLayoutConfig(config);
+                            EditorUtility.SetDirty(config);
+                            EditorUtility.SetDirty(contractView);
+                            EditorSceneManager.MarkSceneDirty(contractView.gameObject.scene);
+                            AssetDatabase.SaveAssets();
+                            Debug.Log(
+                                "[Fractured Chorus] Captured contract layout → " + config.name +
+                                $"\n  Name: min {config.nameLineMin}, max {config.nameLineMax}" +
+                                $"\n  Sign: min {config.signatureLineMin}, max {config.signatureLineMax}");
+                        }
                     }
                 }
 
                 if (GUILayout.Button("Apply Config → Contract Fields"))
                 {
                     var config = layoutConfigProp.objectReferenceValue as PrologueVNLayoutConfig;
+                    contractView?.SetLayoutConfig(config);
                     contractView?.ApplyLayoutConfig(config);
                     controller.SetEditorPreview(PrologueVNController.PrologueEditorPreview.Contract);
                     EditorUtility.SetDirty(contractView);
+                    EditorSceneManager.MarkSceneDirty(controller.gameObject.scene);
                 }
             }
 
