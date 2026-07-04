@@ -2704,6 +2704,7 @@ MonoBehaviour:
   openingFadeDuration: 1.05
   disclaimerExitFadeDuration: 0.8
   disclaimerExitHoldSeconds: 0.4
+  butterflyFadeInDuration: 1.45
   nextSceneName: RunMapPrototype
   choiceBackdrop: {fileID: 1867508226}
   layoutConfig: {fileID: 11400000, guid: 74e5cb34864ce2d4bbcaef5cc8c7500f, type: 2}
