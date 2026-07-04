@@ -121,8 +121,7 @@ namespace FracturedChorus.Editor
 
                 if (_editModePreview)
                 {
-                    PrepareEditModeScene();
-                    RefreshScenePreview();
+                    EditorApplication.delayCall += DeferredPrepareEditModeScene;
                 }
 
                 SceneView.RepaintAll();
@@ -191,13 +190,16 @@ namespace FracturedChorus.Editor
             }
 
             _selectedTerritory = Mathf.Clamp(_selectedTerritory, 0, Mathf.Max(0, territoriesProp.arraySize - 1));
-            var newSelection = GUILayout.Toolbar(_selectedTerritory, names);
-            if (newSelection != _selectedTerritory)
+            if (names.Length > 0)
             {
-                _selectedTerritory = newSelection;
-                CadenceMapMaskEditSession.SelectedTerritory = _selectedTerritory;
-                CadenceMapMaskEditSession.SelectedVertex = -1;
-                SceneView.RepaintAll();
+                var newSelection = GUILayout.Toolbar(_selectedTerritory, names);
+                if (newSelection != _selectedTerritory)
+                {
+                    _selectedTerritory = newSelection;
+                    CadenceMapMaskEditSession.SelectedTerritory = _selectedTerritory;
+                    CadenceMapMaskEditSession.SelectedVertex = -1;
+                    SceneView.RepaintAll();
+                }
             }
 
             _scroll = EditorGUILayout.BeginScrollView(_scroll);
@@ -238,7 +240,8 @@ namespace FracturedChorus.Editor
                 if (GUILayout.Button("X", GUILayout.Width(22f)))
                 {
                     vertices.DeleteArrayElementAtIndex(i);
-                    break;
+                    EditorGUILayout.EndHorizontal();
+                    GUIUtility.ExitGUI();
                 }
 
                 EditorGUILayout.EndHorizontal();
@@ -271,7 +274,7 @@ namespace FracturedChorus.Editor
 
             if (GUILayout.Button("Setup Macro Layer"))
             {
-                RunMapSceneSetupEditor.SetupCadenceMacroMapLayer();
+                EditorApplication.delayCall += RunMapSceneSetupEditor.SetupCadenceMacroMapLayer;
             }
 
             EditorGUILayout.EndHorizontal();
@@ -344,6 +347,12 @@ namespace FracturedChorus.Editor
             EditorUtility.SetDirty(cadence);
         }
 
+        private void DeferredPrepareEditModeScene()
+        {
+            PrepareEditModeScene();
+            RefreshScenePreview();
+        }
+
         private void PrepareEditModeScene()
         {
             var macroRoot = GameObject.Find("MacroMapLayer");
@@ -371,10 +380,9 @@ namespace FracturedChorus.Editor
                 legend.SetActive(false);
             }
 
-            var macroView = Object.FindAnyObjectByType<CadenceMacroMapView>();
-            if (macroView == null)
+            if (Object.FindAnyObjectByType<CadenceMacroMapView>() == null)
             {
-                RunMapSceneSetupEditor.SetupCadenceMacroMapLayer();
+                EditorApplication.delayCall += RunMapSceneSetupEditor.SetupCadenceMacroMapLayer;
             }
         }
 
