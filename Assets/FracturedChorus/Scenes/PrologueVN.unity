@@ -800,8 +800,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -25.036896, y: -0.20199966}
-  m_SizeDelta: {x: -264.0739, y: -43.7202}
+  m_AnchoredPosition: {x: -19.817596, y: -5.421196}
+  m_SizeDelta: {x: -253.6354, y: -33.2817}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &462550414
 MonoBehaviour:
@@ -969,8 +969,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.12, y: 0.08}
   m_AnchorMax: {x: 0.88, y: 0.92}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchoredPosition: {x: -45.7146, y: 0}
+  m_SizeDelta: {x: -91.4292, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &676222563
 MonoBehaviour:
@@ -2675,10 +2675,14 @@ MonoBehaviour:
   butterflyWingsClip: {fileID: 8300000, guid: 26c4caf63151ec84fa92d52f60b48842, type: 3}
   typingClip: {fileID: 8300000, guid: a22f3c74ff44d1344838f84ccdad03be, type: 3}
   penSignClip: {fileID: 8300000, guid: b378abfa58e7a864cb611319eafa3204, type: 3}
+  buttonPressClip: {fileID: 8300000, guid: c3d8e9f01a2b4c5d6e7f8091a2b3c4d5, type: 3}
+  menuTingClip: {fileID: 8300000, guid: b4e7c8d91a2f43b6c5d0e1f2a3b4c5d6, type: 3}
   bgmVolume: 0.46
   butterflyVolume: 0.26
   typingVolume: 0.55
   penSignVolume: 0.7
+  buttonPressVolume: 0.85
+  menuTingVolume: 1
 --- !u!114 &2096205237
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2701,10 +2705,11 @@ MonoBehaviour:
   contractView: {fileID: 1578773482}
   audioController: {fileID: 2096205236}
   fadeDuration: 0.85
-  openingFadeDuration: 1.05
+  openingFadeDuration: 1.5
   disclaimerExitFadeDuration: 0.8
   disclaimerExitHoldSeconds: 0.4
   butterflyFadeInDuration: 1.45
+  contractRevealDuration: 1.35
   nextSceneName: RunMapPrototype
   choiceBackdrop: {fileID: 1867508226}
   layoutConfig: {fileID: 11400000, guid: 74e5cb34864ce2d4bbcaef5cc8c7500f, type: 2}

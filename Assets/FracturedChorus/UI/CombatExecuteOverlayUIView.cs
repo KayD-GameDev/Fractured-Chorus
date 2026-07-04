@@ -100,7 +100,7 @@ namespace FracturedChorus.UI
                 {
                     _warnedMissingButton = true;
                     Debug.LogWarning(
-                        "[ExecuteOverlay] Không tìm thấy ExecuteButton. Thêm con tên ExecuteButton có Image + Button.");
+                        "[ExecuteOverlay] ExecuteButton not found. Add a child named ExecuteButton with Image + Button.");
                 }
 
                 return;

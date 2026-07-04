@@ -26,8 +26,8 @@ namespace FracturedChorus.UI
         [SerializeField] private Camera worldCamera;
         [SerializeField] private GameObject dismissBackdrop;
 
-        [Header("Radial layout — kích thước lấy từ panel trong scene; ratio chỉnh trong Inspector")]
-        [Tooltip("Giữ kích thước panel đã chỉnh trong Hierarchy; chỉ dùng fallback khi panel chưa set size.")]
+        [Header("Radial layout — panel size from scene; adjust ratios in Inspector")]
+        [Tooltip("Keep the panel size authored in Hierarchy; use fallback only when the panel has no size set.")]
         [SerializeField] private bool preserveSceneLayout = true;
         [SerializeField] private float fallbackPanelSize = FallbackPanelSize;
         [SerializeField, Range(0.1f, 0.5f)] private float slotSizeRatio = 70f / FallbackPanelSize;

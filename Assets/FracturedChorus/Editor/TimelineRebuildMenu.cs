@@ -18,7 +18,7 @@ namespace FracturedChorus.Editor
             var overlayGo = GameObject.Find("CombatCanvas/ExecuteOverlayUI") ?? GameObject.Find("ExecuteOverlayUI");
             if (overlayGo == null)
             {
-                EditorUtility.DisplayDialog("Fractured Chorus", "Không tìm thấy ExecuteOverlayUI trong scene.", "OK");
+                EditorUtility.DisplayDialog("Fractured Chorus", "ExecuteOverlayUI not found in scene.", "OK");
                 return;
             }
 
@@ -96,7 +96,7 @@ namespace FracturedChorus.Editor
             var canvasTransform = CombatUiHierarchy.ResolveCombatCanvasTransform();
             if (canvasTransform == null)
             {
-                EditorUtility.DisplayDialog("Fractured Chorus", "Không tìm thấy CombatCanvas trong scene.", "OK");
+                EditorUtility.DisplayDialog("Fractured Chorus", "CombatCanvas not found in scene.", "OK");
                 return;
             }
 
@@ -138,7 +138,7 @@ namespace FracturedChorus.Editor
             var canvasTransform = CombatUiHierarchy.ResolveCombatCanvasTransform();
             if (canvasTransform == null)
             {
-                EditorUtility.DisplayDialog("Fractured Chorus", "Không tìm thấy CombatCanvas trong scene.", "OK");
+                EditorUtility.DisplayDialog("Fractured Chorus", "CombatCanvas not found in scene.", "OK");
                 return;
             }
 
@@ -201,7 +201,7 @@ namespace FracturedChorus.Editor
             var canvasTransform = CombatUiHierarchy.ResolveCombatCanvasTransform();
             if (canvasTransform == null)
             {
-                EditorUtility.DisplayDialog("Fractured Chorus", "Không tìm thấy CombatCanvas trong scene.", "OK");
+                EditorUtility.DisplayDialog("Fractured Chorus", "CombatCanvas not found in scene.", "OK");
                 return;
             }
 

@@ -134,7 +134,7 @@ namespace FracturedChorus.Combat.Core
 
             PhaseAv.RecordSpend(cost);
             Debug.Log(
-                $"[Phase AV] {unit.DisplayName} → {skill.displayName} (-{cost}) | còn {PhaseAv.Remaining}/{PhaseAv.CurrentBudget} (priority {unit.ActionPriority:F0})");
+                $"[Phase AV] {unit.DisplayName} → {skill.displayName} (-{cost}) | {PhaseAv.Remaining}/{PhaseAv.CurrentBudget} remaining (priority {unit.ActionPriority:F0})");
             return true;
         }
 
@@ -377,7 +377,7 @@ namespace FracturedChorus.Combat.Core
             }
             else
             {
-                Debug.Log($"[Guard] No block @ beat {telegraph.BeatIndex} (Spacebar chưa giữ trọn beat đỏ)");
+                Debug.Log($"[Guard] No block @ beat {telegraph.BeatIndex} (Spacebar not held for the full red beat)");
             }
 
             target.TakeDamage(finalDamage);

@@ -10,15 +10,15 @@ namespace FracturedChorus.Data
         public string unitId;
         public string displayName;
         public UnitRole role = UnitRole.Dps;
-        [Tooltip("Chỉ số gốc — chỉnh tay, dùng chung cho nhiều preset nếu cần.")]
+        [Tooltip("Base stats — edit manually; can be shared across multiple presets.")]
         public UnitStatBlockSO statBlock;
-        [Tooltip("Legacy inline stats — dùng khi statBlock chưa gán.")]
+        [Tooltip("Legacy inline stats — used when statBlock is not assigned.")]
         public UnitStats stats = new UnitStats();
         public SkillDefinitionSO[] skills;
         public Color placeholderColor = Color.white;
-        [Tooltip("Sprite combat mặc định — dùng khi scene chưa gán hoặc bị placeholder 1×1.")]
+        [Tooltip("Default combat sprite — used when the scene has none assigned or a 1×1 placeholder.")]
         public Sprite battleSprite;
-        [Tooltip("Portrait thẻ party UI — nếu trống dùng battleSprite.")]
+        [Tooltip("Party card portrait — if empty, uses battleSprite.")]
         public Sprite portraitSprite;
 
         public Sprite ResolvePortraitSprite()

@@ -1,0 +1,77 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ed0b039c524064429e31be989c37e85, type: 3}
+  m_Name: CadenceMapLayout_Default
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.CadenceMapLayoutSO
+  backgroundSprite: {fileID: -8086439159608117744, guid: 8b552f94e90904f4d80f953503da350e, type: 3}
+  territories:
+  - displayName: "Vault \u2014 Pinky"
+    finger: 4
+    territoryColor: {r: 0.92, g: 0.22, b: 0.58, a: 0.22}
+    highlightColor: {r: 1, g: 0.35, b: 0.72, a: 0.48}
+    unlocked: 1
+    normalizedVertices:
+    - {x: 0.11233031, y: 0.3898226}
+    - {x: 0.03373003, y: 0.6739211}
+    - {x: 0.2602854, y: 0.8342984}
+    - {x: 0.40407807, y: 0.65449476}
+    - {x: 0.34095958, y: 0.48978898}
+  - displayName: "Vault \u2014 Thumb"
+    finger: 0
+    territoryColor: {r: 0.78, g: 0.12, b: 0.1, a: 0.22}
+    highlightColor: {r: 1, g: 0.28, b: 0.18, a: 0.45}
+    unlocked: 0
+    normalizedVertices:
+    - {x: 0.27576903, y: 0.84641}
+    - {x: 0.41267234, y: 0.94494706}
+    - {x: 0.5712526, y: 0.9366968}
+    - {x: 0.6908628, y: 0.8669991}
+    - {x: 0.6703964, y: 0.7745101}
+    - {x: 0.57803756, y: 0.6684619}
+    - {x: 0.42320114, y: 0.6640576}
+  - displayName: "Vault \u2014 Index"
+    finger: 1
+    territoryColor: {r: 0.95, g: 0.48, b: 0.1, a: 0.22}
+    highlightColor: {r: 1, g: 0.62, b: 0.18, a: 0.45}
+    unlocked: 0
+    normalizedVertices:
+    - {x: 0.9615541, y: 0.68405354}
+    - {x: 0.9152219, y: 0.42928824}
+    - {x: 0.77451, y: 0.43798658}
+    - {x: 0.64457035, y: 0.5020136}
+    - {x: 0.5850738, y: 0.65999985}
+    - {x: 0.66616803, y: 0.74579895}
+    - {x: 0.7181748, y: 0.8427654}
+    - {x: 0.7885742, y: 0.81006736}
+  - displayName: "Vault \u2014 Middle"
+    finger: 2
+    territoryColor: {r: 0.55, g: 0.78, b: 0.18, a: 0.22}
+    highlightColor: {r: 0.72, g: 0.95, b: 0.28, a: 0.45}
+    unlocked: 0
+    normalizedVertices:
+    - {x: 0.6462326, y: 0.4704765}
+    - {x: 0.89194715, y: 0.38363516}
+    - {x: 0.8332457, y: 0.09722935}
+    - {x: 0.5119479, y: 0.06415589}
+    - {x: 0.49506468, y: 0.309697}
+  - displayName: "Vault \u2014 Ring"
+    finger: 3
+    territoryColor: {r: 0.12, g: 0.72, b: 0.82, a: 0.22}
+    highlightColor: {r: 0.28, g: 0.92, b: 1, a: 0.45}
+    unlocked: 0
+    normalizedVertices:
+    - {x: 0.108832106, y: 0.3705615}
+    - {x: 0.34363684, y: 0.4849354}
+    - {x: 0.48181778, y: 0.31800893}
+    - {x: 0.4940256, y: 0.06277053}
+    - {x: 0.32571712, y: 0.03151474}
+    - {x: 0.15246391, y: 0.16060263}

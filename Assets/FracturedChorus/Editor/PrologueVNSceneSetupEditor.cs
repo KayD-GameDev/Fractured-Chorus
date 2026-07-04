@@ -19,6 +19,8 @@ namespace FracturedChorus.Editor
         private const string TypingPath = "Assets/FracturedChorus/Audio/SFX/Prologue_Typing.mp3";
         private const string ButterflyPath = "Assets/FracturedChorus/Audio/SFX/Prologue_ButterflyWings.mp3";
         private const string PenSignPath = "Assets/FracturedChorus/Audio/SFX/Prologue_PenSign.mp3";
+        private const string ButtonPressPath = "Assets/FracturedChorus/Audio/SFX/MainMenu_ButtonPress.mp3";
+        private const string MenuTingPath = "Assets/FracturedChorus/Audio/SFX/MainMenu_ChangeMenu_Ting.mp3";
 
         [MenuItem("Fractured Chorus/Create PrologueVN Scene")]
         public static void CreatePrologueVNScene()
@@ -47,8 +49,8 @@ namespace FracturedChorus.Editor
             {
                 if (!EditorUtility.DisplayDialog(
                         "Setup PrologueVN",
-                        "PrologueVNRoot đã tồn tại. Xóa và tạo lại hierarchy?",
-                        "Tạo lại",
+                        "PrologueVNRoot already exists. Delete and recreate hierarchy?",
+                        "Recreate",
                         "Cancel"))
                 {
                     return;
@@ -292,6 +294,8 @@ namespace FracturedChorus.Editor
             SetSerializedField(audio, "butterflyWingsClip", LoadAudio(ButterflyPath));
             SetSerializedField(audio, "typingClip", LoadAudio(TypingPath));
             SetSerializedField(audio, "penSignClip", LoadAudio(PenSignPath));
+            SetSerializedField(audio, "buttonPressClip", LoadAudio(ButtonPressPath));
+            SetSerializedField(audio, "menuTingClip", LoadAudio(MenuTingPath));
 
             SetSerializedField(controller, "fadeOverlay", fadeGroup);
             SetSerializedField(controller, "butterflyBackground", butterflyBg);

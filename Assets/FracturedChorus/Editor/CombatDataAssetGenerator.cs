@@ -119,7 +119,7 @@ namespace FracturedChorus.Editor
             }
 
             Debug.LogWarning(
-                "[Fractured Chorus] Knight sprite chưa có — đặt PNG vào Art/Characters/KnightOfDespair/ rồi chạy lại menu.");
+                "[Fractured Chorus] Knight sprite missing — place a PNG in Art/Characters/KnightOfDespair/, then run the menu again.");
             return null;
         }
 

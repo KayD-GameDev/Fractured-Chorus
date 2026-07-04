@@ -18,6 +18,8 @@ namespace FracturedChorus.RunMap.Core
         public readonly List<int> Incoming = new List<int>();
 
         public bool IsStart => Floor == 1;
-        public bool IsPreBoss => Floor == MapLayoutConstants.FloorCount;
+        public int PreBossFloor { get; set; } = MapLayoutConstants.FloorCount;
+
+        public bool IsPreBoss => Floor == PreBossFloor;
     }
 }

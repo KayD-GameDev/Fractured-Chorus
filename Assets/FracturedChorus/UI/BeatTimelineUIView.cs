@@ -25,14 +25,14 @@ namespace FracturedChorus.UI
         [SerializeField] private float slotWidth = 52f;
         [SerializeField] private float minSlotWidth = 14f;
         [SerializeField] private float laneMarkerSize = 26f;
-        [Tooltip("Kích thước điểm tròn footprint (S1/S2 xám · S phụ màu) quanh chip kỹ năng.")]
+        [Tooltip("Footprint dot size (gray S1/S2 · colored active S) around the skill chip.")]
         [SerializeField] private float footprintDotSize = 16f;
         [SerializeField] private bool autoPlayOnStart;
         [SerializeField] private float autoBeatInterval = 0.405405f;
         [SerializeField] private bool useMusicSync = true;
         [SerializeField] private CombatMusicController musicController;
         [SerializeField] private float skillPanelOpenSpeedMultiplier = 0.25f;
-        [Tooltip("Giữ vị trí Header / khung ngoài BeatTimeline. Layout nội bộ (TrackLine, ScrollContent, ScanBar) vẫn auto-layout.")]
+        [Tooltip("Keep Header / outer BeatTimeline frame position. Internal layout (TrackLine, ScrollContent, ScanBar) still auto-layouts.")]
         [SerializeField] private bool preserveSceneLayout = true;
 
         private BeatTimelineEngine _timeline;
@@ -287,7 +287,7 @@ namespace FracturedChorus.UI
             musicController?.PausePlayback();
             ResetAllScanHighlights();
             RefreshLaneMarkers();
-            Debug.Log($"[BeatTimeline] Intro-pause tại localBeat={_localBeat:F2} (ngưỡng {PlanningPauseLocalBeat}). Continue để chạy tiếp.");
+            Debug.Log($"[BeatTimeline] Intro-pause at localBeat={_localBeat:F2} (threshold {PlanningPauseLocalBeat}). Press Continue to resume.");
             FindAnyObjectByType<CombatController>()?.OnTimelinePlanningPause();
         }
 

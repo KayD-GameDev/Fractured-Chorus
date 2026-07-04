@@ -5,6 +5,7 @@ namespace FracturedChorus.RunMap.Core
     public sealed class MapGraph
     {
         public int Seed { get; private set; }
+        public MapGenerationProfile Profile { get; private set; } = MapGenerationProfile.Default;
         public MapNodeData BossNode { get; private set; }
         public IReadOnlyList<MapNodeData> Nodes => _nodes;
 
@@ -12,9 +13,10 @@ namespace FracturedChorus.RunMap.Core
         private readonly Dictionary<int, MapNodeData> _byId = new Dictionary<int, MapNodeData>();
         private readonly Dictionary<(int floor, int column), MapNodeData> _byCell = new Dictionary<(int, int), MapNodeData>();
 
-        public void Reset(int seed)
+        public void Reset(int seed, MapGenerationProfile profile = null)
         {
             Seed = seed;
+            Profile = profile ?? MapGenerationProfile.Default;
             _nodes.Clear();
             _byId.Clear();
             _byCell.Clear();
@@ -29,7 +31,8 @@ namespace FracturedChorus.RunMap.Core
                 Floor = floor,
                 Column = column,
                 Type = type,
-                IsBoss = isBoss
+                IsBoss = isBoss,
+                PreBossFloor = Profile.FloorCount
             };
             _nodes.Add(node);
             _byId[node.Id] = node;
@@ -82,5 +85,40 @@ namespace FracturedChorus.RunMap.Core
         }
 
         public IEnumerable<MapNodeData> StartNodes() => NodesOnFloor(1);
+
+        public void PruneNodes(ISet<int> keepIds)
+        {
+            if (keepIds == null || keepIds.Count == 0)
+            {
+                return;
+            }
+
+            for (var i = _nodes.Count - 1; i >= 0; i--)
+            {
+                var node = _nodes[i];
+                if (keepIds.Contains(node.Id))
+                {
+                    continue;
+                }
+
+                _nodes.RemoveAt(i);
+                _byId.Remove(node.Id);
+                if (!node.IsBoss)
+                {
+                    _byCell.Remove((node.Floor, node.Column));
+                }
+            }
+
+            foreach (var node in _nodes)
+            {
+                node.Outgoing.RemoveAll(id => !keepIds.Contains(id));
+                node.Incoming.RemoveAll(id => !keepIds.Contains(id));
+            }
+
+            if (BossNode != null && !keepIds.Contains(BossNode.Id))
+            {
+                BossNode = null;
+            }
+        }
     }
 }

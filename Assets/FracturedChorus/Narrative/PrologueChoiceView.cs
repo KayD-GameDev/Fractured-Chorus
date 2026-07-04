@@ -21,11 +21,17 @@ namespace FracturedChorus.Narrative
         private int _selectedIndex;
         private bool _active;
         private Action<bool> _onChosen;
+        private PrologueAudioController _audio;
 
         private void Awake()
         {
             NormalizeLegacyColors();
             EnsureChoiceUi();
+        }
+
+        public void Bind(PrologueAudioController audio)
+        {
+            _audio = audio;
         }
 
         public void Hide()
@@ -41,6 +47,11 @@ namespace FracturedChorus.Narrative
             }
         }
 
+        public void ShowOptions(string agreeText, string disagreeText, Action<bool> onChosen)
+        {
+            Show(null, agreeText, disagreeText, onChosen);
+        }
+
         public void Show(string prompt, string agreeText, string disagreeText, Action<bool> onChosen)
         {
             NormalizeLegacyColors();
@@ -51,7 +62,15 @@ namespace FracturedChorus.Narrative
 
             if (promptText != null)
             {
-                promptText.text = prompt;
+                if (string.IsNullOrEmpty(prompt))
+                {
+                    promptText.gameObject.SetActive(false);
+                }
+                else
+                {
+                    promptText.gameObject.SetActive(true);
+                    promptText.text = prompt;
+                }
             }
 
             if (agreeLabel != null)
@@ -82,7 +101,14 @@ namespace FracturedChorus.Narrative
                 return;
             }
 
-            _selectedIndex = Mathf.Clamp(optionIndex, 0, 1);
+            var nextIndex = Mathf.Clamp(optionIndex, 0, 1);
+            if (nextIndex == _selectedIndex)
+            {
+                return;
+            }
+
+            _selectedIndex = nextIndex;
+            _audio?.PlayButtonPress();
             RefreshSelectionVisuals();
         }
 
@@ -127,19 +153,32 @@ namespace FracturedChorus.Narrative
 
             _active = false;
             var agreed = _selectedIndex == 0;
+            if (!agreed)
+            {
+                _audio?.PlayButtonPress();
+            }
+
             var callback = _onChosen;
             Hide();
             callback?.Invoke(agreed);
         }
 
-        public void ApplyEditorPreview()
+        public void ApplyEditorPreview(bool showPrompt = true)
         {
             NormalizeLegacyColors();
             EnsureChoiceUi();
 
             if (promptText != null)
             {
-                promptText.text = "Only those who have agreed to the above\nhave the privilege of partaking in this game.";
+                if (showPrompt)
+                {
+                    promptText.gameObject.SetActive(true);
+                    promptText.text = "Only those who have agreed to the above\nhave the privilege of partaking in this game.";
+                }
+                else
+                {
+                    promptText.gameObject.SetActive(false);
+                }
             }
 
             if (agreeLabel != null)

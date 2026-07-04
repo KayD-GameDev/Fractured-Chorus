@@ -73,9 +73,9 @@ namespace FracturedChorus.Editor
         {
             EditorGUILayout.LabelField("Beat Map Tap Editor", EditorStyles.boldLabel);
             EditorGUILayout.HelpBox(
-                "Play nhạc → bấm Space mỗi kick / vocal peak / nhấn nhạc.\n" +
-                "Đoạn yên: không bấm → beat tự thưa.\n" +
-                "Backspace: xóa beat cuối. Ctrl+S: lưu CSV.",
+                "Play music → press Space on each kick / vocal peak / accent.\n" +
+                "Quiet sections: do not tap → beats stay sparse.\n" +
+                "Backspace: delete last beat. Ctrl+S: save CSV.",
                 MessageType.Info);
 
             EditorGUI.BeginChangeCheck();
@@ -98,7 +98,7 @@ namespace FracturedChorus.Editor
 
                 if (GUILayout.Button("Clear All"))
                 {
-                    if (EditorUtility.DisplayDialog("Clear beats", "Xóa toàn bộ beat đã ghi?", "Clear", "Cancel"))
+                    if (EditorUtility.DisplayDialog("Clear beats", "Delete all recorded beats?", "Clear", "Cancel"))
                     {
                         _beatTimes.Clear();
                     }
@@ -165,7 +165,7 @@ namespace FracturedChorus.Editor
                 EditorGUILayout.LabelField("Recent beats", EditorStyles.miniBoldLabel);
                 if (_beatTimes.Count == 0)
                 {
-                    EditorGUILayout.LabelField("(empty — Play rồi bấm Space)");
+                    EditorGUILayout.LabelField("(empty — Play, then press Space)");
                     return;
                 }
 
@@ -246,7 +246,7 @@ namespace FracturedChorus.Editor
 
             if (_beatTimes.Count > 0 && t <= _beatTimes[_beatTimes.Count - 1] + 0.02f)
             {
-                ShowNotification(new GUIContent("Beat quá gần beat trước — bỏ qua."));
+                ShowNotification(new GUIContent("Beat too close to previous beat — skipped."));
                 return;
             }
 
@@ -344,7 +344,7 @@ namespace FracturedChorus.Editor
         {
             if (_beatTimes.Count == 0)
             {
-                EditorUtility.DisplayDialog("Export CSV", "Chưa có beat nào để export.", "OK");
+                EditorUtility.DisplayDialog("Export CSV", "No beats to export.", "OK");
                 return;
             }
 

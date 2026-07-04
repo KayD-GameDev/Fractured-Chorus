@@ -199,7 +199,7 @@ namespace FracturedChorus.Menu
                     screenController?.PlayButtonPressSfx();
                 }
 
-                SetStatus("Chưa có dữ liệu lưu.");
+                SetStatus("No save data found.");
                 return;
             }
 
@@ -212,11 +212,11 @@ namespace FracturedChorus.Menu
             switch (action)
             {
                 case MenuAction.NewGame:
-                    SetStatus("Bắt đầu run mới…");
+                    SetStatus("Starting new run…");
                     screenController?.BeginNewGame();
                     break;
                 case MenuAction.LoadGame:
-                    SetStatus("Chưa có dữ liệu lưu.");
+                    SetStatus("No save data found.");
                     break;
                 case MenuAction.OffBeatArchive:
                     screenController?.ShowOffBeatArchive();

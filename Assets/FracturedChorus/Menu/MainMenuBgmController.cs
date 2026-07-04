@@ -38,7 +38,7 @@ namespace FracturedChorus.Menu
         {
             if (menuClip == null)
             {
-                Debug.LogWarning("[Fractured Chorus] MainMenuBgmController: chưa gán menuClip.");
+                Debug.LogWarning("[Fractured Chorus] MainMenuBgmController: menuClip is not assigned.");
                 return;
             }
 

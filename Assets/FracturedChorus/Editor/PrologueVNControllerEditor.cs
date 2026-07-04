@@ -22,7 +22,7 @@ namespace FracturedChorus.Editor
             EditorGUILayout.Space(8f);
             EditorGUILayout.LabelField("Edit Mode Preview", EditorStyles.boldLabel);
             EditorGUILayout.HelpBox(
-                "Chọn 1 phân đoạn để chỉ hiện lớp đó trong Scene/Game view — tránh UI chồng nhau khi chỉnh layout.",
+                "Select one segment to show only that layer in Scene/Game view — avoids overlapping UI while editing layout.",
                 MessageType.Info);
 
             EditorGUILayout.BeginHorizontal();
@@ -59,7 +59,7 @@ namespace FracturedChorus.Editor
             EditorGUILayout.Space(6f);
             EditorGUILayout.LabelField("Contract Layout", EditorStyles.boldLabel);
             EditorGUILayout.HelpBox(
-                "Contract preview → kéo NameInput + SignaturePad → Capture. Kéo NameInput, không phải NameValue.",
+                "Contract preview → drag NameInput + SignaturePad → Capture. Drag NameInput, not NameValue.",
                 MessageType.None);
 
             var layoutConfigProp = serializedObject.FindProperty("layoutConfig");

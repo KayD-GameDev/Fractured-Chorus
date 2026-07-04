@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using FracturedChorus.Data;
+using FracturedChorus.RunMap.Core;
 
 namespace FracturedChorus.RunMap.Core
 {
@@ -12,17 +13,43 @@ namespace FracturedChorus.RunMap.Core
     /// </summary>
     public static class MapGenerator
     {
-        private const int BossColumn = 3;
         private const int MaxGenerationAttempts = 400;
+
+        private static int BossColumnFor(MapGenerationProfile profile) =>
+            (profile.ColumnCount - 1) / 2;
 
         public static MapGraph Generate(int seed, int pathCount = MapLayoutConstants.DefaultPathCount, NodeTypeAssigner.WeightEntry[] weights = null)
         {
+            return Generate(seed, MapGenerationProfile.Default, weights, pathCount);
+        }
+
+        public static MapGraph Generate(
+            int seed,
+            MapGenerationProfile profile,
+            NodeTypeAssigner.WeightEntry[] weights = null,
+            int? pathCountOverride = null)
+        {
+            profile ??= MapGenerationProfile.Default;
             var rng = new Random(seed);
-            var paths = GeneratePaths(rng, pathCount);
-            var graph = BuildGraphFromPaths(seed, paths);
-            NodeTypeAssigner.ApplyFixedFloors(graph);
-            NodeTypeAssigner.AssignRandomTypes(graph, rng, weights);
+            var pathCount = pathCountOverride ?? profile.PathCount;
+            var paths = GeneratePaths(rng, pathCount, profile);
+            var graph = BuildGraphFromPaths(seed, paths, profile);
+            NodeTypeAssigner.ApplyFixedFloors(graph, profile);
+            NodeTypeAssigner.AssignRandomTypes(graph, rng, weights, profile);
             return graph;
+        }
+
+        public static MapGraph GenerateSector(
+            PinkySectorId sector,
+            int seed,
+            NodeTypeAssigner.WeightEntry[] weights = null,
+            PinkyVaultConfigSO vaultConfig = null)
+        {
+            var profile = vaultConfig != null
+                ? vaultConfig.ProfileFor(sector)
+                : MapGenerationProfile.ForSector(sector);
+            weights ??= vaultConfig?.WeightsFor(sector);
+            return Generate(seed, profile, weights);
         }
 
         /// <summary>Demo map cố định — khớp STS_PATHS trong build_fc_diagrams_drawio.py.</summary>
@@ -45,10 +72,10 @@ namespace FracturedChorus.RunMap.Core
             return Generate(seed, pathCount, weights);
         }
 
-        private static MapGraph BuildGraphFromPaths(int seed, IReadOnlyList<int[]> paths)
+        private static MapGraph BuildGraphFromPaths(int seed, IReadOnlyList<int[]> paths, MapGenerationProfile profile)
         {
             var graph = new MapGraph();
-            graph.Reset(seed);
+            graph.Reset(seed, profile);
 
             foreach (var (floor, column) in PathValidator.CollectActiveCells(paths).OrderBy(c => c.floor).ThenBy(c => c.column))
             {
@@ -56,65 +83,89 @@ namespace FracturedChorus.RunMap.Core
             }
 
             WirePathEdges(graph, paths);
+            PathValidator.RemoveDanglingNodes(graph);
 
-            var boss = graph.AddNode(MapLayoutConstants.BossFloor, BossColumn, MapNodeType.Boss, isBoss: true);
-            foreach (var preBoss in graph.NodesOnFloor(MapLayoutConstants.FloorCount))
+            var bossColumn = BossColumnFor(profile);
+            var boss = graph.AddNode(profile.BossFloor, bossColumn, MapNodeType.Boss, isBoss: true);
+            foreach (var preBoss in graph.NodesOnFloor(profile.FloorCount))
             {
                 graph.Connect(preBoss.Id, boss.Id);
             }
 
+            PathValidator.PruneToBossReachable(graph);
             return graph;
         }
 
-        private static List<int[]> GeneratePaths(Random rng, int pathCount)
+        private static MapGraph BuildGraphFromPaths(int seed, IReadOnlyList<int[]> paths) =>
+            BuildGraphFromPaths(seed, paths, MapGenerationProfile.Default);
+
+        private static List<int[]> GeneratePaths(Random rng, int pathCount, MapGenerationProfile profile)
         {
             var paths = new List<int[]>(pathCount);
             var signatures = new HashSet<string>();
-            var startColumns = BuildStartColumns(rng, pathCount);
+            var startColumns = BuildStartColumns(rng, pathCount, profile);
 
             for (var i = 0; i < startColumns.Count && paths.Count < pathCount; i++)
             {
-                TryAddPath(paths, signatures, GenerateSinglePath(rng, startColumns[i]));
+                TryAddPath(paths, signatures, GenerateSinglePath(rng, startColumns[i], profile));
             }
 
             var attempts = 0;
             while (paths.Count < pathCount && attempts < MaxGenerationAttempts)
             {
                 attempts++;
-                TryAddPath(paths, signatures, GenerateSinglePath(rng, rng.Next(0, MapLayoutConstants.ColumnCount)));
+                var center = BossColumnFor(profile);
+                var startCol = center + (rng.Next(3) - 1);
+                TryAddPath(paths, signatures, GenerateSinglePath(rng, startCol, profile));
             }
 
             attempts = 0;
             while (paths.Count < pathCount && paths.Count > 0 && attempts < MaxGenerationAttempts)
             {
                 attempts++;
-                TryAddPath(paths, signatures, MutatePath(rng, paths[rng.Next(paths.Count)]));
+                TryAddPath(paths, signatures, MutatePath(rng, paths[rng.Next(paths.Count)], profile));
             }
 
+            EnsureSymmetricPaths(paths, signatures, pathCount, profile.ColumnCount);
             return paths;
         }
 
-        private static List<int> BuildStartColumns(Random rng, int pathCount)
+        private static List<int[]> GeneratePaths(Random rng, int pathCount) =>
+            GeneratePaths(rng, pathCount, MapGenerationProfile.Default);
+
+        private static List<int> BuildStartColumns(Random rng, int pathCount, MapGenerationProfile profile)
         {
-            var innerColumns = Enumerable.Range(1, MapLayoutConstants.ColumnCount - 2).ToList();
-            Shuffle(rng, innerColumns);
+            var center = BossColumnFor(profile);
+            var startPool = new List<int> { center };
+            if (center - 1 >= 1)
+            {
+                startPool.Add(center - 1);
+            }
 
-            var uniqueStarts = Math.Min(
-                rng.Next(MapLayoutConstants.MinStartNodes, MapLayoutConstants.MaxStartNodes + 1),
-                innerColumns.Count);
+            if (center + 1 < profile.ColumnCount - 1)
+            {
+                startPool.Add(center + 1);
+            }
 
-            var startPool = innerColumns.Take(uniqueStarts).ToList();
+            Shuffle(rng, startPool);
             var assigned = new List<int>(pathCount);
 
             for (var i = 0; i < pathCount; i++)
             {
-                assigned.Add(rng.NextDouble() < 0.75 || assigned.Count == 0
-                    ? startPool[rng.Next(startPool.Count)]
-                    : rng.Next(0, MapLayoutConstants.ColumnCount));
+                assigned.Add(startPool[i % startPool.Count]);
             }
 
             return assigned;
         }
+
+        private static int PickSymmetricStart(Random rng, List<int> startPool, int center, int columnCount)
+        {
+            var pick = startPool[rng.Next(startPool.Count)];
+            return rng.NextDouble() < 0.5 ? pick : MirrorColumn(pick, columnCount);
+        }
+
+        private static List<int> BuildStartColumns(Random rng, int pathCount) =>
+            BuildStartColumns(rng, pathCount, MapGenerationProfile.Default);
 
         private static bool TryAddPath(List<int[]> paths, HashSet<string> signatures, int[] path)
         {
@@ -133,29 +184,86 @@ namespace FracturedChorus.RunMap.Core
             return true;
         }
 
-        private static int[] GenerateSinglePath(Random rng, int startCol)
+        private static int[] GenerateSinglePath(Random rng, int startCol, MapGenerationProfile profile)
         {
-            startCol = ClampColumn(startCol);
-            var path = new int[MapLayoutConstants.FloorCount];
+            var center = BossColumnFor(profile);
+            startCol = ClampColumn(startCol, profile.ColumnCount);
+            if (Math.Abs(startCol - center) > MapLayoutConstants.MaxDriftFromCenter)
+            {
+                startCol = center;
+            }
+
+            var path = new int[profile.FloorCount];
             path[0] = startCol;
 
-            for (var floor = 1; floor < MapLayoutConstants.FloorCount; floor++)
+            for (var floor = 1; floor < profile.FloorCount; floor++)
             {
-                var options = GetNeighborColumns(path[floor - 1]);
+                var options = GetNeighborColumns(path[floor - 1], profile.ColumnCount, center);
                 if (options.Count == 0)
                 {
                     return null;
                 }
 
-                path[floor] = floor >= MapLayoutConstants.FloorCount - 2
-                    ? PickColumnTowardCenter(rng, options, BossColumn)
-                    : options[rng.Next(options.Count)];
+                var converge = floor >= (int)(profile.FloorCount * 0.55f);
+                path[floor] = floor >= profile.FloorCount - 2 || converge
+                    ? PickColumnTowardCenter(rng, options, center)
+                    : PickNextColumn(rng, path[floor - 1], options, center);
             }
 
             return path;
         }
 
-        private static int[] MutatePath(Random rng, int[] source)
+        private static int PickNextColumn(Random rng, int previousColumn, List<int> options, int centerColumn)
+        {
+            var candidates = new List<int>();
+            var bestScore = float.MinValue;
+
+            foreach (var option in options)
+            {
+                var lateral = Math.Abs(option - previousColumn);
+                if (lateral > MapLayoutConstants.MaxColumnConnectDelta)
+                {
+                    continue;
+                }
+
+                var centerDistance = Math.Abs(option - centerColumn);
+                if (centerDistance > MapLayoutConstants.MaxDriftFromCenter)
+                {
+                    continue;
+                }
+
+                var score = lateral == 0 ? MapLayoutConstants.CenterColumnBiasWeight : 1.5f;
+                score /= 1f + centerDistance * 0.25f;
+
+                if (Math.Abs(option - centerColumn) > Math.Abs(previousColumn - centerColumn))
+                {
+                    score *= 0.35f;
+                }
+
+                if (score > bestScore + 0.01f)
+                {
+                    bestScore = score;
+                    candidates.Clear();
+                    candidates.Add(option);
+                }
+                else if (Math.Abs(score - bestScore) <= 0.01f)
+                {
+                    candidates.Add(option);
+                }
+            }
+
+            if (candidates.Count == 0)
+            {
+                return PickColumnTowardCenter(rng, options, centerColumn);
+            }
+
+            return candidates[rng.Next(candidates.Count)];
+        }
+
+        private static int[] GenerateSinglePath(Random rng, int startCol) =>
+            GenerateSinglePath(rng, startCol, MapGenerationProfile.Default);
+
+        private static int[] MutatePath(Random rng, int[] source, MapGenerationProfile profile)
         {
             if (source == null || source.Length == 0)
             {
@@ -163,12 +271,12 @@ namespace FracturedChorus.RunMap.Core
             }
 
             var path = (int[])source.Clone();
-            var mutationCount = rng.Next(1, 4);
+            var mutationCount = rng.Next(1, 2);
 
             for (var m = 0; m < mutationCount; m++)
             {
                 var floor = rng.Next(1, path.Length);
-                var options = GetNeighborColumns(path[floor - 1]);
+                var options = GetNeighborColumns(path[floor - 1], profile.ColumnCount, BossColumnFor(profile));
                 if (options.Count == 0)
                 {
                     continue;
@@ -180,11 +288,11 @@ namespace FracturedChorus.RunMap.Core
                     continue;
                 }
 
-                path[floor] = options[rng.Next(options.Count)];
+                path[floor] = PickNextColumn(rng, path[floor - 1], options, BossColumnFor(profile));
 
                 for (var f = floor + 1; f < path.Length; f++)
                 {
-                    var nextOptions = GetNeighborColumns(path[f - 1]);
+                    var nextOptions = GetNeighborColumns(path[f - 1], profile.ColumnCount, BossColumnFor(profile));
                     if (nextOptions.Count == 0)
                     {
                         return null;
@@ -192,9 +300,11 @@ namespace FracturedChorus.RunMap.Core
 
                     if (!nextOptions.Contains(path[f]))
                     {
-                        path[f] = f >= MapLayoutConstants.FloorCount - 2
-                            ? PickColumnTowardCenter(rng, nextOptions, BossColumn)
-                            : nextOptions[rng.Next(nextOptions.Count)];
+                        var center = BossColumnFor(profile);
+                        var converge = f >= (int)(profile.FloorCount * 0.55f);
+                        path[f] = f >= profile.FloorCount - 2 || converge
+                            ? PickColumnTowardCenter(rng, nextOptions, center)
+                            : PickNextColumn(rng, path[f - 1], nextOptions, center);
                     }
                 }
             }
@@ -202,13 +312,25 @@ namespace FracturedChorus.RunMap.Core
             return path;
         }
 
-        private static List<int> GetNeighborColumns(int column)
+        private static int[] MutatePath(Random rng, int[] source) =>
+            MutatePath(rng, source, MapGenerationProfile.Default);
+
+        private static List<int> GetNeighborColumns(int column, int columnCount, int centerColumn)
+        {
+            var options = GetNeighborColumns(column, columnCount);
+            var filtered = options
+                .Where(col => Math.Abs(col - centerColumn) <= MapLayoutConstants.MaxDriftFromCenter)
+                .ToList();
+            return filtered.Count > 0 ? filtered : options;
+        }
+
+        private static List<int> GetNeighborColumns(int column, int columnCount)
         {
             var options = new List<int>(3);
             for (var delta = -1; delta <= 1; delta++)
             {
                 var col = column + delta;
-                if (col >= 0 && col < MapLayoutConstants.ColumnCount)
+                if (col >= 0 && col < columnCount)
                 {
                     options.Add(col);
                 }
@@ -216,6 +338,9 @@ namespace FracturedChorus.RunMap.Core
 
             return options;
         }
+
+        private static List<int> GetNeighborColumns(int column) =>
+            GetNeighborColumns(column, MapLayoutConstants.ColumnCount);
 
         private static int PickColumnTowardCenter(Random rng, List<int> options, int centerColumn)
         {
@@ -249,8 +374,11 @@ namespace FracturedChorus.RunMap.Core
             return options[options.Count - 1];
         }
 
+        private static int ClampColumn(int column, int columnCount) =>
+            Math.Max(0, Math.Min(columnCount - 1, column));
+
         private static int ClampColumn(int column) =>
-            Math.Max(0, Math.Min(MapLayoutConstants.ColumnCount - 1, column));
+            ClampColumn(column, MapLayoutConstants.ColumnCount);
 
         private static string PathSignature(int[] path)
         {
@@ -276,6 +404,55 @@ namespace FracturedChorus.RunMap.Core
                 (list[i], list[j]) = (list[j], list[i]);
             }
         }
+
+        private static void WireProximityEdges(MapGraph graph, int maxColumnDelta)
+        {
+            foreach (var node in graph.Nodes.ToList())
+            {
+                if (node.IsBoss || node.Floor <= 1)
+                {
+                    continue;
+                }
+
+                foreach (var parent in graph.NodesOnFloor(node.Floor - 1))
+                {
+                    if (Math.Abs(parent.Column - node.Column) > maxColumnDelta)
+                    {
+                        continue;
+                    }
+
+                    graph.Connect(parent.Id, node.Id);
+                }
+            }
+        }
+
+        private static void EnsureSymmetricPaths(
+            List<int[]> paths,
+            HashSet<string> signatures,
+            int pathCount,
+            int columnCount)
+        {
+            var index = 0;
+            while (paths.Count < pathCount && index < paths.Count)
+            {
+                TryAddPath(paths, signatures, MirrorPath(paths[index], columnCount));
+                index++;
+            }
+        }
+
+        private static int[] MirrorPath(int[] path, int columnCount)
+        {
+            var mirrored = new int[path.Length];
+            for (var i = 0; i < path.Length; i++)
+            {
+                mirrored[i] = MirrorColumn(path[i], columnCount);
+            }
+
+            return mirrored;
+        }
+
+        private static int MirrorColumn(int column, int columnCount) =>
+            columnCount - 1 - column;
 
         private static void WirePathEdges(MapGraph graph, IReadOnlyList<int[]> paths)
         {

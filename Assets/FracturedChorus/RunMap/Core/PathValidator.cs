@@ -83,5 +83,122 @@ namespace FracturedChorus.RunMap.Core
 
             return edges.OrderBy(e => e.Item1).ThenBy(e => e.Item2).ToList();
         }
+
+        public static void PruneToBossReachable(MapGraph graph)
+        {
+            if (graph?.BossNode == null)
+            {
+                return;
+            }
+
+            var bossId = graph.BossNode.Id;
+            var forward = CollectForwardReachable(graph);
+            var backward = CollectBackwardReachable(graph, bossId);
+            var keep = new HashSet<int>(forward);
+            keep.IntersectWith(backward);
+            keep.Add(bossId);
+            graph.PruneNodes(keep);
+        }
+
+        public static void RemoveDanglingNodes(MapGraph graph)
+        {
+            if (graph == null)
+            {
+                return;
+            }
+
+            const int maxPasses = 32;
+            for (var pass = 0; pass < maxPasses; pass++)
+            {
+                var remove = new HashSet<int>();
+                foreach (var node in graph.Nodes)
+                {
+                    if (node.IsBoss || node.Floor <= 1)
+                    {
+                        continue;
+                    }
+
+                    if (node.Incoming.Count == 0)
+                    {
+                        remove.Add(node.Id);
+                    }
+                }
+
+                if (remove.Count == 0)
+                {
+                    return;
+                }
+
+                var keep = new HashSet<int>();
+                foreach (var node in graph.Nodes)
+                {
+                    if (!remove.Contains(node.Id))
+                    {
+                        keep.Add(node.Id);
+                    }
+                }
+
+                graph.PruneNodes(keep);
+            }
+        }
+
+        private static HashSet<int> CollectForwardReachable(MapGraph graph)
+        {
+            var reachable = new HashSet<int>();
+            var queue = new Queue<int>();
+
+            foreach (var start in graph.StartNodes())
+            {
+                if (reachable.Add(start.Id))
+                {
+                    queue.Enqueue(start.Id);
+                }
+            }
+
+            while (queue.Count > 0)
+            {
+                var node = graph.GetNode(queue.Dequeue());
+                if (node == null)
+                {
+                    continue;
+                }
+
+                foreach (var nextId in node.Outgoing)
+                {
+                    if (reachable.Add(nextId))
+                    {
+                        queue.Enqueue(nextId);
+                    }
+                }
+            }
+
+            return reachable;
+        }
+
+        private static HashSet<int> CollectBackwardReachable(MapGraph graph, int bossId)
+        {
+            var reachable = new HashSet<int> { bossId };
+            var queue = new Queue<int>();
+            queue.Enqueue(bossId);
+
+            while (queue.Count > 0)
+            {
+                var node = graph.GetNode(queue.Dequeue());
+                if (node == null)
+                {
+                    continue;
+                }
+
+                foreach (var prevId in node.Incoming)
+                {
+                    if (reachable.Add(prevId))
+                    {
+                        queue.Enqueue(prevId);
+                    }
+                }
+            }
+
+            return reachable;
+        }
     }
 }

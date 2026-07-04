@@ -20,6 +20,7 @@ namespace FracturedChorus.RunMap
         public RunState State { get; } = new RunState();
 
         private bool _bootStarted;
+        private bool _cadenceManaged;
         private bool _loadingBossScene;
         private Coroutine _bossLoadCoroutine;
 
@@ -31,6 +32,12 @@ namespace FracturedChorus.RunMap
 
         private void Start()
         {
+            if (GetComponentInParent<CadenceMapController>(true) != null)
+            {
+                _cadenceManaged = true;
+                return;
+            }
+
             if (_bootStarted || Graph != null)
             {
                 return;
@@ -144,10 +151,12 @@ namespace FracturedChorus.RunMap
             State.BeginRun(seed);
             mapView.BuildMap(graph);
             mapView.RefreshInteraction(graph, State);
-            UpdateLabels("Chọn node F1 để bắt đầu run.");
+            SyncLegendPanel(graph);
+            var bossFloor = graph.Profile.BossFloor;
+            UpdateLabels($"Select F1 node to start run · Boss F{bossFloor}.");
         }
 
-        private static void SyncLegendPanel()
+        private static void SyncLegendPanel(MapGraph graph = null)
         {
             var panel = GameObject.Find("LegendPanel");
             if (panel == null)
@@ -162,6 +171,18 @@ namespace FracturedChorus.RunMap
             }
 
             legendView.Apply();
+
+            if (graph?.BossNode == null)
+            {
+                return;
+            }
+
+            var bossRow = panel.transform.Find("Legend_Boss");
+            var bossDesc = bossRow?.Find("Desc")?.GetComponent<Text>();
+            if (bossDesc != null)
+            {
+                bossDesc.text = $"Boss — F{graph.Profile.BossFloor}";
+            }
         }
 
         private void HandleNodeClicked(MapNodeView view)
@@ -174,7 +195,19 @@ namespace FracturedChorus.RunMap
             var node = view.BoundNode;
             if (!State.CanSelectNode(Graph, node))
             {
-                UpdateLabels("Node không reachable — phải đi theo path liền kề.");
+                if (node.IsBoss && State.CurrentFloor > 0 && State.CurrentFloor < Graph.Profile.FloorCount)
+                {
+                    UpdateLabels($"Select Camp F{Graph.Profile.FloorCount} before entering boss.");
+                }
+                else if (node.Floor > State.CurrentFloor + 1)
+                {
+                    UpdateLabels("Node too far — select next floor only.");
+                }
+                else
+                {
+                    UpdateLabels("Node not reachable — follow an adjacent path.");
+                }
+
                 return;
             }
 
@@ -190,14 +223,48 @@ namespace FracturedChorus.RunMap
 
             if (isBoss)
             {
+                node.Cleared = true;
+                mapView.RefreshInteraction(Graph, State);
+
+                var cadence = GetComponentInParent<CadenceMapController>();
+                if (cadence != null && Graph?.Profile != null)
+                {
+                    var sector = Graph.Profile.Sector;
+                    var bossLabel = cadence.Progress.SectorBossLabel(sector);
+                    if (cadence.SectorLoadsBossSceneForUi(sector))
+                    {
+                        Debug.Log("[Fractured Chorus] Final boss node — loading combat scene.");
+                        UpdateLabels($"Entering battle: {bossLabel}…");
+                    }
+                    else
+                    {
+                        Debug.Log("[Fractured Chorus] Sector boss stub — advance to next inner map.");
+                        var next = cadence.Progress.NextSector(sector);
+                        UpdateLabels(next.HasValue
+                            ? $"{bossLabel} cleared — switching to map {SectorMapIndex(next.Value)}/3…"
+                            : $"{bossLabel} cleared.");
+                    }
+
+                    cadence.OnInnerBossEngaged(sector);
+                    return;
+                }
+
                 Debug.Log("[Fractured Chorus] Boss node selected — loading combat scene.");
-                UpdateLabels("Vào trận Oni F16…");
+                UpdateLabels("Entering battle: Oni F16…");
                 BeginBossCombatTransition();
                 return;
             }
 
-            UpdateLabels($"Đã vào {MapNodePalette.DisplayName(node.Type)} (F{node.Floor}). Chọn node kế tiếp.");
+            UpdateLabels($"Entered {MapNodePalette.DisplayName(node.Type)} (F{node.Floor}). Select next node.");
         }
+
+        private static int SectorMapIndex(PinkySectorId sector) => sector switch
+        {
+            PinkySectorId.Pulse => 1,
+            PinkySectorId.Echo => 2,
+            PinkySectorId.Canticle => 3,
+            _ => 0
+        };
 
         private void BeginBossCombatTransition()
         {
@@ -228,7 +295,7 @@ namespace FracturedChorus.RunMap
             {
                 _loadingBossScene = false;
                 _bossLoadCoroutine = null;
-                UpdateLabels("Không load được CombatPrototype — kiểm tra Build Settings.");
+                UpdateLabels("Failed to load CombatPrototype — check Build Settings.");
             }
         }
 

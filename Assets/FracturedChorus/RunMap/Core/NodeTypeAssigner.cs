@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using FracturedChorus.Data;
 
@@ -47,6 +48,15 @@ namespace FracturedChorus.RunMap.Core
 
         public static void ApplyFixedFloors(MapGraph graph)
         {
+            ApplyFixedFloors(graph, graph?.Profile ?? MapGenerationProfile.Default);
+        }
+
+        public static void ApplyFixedFloors(MapGraph graph, MapGenerationProfile profile)
+        {
+            var treasureFloor = profile.TreasureFloor;
+            var campFloor = profile.FloorCount;
+            var centerColumn = (profile.ColumnCount - 1) / 2;
+
             foreach (var node in graph.Nodes)
             {
                 if (node.IsBoss)
@@ -55,47 +65,200 @@ namespace FracturedChorus.RunMap.Core
                     continue;
                 }
 
-                switch (node.Floor)
+                if (node.Floor == 1)
                 {
-                    case 1:
-                        node.Type = MapNodeType.Battle;
-                        break;
-                    case 9:
-                        node.Type = MapNodeType.Treasure;
-                        break;
-                    case MapLayoutConstants.FloorCount:
-                        node.Type = MapNodeType.Camp;
-                        break;
+                    node.Type = MapNodeType.Battle;
                 }
+            }
+
+            AssignSingleFloorSpecial(graph, treasureFloor, MapNodeType.Treasure, centerColumn);
+            AssignSingleFloorSpecial(graph, campFloor, MapNodeType.Camp, centerColumn);
+        }
+
+        private static void AssignSingleFloorSpecial(
+            MapGraph graph,
+            int floor,
+            MapNodeType type,
+            int centerColumn)
+        {
+            MapNodeData chosen = null;
+            var bestDistance = int.MaxValue;
+
+            foreach (var node in graph.NodesOnFloor(floor))
+            {
+                var distance = Math.Abs(node.Column - centerColumn);
+                if (distance >= bestDistance)
+                {
+                    continue;
+                }
+
+                bestDistance = distance;
+                chosen = node;
+            }
+
+            if (chosen != null)
+            {
+                chosen.Type = type;
             }
         }
 
         public static void AssignRandomTypes(MapGraph graph, System.Random rng, WeightEntry[] weights = null)
+        {
+            AssignRandomTypes(graph, rng, weights, graph?.Profile ?? MapGenerationProfile.Default);
+        }
+
+        public static void AssignRandomTypes(
+            MapGraph graph,
+            System.Random rng,
+            WeightEntry[] weights,
+            MapGenerationProfile profile)
         {
             weights ??= DefaultWeights;
             var maxAttempts = 800;
 
             for (var attempt = 0; attempt < maxAttempts; attempt++)
             {
-                foreach (var node in graph.Nodes)
-                {
-                    if (node.IsBoss || node.Floor == 1 || node.Floor == 9 ||
-                        node.Floor == MapLayoutConstants.FloorCount)
-                    {
-                        continue;
-                    }
+                AssignDiverseFloorTypes(graph, rng, weights, profile);
 
-                    node.Type = RollType(rng, weights);
-                }
-
-                if (ValidateRules(graph) && ValidateEliteDensity(graph))
+                if (ValidateRules(graph, profile) && ValidateEliteDensity(graph) && ValidateFloorTypeDiversity(graph, profile))
                 {
                     return;
                 }
             }
 
-            FallbackSafeTypes(graph);
-            EnforceEliteDensity(graph, rng);
+            FallbackSafeTypes(graph, profile);
+            EnforceEliteDensity(graph, rng, profile);
+            EnforceFloorTypeDiversity(graph, rng, profile);
+        }
+
+        private static void AssignDiverseFloorTypes(
+            MapGraph graph,
+            System.Random rng,
+            WeightEntry[] weights,
+            MapGenerationProfile profile)
+        {
+            var treasureFloor = profile.TreasureFloor;
+            var campFloor = profile.FloorCount;
+            var nodesByFloor = new Dictionary<int, List<MapNodeData>>();
+
+            foreach (var node in graph.Nodes)
+            {
+                if (node.IsBoss || node.Floor == 1)
+                {
+                    continue;
+                }
+
+                if (!nodesByFloor.TryGetValue(node.Floor, out var list))
+                {
+                    list = new List<MapNodeData>();
+                    nodesByFloor[node.Floor] = list;
+                }
+
+                list.Add(node);
+            }
+
+            foreach (var pair in nodesByFloor)
+            {
+                var nodes = pair.Value.OrderBy(n => n.Column).ToList();
+                var assignable = new List<MapNodeData>();
+                foreach (var node in nodes)
+                {
+                    if (node.Floor == treasureFloor && node.Type == MapNodeType.Treasure)
+                    {
+                        continue;
+                    }
+
+                    if (node.Floor == campFloor && node.Type == MapNodeType.Camp)
+                    {
+                        continue;
+                    }
+
+                    assignable.Add(node);
+                }
+
+                if (assignable.Count == 0)
+                {
+                    continue;
+                }
+
+                var pool = BuildUniqueTypePool(rng, weights, assignable.Count);
+                for (var i = 0; i < assignable.Count; i++)
+                {
+                    assignable[i].Type = pool[i];
+                }
+            }
+        }
+
+        private static List<MapNodeType> BuildUniqueTypePool(System.Random rng, WeightEntry[] weights, int count)
+        {
+            var ordered = weights
+                .OrderByDescending(entry => entry.Weight)
+                .Select(entry => entry.Type)
+                .ToList();
+            var pool = new List<MapNodeType>(count);
+            var guard = 0;
+
+            while (pool.Count < count && guard < 128)
+            {
+                guard++;
+                var type = RollType(rng, weights);
+                if (!pool.Contains(type))
+                {
+                    pool.Add(type);
+                }
+            }
+
+            var fallbackIndex = 0;
+            while (pool.Count < count && fallbackIndex < ordered.Count * 2)
+            {
+                var type = ordered[fallbackIndex % ordered.Count];
+                if (!pool.Contains(type))
+                {
+                    pool.Add(type);
+                }
+
+                fallbackIndex++;
+            }
+
+            return pool;
+        }
+
+        public static bool ValidateFloorTypeDiversity(MapGraph graph, MapGenerationProfile profile)
+        {
+            var treasureFloor = profile.TreasureFloor;
+            var campFloor = profile.FloorCount;
+            var typesByFloor = new Dictionary<int, HashSet<MapNodeType>>();
+
+            foreach (var node in graph.Nodes)
+            {
+                if (node.IsBoss || node.Floor == 1)
+                {
+                    continue;
+                }
+
+                if (!typesByFloor.TryGetValue(node.Floor, out var types))
+                {
+                    types = new HashSet<MapNodeType>();
+                    typesByFloor[node.Floor] = types;
+                }
+
+                if (!types.Add(node.Type))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static void EnforceFloorTypeDiversity(MapGraph graph, System.Random rng, MapGenerationProfile profile)
+        {
+            if (ValidateFloorTypeDiversity(graph, profile))
+            {
+                return;
+            }
+
+            AssignDiverseFloorTypes(graph, rng, DefaultWeights, profile);
         }
 
         private static MapNodeType RollType(System.Random rng, WeightEntry[] weights)
@@ -116,6 +279,14 @@ namespace FracturedChorus.RunMap.Core
 
         public static bool ValidateRules(MapGraph graph)
         {
+            return ValidateRules(graph, graph?.Profile ?? MapGenerationProfile.Default);
+        }
+
+        public static bool ValidateRules(MapGraph graph, MapGenerationProfile profile)
+        {
+            var campFloor = profile.FloorCount;
+            var preCampFloor = System.Math.Max(1, campFloor - 1);
+
             foreach (var node in graph.Nodes)
             {
                 if (node.IsBoss)
@@ -128,7 +299,7 @@ namespace FracturedChorus.RunMap.Core
                     return false;
                 }
 
-                if (node.Floor == 14 && node.Type == MapNodeType.Camp)
+                if (node.Floor == preCampFloor && node.Type == MapNodeType.Camp)
                 {
                     return false;
                 }
@@ -207,6 +378,11 @@ namespace FracturedChorus.RunMap.Core
 
         private static void EnforceEliteDensity(MapGraph graph, System.Random rng)
         {
+            EnforceEliteDensity(graph, rng, graph?.Profile ?? MapGenerationProfile.Default);
+        }
+
+        private static void EnforceEliteDensity(MapGraph graph, System.Random rng, MapGenerationProfile profile)
+        {
             if (ValidateEliteDensity(graph))
             {
                 return;
@@ -238,7 +414,7 @@ namespace FracturedChorus.RunMap.Core
 
             if (elites < minElites)
             {
-                PromoteNodesToElite(graph, rng, minElites - elites);
+                PromoteNodesToElite(graph, rng, minElites - elites, profile);
             }
             else if (elites > maxElites)
             {
@@ -248,11 +424,22 @@ namespace FracturedChorus.RunMap.Core
 
         private static void PromoteNodesToElite(MapGraph graph, System.Random rng, int count)
         {
+            PromoteNodesToElite(graph, rng, count, graph?.Profile ?? MapGenerationProfile.Default);
+        }
+
+        private static void PromoteNodesToElite(
+            MapGraph graph,
+            System.Random rng,
+            int count,
+            MapGenerationProfile profile)
+        {
+            var treasureFloor = profile.TreasureFloor;
+            var campFloor = profile.FloorCount;
             var candidates = new List<MapNodeData>();
             foreach (var node in graph.Nodes)
             {
-                if (node.IsBoss || node.Floor < 6 || node.Floor == 9 ||
-                    node.Floor == MapLayoutConstants.FloorCount)
+                if (node.IsBoss || node.Floor < 6 || node.Floor == treasureFloor ||
+                    node.Floor == campFloor)
                 {
                     continue;
                 }
@@ -274,7 +461,7 @@ namespace FracturedChorus.RunMap.Core
 
                 var previousType = node.Type;
                 node.Type = MapNodeType.Elite;
-                if (ValidateRules(graph) && ValidateEliteDensity(graph))
+                if (ValidateRules(graph, profile) && ValidateEliteDensity(graph))
                 {
                     count--;
                     continue;
@@ -348,16 +535,26 @@ namespace FracturedChorus.RunMap.Core
 
         private static void FallbackSafeTypes(MapGraph graph)
         {
+            FallbackSafeTypes(graph, graph?.Profile ?? MapGenerationProfile.Default);
+        }
+
+        private static void FallbackSafeTypes(MapGraph graph, MapGenerationProfile profile)
+        {
+            var treasureFloor = profile.TreasureFloor;
+            var campFloor = profile.FloorCount;
+
             foreach (var node in graph.Nodes)
             {
-                if (node.IsBoss || node.Floor == 1 || node.Floor == 9 ||
-                    node.Floor == MapLayoutConstants.FloorCount)
+                if (node.IsBoss || node.Floor == 1 || node.Type == MapNodeType.Treasure ||
+                    node.Type == MapNodeType.Camp)
                 {
                     continue;
                 }
 
                 node.Type = node.Floor % 4 == 0 ? MapNodeType.Event : MapNodeType.Battle;
             }
+
+            EnforceFloorTypeDiversity(graph, new System.Random(17), profile);
         }
     }
 }

@@ -18,7 +18,7 @@ namespace FracturedChorus.UI
         [SerializeField] private Vector2 hexScale = new Vector2(HexSpriteUtil.DefaultScaleX, HexSpriteUtil.DefaultScaleY);
         [SerializeField] private bool useCustomFloorColor;
         [SerializeField] private Color customFloorColor = Color.white;
-        [Tooltip("Giữ visual/active state đã chỉnh trong scene — không rebuild hex khi chọn object hoặc Play.")]
+        [Tooltip("Keep visual/active state authored in the scene — do not rebuild hex when selecting the object or entering Play.")]
         [SerializeField] private bool preserveSceneVisuals = true;
 
         private static readonly Color PlayerFill = new Color(0.12f, 0.28f, 0.48f, 0.35f);

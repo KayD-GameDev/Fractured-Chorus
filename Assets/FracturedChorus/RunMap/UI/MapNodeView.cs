@@ -93,7 +93,7 @@ namespace FracturedChorus.RunMap.UI
 
             if (button != null)
             {
-                button.interactable = reachable && !BoundNode.Cleared;
+                button.interactable = !BoundNode.Cleared;
             }
         }
 

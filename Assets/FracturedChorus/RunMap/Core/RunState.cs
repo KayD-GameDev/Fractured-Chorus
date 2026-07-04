@@ -31,7 +31,7 @@ namespace FracturedChorus.RunMap.Core
             }
 
             CurrentNodeId = node.Id;
-            CurrentFloor = node.IsBoss ? MapLayoutConstants.BossFloor : node.Floor;
+            CurrentFloor = node.Floor;
             node.Visited = true;
 
             if (_visitedIds.Add(node.Id))

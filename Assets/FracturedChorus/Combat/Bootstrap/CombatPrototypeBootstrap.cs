@@ -12,7 +12,7 @@ namespace FracturedChorus.Combat.Bootstrap
 {
     public class CombatPrototypeBootstrap : MonoBehaviour
     {
-        [Header("Scene References — chỉnh layout trong Hierarchy")]
+        [Header("Scene References — edit layout in Hierarchy")]
         [SerializeField] private CombatController combatController;
         [SerializeField] private BeatTimelineUIView timelineView;
         [SerializeField] private SkillPanelUIView skillPanelView;
@@ -105,8 +105,8 @@ namespace FracturedChorus.Combat.Bootstrap
             if (enemyStatusBarView == null)
             {
                 Debug.LogWarning(
-                    "[Bootstrap] Không có EnemyStatusBarUI trong scene. " +
-                    "Chạy menu Fractured Chorus → Add Enemy Status Bar (Hierarchy), Save scene, rồi Play lại.");
+                    "[Bootstrap] EnemyStatusBarUI not found in scene. " +
+                    "Run Fractured Chorus → Add Enemy Status Bar (Hierarchy), save the scene, then Play again.");
                 return;
             }
 
@@ -118,13 +118,13 @@ namespace FracturedChorus.Combat.Bootstrap
                 if (partyTemplate != null)
                 {
                     Debug.LogWarning(
-                        "[Bootstrap] EnemyStatusBarUI thiếu CardTemplate — tạm mượn template party. " +
-                        "Chạy Setup Enemy Cards in Hierarchy để có CardTemplate riêng trong scene.");
+                        "[Bootstrap] EnemyStatusBarUI is missing CardTemplate — temporarily borrowing party template. " +
+                        "Run Setup Enemy Cards in Hierarchy to add a dedicated CardTemplate in the scene.");
                     enemyStatusBarView.SetCardTemplate(partyTemplate);
                 }
                 else
                 {
-                    Debug.LogWarning("[Bootstrap] Không có CardTemplate cho thẻ quái.");
+                    Debug.LogWarning("[Bootstrap] No CardTemplate available for enemy cards.");
                     return;
                 }
             }
