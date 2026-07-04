@@ -1,5 +1,6 @@
 using System.Collections;
 using FracturedChorus.Combat.Bootstrap;
+using FracturedChorus.RunMap;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -33,8 +34,11 @@ namespace FracturedChorus.Menu
         [SerializeField] private AudioClip menuMaleVoiceClip;
         [SerializeField] private AudioClip changeMenuSfxClip;
         [SerializeField] private AudioClip buttonPressSfxClip;
+        [SerializeField] private CanvasGroup sceneFadeOverlay;
         [SerializeField] private float transitionDuration = 0.35f;
         [SerializeField] [Range(0.2f, 0.95f)] private float menuTransitionFadeScale = 0.72f;
+        [SerializeField] private float newGameFadeDuration = 1.15f;
+        [SerializeField] private float newGameFadeHoldSeconds = 0.35f;
         [SerializeField] [Range(0f, 0.5f)] private float bgmLeadInSeconds = 0.45f;
         [SerializeField] [Range(0.2f, 0.9f)] private float bgmLeadInProgress = 0.48f;
         [SerializeField] [Range(0f, 1f)] private float bgmDuckMultiplier = 0.28f;
@@ -53,6 +57,7 @@ namespace FracturedChorus.Menu
         {
             CombatInputSetup.EnsureEventSystem();
             EnsureMenuAudio();
+            EnsureSceneFadeOverlay();
             ApplyLayerState(showAttract: true, immediate: true);
             if (settingsOverlay != null)
             {
@@ -103,6 +108,16 @@ namespace FracturedChorus.Menu
         public void PlayAttractTransitionSfx()
         {
             _transitionSfxController?.PlayChangeMenu();
+        }
+
+        public void BeginNewGame()
+        {
+            if (_transitioning)
+            {
+                return;
+            }
+
+            StartCoroutine(BeginNewGameRoutine());
         }
 
         public void PlayButtonPressSfx()
@@ -522,6 +537,44 @@ namespace FracturedChorus.Menu
             _buttonPressSfxController.Configure(buttonPressSfxClip, buttonPressSfxVolume);
         }
 
+        private IEnumerator BeginNewGameRoutine()
+        {
+            _transitioning = true;
+            menuController?.SetEnabled(false);
+            HideSettingsImmediate();
+            HideOffBeatArchiveImmediate();
+
+            PlayAttractTransitionSfx();
+            _bgmController?.Duck(bgmDuckMultiplier);
+
+            EnsureSceneFadeOverlay();
+            if (sceneFadeOverlay != null)
+            {
+                sceneFadeOverlay.gameObject.SetActive(true);
+                sceneFadeOverlay.blocksRaycasts = true;
+                sceneFadeOverlay.interactable = false;
+            }
+
+            var sfxDuration = _transitionSfxController != null
+                ? _transitionSfxController.GetChangeMenuDuration()
+                : newGameFadeDuration;
+            var fadeDuration = Mathf.Max(newGameFadeDuration, sfxDuration * menuTransitionFadeScale);
+
+            yield return FadeSceneOverlayTo(1f, fadeDuration);
+
+            if (_transitionSfxController != null)
+            {
+                yield return _transitionSfxController.WaitUntilFinishedRoutine();
+            }
+
+            if (newGameFadeHoldSeconds > 0f)
+            {
+                yield return new WaitForSecondsRealtime(newGameFadeHoldSeconds);
+            }
+
+            RunMapSceneLoader.LoadByName(RunMapSceneCatalog.PrologueVN);
+        }
+
         private IEnumerator TransitionToAttract()
         {
             _transitioning = true;
@@ -665,6 +718,95 @@ namespace FracturedChorus.Menu
                 mainMenuUi.interactable = interactable;
                 mainMenuUi.blocksRaycasts = blocksRaycasts;
             }
+        }
+
+        private void EnsureSceneFadeOverlay()
+        {
+            if (sceneFadeOverlay != null)
+            {
+                sceneFadeOverlay.alpha = 0f;
+                sceneFadeOverlay.blocksRaycasts = false;
+                return;
+            }
+
+            var canvasTransform = ResolveMenuCanvasTransform();
+            if (canvasTransform == null)
+            {
+                return;
+            }
+
+            var existing = canvasTransform.Find("SceneFadeOverlay");
+            if (existing != null && existing.TryGetComponent<CanvasGroup>(out var existingGroup))
+            {
+                sceneFadeOverlay = existingGroup;
+                sceneFadeOverlay.alpha = 0f;
+                sceneFadeOverlay.blocksRaycasts = false;
+                return;
+            }
+
+            var overlayGo = new GameObject(
+                "SceneFadeOverlay",
+                typeof(RectTransform),
+                typeof(CanvasRenderer),
+                typeof(Image),
+                typeof(CanvasGroup));
+            overlayGo.transform.SetParent(canvasTransform, false);
+            overlayGo.transform.SetAsLastSibling();
+
+            var rect = overlayGo.GetComponent<RectTransform>();
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+
+            var image = overlayGo.GetComponent<Image>();
+            image.color = Color.black;
+            image.raycastTarget = false;
+
+            sceneFadeOverlay = overlayGo.GetComponent<CanvasGroup>();
+            sceneFadeOverlay.alpha = 0f;
+            sceneFadeOverlay.interactable = false;
+            sceneFadeOverlay.blocksRaycasts = false;
+        }
+
+        private Transform ResolveMenuCanvasTransform()
+        {
+            if (attractLayer != null)
+            {
+                return attractLayer.transform.parent;
+            }
+
+            if (mainMenuUi != null)
+            {
+                return mainMenuUi.transform.parent;
+            }
+
+            if (mainMenuBackground != null)
+            {
+                return mainMenuBackground.transform.parent;
+            }
+
+            return null;
+        }
+
+        private IEnumerator FadeSceneOverlayTo(float alpha, float duration)
+        {
+            if (sceneFadeOverlay == null)
+            {
+                yield break;
+            }
+
+            var start = sceneFadeOverlay.alpha;
+            var elapsed = 0f;
+            duration = Mathf.Max(0.01f, duration);
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                sceneFadeOverlay.alpha = Mathf.Lerp(start, alpha, elapsed / duration);
+                yield return null;
+            }
+
+            sceneFadeOverlay.alpha = alpha;
         }
 
         private static bool WasAnyInputPressed()
