@@ -50,8 +50,8 @@ namespace FracturedChorus.Editor
             {
                 if (!EditorUtility.DisplayDialog(
                         "Setup MainMenuStartGame",
-                        "MainMenuStartGameRoot đã tồn tại. Xóa và tạo lại hierarchy?",
-                        "Tạo lại",
+                        "MainMenuStartGameRoot already exists. Delete and recreate hierarchy?",
+                        "Recreate",
                         "Cancel"))
                 {
                     return;
@@ -122,7 +122,7 @@ namespace FracturedChorus.Editor
             {
                 EditorUtility.DisplayDialog(
                     "Upgrade MainMenuStartGame",
-                    "Mở scene MainMenuStartGame và đảm bảo có MainMenuStartGameRoot / MenuPanel.",
+                    "Open the MainMenuStartGame scene and ensure MainMenuStartGameRoot / MenuPanel exist.",
                     "OK");
                 return;
             }
@@ -176,7 +176,7 @@ namespace FracturedChorus.Editor
             {
                 EditorUtility.DisplayDialog(
                     "Upgrade Config UI",
-                    "Mở scene MainMenuStartGame trước.",
+                    "Open the MainMenuStartGame scene first.",
                     "OK");
                 return;
             }
@@ -203,7 +203,7 @@ namespace FracturedChorus.Editor
             {
                 EditorUtility.DisplayDialog(
                     "Upgrade MainMenuStartGame",
-                    "Không tìm thấy MainMenuCanvas / MainMenuLayer|Background / MenuPanel. Mở scene MainMenuStartGame trước.",
+                    "MainMenuCanvas / MainMenuLayer|Background / MenuPanel not found. Open the MainMenuStartGame scene first.",
                     "OK");
                 return;
             }
@@ -224,7 +224,7 @@ namespace FracturedChorus.Editor
             }
 
             EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
-            Debug.Log("[Fractured Chorus] MainMenuStartGame layers upgraded — MenuPanel tách khỏi background. Save scene.");
+            Debug.Log("[Fractured Chorus] MainMenuStartGame layers upgraded — MenuPanel separated from background. Save scene.");
         }
 
         private static void BuildHierarchy()

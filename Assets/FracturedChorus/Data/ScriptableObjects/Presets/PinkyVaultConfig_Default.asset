@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 91d18dcef3023c04c85a94f6155c543b, type: 3}
+  m_Name: PinkyVaultConfig_Default
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.PinkyVaultConfigSO
+  pulse:
+    title: "Part 1 \xB7 Pulse Lane"
+    bossLabel: "Mimi \u2014 The Pulse"
+    columnCount: 7
+    floorCount: 10
+    bossFloor: 11
+    pathCount: 6
+    previewSeed: 101
+    loadBossScene: 0
+    battleWeight: 0.26
+    eliteWeight: 0.32
+    eventWeight: 0.17
+    relayWeight: 0.05
+    campWeight: 0.06
+    treasureWeight: 0.14
+  echo:
+    title: "Part 2 \xB7 Echo Lane"
+    bossLabel: "Kiki \u2014 The Echo"
+    columnCount: 7
+    floorCount: 10
+    bossFloor: 11
+    pathCount: 6
+    previewSeed: 202
+    loadBossScene: 0
+    battleWeight: 0.26
+    eliteWeight: 0.32
+    eventWeight: 0.17
+    relayWeight: 0.05
+    campWeight: 0.06
+    treasureWeight: 0.14
+  canticle:
+    title: "Part 3 \xB7 Canticle Lane"
+    bossLabel: "Astra \u2014 Chart Lord"
+    columnCount: 7
+    floorCount: 12
+    bossFloor: 13
+    pathCount: 6
+    previewSeed: 303
+    loadBossScene: 1
+    battleWeight: 0.26
+    eliteWeight: 0.32
+    eventWeight: 0.17
+    relayWeight: 0.05
+    campWeight: 0.06
+    treasureWeight: 0.14

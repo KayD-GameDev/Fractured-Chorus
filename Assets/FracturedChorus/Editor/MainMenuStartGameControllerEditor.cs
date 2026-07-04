@@ -21,7 +21,7 @@ namespace FracturedChorus.Editor
             EditorGUILayout.Space(8f);
             EditorGUILayout.LabelField("Edit Mode Preview", EditorStyles.boldLabel);
             EditorGUILayout.HelpBox(
-                "Chọn preview để chỉ hiện 1 lớp trong Scene/Game view — tránh 2 ảnh nền chồng nhau khi chỉnh UI.",
+                "Select a preview layer to show only one layer in Scene/Game view — avoids overlapping background images while editing UI.",
                 MessageType.Info);
 
             EditorGUILayout.BeginHorizontal();

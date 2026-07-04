@@ -30,9 +30,9 @@ namespace FracturedChorus.UI
         [FormerlySerializedAs("clickCollider")]
         [SerializeField] private BoxCollider2D bodyCollider;
         [SerializeField] private UnitFeetAnchor feetAnchor;
-        [Tooltip("Giữ sprite/màu/scale Transform đã chỉnh trong scene.")]
+        [Tooltip("Keep sprite/color/Transform scale authored in the scene.")]
         [SerializeField] private bool preserveSceneVisuals = true;
-        [Tooltip("Giữ size/offset BoxCollider2D đã chỉnh trong scene — dùng làm vùng click + kéo thả.")]
+        [Tooltip("Keep BoxCollider2D size/offset authored in the scene — used as click + drag area.")]
         [SerializeField] private bool preserveSceneCollider = true;
 
         public CombatUnit Unit { get; private set; }

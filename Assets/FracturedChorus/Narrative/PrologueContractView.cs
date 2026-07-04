@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -52,6 +53,19 @@ namespace FracturedChorus.Narrative
 
         public void Show(Action<string> onSigned)
         {
+            PrepareShow(onSigned);
+            if (root != null)
+            {
+                root.alpha = 1f;
+                root.interactable = true;
+                root.blocksRaycasts = true;
+            }
+
+            ActivateNameInput();
+        }
+
+        public void PrepareShow(Action<string> onSigned)
+        {
             ResolveReferences();
             EnsureContractPaperSprite();
             ApplyLayout();
@@ -75,36 +89,90 @@ namespace FracturedChorus.Narrative
                 {
                     placeholderText.text = RunProfile.DefaultNameSuggestion;
                 }
-
-                nameInput.ActivateInputField();
-                nameInput.Select();
             }
 
             if (hintText != null)
             {
+                hintText.gameObject.SetActive(true);
                 hintText.text = $"Enter a name (suggested: {RunProfile.DefaultNameSuggestion})";
+            }
+
+            if (confirmButton != null)
+            {
+                confirmButton.gameObject.SetActive(true);
+                confirmButton.interactable = true;
             }
 
             signaturePad?.Clear();
 
             if (root != null)
             {
-                var fadeOverlay = root.transform.parent != null
-                    ? root.transform.parent.Find("FadeOverlay")
-                    : null;
-                if (fadeOverlay != null)
-                {
-                    root.transform.SetSiblingIndex(fadeOverlay.GetSiblingIndex());
-                }
-                else
-                {
-                    root.transform.SetAsLastSibling();
-                }
+                BringRootToFront();
 
                 root.gameObject.SetActive(true);
-                root.alpha = 1f;
-                root.interactable = true;
-                root.blocksRaycasts = true;
+                root.alpha = 0f;
+                root.interactable = false;
+                root.blocksRaycasts = false;
+            }
+        }
+
+        public IEnumerator FadeIn(float duration)
+        {
+            if (root == null)
+            {
+                ActivateNameInput();
+                yield break;
+            }
+
+            duration = Mathf.Max(0.01f, duration);
+            var elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                root.alpha = Mathf.Clamp01(elapsed / duration);
+                yield return null;
+            }
+
+            root.alpha = 1f;
+            root.interactable = true;
+            root.blocksRaycasts = true;
+
+            if (confirmButton != null && !confirmButton.gameObject.activeSelf)
+            {
+                confirmButton.gameObject.SetActive(true);
+            }
+
+            ActivateNameInput();
+        }
+
+        private void ActivateNameInput()
+        {
+            if (nameInput == null || !nameInput.gameObject.activeInHierarchy)
+            {
+                return;
+            }
+
+            nameInput.ActivateInputField();
+            nameInput.Select();
+        }
+
+        private void BringRootToFront()
+        {
+            if (root == null)
+            {
+                return;
+            }
+
+            var fadeOverlay = root.transform.parent != null
+                ? root.transform.parent.Find("FadeOverlay")
+                : null;
+            if (fadeOverlay != null)
+            {
+                root.transform.SetSiblingIndex(fadeOverlay.GetSiblingIndex());
+            }
+            else
+            {
+                root.transform.SetAsLastSibling();
             }
         }
 
@@ -244,6 +312,16 @@ namespace FracturedChorus.Narrative
             if (contractPaper == null)
             {
                 contractPaper = transform.Find("ContractPaper")?.GetComponent<Image>();
+            }
+
+            if (confirmButton == null)
+            {
+                confirmButton = transform.Find("ConfirmButton")?.GetComponent<Button>();
+            }
+
+            if (hintText == null)
+            {
+                hintText = transform.Find("HintText")?.GetComponent<Text>();
             }
         }
 

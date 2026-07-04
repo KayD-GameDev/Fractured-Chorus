@@ -169,7 +169,7 @@ namespace FracturedChorus.Editor
                 // RectTransform ở root mà không phải Canvas ⇒ UI mồ côi (leaked khỏi thẻ).
                 if (root.GetComponent<RectTransform>() != null && root.GetComponent<Canvas>() == null)
                 {
-                    Debug.LogWarning($"[Fractured Chorus] Xoá UI mồ côi ở root: '{root.name}'.");
+                    Debug.LogWarning($"[Fractured Chorus] Removed orphaned UI at root: '{root.name}'.");
                     Object.DestroyImmediate(root);
                     removed++;
                 }
@@ -177,7 +177,7 @@ namespace FracturedChorus.Editor
 
             if (removed > 0)
             {
-                Debug.Log($"[Fractured Chorus] Đã dọn {removed} UI mồ côi khỏi root scene.");
+                Debug.Log($"[Fractured Chorus] Removed {removed} orphaned UI object(s) from scene root.");
             }
         }
 
@@ -204,13 +204,13 @@ namespace FracturedChorus.Editor
             var buPath = "Assets/SceneBackup/CombatPrototypeBU.unity";
             if (!System.IO.File.Exists(buPath))
             {
-                EditorUtility.DisplayDialog("Fractured Chorus", "Không tìm thấy CombatPrototypeBU.unity", "OK");
+                EditorUtility.DisplayDialog("Fractured Chorus", "CombatPrototypeBU.unity not found.", "OK");
                 return;
             }
 
             if (!EditorUtility.DisplayDialog(
                     "Restore Scene",
-                    "Thay CombatPrototype.unity bằng bản SceneBackup (BU)?\nLayout honeycomb (23/6) — khác bản hiện tại.",
+                    "Replace CombatPrototype.unity with the SceneBackup (BU) copy?\nHoneycomb layout (23/6) — differs from the current scene.",
                     "Restore",
                     "Cancel"))
             {
@@ -237,13 +237,13 @@ namespace FracturedChorus.Editor
             var path = "Assets/SceneBackup/CombatPrototype_HEAD_20260625.unity";
             if (!System.IO.File.Exists(path))
             {
-                EditorUtility.DisplayDialog("Fractured Chorus", "Không tìm thấy CombatPrototype_HEAD_20260625.unity", "OK");
+                EditorUtility.DisplayDialog("Fractured Chorus", "CombatPrototype_HEAD_20260625.unity not found.", "OK");
                 return;
             }
 
             var message = applyPlayReadyUpdates
-                ? "Khôi phục scene từ backup HEAD rồi chạy Apply All (collider 2D, sprite, timeline)?\nLayout Ren (-3.87, 0)."
-                : "Khôi phục scene từ backup HEAD (trước khi sửa YAML)?\nĐây là bản git commit mới nhất — layout Ren (-3.87, 0).";
+                ? "Restore scene from HEAD backup, then run Apply All (2D collider, sprite, timeline)?\nRen layout (-3.87, 0)."
+                : "Restore scene from HEAD backup (before YAML edits)?\nThis is the latest git commit — Ren layout (-3.87, 0).";
 
             if (!EditorUtility.DisplayDialog("Restore Scene", message, "Restore", "Cancel"))
             {
@@ -355,7 +355,7 @@ namespace FracturedChorus.Editor
             CombatInputSetup.EnsureCameraRaycaster(Camera.main, destroyImmediate: true);
             EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
             Debug.Log(
-                $"[Fractured Chorus] Migrated {views.Length} UnitView(s) to BoxCollider2D + FeetAnchor (giữ collider scene nếu Preserve Scene Collider bật). Save scene.");
+                $"[Fractured Chorus] Migrated {views.Length} UnitView(s) to BoxCollider2D + FeetAnchor (keeps scene collider when Preserve Scene Collider is enabled). Save scene.");
         }
 
         [MenuItem("Fractured Chorus/Fit Unit Colliders To Sprite (override scene)")]
@@ -369,7 +369,7 @@ namespace FracturedChorus.Editor
             }
 
             EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
-            Debug.Log($"[Fractured Chorus] Refit BoxCollider2D theo sprite trên {views.Length} unit(s). Save scene (Ctrl+S).");
+            Debug.Log($"[Fractured Chorus] Refit BoxCollider2D to sprite on {views.Length} unit(s). Save scene (Ctrl+S).");
         }
 
         [MenuItem("Fractured Chorus/Restore Unit Sprites from Presets")]
@@ -415,8 +415,8 @@ namespace FracturedChorus.Editor
             {
                 if (!EditorUtility.DisplayDialog(
                         "Setup Combat Scene",
-                        "CombatRoot đã tồn tại. Xóa và tạo lại hierarchy?",
-                        "Tạo lại",
+                        "CombatRoot already exists. Delete and recreate hierarchy?",
+                        "Recreate",
                         "Cancel"))
                 {
                     return;
@@ -962,7 +962,7 @@ namespace FracturedChorus.Editor
             }
 
             EditorSceneManager.MarkSceneDirty(gridRoot.scene);
-            Debug.Log($"[Fractured Chorus] Hex board rebuilt 2×3. Đã xoá {deleted} ô hàng DƯỚI cùng, giữ 2 hàng trên (units + top), re-index về R0(top)/R1(units) + snap toạ độ đã lưu. Lưu scene.");
+            Debug.Log($"[Fractured Chorus] Hex board rebuilt 2×3. Removed {deleted} bottom-row cell(s), kept top 2 rows (units + top), re-indexed to R0(top)/R1(units) + snapped saved coordinates. Save scene.");
         }
 
         [MenuItem("Fractured Chorus/Add Knight of Despair (Boss) to Scene")]

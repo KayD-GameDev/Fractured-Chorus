@@ -17,7 +17,7 @@ Logic trong **MonoBehaviour `.cs`**. Layout layer chỉnh trong **Hierarchy**; l
    - `CombatPrototype.unity`
 4. Chờ compile → **Play**
 
-Menu bổ sung: **Fractured Chorus → Setup Run Map Scene Hierarchy** (tạo lại hierarchy trên scene hiện tại).
+Menu bổ sung: **Fractured Chorus → Run Map → …** (xem bảng dưới).
 
 ---
 
@@ -185,7 +185,7 @@ Sau sửa Hierarchy → **Save scene**. Play rebuild map — không giữ clone 
 |-------------|-------------------|
 | **Không thấy connection lines** | Template `Image` thiếu sprite → code gán `UiCircleSpriteUtil.White`; edges trên `ConnectionsLayer` |
 | **Boss click không vào combat** | Build Settings thiếu `CombatPrototype`; boss chưa reachable; Console lỗi `RunMapSceneLoader` |
-| F1 ở **trên** thay vì đáy | Layer anchor `(0.5, 0)` — **Setup Run Map Scene Hierarchy** |
+| F1 ở **trên** thay vì đáy | Layer anchor `(0.5, 0)` — **Run Map → Setup Scene Hierarchy** |
 | Map trống khi Play | `RunMapController` disabled; Console `NodeTemplate chưa gán` → Setup hierarchy |
 | Scene view chỉ template | **Bình thường Edit mode** — map full khi **Play** |
 | Seed luôn 42 | Bật **Randomize Seed On Play** trên template / bootstrap |
@@ -197,9 +197,14 @@ Sau sửa Hierarchy → **Save scene**. Play rebuild map — không giữ clone 
 
 ## Editor menus
 
+**Fractured Chorus → Run Map**
+
 | Menu | Khi nào |
 |------|---------|
-| **Create Run Map Prototype Scene** | Scene mới + save |
-| **Setup Run Map Scene Hierarchy** | Rebuild hierarchy |
-| **Upgrade Run Map Legend Panel** | Font/spacing/màu legend |
-| **Save Run Map Scene Upgrades** | Ghi thay đổi editor vào scene file |
+| **Create Prototype Scene** | Scene mới + save |
+| **Setup Scene Hierarchy** | Rebuild hierarchy + macro layer |
+| **Setup Cadence Macro Layer** | Wire macro map, mask, inner layer |
+| **Open Layout Editor** | Macro map — mask vault, background |
+| **Open Pinky Vault Map Editor** | Inner map node — 3 Part, floor/boss/weights |
+| **Upgrade Legend Panel** | Font/spacing/màu legend |
+| **Save Scene Upgrades** | Legend + scroll + macro layer → save scene |

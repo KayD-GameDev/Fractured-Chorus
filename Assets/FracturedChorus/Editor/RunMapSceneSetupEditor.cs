@@ -17,8 +17,236 @@ namespace FracturedChorus.Editor
     {
         private const string ScenePath = "Assets/FracturedChorus/Scenes/RunMapPrototype.unity";
         private const string TemplateAssetPath = "Assets/FracturedChorus/Data/ScriptableObjects/Presets/MapTemplate_Default.asset";
+        private const string CadenceLayoutAssetPath = "Assets/FracturedChorus/Data/ScriptableObjects/Presets/CadenceMapLayout_Default.asset";
+        private const string PinkyVaultConfigPath = "Assets/FracturedChorus/Data/ScriptableObjects/Presets/PinkyVaultConfig_Default.asset";
+        private const string CadenceBackgroundPath = "Assets/FracturedChorus/Art/Backgrounds/cadence_macro_map_bg_v2_5fingers.png";
 
-        [MenuItem("Fractured Chorus/Upgrade Run Map Legend Panel")]
+        [MenuItem("Fractured Chorus/Run Map/Setup Cadence Macro Layer", false, 20)]
+        public static void SetupCadenceMacroMapLayer()
+        {
+            var root = GameObject.Find("RunMapRoot");
+            if (root == null)
+            {
+                EditorUtility.DisplayDialog(
+                    "Cadence Macro Map",
+                    "Không tìm thấy RunMapRoot. Chạy Run Map → Setup Scene Hierarchy trước.",
+                    "OK");
+                return;
+            }
+
+            var canvas = GameObject.Find("RunMapCanvas");
+            if (canvas == null)
+            {
+                EditorUtility.DisplayDialog("Cadence Macro Map", "Không tìm thấy RunMapCanvas.", "OK");
+                return;
+            }
+
+            var layout = EnsureCadenceMapLayoutAsset();
+            var pinkyConfig = EnsurePinkyVaultConfigAsset();
+            var cadence = root.GetComponent<CadenceMapController>() ?? Undo.AddComponent<CadenceMapController>(root);
+            var bootstrap = root.GetComponent<RunMapBootstrap>();
+            var controller = root.GetComponent<RunMapController>();
+
+            var innerRoot = GameObject.Find("InnerMapLayer");
+            if (innerRoot == null)
+            {
+                innerRoot = CreateUiObject("InnerMapLayer", canvas.transform);
+                StretchRect(innerRoot, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            }
+
+            ReparentIfExists("MapScrollView", innerRoot.transform);
+            ReparentIfExists("LegendPanel", innerRoot.transform);
+
+            foreach (Transform child in canvas.transform)
+            {
+                if (child.gameObject == innerRoot || child.name == "MacroMapLayer")
+                {
+                    continue;
+                }
+
+                if (child.name == "TopBar")
+                {
+                    continue;
+                }
+
+                child.SetParent(innerRoot.transform, true);
+            }
+
+            var macroRoot = GameObject.Find("MacroMapLayer");
+            if (macroRoot == null)
+            {
+                macroRoot = CreateUiObject("MacroMapLayer", canvas.transform);
+                StretchRect(macroRoot, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+                macroRoot.transform.SetAsFirstSibling();
+            }
+
+            var macroView = macroRoot.GetComponent<CadenceMacroMapView>() ?? Undo.AddComponent<CadenceMacroMapView>(macroRoot);
+            var bgGo = GameObject.Find("MacroBackground");
+            if (bgGo == null)
+            {
+                bgGo = CreateUiObject("MacroBackground", macroRoot.transform);
+                StretchRect(bgGo, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+                var bgImage = bgGo.AddComponent<Image>();
+                var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(CadenceBackgroundPath);
+                if (sprite == null)
+                {
+                    var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(CadenceBackgroundPath);
+                    if (tex != null)
+                    {
+                        sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+                    }
+                }
+
+                bgImage.sprite = sprite;
+                bgImage.preserveAspect = false;
+                bgImage.color = Color.white;
+                bgImage.raycastTarget = false;
+            }
+
+            var territoryLayerGo = GameObject.Find("TerritoryLayer");
+            if (territoryLayerGo == null)
+            {
+                territoryLayerGo = CreateUiObject("TerritoryLayer", macroRoot.transform);
+                StretchRect(territoryLayerGo, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            }
+
+            VaultTerritoryGraphic template = null;
+            var templateGo = GameObject.Find("TerritoryTemplate");
+            if (templateGo == null)
+            {
+                templateGo = CreateUiObject("TerritoryTemplate", territoryLayerGo.transform);
+                StretchRect(templateGo, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+                template = templateGo.AddComponent<VaultTerritoryGraphic>();
+                templateGo.SetActive(false);
+            }
+            else
+            {
+                template = templateGo.GetComponent<VaultTerritoryGraphic>();
+            }
+
+            var hintGo = GameObject.Find("MacroHint");
+            Text hintLabel;
+            if (hintGo == null)
+            {
+                hintGo = CreateUiObject("MacroHint", macroRoot.transform);
+                StretchRect(hintGo, new Vector2(0.08f, 0.04f), new Vector2(0.92f, 0.12f), Vector2.zero, Vector2.zero);
+                hintLabel = hintGo.AddComponent<Text>();
+                hintLabel.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+                hintLabel.fontSize = 22;
+                hintLabel.alignment = TextAnchor.MiddleCenter;
+                hintLabel.color = new Color(0.92f, 0.94f, 0.96f);
+                hintLabel.text = "Select a Vault to Resonance Dive.";
+            }
+            else
+            {
+                hintLabel = hintGo.GetComponent<Text>();
+            }
+
+            var backBtnGo = GameObject.Find("BackToMacroButton");
+            Button backButton;
+            if (backBtnGo == null)
+            {
+                backBtnGo = CreateUiObject("BackToMacroButton", macroRoot.transform);
+                var backRect = backBtnGo.GetComponent<RectTransform>();
+                backRect.anchorMin = new Vector2(0.02f, 0.92f);
+                backRect.anchorMax = new Vector2(0.18f, 0.98f);
+                backRect.offsetMin = Vector2.zero;
+                backRect.offsetMax = Vector2.zero;
+                backBtnGo.AddComponent<Image>().color = new Color(0.18f, 0.2f, 0.24f, 0.92f);
+                backButton = backBtnGo.AddComponent<Button>();
+                var label = CreateText("Label", backBtnGo.transform, "← Cadence", 18, TextAnchor.MiddleCenter);
+                StretchRect(label.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            }
+            else
+            {
+                backButton = backBtnGo.GetComponent<Button>();
+            }
+
+            SetSerializedField(macroView, "layout", layout);
+            SetSerializedField(macroView, "backgroundImage", bgGo.GetComponent<Image>());
+            SetSerializedField(macroView, "territoryLayer", territoryLayerGo.GetComponent<RectTransform>());
+            SetSerializedField(macroView, "territoryTemplate", template);
+            SetSerializedField(macroView, "hintLabel", hintLabel);
+
+            SetSerializedField(cadence, "layout", layout);
+            SetSerializedField(cadence, "pinkyVaultConfig", pinkyConfig);
+            SetSerializedField(cadence, "macroView", macroView);
+            SetSerializedField(cadence, "macroMapRoot", macroRoot);
+            SetSerializedField(cadence, "innerMapRoot", innerRoot);
+            SetSerializedField(cadence, "mapScrollView", GameObject.Find("MapScrollView"));
+            SetSerializedField(cadence, "legendPanel", GameObject.Find("LegendPanel"));
+            SetSerializedField(cadence, "innerController", controller);
+            SetSerializedField(cadence, "bootstrap", bootstrap);
+            SetSerializedField(cadence, "backToMacroButton", backButton);
+            SetSerializedField(cadence, "simulateBossVictoryOnReturn", true);
+
+            var topBar = GameObject.Find("TopBar");
+            if (topBar != null)
+            {
+                var status = topBar.transform.Find("Status")?.GetComponent<Text>();
+                SetSerializedField(cadence, "statusLabel", status);
+            }
+
+            EditorUtility.SetDirty(root);
+            EditorSceneManager.MarkSceneDirty(root.scene);
+            Selection.activeGameObject = macroRoot;
+            Debug.Log("[Fractured Chorus] Cadence macro map layer wired — Save scene → Play.");
+        }
+
+        private static CadenceMapLayoutSO EnsureCadenceMapLayoutAsset()
+        {
+            var existing = AssetDatabase.LoadAssetAtPath<CadenceMapLayoutSO>(CadenceLayoutAssetPath);
+            if (existing != null)
+            {
+                return existing;
+            }
+
+            if (!AssetDatabase.IsValidFolder("Assets/FracturedChorus/Data/ScriptableObjects/Presets"))
+            {
+                EnsureDefaultMapTemplateAsset();
+            }
+
+            var asset = ScriptableObject.CreateInstance<CadenceMapLayoutSO>();
+            asset.territories = CadenceMapLayoutSO.DefaultTerritories();
+            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(CadenceBackgroundPath);
+            if (sprite == null)
+            {
+                var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(CadenceBackgroundPath);
+                if (tex != null)
+                {
+                    sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+                }
+            }
+
+            asset.backgroundSprite = sprite;
+            AssetDatabase.CreateAsset(asset, CadenceLayoutAssetPath);
+            AssetDatabase.SaveAssets();
+            return asset;
+        }
+
+        private static PinkyVaultConfigSO EnsurePinkyVaultConfigAsset()
+        {
+            var existing = AssetDatabase.LoadAssetAtPath<PinkyVaultConfigSO>(PinkyVaultConfigPath);
+            if (existing != null)
+            {
+                return existing;
+            }
+
+            if (!AssetDatabase.IsValidFolder("Assets/FracturedChorus/Data/ScriptableObjects/Presets"))
+            {
+                EnsureDefaultMapTemplateAsset();
+            }
+
+            var asset = ScriptableObject.CreateInstance<PinkyVaultConfigSO>();
+            asset.pulse = PinkyVaultConfigSO.SectorConfig.Default(PinkySectorId.Pulse);
+            asset.echo = PinkyVaultConfigSO.SectorConfig.Default(PinkySectorId.Echo);
+            asset.canticle = PinkyVaultConfigSO.SectorConfig.Default(PinkySectorId.Canticle);
+            AssetDatabase.CreateAsset(asset, PinkyVaultConfigPath);
+            AssetDatabase.SaveAssets();
+            return asset;
+        }
+
+        [MenuItem("Fractured Chorus/Run Map/Upgrade Legend Panel", false, 40)]
         public static void UpgradeRunMapLegendPanel()
         {
             var panelGo = GameObject.Find("LegendPanel");
@@ -26,7 +254,7 @@ namespace FracturedChorus.Editor
             {
                 EditorUtility.DisplayDialog(
                     "Upgrade Legend Panel",
-                    "Không tìm thấy LegendPanel trong scene active. Mở RunMapPrototype hoặc chạy Setup Run Map Scene Hierarchy.",
+                    "Không tìm thấy LegendPanel trong scene active. Mở RunMapPrototype hoặc chạy Run Map → Setup Scene Hierarchy.",
                     "OK");
                 return;
             }
@@ -38,7 +266,7 @@ namespace FracturedChorus.Editor
             Debug.Log("[Fractured Chorus] Legend panel upgraded — Save scene.");
         }
 
-        [MenuItem("Fractured Chorus/Save Run Map Scene Upgrades")]
+        [MenuItem("Fractured Chorus/Run Map/Save Scene Upgrades", false, 50)]
         public static void SaveRunMapSceneUpgrades()
         {
             var panelGo = GameObject.Find("LegendPanel");
@@ -49,6 +277,11 @@ namespace FracturedChorus.Editor
             }
 
             EnsureScrollDriverInScene();
+            if (GameObject.Find("RunMapRoot") != null)
+            {
+                SetupCadenceMacroMapLayer();
+            }
+
             EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
             Debug.Log("[Fractured Chorus] Run map scene upgraded — Save scene (Ctrl+S).");
         }
@@ -120,7 +353,7 @@ namespace FracturedChorus.Editor
             panelGo.GetComponent<RunMapLegendPanelView>()?.Apply();
         }
 
-        [MenuItem("Fractured Chorus/Setup Run Map Scene Hierarchy")]
+        [MenuItem("Fractured Chorus/Run Map/Setup Scene Hierarchy", false, 10)]
         public static void SetupRunMapSceneHierarchy()
         {
             var existing = GameObject.Find("RunMapRoot");
@@ -154,14 +387,15 @@ namespace FracturedChorus.Editor
 
             WireBootstrap(bootstrap, controller);
             WireController(controller, mapView, topBar.status, topBar.seed);
+            SetupCadenceMacroMapLayer();
 
             EditorSceneManager.MarkSceneDirty(root.scene);
             Selection.activeGameObject = root;
 
-            Debug.Log("[Fractured Chorus] Run map hierarchy created (StS-style 7×15 + F16). Save scene → Play.");
+            Debug.Log("[Fractured Chorus] Run map + Cadence macro layer created. Save scene → Play.");
         }
 
-        [MenuItem("Fractured Chorus/Create Run Map Prototype Scene")]
+        [MenuItem("Fractured Chorus/Run Map/Create Prototype Scene", false, 0)]
         public static void CreateRunMapPrototypeScene()
         {
             var scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
@@ -241,7 +475,7 @@ namespace FracturedChorus.Editor
             var seed = CreateText("SeedLabel", bar.transform, "Seed —", 14, TextAnchor.MiddleRight);
             StretchRect(seed.gameObject, new Vector2(0.55f, 0.5f), new Vector2(1f, 1f), new Vector2(8f, 0f), new Vector2(-16f, -4f));
 
-            var status = CreateText("StatusLabel", bar.transform, "Chọn node F1 để bắt đầu.", 14, TextAnchor.MiddleRight);
+            var status = CreateText("StatusLabel", bar.transform, "Select F1 node to start.", 14, TextAnchor.MiddleRight);
             StretchRect(status.gameObject, new Vector2(0.55f, 0f), new Vector2(1f, 0.5f), new Vector2(8f, 4f), new Vector2(-16f, 0f));
 
             return (status, seed);
@@ -252,11 +486,14 @@ namespace FracturedChorus.Editor
             var scrollGo = CreateUiObject("MapScrollView", canvas);
             StretchRect(scrollGo, new Vector2(0.02f, 0.05f), new Vector2(0.78f, 0.95f), Vector2.zero, Vector2.zero);
             scrollGo.AddComponent<Image>().color = new Color(0.08f, 0.09f, 0.11f, 0.92f);
+            scrollGo.GetComponent<Image>().raycastTarget = false;
 
             var viewport = CreateUiObject("Viewport", scrollGo.transform);
             StretchRect(viewport, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             viewport.AddComponent<Mask>().showMaskGraphic = false;
-            viewport.AddComponent<Image>().color = Color.white;
+            var viewportImage = viewport.AddComponent<Image>();
+            viewportImage.color = Color.white;
+            viewportImage.raycastTarget = false;
 
             var content = CreateUiObject("MapContent", viewport.transform);
             contentRect = content.GetComponent<RectTransform>();
@@ -400,12 +637,12 @@ namespace FracturedChorus.Editor
 
             var entries = new[]
             {
-                (MapNodeType.Battle, "Battle — combat thường"),
-                (MapNodeType.Event, "Event — sự kiện ?"),
-                (MapNodeType.Elite, "Elite — combat khó"),
-                (MapNodeType.Camp, "Camp — nghỉ / hồi"),
+                (MapNodeType.Battle, "Battle — standard combat"),
+                (MapNodeType.Event, "Event — random event"),
+                (MapNodeType.Elite, "Elite — hard combat"),
+                (MapNodeType.Camp, "Camp — rest / heal"),
                 (MapNodeType.Relay, "Relay — shop"),
-                (MapNodeType.Treasure, "Treasure — rương"),
+                (MapNodeType.Treasure, "Treasure — chest"),
                 (MapNodeType.Boss, "Boss — Oni F16")
             };
 
@@ -419,7 +656,7 @@ namespace FracturedChorus.Editor
             var hint = CreateText(
                 "Hint",
                 panel,
-                "Scroll map · click F1 → đi theo path\nĐường cam = path đã chọn · StS 7×15 + boss F16",
+                "Scroll map · click F1 → follow path\nOrange line = chosen path · StS 7×15 + boss F16",
                 MapLayoutConstants.LegendHintFontSize,
                 TextAnchor.UpperLeft);
             hint.color = new Color(0.62f, 0.65f, 0.7f);
@@ -641,6 +878,17 @@ namespace FracturedChorus.Editor
             rect.anchorMax = anchorMax;
             rect.offsetMin = offsetMin;
             rect.offsetMax = offsetMax;
+        }
+
+        private static void ReparentIfExists(string objectName, Transform parent)
+        {
+            var go = GameObject.Find(objectName);
+            if (go == null || go.transform.parent == parent)
+            {
+                return;
+            }
+
+            go.transform.SetParent(parent, true);
         }
 
         private static void SetSerializedField(Object target, string fieldName, object value)

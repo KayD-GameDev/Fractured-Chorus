@@ -12,10 +12,10 @@ namespace FracturedChorus.Combat.Core
     /// </summary>
     public class GuardInputController : MonoBehaviour
     {
-        [Tooltip("Dung sai (giây): cho phép bấm trễ sau khi beat bắt đầu mà vẫn tính block.")]
+        [Tooltip("Tolerance (seconds): late Spacebar press after beat start still counts as a block.")]
         [SerializeField] private float pressGraceSeconds = 0.1f;
 
-        [Tooltip("Phần damage còn lại sau khi block thành công (0 = chặn hoàn toàn).")]
+        [Tooltip("Remaining damage after a successful block (0 = fully blocked).")]
         [Range(0f, 1f)]
         [SerializeField] private float blockedDamageRemaining = 0f;
 

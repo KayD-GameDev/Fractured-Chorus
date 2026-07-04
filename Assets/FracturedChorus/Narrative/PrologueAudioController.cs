@@ -10,10 +10,14 @@ namespace FracturedChorus.Narrative
         [SerializeField] private AudioClip butterflyWingsClip;
         [SerializeField] private AudioClip typingClip;
         [SerializeField] private AudioClip penSignClip;
+        [SerializeField] private AudioClip buttonPressClip;
+        [SerializeField] private AudioClip menuTingClip;
         [SerializeField] private float bgmVolume = 0.46f;
         [SerializeField] private float butterflyVolume = 0.26f;
         [SerializeField] private float typingVolume = 0.55f;
         [SerializeField] private float penSignVolume = 0.7f;
+        [SerializeField] private float buttonPressVolume = 0.85f;
+        [SerializeField] private float menuTingVolume = 1f;
 
         private AudioSource _bgmSource;
         private AudioSource _butterflySource;
@@ -117,6 +121,31 @@ namespace FracturedChorus.Narrative
             _sfxSource.pitch = 1f;
             _sfxSource.volume = penSignVolume * MainMenuGameSettings.MasterVolume;
             _sfxSource.PlayOneShot(penSignClip);
+        }
+
+        public void PlayButtonPress()
+        {
+            if (buttonPressClip == null || _sfxSource == null)
+            {
+                return;
+            }
+
+            _sfxSource.pitch = 1f;
+            _sfxSource.volume = buttonPressVolume * MainMenuGameSettings.MasterVolume;
+            _sfxSource.PlayOneShot(buttonPressClip);
+        }
+
+        public float PlayMenuTing()
+        {
+            if (menuTingClip == null || _sfxSource == null)
+            {
+                return 0f;
+            }
+
+            _sfxSource.pitch = 1f;
+            _sfxSource.volume = menuTingVolume * MainMenuGameSettings.MasterVolume;
+            _sfxSource.PlayOneShot(menuTingClip);
+            return menuTingClip.length;
         }
 
         public void FadeOutAll(float duration)

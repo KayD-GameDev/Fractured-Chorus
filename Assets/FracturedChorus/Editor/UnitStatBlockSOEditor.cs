@@ -21,7 +21,7 @@ namespace FracturedChorus.Editor
 
             EditorGUILayout.Space(8f);
             EditorGUILayout.LabelField("Strength", EditorStyles.boldLabel);
-            EditorGUILayout.HelpBox("Chọn Physical hoặc Magical, rồi nhập chỉ số Strength.", MessageType.None);
+            EditorGUILayout.HelpBox("Choose Physical or Magical, then enter the Strength value.", MessageType.None);
             EditorGUILayout.PropertyField(serializedObject.FindProperty("strengthType"), new GUIContent("Damage Type"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("strength"), new GUIContent("Strength"));
 

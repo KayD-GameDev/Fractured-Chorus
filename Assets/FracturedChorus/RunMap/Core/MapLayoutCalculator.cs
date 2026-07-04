@@ -6,15 +6,22 @@ namespace FracturedChorus.RunMap.Core
     /// <summary>Layout bottom-origin: F1 ở đáy content, F16 boss phía trên. Dùng chung UI + content size.</summary>
     public sealed class RunMapLayoutMetrics
     {
+        private MapGenerationProfile _profile = MapGenerationProfile.Default;
+
         public float NodeSpacingX { get; private set; } = MapLayoutConstants.NodeSpacingX;
         public float NodeSpacingY { get; private set; } = MapLayoutConstants.NodeSpacingY;
         public float NodeDiameter { get; private set; } = MapLayoutConstants.NodeDiameter;
 
-        public float GridOriginX => -((MapLayoutConstants.ColumnCount - 1) * 0.5f * NodeSpacingX);
+        public void SetProfile(MapGenerationProfile profile)
+        {
+            _profile = profile ?? MapGenerationProfile.Default;
+        }
+
+        public float GridOriginX => -((_profile.ColumnCount - 1) * 0.5f * NodeSpacingX);
 
         public float BossCenterY =>
             MapLayoutConstants.ContentPaddingBottom +
-            MapLayoutConstants.FloorCount * NodeSpacingY +
+            _profile.FloorCount * NodeSpacingY +
             MapLayoutConstants.BossYOffset;
 
         public void FitToViewport(ScrollRect scrollRect, bool enabled)
@@ -33,7 +40,7 @@ namespace FracturedChorus.RunMap.Core
                 return;
             }
 
-            var gridSpan = MapLayoutConstants.ColumnCount - 1;
+            var gridSpan = _profile.ColumnCount - 1;
             const float labelGutter = 52f;
             var usableWidth = viewport.width * 0.94f - labelGutter * 2f;
             NodeSpacingX = Mathf.Clamp(usableWidth / gridSpan, 78f, 148f);
@@ -54,8 +61,8 @@ namespace FracturedChorus.RunMap.Core
 
             if (node.IsBoss)
             {
-                var bossColumn = (MapLayoutConstants.ColumnCount - 1) * 0.5f;
-                var bossY = MapLayoutConstants.FloorCount * NodeSpacingY + MapLayoutConstants.BossYOffset;
+                var bossColumn = (_profile.ColumnCount - 1) * 0.5f;
+                var bossY = _profile.FloorCount * NodeSpacingY + MapLayoutConstants.BossYOffset;
                 return new Vector2(GridOriginX + bossColumn * NodeSpacingX, baseY + bossY);
             }
 
@@ -72,7 +79,7 @@ namespace FracturedChorus.RunMap.Core
 
         public void ComputeContentSize(out float width, out float height)
         {
-            var gridWidth = (MapLayoutConstants.ColumnCount - 1) * NodeSpacingX;
+            var gridWidth = (_profile.ColumnCount - 1) * NodeSpacingX;
             var labelGutter = NodeSpacingX * 0.6f;
             width = gridWidth + labelGutter * 2f;
             height = BossCenterY +

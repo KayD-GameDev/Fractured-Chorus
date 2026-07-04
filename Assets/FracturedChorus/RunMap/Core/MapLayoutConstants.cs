@@ -8,6 +8,9 @@ namespace FracturedChorus.RunMap.Core
         public const int DefaultPathCount = 6;
         public const int MinStartNodes = 2;
         public const int MaxStartNodes = 3;
+        public const int MaxColumnConnectDelta = 1;
+        public const int MaxDriftFromCenter = 2;
+        public const int CenterColumnBiasWeight = 10;
 
         public const float NodeSpacingX = 88f;
         public const float NodeSpacingY = 72f;

@@ -77,6 +77,7 @@ namespace FracturedChorus.RunMap.UI
             ClearDynamicContent();
 
             EnsureScrollRect();
+            _layout.SetProfile(graph.Profile);
             _layout.FitToViewport(scrollRect, fitToViewport);
             _layout.ComputeContentSize(out _contentWidth, out _contentHeight);
             ApplyContentRect();
@@ -127,9 +128,33 @@ namespace FracturedChorus.RunMap.UI
             scrollDriver?.ScrollToNormalized(ComputeNormalizedForNode(node), immediate);
         }
 
+        public void ScrollToStartFloor(bool immediate = false)
+        {
+            StartLayoutCoroutine(ScrollToBottomDeferred(immediate));
+        }
+
         private void EnsureScrollRect()
         {
             scrollRect ??= GetComponentInParent<ScrollRect>();
+            if (scrollRect == null)
+            {
+                return;
+            }
+
+            var scrollImage = scrollRect.GetComponent<Image>();
+            if (scrollImage != null)
+            {
+                scrollImage.raycastTarget = false;
+            }
+
+            if (scrollRect.viewport != null)
+            {
+                var viewportImage = scrollRect.viewport.GetComponent<Image>();
+                if (viewportImage != null)
+                {
+                    viewportImage.raycastTarget = false;
+                }
+            }
         }
 
         private void EnsureScrollDriver()
@@ -220,37 +245,72 @@ namespace FracturedChorus.RunMap.UI
 
             scrollDriver?.StopScrollAnimation();
 
-            foreach (var view in _nodeViews.Values)
-            {
-                if (view != null && view != nodeTemplate)
-                {
-                    Destroy(view.gameObject);
-                }
-            }
-
             _nodeViews.Clear();
-
+            ClearNodeClones(nodesLayer);
             ClearConnectionClones(connectionsLayer);
             ClearConnectionClones(nodesLayer);
             _connectionViews.Clear();
+            ClearFloorLabelClones(floorLabelsLayer);
+            _floorLabels.Clear();
+        }
 
-            foreach (var label in _floorLabels)
+        private void ClearNodeClones(RectTransform layer)
+        {
+            if (layer == null)
             {
-                if (label != null)
-                {
-                    Destroy(label.gameObject);
-                }
+                return;
             }
 
-            _floorLabels.Clear();
+            for (var i = layer.childCount - 1; i >= 0; i--)
+            {
+                var child = layer.GetChild(i);
+                var view = child.GetComponent<MapNodeView>();
+                if (view == null || view == nodeTemplate)
+                {
+                    continue;
+                }
+
+                DestroyObject(child.gameObject);
+            }
+        }
+
+        private void ClearFloorLabelClones(RectTransform layer)
+        {
+            if (layer == null)
+            {
+                return;
+            }
+
+            for (var i = layer.childCount - 1; i >= 0; i--)
+            {
+                DestroyObject(layer.GetChild(i).gameObject);
+            }
+        }
+
+        private static void DestroyObject(GameObject target)
+        {
+            if (target == null)
+            {
+                return;
+            }
+
+#if UNITY_EDITOR
+            if (!Application.isPlaying)
+            {
+                Object.DestroyImmediate(target);
+                return;
+            }
+#endif
+            Object.Destroy(target);
         }
 
         private void CreateFloorLabels()
         {
             var labelX = _layout.FloorLabelX;
             var fontSize = _layout.FloorLabelFontSize;
+            var floorCount = _boundGraph?.Profile.FloorCount ?? MapLayoutConstants.FloorCount;
 
-            for (var floor = 1; floor <= MapLayoutConstants.FloorCount; floor++)
+            for (var floor = 1; floor <= floorCount; floor++)
             {
                 CreateFloorLabel($"F{floor}", new Vector2(labelX, _layout.FloorPosition(floor).y), fontSize);
             }
@@ -258,7 +318,7 @@ namespace FracturedChorus.RunMap.UI
             if (_boundGraph?.BossNode != null)
             {
                 CreateFloorLabel(
-                    "F16",
+                    $"F{_boundGraph.Profile.BossFloor}",
                     new Vector2(labelX, _layout.NodePosition(_boundGraph.BossNode).y),
                     fontSize);
             }
@@ -290,7 +350,7 @@ namespace FracturedChorus.RunMap.UI
         {
             if (nodeTemplate == null)
             {
-                Debug.LogError("[Fractured Chorus] RunMapUIView: NodeTemplate chưa gán — chạy Setup Run Map Scene Hierarchy.");
+                Debug.LogError("[Fractured Chorus] RunMapUIView: NodeTemplate chưa gán — chạy Run Map → Setup Scene Hierarchy.");
                 return;
             }
 
@@ -411,7 +471,7 @@ namespace FracturedChorus.RunMap.UI
                 var line = child.GetComponent<MapConnectionLineView>();
                 if (line != null && line != connectionTemplate)
                 {
-                    Destroy(child.gameObject);
+                    DestroyObject(child.gameObject);
                 }
             }
         }
@@ -487,17 +547,26 @@ namespace FracturedChorus.RunMap.UI
             }
         }
 
-        private IEnumerator ScrollToBottomDeferred()
+        private IEnumerator ScrollToBottomDeferred(bool immediate = false)
         {
-            yield return null;
-            Canvas.ForceUpdateCanvases();
+            const int maxFrames = 12;
+            for (var i = 0; i < maxFrames; i++)
+            {
+                yield return null;
+                Canvas.ForceUpdateCanvases();
+                if (IsViewportReady)
+                {
+                    break;
+                }
+            }
+
             if (scrollRect?.content != null)
             {
                 LayoutRebuilder.ForceRebuildLayoutImmediate(scrollRect.content);
             }
 
             EnsureScrollDriver();
-            scrollDriver?.ScrollToNormalized(0f, immediate: false, useInitialTiming: true);
+            scrollDriver?.ScrollToNormalized(0f, immediate, useInitialTiming: !immediate);
             _layoutCoroutine = null;
         }
 

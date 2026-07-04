@@ -8,8 +8,8 @@ namespace FracturedChorus.Combat.Bootstrap
     public static class SceneAuthoringPolicy
     {
         public const string DocHint =
-            "Không code trên scene — logic chỉ trong .cs. " +
-            "Mọi GameObject UI/combat phải hiện trong Hierarchy; Play chỉ bind dữ liệu, không spawn ẩn / không dịch layout khi preserveSceneLayout bật. " +
-            "Chỉnh Hierarchy → Save → Play phải khớp. Rebuild qua menu Fractured Chorus, không rebuild lúc Play.";
+            "Do not put logic on scene objects — keep logic in .cs only. " +
+            "All UI/combat GameObjects must live in the Hierarchy; Play mode only binds data, does not spawn hidden objects / does not shift layout when preserveSceneLayout is enabled. " +
+            "Edit Hierarchy → Save → Play should match. Rebuild via Fractured Chorus menu, not during Play.";
     }
 }

@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 namespace FracturedChorus.RunMap.UI
 {
-    /// <summary>Cổng vào boss — hiện sau khi chọn node F16, không load combat ngay lập tức.</summary>
+    /// <summary>Boss gate overlay — hiện sau khi chọn node F16; không load combat ngay.</summary>
     public class RunMapBossGateView : MonoBehaviour
     {
         private static readonly Color DimColor = new Color(0.04f, 0.05f, 0.08f, 0.82f);
@@ -58,7 +58,7 @@ namespace FracturedChorus.RunMap.UI
 
             if (fightLabel != null)
             {
-                fightLabel.text = loading ? "Đang vào trận…" : "Vào trận";
+                fightLabel.text = loading ? "Entering battle…" : "Enter battle";
             }
         }
 
@@ -117,7 +117,7 @@ namespace FracturedChorus.RunMap.UI
             bodyText = CreateText(
                 "Body",
                 panel.transform,
-                "F16 · Boss Beat Timeline\nRen cover lại bài hit bị chiếm đoạt.",
+                "F16 · Boss Beat Timeline\nRen covers the stolen hit song.",
                 20,
                 FontStyle.Normal,
                 new Color(0.78f, 0.8f, 0.84f),
@@ -127,14 +127,14 @@ namespace FracturedChorus.RunMap.UI
             hintText = CreateText(
                 "Hint",
                 panel.transform,
-                "Chuẩn bị formation · EXECUTE sync nhịp",
+                "Prepare formation · EXECUTE on beat",
                 16,
                 FontStyle.Italic,
                 new Color(0.58f, 0.6f, 0.66f),
                 TextAnchor.UpperCenter);
             PlaceText(hintText.rectTransform, new Vector2(0f, -168f), new Vector2(440f, 28f));
 
-            fightButton = CreateButton("FightButton", panel.transform, AccentColor, out fightLabel, "Vào trận");
+            fightButton = CreateButton("FightButton", panel.transform, AccentColor, out fightLabel, "Enter battle");
             var fightRect = fightButton.GetComponent<RectTransform>();
             fightRect.anchorMin = new Vector2(0.5f, 0f);
             fightRect.anchorMax = new Vector2(0.5f, 0f);
@@ -147,7 +147,7 @@ namespace FracturedChorus.RunMap.UI
                 panel.transform,
                 new Color(0.22f, 0.24f, 0.28f, 1f),
                 out cancelLabel,
-                "Quay lại map");
+                "Back to map");
             var cancelRect = cancelButton.GetComponent<RectTransform>();
             cancelRect.anchorMin = new Vector2(0.5f, 0f);
             cancelRect.anchorMax = new Vector2(0.5f, 0f);

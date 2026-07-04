@@ -57,6 +57,7 @@ namespace FracturedChorus.Narrative
         [SerializeField] private float disclaimerExitFadeDuration = 0.8f;
         [SerializeField] private float disclaimerExitHoldSeconds = 0.4f;
         [SerializeField] private float butterflyFadeInDuration = 1.45f;
+        [SerializeField] private float contractRevealDuration = 1.35f;
         [SerializeField] private string nextSceneName = RunMapSceneCatalog.RunMapPrototype;
         [SerializeField] private CanvasGroup choiceBackdrop;
         [SerializeField] private PrologueVNLayoutConfig layoutConfig;
@@ -75,6 +76,7 @@ namespace FracturedChorus.Narrative
             RunProfile.ResetForNewRun();
             disclaimerTypewriter?.Bind(audioController);
             dialogueTypewriter?.Bind(audioController);
+            choiceView?.Bind(audioController);
             contractView?.Bind(audioController);
             if (layoutConfig != null)
             {
@@ -206,15 +208,18 @@ namespace FracturedChorus.Narrative
 
         private IEnumerator RunChoicePhase()
         {
-            _acceptNarrationInput = false;
-            dialogueTypewriter?.Clear();
-            audioController?.StopButterflyWings();
-
-            if (dialoguePanel != null)
+            var displayLine = PrologueNarrationText.WrapBalanced(ChoicePrompt);
+            var typed = false;
+            BeginTypeLine(dialogueTypewriter, displayLine, () => typed = true);
+            while (!typed)
             {
-                dialoguePanel.alpha = 0f;
-                dialoguePanel.gameObject.SetActive(false);
+                yield return null;
             }
+
+            yield return WaitForAdvance();
+
+            _acceptNarrationInput = false;
+            audioController?.StopButterflyWings();
 
             if (butterflyBackground != null)
             {
@@ -225,12 +230,13 @@ namespace FracturedChorus.Narrative
             {
                 choiceBackdrop.gameObject.SetActive(true);
                 choiceBackdrop.alpha = 1f;
+                choiceBackdrop.interactable = true;
+                choiceBackdrop.blocksRaycasts = true;
             }
 
             var decided = false;
             var agreed = false;
-            choiceView?.Show(
-                ChoicePrompt,
+            choiceView?.ShowOptions(
                 "I agree.",
                 "I do not agree.",
                 result =>
@@ -244,15 +250,8 @@ namespace FracturedChorus.Narrative
                 yield return null;
             }
 
-            if (choiceBackdrop != null)
-            {
-                choiceBackdrop.alpha = 0f;
-                choiceBackdrop.interactable = false;
-                choiceBackdrop.blocksRaycasts = false;
-                choiceBackdrop.gameObject.SetActive(false);
-            }
-
-            choiceView?.Hide();
+            HideChoiceUi();
+            HideDialogueUi();
 
             if (!agreed)
             {
@@ -260,18 +259,57 @@ namespace FracturedChorus.Narrative
                 yield break;
             }
 
+            var tingDuration = audioController != null ? audioController.PlayMenuTing() : 0f;
+            if (tingDuration > 0f)
+            {
+                yield return new WaitForSecondsRealtime(tingDuration);
+            }
+
             yield return RunContractPhase();
+        }
+
+        private void HideChoiceUi()
+        {
+            choiceView?.Hide();
+
+            if (choiceBackdrop == null)
+            {
+                return;
+            }
+
+            choiceBackdrop.alpha = 0f;
+            choiceBackdrop.interactable = false;
+            choiceBackdrop.blocksRaycasts = false;
+            choiceBackdrop.gameObject.SetActive(false);
+        }
+
+        private void HideDialogueUi()
+        {
+            dialogueTypewriter?.Clear();
+
+            if (dialoguePanel == null)
+            {
+                return;
+            }
+
+            dialoguePanel.alpha = 0f;
+            dialoguePanel.gameObject.SetActive(false);
         }
 
         private IEnumerator RunContractPhase()
         {
             var signed = false;
             string playerName = RunProfile.DefaultNameSuggestion;
-            contractView?.Show(name =>
+            contractView?.PrepareShow(name =>
             {
                 playerName = name;
                 signed = true;
             });
+
+            if (contractView != null)
+            {
+                yield return contractView.FadeIn(contractRevealDuration);
+            }
 
             while (!signed)
             {
@@ -584,8 +622,15 @@ namespace FracturedChorus.Narrative
         private void PreviewChoice()
         {
             SetGameObjectActive(BlackBackground, true);
+            if (butterflyBackground != null)
+            {
+                butterflyBackground.gameObject.SetActive(false);
+            }
+
+            SetCanvasGroupActive(dialoguePanel, true);
+            SetDialogueSample(PrologueNarrationText.WrapBalanced(ChoicePrompt));
             SetCanvasGroupActive(choiceBackdrop, true);
-            choiceView?.ApplyEditorPreview();
+            choiceView?.ApplyEditorPreview(showPrompt: false);
         }
 
         private void PreviewContract()
