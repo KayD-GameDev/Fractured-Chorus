@@ -62,38 +62,56 @@ Nếu chưa có asset: `CombatPrototypeBootstrap` tạo **demo encounter runtime
 
 ---
 
-## Combat prototype spec (vertical slice — cập nhật 2026-06-26)
+## Combat prototype spec (vertical slice — cập nhật 2026-07-05)
 
 | Hạng mục | Giá trị |
 |----------|---------|
 | Player grid | **2×3** honeycomb (2 hàng × 3 cột), **max 4** units |
 | Enemy grid | **2×3** mirror, **max 6** units |
-| Timeline | **105 beats / 10 phases** (phase 1 = 15 ô, sau = 10 ô/phase) |
-| **Planning flow** | (1) **EXECUTE** overlay — kéo formation / **swap** ally; (2) sau EXECUTE — click unit → skill panel |
-| UI MVP | Carousel timeline + skill panel + EXECUTE + **party status bar** (góc trái trên) |
-| AV | Phase budget 150/100; Base AV = priority only |
-| Stats | `UnitStatBlockSO` → `UnitStats`; `DamageCalculator` (Physical/Magical, Harmony, crit) |
-| Targeting | Cột **C1→C2→C3**; trong cột Tank → DPS → Mage |
-| Input | `Physics2DRaycaster` + `BoardDragController` (OverlapPoint); `UnitFeetAnchor` không collider |
-| Party UI | `PartyStatusBarUIView` — thẻ `Card_*` trong Hierarchy; spacing **1.25px**; Tank ngoài cùng phải; icon hệ art |
+| Timeline | **619 beats** sync `EternalSpark_CadenceRemix` (`MusicBeatMapSO` + CSV) |
+| **Planning flow** | (1) **Deploy** — kéo formation / swap ally; (2) nhạc chạy → **intro-pause** @ localBeat 0.5; (3) đặt skill → **Continue** hoặc auto-resume |
+| UI MVP | Carousel timeline + character lanes + skill panel + Deploy/Continue overlay + party/enemy status bar |
+| Skill footprint | S1/S/S2 trên lane (`SkillDefinitionSO` + `RefreshFootprintDots`) |
+| Enemy attacks | Telegraph từ beat **3** (`EnemyFirstAttackBeat = 2`) |
+| Stats | `UnitStatBlockSO` → `UnitStats`; `DamageCalculator` (Harmony, crit) |
+| Scene-first UI | `RectSizeUtil` — card/badge/panel đọc size từ Hierarchy; fallback khi chưa authored |
+| Input | `Physics2DRaycaster` + `BoardDragController`; `UnitFeetAnchor` |
 
-Log chi tiết session: [`docs/PROJECT_LOG.md`](../../PROJECT_LOG.md) (entries 2026-06-24 … 2026-06-26).
+Log chi tiết: [`docs/PROJECT_LOG.md`](../../PROJECT_LOG.md) (entries 2026-07-01 … 2026-07-05).
 
 ### Combat flow (prototype hiện tại)
 
 ```
-Vào scene → UI/timeline khóa
+Vào scene → UI khóa, nút giữa = Deploy
     ↓
-Planning (pre-EXECUTE): kéo unit player giữa các ô (neon xanh DropGlow); kéo lên ô ally → swap vị trí
+Planning (dàn trận): kéo unit / swap ally trên grid
     ↓
-Bấm EXECUTE → LockPlayerReposition → timeline quét + nhạc
+Bấm Deploy → LockPlayerReposition → nhạc + timeline scan
     ↓
-Planning (post-EXECUTE): click unit → skill panel → gán skill tại beat scan
+Intro-pause @ localBeat 0.5 (beat 0 đã kêu, trước beat 1) → nút Continue
     ↓
-Resolve khi scan bar cắt beat → dmg theo formula → Victory/Defeat
+Đặt skill lên lane (kéo radial hoặc W/A/D) — footprint S1·S·S2 hiện trên lane
+    ↓
+Auto-resume khi cả đội đã xếp skill · hoặc bấm Continue
+    ↓
+Timeline + nhạc chạy tiếp → resolve @ scan beat → Victory/Defeat
 ```
 
-**Scene authoring:** `CombatPrototypeBootstrap.respectSceneAuthoring = true` — layout Hierarchy = Play. Sau pull code: **Fractured Chorus → Apply All Play-Ready Updates**.
+**Scene authoring:** layout Hierarchy = Play (`preserveSceneLayout` trên UI views). Sau pull code: **Fractured Chorus → Apply All Play-Ready Updates** (tự Save scene).
+
+**Verify nhanh (repo mirror):**
+
+```powershell
+python scripts/verify_combat_scene_sync.py
+```
+
+| Menu Editor | Khi nào dùng |
+|-------------|----------------|
+| **Apply All Play-Ready Updates** | Sau pull code — input, collider, timeline refit, wire music, Deploy label, orphan cleanup |
+| **Wire Combat Music (Current Scene)** | Gán clip + beat map + CSV lên `CombatMusicController` |
+| **Setup Party Cards in Hierarchy** | Tạo/căn thẻ party |
+| **Apply Element Badge Icons (Stat Blocks)** | Gán sprite `icon_he_*` |
+| **Find / Remove Missing Scripts** | Console báo missing script |
 
 ### Party status bar (Hierarchy-first)
 
@@ -143,9 +161,9 @@ CombatCanvas/PartyStatusBarUI     ← PartyStatusBarUIView (preserveSceneLayout)
 
 | ID | Implemented (slice 1) |
 |----|------------------------|
-| UC-03 Position Unit | Grid placement + **pre-EXECUTE drag** (`BoardDragController`) |
-| UC-04 Execute Skill | EXECUTE → scan resolve; skill assign at beat |
-| FR-02 Beat Timeline | 105-beat engine + carousel UI + EXECUTE gate |
+| UC-03 Position Unit | Grid placement + **pre-Deploy drag** (`BoardDragController`) |
+| UC-04 Execute Skill | Deploy → intro-pause → skill assign → scan resolve |
+| FR-02 Beat Timeline | 619-beat music sync + lanes + Deploy/Continue gate |
 | FR-07 Damage | `UnitStatBlockSO` + `DamageCalculator` (Harmony, crit) |
 | FR-03 Dual Grid | Honeycomb **2×3** + front-column targeting |
 
@@ -185,13 +203,12 @@ python scripts/verify_combat_scene_sync.py
 
 | Triệu chứng Play ≠ Scene | Nguyên nhân thường gặp |
 |--------------------------|-------------------------|
-| Unit nhảy row / hex đỏ bật lại | Scene chưa save sau chỉnh tay; hoặc `respectSceneAuthoring` chưa persist |
-| Click unit không mở skill panel | Scene vẫn `PhysicsRaycaster` + `BoxCollider` 3D — chạy Apply All |
-| Timeline gap bên phải | `BeatTimelineUIView` cũ chưa compile — refit qua Apply All |
-| Sprite mất sau migrate | Chạy **Restore Unit Sprites from Presets** (đã gộp trong Apply All) |
-| Console *missing script* (×2) | **Find Missing Scripts** → **Remove Missing Scripts** → Save; tránh sửa `.unity` YAML tay (UTF-8 BOM) |
-| Thẻ party dính nhau / lệch khi kéo unit | Chạy **Setup Party Cards in Hierarchy** + **Apply All**; `preserveSceneLayout` phải bật |
-| Party bar không hiện | Kiểm tra parent = **CombatCanvas**; `CardTemplate` inactive; bootstrap `partyStatusBarView` wired |
+| Nút vẫn "Begin" / pause sai beat | Scene chưa reload sau sửa YAML; chạy **Apply All** hoặc recompile |
+| Timeline không sync nhạc | `beatMap`/`beatMapCsv` null — **Wire Combat Music** hoặc Apply All |
+| Click unit không mở skill panel | Scene vẫn `PhysicsRaycaster` + `BoxCollider` 3D — Apply All |
+| Footprint không hiện | Chưa compile code mới; kiểm tra Console log `[BeatTimeline] Intro-pause` |
+| Console *missing script* | **Find Missing Scripts** → **Remove Missing Scripts** → Save |
+| Thẻ party/enemy size sai | Scene-first: chỉnh RectTransform trong Hierarchy; `RectSizeUtil` không ghi đè nếu đã authored |
 
 **Lưu ý:** Repo GitHub `fractured-chorus` giữ docs/scripts; **không** mirror `.cs` Unity. Canonical code = `F:\Unity_Project\Fractured Chorus\Assets\FracturedChorus\`.
 

@@ -116,7 +116,7 @@ namespace FracturedChorus.Combat.Core
                 beatIndex = Timeline.FindNextEmptyBeat();
             }
 
-            if (beatIndex < 0 || !Timeline.CanAssignAction(unit, beatIndex))
+            if (beatIndex < 0 || !Timeline.CanAssignAction(unit, skill, beatIndex))
             {
                 return false;
             }
@@ -136,6 +136,23 @@ namespace FracturedChorus.Combat.Core
             Debug.Log(
                 $"[Phase AV] {unit.DisplayName} → {skill.displayName} (-{cost}) | {PhaseAv.Remaining}/{PhaseAv.CurrentBudget} remaining (priority {unit.ActionPriority:F0})");
             return true;
+        }
+
+        public void EndRoundSegment()
+        {
+            FlushAllPendingEnemyHits();
+            if (TryEndEncounterIfDecided())
+            {
+                return;
+            }
+
+            Timeline.ClearPlayerAgenda();
+            Timeline.ResetScan();
+            _resolvedBeats.Clear();
+            _lastTelegraphPlanTriggerBeat = -1;
+            AllowPlayerReposition = false;
+            PhaseAv.ResetForPlanning();
+            Timeline.SetPhase(CombatPhase.Planning);
         }
 
         public void BeginPlanningRound()
@@ -193,7 +210,7 @@ namespace FracturedChorus.Combat.Core
                 return;
             }
 
-            var telegraph = Timeline.GetTelegraphAtBeat(beatIndex);
+            var telegraph = Timeline.GetImpactTelegraphAtBeat(beatIndex);
             var entries = Timeline.GetEntriesAtBeat(beatIndex);
 
             // Đòn quái của các beat đỏ trước đó đã trôi hết cửa sổ beat → resolve (chấm guard).

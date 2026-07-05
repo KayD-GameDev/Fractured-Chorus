@@ -1,6 +1,6 @@
 # Cách ghi log — Fractured Chorus (2 dev)
 
-**Cập nhật:** 2026-06-23 · Làm chung với **Thiên** (story) + team trên **GitHub / Notion / Linear**.
+**Cập nhật:** 2026-07-05 · Làm chung với **Thiên** (story) + team trên **GitHub / Notion / Linear**.
 
 ---
 

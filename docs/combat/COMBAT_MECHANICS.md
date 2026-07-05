@@ -11,12 +11,12 @@
 ```
 Dàn trận (kéo unit vào ô)
   → [Deploy] → nhạc chạy
-  → scan cho beat 0 kêu + lướt qua vạch → INTRO-PAUSE tại localBeat 0.5 (trước khi beat 1 chạm vạch; nhạc + timeline dừng)
-  → Player đặt skill lên lane (mỗi skill vẽ footprint: S1 xám · S màu · S2 xám)
-  → auto tiếp khi cả đội đã xếp skill · hoặc bấm [Continue]
-  → Execute (timeline + nhạc chạy tiếp từ chỗ dừng)
-  → quái CHỈ ra đòn từ beat thứ 3 (index 2) trở đi
-  → S2 skill xong (+ latency) → Planning char đó
+  → scan cho beat 0 kêu + lướt qua vạch → INTRO-PAUSE tại localBeat 0.5 (chỉ lần Deploy đầu)
+  → Player đặt skill lên lane (kéo-thả; footprint S1 xám · S màu · S2 xám)
+  → auto tiếp khi cả đội đã xếp skill · hoặc bấm [Execute]
+  → Timeline chạy **2 phase** (beat 0–31) rồi dừng
+  → [Execute] — đặt skill vòng mới (không intro-pause) → chạy 2 phase → lặp
+  → quái telegraph **2 pha** S1 (wind-up) + S (impact) từ beat thứ 3 trở đi
   → lặp đến hết trận
 ```
 
@@ -27,7 +27,7 @@ Dàn trận (kéo unit vào ô)
 | **Execute** | Chạy sync beat | Phát tiếp từ chỗ pause |
 
 - **Bỏ:** Phase AV budget chung party · cycle cố định · skill Guard trên kit
-- **Giữ:** Nút **Deploy** (dàn trận) → **Continue** (sau intro-pause). Nhãn do `CombatController` ép runtime (`DeployLabel`/`ResumeLabel`), không phụ thuộc giá trị serialize trong scene.
+- **Giữ:** Nút **Deploy** (dàn trận) → **Execute** (sau intro-pause và mỗi round segment). Nhãn do `CombatController` ép runtime.
 
 ### Intro-pause (set up skill sau khi qua beat đầu tiên)
 
@@ -37,17 +37,21 @@ Dàn trận (kéo unit vào ô)
   - `RefreshLaneMarkers()` — refresh markers + footprint ngay lúc pause để điểm tròn hiện đúng thời điểm nút Continue xuất hiện.
   - `Debug.Log("[BeatTimeline] Intro-pause tại localBeat=…")` — xác nhận code mới đã chạy.
   - Timeline scan dừng, **không** gọi `FinishPlayback` (chưa Execute).
-  - `CombatController.OnTimelinePlanningPause` hiện nút **Continue**.
-- **KHÔNG** hiện điểm tròn trống trên lane. Điểm tròn chỉ xuất hiện khi player **đặt skill** — vẽ footprint 3 pha (xem §3): **S1 = tròn xám · S = chip/tròn màu unit · S2 = tròn xám** (`BeatTimelineUIView.RefreshFootprintDots`, layer `LaneFootprint`).
-- Session vẫn ở phase **Planning** suốt lúc pause → player kéo-thả / arm skill lên lane.
+  - `CombatController.OnTimelinePlanningPause` hiện nút **Execute**.
+- Session vẫn ở phase **Planning** suốt lúc pause → player **kéo-thả** skill lên lane (click/W/A/D chỉ highlight, không gán).
 - **Resume tự động:** mỗi lần gán skill (`HandleActionAssigned`) kiểm tra `AllPartyUnitsHaveActions()` — khi mọi unit còn sống đã có action trong agenda → `ResumeFromPlanningPause`.
-- **Resume tay:** bấm **Continue** → `ResumeFromPlanningPause` → `CombatMusicController.ResumePlayback()` (UnPause) + `BeatTimelineUIView.ResumeRoundPlayback` chạy tiếp scan từ `_localBeat` đã dừng.
+- **Resume tay:** bấm **Execute** → `ResumeFromPlanningPause` → nhạc + scan tiếp tục.
+
+### Round segment (2 timeline phase)
+
+- `TimelineConstants.RoundPhaseCount = 2` → scan dừng sau beat **31** (`GetRoundEndBeatExclusive()` = 32).
+- `BeatTimelineUIView.FinishRoundSegment` → `CombatController.OnRoundSegmentComplete` → clear agenda player, hiện nút **Execute** cho vòng planning tiếp theo (không intro-pause).
 
 ### Luật ra đòn của quái
 
-- Quái **chỉ được đặt telegraph (ra đòn) từ beat thứ 3** trở đi — `TimelineConstants.EnemyFirstAttackBeat = 2` (0-indexed).
-- `SimpleEnemyAI.PickRandomUniqueBeats` loại mọi beat `< EnemyFirstAttackBeat` khỏi pool → phase 0 bỏ beat 0 & 1, các phase sau không ảnh hưởng.
-- Khớp với intro-pause: beat 0 (intro) · beat 1 (pause / planning) · **beat 2 = quái bắt đầu đánh**.
+- Quái **chỉ được đặt telegraph từ beat thứ 3** trở đi — `TimelineConstants.EnemyFirstAttackBeat = 2`.
+- Mỗi đòn = **2 pha:** S1 wind-up (ô đỏ nhạt, `IsWindupOnly`) + S impact (ô đỏ đậm); damage resolve chỉ tại **impact beat**.
+- `SimpleEnemyAI.PlanTelegraphsForPhase` chọn beat impact sao cho S1 nằm trong phase.
 
 ---
 
@@ -67,10 +71,14 @@ Timeline giữ **một hàng cột beat duy nhất**. Trên đó overlay **N dò
 - **Cùng beat, khác lane** → hợp lệ (nhiều unit hành động cùng beat).
 - Nốt **CORE** vs **MICRO** / **EYE** dùng chung hàng beat nhưng **icon + viền màu** khác nhau (xem §5–§6).
 
-### Đặt skill — 2 cách (cả hai đều dùng)
+### Đặt skill — kéo-thả + highlight phím
 
-1. **Kéo-thả tay:** kéo skill từ ô radial (`SkillRadialSlotView` → `IBeginDrag/IDrag/IEndDrag`) → ghost bám con trỏ + preview marker mờ trên lane; thả trúng một beat trên timeline → gán skill cho unit hiện tại tại beat đó (`CombatController.AssignSkillAtScreenPoint` → `BeatTimelineUIView.TryGetBeatAtScreenPoint` → `TryAssignPlayerAction`).
-2. **Bấm phím / click (W·A·D):** arm skill như cũ; khi scan bar chạm beat hiện tại thì auto-gán, marker animate vào lane.
+1. **Kéo-thả (gán duy nhất):** kéo từ `SkillSlot_{Top,Left,Right}` → preview footprint S1/S/S2 trên lane → thả → `TryAssignPlayerAction` (chặn overlap qua `SkillFootprintUtil`).
+2. **Click / W·A·D:** highlight ô radial — **không** gán timeline, **không** slow-mo.
+
+**Skill panel Hierarchy:** `SkillPanelUI/Radial/SkillSlot_*` — scene-first (`Setup Skill Panel in Hierarchy`).
+
+**Bỏ:** token giữa · slow-mo panel · arm skill khi scan bar chạy.
 
 Lane số lượng đồng bộ động theo party sống (rebuild khi có unit chết/đổi đội hình); marker chỉ animate cho entry mới, refresh/scroll không animate lại.
 
@@ -380,21 +388,27 @@ EN vẫn scale reduction qua `EnduranceFactor`.
 
 ## 14. Map sang code (delta)
 
-| Thiết kế mới | Code hiện tại | Action |
-|--------------|---------------|--------|
-| Boss 3 target (Core/Micro/Eye) | Single boss HP | P0 |
-| Note tag CORE / MICRO / EYE | Single telegraph | P0 |
-| Ren Cycle Shift | Fixed element | P0 |
-| Mini pressure (no HP leak) | N/A | P0 |
-| Planning pause + dual music | Single BGM | P0 |
-| 3-row timeline | 1 agenda list | P0 |
-| S1/S/S2 footprint | Chưa có | P0 |
-| Note HP (tím/xanh/đỏ) | EnemyTelegraph 1-hit | P0 |
-| Bỏ PhaseAvTracker | PhaseAvTracker 150/100 | P0 remove |
-| `Resonance` / `Dissonance` stacks | N/A | P1 |
-| Reactive Space guard | GuardHeldSinceQuery | P1 refactor |
-| HB → W, intel, latency | HB → BaseAv only | P1 |
-| Async per-char planning | Batch planning | P1 |
+| Thiết kế | Trạng thái code | Ghi chú |
+|----------|-----------------|---------|
+| Intro-pause + Deploy/Continue | ✅ MVP | `PlanningPauseLocalBeat`, `CombatController`, `PausePlayback` |
+| Character lanes + drag skill | ✅ MVP | `BeatTimelineUIView`, `TimelineLaneMarkerView` |
+| Footprint S1/S/S2 UI | ✅ MVP | `RefreshFootprintDots`, `SkillDefinitionSO` fields |
+| Beat map sync nhạc | ✅ MVP | Scene wired + `CombatMusicSceneSetup` |
+| Enemy attack từ beat 3 | ✅ MVP | `EnemyFirstAttackBeat = 2` |
+| Scene-first UI sizing | ✅ MVP | `RectSizeUtil` |
+| Skill tên đúng kit | ✅ MVP | `Resources/Skills/*`, `SkillUiNames` |
+| Boss 3 target (Core/Micro/Eye) | 🔲 P0 | Single boss HP |
+| Note tag CORE / MICRO / EYE | 🔲 P0 | Single telegraph |
+| Ren Cycle Shift | 🔲 P0 | Fixed element |
+| Mini pressure (no HP leak) | 🔲 P0 | N/A |
+| Note HP degrade (tím/xanh/đỏ) | 🔲 P0 | 1-hit telegraph |
+| Enforce footprint overlap | ✅ MVP | `SkillFootprintUtil`, `CanAssignAction(unit, skill, beat)` |
+| Round segment 2 phase | ✅ MVP | `FinishRoundSegment`, `RoundPhaseCount = 2` |
+| Skill panel scene-first | ✅ MVP | `SkillPanelUI/Radial/SkillSlot_*` |
+| Enemy 2-phase telegraph | ✅ MVP | `SimpleEnemyAI`, `EnemyTelegraph.IsWindupOnly` |
+| Bỏ PhaseAvTracker | 🟡 legacy | Code còn stub |
+| `Resonance` / `Dissonance` stacks | 🔲 P1 | N/A |
+| Async per-char planning | 🔲 P1 | Batch planning |
 
 ---
 
@@ -402,7 +416,8 @@ EN vẫn scale reduction qua `EnduranceFactor`.
 
 | Ngày | Nội dung |
 |------|----------|
-| 2026-07-03 | Fix: intro-pause chuyển sang ngưỡng phân số `PlanningPauseLocalBeat=0.5` (dừng khi vạch quét ở giữa beat 0↔1, nhạc dừng SỚM hơn — trước khi beat 1 chạm vạch) thay vì dừng tại beat 1; thêm Debug.Log xác nhận recompile |
+| 2026-07-05 | Audit + fix: scene wire beat map/Deploy/prune null unitViews; bỏ overlay Start re-bind; callback pause thay FindAnyObjectByType; `RefreshLaneMarkers` thay RefreshAll khi gán skill; verify script cập nhật |
+| 2026-07-03 | Fix: intro-pause `PlanningPauseLocalBeat=0.5`; footprint refresh lúc pause; nhãn Deploy/Continue ép runtime |
 | 2026-07-03 | Fix: pause kiểm tra TRƯỚC `FireScanBeat` → dừng ngay trước beat 1 (beat 1 chưa fire, trước cả beat player sắp set); footprint refresh ngay lúc `EnterPlanningPause` để điểm tròn hiện đúng khi Continue xuất hiện |
 | 2026-07-03 | Fix: pause-beat chuyển thành hằng số `PlanningPauseAfterBeat=1` (scan qua beat 0 rồi mới dừng, không dừng tức thì); nhãn nút do `CombatController` ép runtime (Deploy/Continue) chống scene serialize cũ |
 | 2026-07-03 | Intro-pause: scan dừng sau khi qua beat đầu tiên (pause tại beat 1) cho player set up skill; nhạc `PausePlayback/ResumePlayback`; auto-resume khi cả đội đã xếp skill hoặc bấm Continue |

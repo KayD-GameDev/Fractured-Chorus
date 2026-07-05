@@ -189,15 +189,25 @@ namespace FracturedChorus.UI
 
         public void SetEntry(AgendaEntry entry, bool isTelegraph = false)
         {
-            SetSlot(entry, isTelegraph);
+            if (!isTelegraph || entry?.Skill == null)
+            {
+                SetEmpty();
+                return;
+            }
+
+            SetTelegraphSlot(new EnemyTelegraph
+            {
+                Unit = entry.Unit,
+                Skill = entry.Skill,
+                BeatIndex = entry.BeatIndex,
+                IsWindupOnly = false
+            });
         }
 
         public void SetSlot(AgendaEntry playerEntry, EnemyTelegraph enemyTelegraph)
         {
             WireReferences();
 
-            // Player actions giờ hiển thị trên lane (dòng kẻ của unit), không vẽ trong ô beat nữa.
-            // Ô beat chỉ còn dùng để hiển thị telegraph của quái + trạng thái scan/rỗng.
             var hasEnemy = enemyTelegraph?.Skill != null;
 
             if (!hasEnemy)
@@ -206,40 +216,47 @@ namespace FracturedChorus.UI
                 return;
             }
 
-            SetSlot(new AgendaEntry(enemyTelegraph.Unit, enemyTelegraph.Skill, enemyTelegraph.BeatIndex), true);
+            SetTelegraphSlot(enemyTelegraph);
         }
 
-        private void SetSlot(AgendaEntry entry, bool isTelegraph)
+        private void SetTelegraphSlot(EnemyTelegraph telegraph)
         {
             WireReferences();
-            if (entry?.Skill == null)
+            var skill = telegraph.Skill;
+            if (skill == null)
             {
                 SetEmpty();
                 return;
             }
 
+            var isWindup = telegraph.IsWindupOnly;
             if (background != null)
             {
-                background.color = isTelegraph
-                    ? new Color(0.28f, 0.1f, 0.1f, 0.95f)
-                    : new Color(0.18f, 0.16f, 0.24f, 0.95f);
+                background.color = isWindup
+                    ? new Color(0.35f, 0.14f, 0.14f, 0.75f)
+                    : new Color(0.28f, 0.1f, 0.1f, 0.95f);
                 _backgroundBaseColor = background.color;
             }
 
             if (glow != null)
             {
-                glow.color = GetGlowColor(entry.Skill.glowType);
+                var glowColor = GetGlowColor(skill.glowType);
+                glow.color = isWindup
+                    ? new Color(glowColor.r, glowColor.g, glowColor.b, glowColor.a * 0.45f)
+                    : glowColor;
                 _glowBaseColor = glow.color;
             }
 
             if (portrait != null)
             {
-                portrait.color = entry.Unit?.PlaceholderColor ?? Color.gray;
+                portrait.color = telegraph.Unit?.PlaceholderColor ?? Color.gray;
             }
 
             if (actionLabel != null)
             {
-                actionLabel.text = entry.Skill.displayName.ToUpperInvariant();
+                actionLabel.text = isWindup
+                    ? "↑"
+                    : skill.displayName.ToUpperInvariant();
             }
         }
 

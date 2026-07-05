@@ -16,6 +16,15 @@ namespace FracturedChorus.Combat.Timeline
         /// <summary>Quái chỉ được phép ra đòn (đặt telegraph) từ beat này trở đi — "beat thứ 3" = index 2.</summary>
         public const int EnemyFirstAttackBeat = 2;
 
+        /// <summary>Timeline phases executed per round segment before returning to Execute.</summary>
+        public const int RoundPhaseCount = 2;
+
+        public static int GetRoundEndBeatExclusive()
+        {
+            GetPhaseBeatRange(RoundPhaseCount - 1, out var startBeat, out var count);
+            return startBeat + count;
+        }
+
         /// <summary>Beat indices after which a phase divider is drawn (between 15|16, 25|26, …).</summary>
         public static bool IsPhaseDividerAfter(int beatIndex)
         {

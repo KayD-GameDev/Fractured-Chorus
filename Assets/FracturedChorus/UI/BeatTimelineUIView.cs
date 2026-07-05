@@ -3,6 +3,7 @@ using FracturedChorus.Combat.Core;
 using FracturedChorus.Combat.Grid;
 using FracturedChorus.Combat.Timeline;
 using FracturedChorus.Combat.Units;
+using FracturedChorus.Data;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -31,7 +32,6 @@ namespace FracturedChorus.UI
         [SerializeField] private float autoBeatInterval = 0.405405f;
         [SerializeField] private bool useMusicSync = true;
         [SerializeField] private CombatMusicController musicController;
-        [SerializeField] private float skillPanelOpenSpeedMultiplier = 0.25f;
         [Tooltip("Keep Header / outer BeatTimeline frame position. Internal layout (TrackLine, ScrollContent, ScanBar) still auto-layouts.")]
         [SerializeField] private bool preserveSceneLayout = true;
 
@@ -48,9 +48,9 @@ namespace FracturedChorus.UI
         private bool _autoPlayCompleted;
         private float _lastViewportWidth;
         private int _autoPlayBeat;
-        private Action<int> _onScanBeatReached;
         private Action _onPlanningPause;
-        private Action _onConfirmPlanning;
+        private Action _onRoundSegmentComplete;
+        private bool _planningPauseEnabled = true;
         private float _scanSpeedMultiplier = 1f;
         private float _totalScrollPx;
         private float _localBeat;
@@ -70,6 +70,7 @@ namespace FracturedChorus.UI
         private readonly Dictionary<(CombatUnit unit, int beat), Image> _footprintDots = new();
         private readonly Dictionary<(CombatUnit unit, int beat), TimelineLaneMarkerView> _laneMarkers = new();
         private TimelineLaneMarkerView _dropGhost;
+        private readonly List<Image> _dropPreviewDots = new();
 
         private static readonly Color StandingDotColor = new Color(0.55f, 0.55f, 0.6f, 0.85f);
 
@@ -206,8 +207,8 @@ namespace FracturedChorus.UI
             }
         }
 
-        public void Bind(BeatTimelineEngine timeline, CombatSession session, Action<int> onScanBeatReached = null,
-            CombatMusicController music = null, Action onPlanningPause = null, Action onConfirmPlanning = null)
+        public void Bind(BeatTimelineEngine timeline, CombatSession session,
+            CombatMusicController music = null, Action onPlanningPause = null, Action onRoundSegmentComplete = null)
         {
             if (music != null)
             {
@@ -216,9 +217,8 @@ namespace FracturedChorus.UI
 
             _timeline = timeline;
             _session = session;
-            _onScanBeatReached = onScanBeatReached;
             _onPlanningPause = onPlanningPause;
-            _onConfirmPlanning = onConfirmPlanning;
+            _onRoundSegmentComplete = onRoundSegmentComplete;
             WireReferences();
             RebuildLayout();
 
@@ -247,7 +247,7 @@ namespace FracturedChorus.UI
 
             _autoPlayCompleted = false;
             _pausedForPlanning = false;
-            _planningPauseArmed = PlanningPauseLocalBeat >= 0f;
+            _planningPauseArmed = _planningPauseEnabled && PlanningPauseLocalBeat >= 0f;
 
             if (_autoPlayRoutine != null)
             {
@@ -257,6 +257,26 @@ namespace FracturedChorus.UI
             _autoPlayRoutine = CanUseMusicSync()
                 ? StartCoroutine(MusicDrivenScanRoutine(false))
                 : StartCoroutine(ContinuousScanRoutine(false));
+        }
+
+        public void SetPlanningPauseEnabled(bool enabled)
+        {
+            _planningPauseEnabled = enabled;
+        }
+
+        public void ResetForNextPlanningSegment()
+        {
+            StopAutoPlay();
+            _autoPlayCompleted = false;
+            _pausedForPlanning = false;
+            _planningPauseArmed = false;
+            _localBeat = 0f;
+            _lastFiredBeat = -1;
+            _totalScrollPx = 0f;
+            ResetScrollState();
+            ApplyScrollVisual(0f);
+            ResetAllScanHighlights();
+            musicController?.PausePlayback();
         }
 
         /// <summary>Đang tạm dừng chờ player set up skill (intro-pause).</summary>
@@ -334,7 +354,7 @@ namespace FracturedChorus.UI
             while (_isPlaybackActive)
             {
                 _localBeat = musicController.TotalMusicalBeat - _roundStartMusicalBeat;
-                if (_localBeat >= TotalBeats)
+                if (_localBeat >= TimelineConstants.GetRoundEndBeatExclusive() || _localBeat >= TotalBeats)
                 {
                     break;
                 }
@@ -342,6 +362,11 @@ namespace FracturedChorus.UI
                 _totalScrollPx = PxOfLocalBeat(_localBeat);
                 ApplyScrollVisual(_totalScrollPx);
                 ProcessCrossedBeats();
+
+                if (!_isPlaybackActive)
+                {
+                    break;
+                }
 
                 if (TryEnterPlanningPauseByLocalBeat())
                 {
@@ -362,7 +387,7 @@ namespace FracturedChorus.UI
                 yield break;
             }
 
-            FinishPlayback();
+            FinishRoundSegment();
         }
 
         private IEnumerator ContinuousScanRoutine(bool resume)
@@ -380,12 +405,17 @@ namespace FracturedChorus.UI
 
             EnsureTrackLine();
 
-            while (_isPlaybackActive && _localBeat < TotalBeats)
+            while (_isPlaybackActive && _localBeat < TimelineConstants.GetRoundEndBeatExclusive() && _localBeat < TotalBeats)
             {
                 _localBeat += Time.deltaTime / GetBeatWaitDuration();
                 _totalScrollPx = PxOfLocalBeat(_localBeat);
                 ApplyScrollVisual(_totalScrollPx);
                 ProcessCrossedBeats();
+
+                if (!_isPlaybackActive)
+                {
+                    break;
+                }
 
                 if (TryEnterPlanningPauseByLocalBeat())
                 {
@@ -406,20 +436,17 @@ namespace FracturedChorus.UI
                 yield break;
             }
 
-            FinishPlayback();
+            FinishRoundSegment();
         }
 
-        private void FinishPlayback()
+        private void FinishRoundSegment()
         {
             _isPlaybackActive = false;
             _autoPlayCompleted = true;
             _autoPlayRoutine = null;
             ResetAllScanHighlights();
-
-            if (_session != null && _session.Phase == CombatPhase.Planning)
-            {
-                _onConfirmPlanning?.Invoke();
-            }
+            musicController?.PausePlayback();
+            _onRoundSegmentComplete?.Invoke();
         }
 
         public void StopTimelinePlayback()
@@ -502,11 +529,19 @@ namespace FracturedChorus.UI
 
         private void ProcessCrossedBeats()
         {
+            var roundEnd = TimelineConstants.GetRoundEndBeatExclusive();
             var beatIndex = Mathf.Clamp(Mathf.FloorToInt(_localBeat), 0, TotalBeats - 1);
 
             while (_lastFiredBeat < beatIndex)
             {
-                FireScanBeat(_lastFiredBeat + 1);
+                var next = _lastFiredBeat + 1;
+                if (next >= roundEnd)
+                {
+                    _isPlaybackActive = false;
+                    return;
+                }
+
+                FireScanBeat(next);
                 if (_session != null && _session.IsEncounterOver)
                 {
                     _isPlaybackActive = false;
@@ -541,7 +576,6 @@ namespace FracturedChorus.UI
             _autoPlayBeat = beat;
             _session?.OnTimelineScanBeat(beat);
             RefreshPhaseHeader(beat);
-            _onScanBeatReached?.Invoke(beat);
             _session?.ResolveBeatAtScan(beat);
             RefreshBeat(beat);
             RefreshPhaseAvLabel();
@@ -919,29 +953,35 @@ namespace FracturedChorus.UI
         private void RefreshFootprintDots(AgendaEntry entry, float laneY, HashSet<(CombatUnit unit, int beat)> wanted)
         {
             var skill = entry.Skill;
-            var placement = entry.BeatIndex; // beat bắt đầu Using (S)
-            var s1 = Mathf.Max(0, skill.standingBeatsBefore);
-            var active = Mathf.Max(1, skill.activeBeats);
-            var s2 = Mathf.Max(0, skill.standingBeatsAfter);
+            var placement = entry.BeatIndex;
             var unitColor = entry.Unit.PlaceholderColor;
 
-            // Standing Phase 1 (xám) — trước placement.
-            for (var i = 1; i <= s1; i++)
+            foreach (var info in SkillFootprintUtil.EnumerateFootprintBeats(skill, placement))
             {
-                TryPlaceFootprintDot(entry.Unit, placement - i, laneY, StandingDotColor, wanted);
-            }
+                if (info.BeatIndex < 0 || info.BeatIndex >= TotalBeats)
+                {
+                    continue;
+                }
 
-            // Using Phase phụ (màu unit) — các beat active sau placement (beat placement đã có chip).
-            for (var i = 1; i < active; i++)
-            {
-                TryPlaceFootprintDot(entry.Unit, placement + i, laneY,
-                    new Color(unitColor.r, unitColor.g, unitColor.b, 0.9f), wanted);
-            }
+                Color color;
+                switch (info.Role)
+                {
+                    case FootprintBeatRole.Active:
+                        color = info.BeatIndex == placement
+                            ? unitColor
+                            : new Color(unitColor.r, unitColor.g, unitColor.b, 0.9f);
+                        break;
+                    default:
+                        color = StandingDotColor;
+                        break;
+                }
 
-            // Standing Phase 2 (xám) — sau khi hết Using.
-            for (var i = 0; i < s2; i++)
-            {
-                TryPlaceFootprintDot(entry.Unit, placement + active + i, laneY, StandingDotColor, wanted);
+                if (info.BeatIndex == placement)
+                {
+                    continue;
+                }
+
+                TryPlaceFootprintDot(entry.Unit, info.BeatIndex, laneY, color, wanted);
             }
         }
 
@@ -1102,33 +1142,76 @@ namespace FracturedChorus.UI
             return true;
         }
 
-        public void ShowDropGhost(CombatUnit unit, Vector2 screen)
+        public void ShowDropGhost(CombatUnit unit, SkillDefinitionSO skill, Vector2 screen)
         {
             EnsureLaneLayers();
+            HideDropGhost();
 
-            if (_laneMarkersLayer == null || unit == null || viewport == null)
+            if (_laneMarkersLayer == null || unit == null || skill == null || viewport == null)
             {
-                HideDropGhost();
                 return;
             }
 
             if (!_laneIndex.TryGetValue(unit, out var laneIdx) || !TryGetBeatAtScreenPoint(screen, out var beat))
             {
-                HideDropGhost();
                 return;
             }
 
-            if (_dropGhost == null)
-            {
-                _dropGhost = CreateLaneMarker();
-                _dropGhost.SetGhost(true);
-            }
+            var valid = _timeline != null && _timeline.CanAssignAction(unit, skill, beat);
+            var laneY = GetLaneYFromBottom(laneIdx, viewport.rect.height);
+            var unitColor = unit.PlaceholderColor;
+            var previewAlpha = valid ? 0.55f : 0.35f;
 
-            _dropGhost.gameObject.SetActive(true);
-            _dropGhost.SetContent(unit, null);
-            _dropGhost.SetGhost(true);
-            var pos = new Vector2(ContentXForBeat(beat), GetLaneYFromBottom(laneIdx, viewport.rect.height));
-            _dropGhost.SetLanePosition(pos, false);
+            foreach (var info in SkillFootprintUtil.EnumerateFootprintBeats(skill, beat))
+            {
+                if (info.BeatIndex < 0 || info.BeatIndex >= TotalBeats)
+                {
+                    continue;
+                }
+
+                if (info.Role == FootprintBeatRole.Active && info.BeatIndex == beat)
+                {
+                    if (_dropGhost == null)
+                    {
+                        _dropGhost = CreateLaneMarker();
+                    }
+
+                    _dropGhost.gameObject.SetActive(true);
+                    _dropGhost.SetContent(unit, skill);
+                    _dropGhost.SetGhost(true);
+                    _dropGhost.SetLanePosition(new Vector2(ContentXForBeat(beat), laneY), false);
+                    if (!valid)
+                    {
+                        _dropGhost.SetInvalidPreview(true);
+                    }
+
+                    continue;
+                }
+
+                Color color;
+                if (info.Role == FootprintBeatRole.Active)
+                {
+                    color = new Color(unitColor.r, unitColor.g, unitColor.b, previewAlpha);
+                }
+                else
+                {
+                    color = valid
+                        ? new Color(StandingDotColor.r, StandingDotColor.g, StandingDotColor.b, previewAlpha)
+                        : new Color(1f, 0.25f, 0.2f, previewAlpha);
+                }
+
+                AddDropPreviewDot(info.BeatIndex, laneY, color);
+            }
+        }
+
+        private void AddDropPreviewDot(int beat, float laneY, Color color)
+        {
+            var dot = CreateFootprintDot();
+            dot.color = color;
+            dot.rectTransform.anchoredPosition = new Vector2(ContentXForBeat(beat), laneY);
+            dot.rectTransform.sizeDelta = new Vector2(footprintDotSize, footprintDotSize);
+            dot.gameObject.SetActive(true);
+            _dropPreviewDots.Add(dot);
         }
 
         public void HideDropGhost()
@@ -1136,7 +1219,18 @@ namespace FracturedChorus.UI
             if (_dropGhost != null)
             {
                 _dropGhost.gameObject.SetActive(false);
+                _dropGhost.SetInvalidPreview(false);
             }
+
+            foreach (var dot in _dropPreviewDots)
+            {
+                if (dot != null)
+                {
+                    Destroy(dot.gameObject);
+                }
+            }
+
+            _dropPreviewDots.Clear();
         }
 
         private Camera GetUiCameraForTimeline()
@@ -1657,7 +1751,6 @@ namespace FracturedChorus.UI
 
         public void SetSkillPanelOpen(bool open)
         {
-            SetScanSpeedMultiplier(open ? skillPanelOpenSpeedMultiplier : 1f);
         }
 
         private float GetBeatWaitDuration()

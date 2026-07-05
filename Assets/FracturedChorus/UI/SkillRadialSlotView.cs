@@ -15,7 +15,7 @@ namespace FracturedChorus.UI
     }
 
     /// <summary>
-    /// Một ô kỹ năng tròn trên bảng radial. Click hoặc thả token vào để chọn skill.
+    /// Một ô kỹ năng tròn trên bảng radial. Click/W/A/D để highlight; kéo vào timeline để gán.
     /// </summary>
     public class SkillRadialSlotView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
     {
@@ -35,6 +35,65 @@ namespace FracturedChorus.UI
         public RectTransform Rect => _rect;
         public bool HasSkill => Skill != null;
 
+        public void WireFromScene(SkillRadialDirection direction)
+        {
+            Direction = direction;
+            _rect = transform as RectTransform;
+            _background = GetComponent<Image>();
+            if (_background == null)
+            {
+                _background = gameObject.AddComponent<Image>();
+            }
+
+            _label = transform.Find("Label")?.GetComponent<Text>();
+            if (_label == null)
+            {
+                var labelGo = new GameObject("Label", typeof(RectTransform));
+                var labelRect = labelGo.GetComponent<RectTransform>();
+                labelRect.SetParent(_rect, false);
+                labelRect.anchorMin = Vector2.zero;
+                labelRect.anchorMax = Vector2.one;
+                labelRect.offsetMin = new Vector2(2f, 2f);
+                labelRect.offsetMax = new Vector2(-2f, -2f);
+                _label = labelGo.AddComponent<Text>();
+                _label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+                _label.fontSize = 12;
+                _label.alignment = TextAnchor.MiddleCenter;
+                _label.horizontalOverflow = HorizontalWrapMode.Wrap;
+                _label.verticalOverflow = VerticalWrapMode.Overflow;
+                _label.color = Color.white;
+                _label.raycastTarget = false;
+            }
+
+            if (_background.sprite == null)
+            {
+                _background.sprite = UiCircleSpriteUtil.Circle;
+                _background.type = Image.Type.Simple;
+            }
+
+            var button = GetComponent<Button>();
+            if (button == null)
+            {
+                button = gameObject.AddComponent<Button>();
+                button.transition = Selectable.Transition.None;
+                button.onClick.AddListener(Select);
+            }
+        }
+
+        public void Bind(SkillDefinitionSO skill, string keyHint, Action onSelect, SkillPanelUIView panel)
+        {
+            Skill = skill;
+            _onSelect = onSelect;
+            _panel = panel;
+            SetHighlight(false);
+
+            if (_label != null)
+            {
+                _label.text = BuildLabel(skill, keyHint);
+            }
+        }
+
+        /// <summary>Runtime fallback when scene slots are missing.</summary>
         public void Build(RectTransform parent, Vector2 anchoredPos, float size,
             SkillRadialDirection direction, SkillDefinitionSO skill, string keyHint, Action onSelect,
             SkillPanelUIView panel = null)
@@ -57,46 +116,43 @@ namespace FracturedChorus.UI
             _rect.sizeDelta = new Vector2(size, size);
             _rect.anchoredPosition = anchoredPos;
 
-            var ring = new GameObject("Ring", typeof(RectTransform));
-            var ringRect = ring.GetComponent<RectTransform>();
-            ringRect.SetParent(_rect, false);
-            ringRect.anchorMin = Vector2.zero;
-            ringRect.anchorMax = Vector2.one;
-            ringRect.offsetMin = new Vector2(-3f, -3f);
-            ringRect.offsetMax = new Vector2(3f, 3f);
-            var ringImage = ring.AddComponent<Image>();
-            ringImage.sprite = UiCircleSpriteUtil.Circle;
-            ringImage.type = Image.Type.Simple;
-            ringImage.color = RingColor;
-            ringImage.raycastTarget = false;
+            if (transform.Find("Ring") == null)
+            {
+                var ring = new GameObject("Ring", typeof(RectTransform));
+                var ringRect = ring.GetComponent<RectTransform>();
+                ringRect.SetParent(_rect, false);
+                ringRect.anchorMin = Vector2.zero;
+                ringRect.anchorMax = Vector2.one;
+                ringRect.offsetMin = new Vector2(-3f, -3f);
+                ringRect.offsetMax = new Vector2(3f, 3f);
+                var ringImage = ring.AddComponent<Image>();
+                ringImage.sprite = UiCircleSpriteUtil.Circle;
+                ringImage.type = Image.Type.Simple;
+                ringImage.color = RingColor;
+                ringImage.raycastTarget = false;
+            }
 
-            _background = gameObject.AddComponent<Image>();
+            _background = gameObject.GetComponent<Image>();
+            if (_background == null)
+            {
+                _background = gameObject.AddComponent<Image>();
+            }
+
             _background.sprite = UiCircleSpriteUtil.Circle;
             _background.type = Image.Type.Simple;
             _background.color = IdleColor;
             _background.raycastTarget = true;
 
-            var button = gameObject.AddComponent<Button>();
-            button.transition = Selectable.Transition.None;
-            button.onClick.AddListener(Select);
+            var button = gameObject.GetComponent<Button>();
+            if (button == null)
+            {
+                button = gameObject.AddComponent<Button>();
+                button.transition = Selectable.Transition.None;
+                button.onClick.AddListener(Select);
+            }
 
-            var labelGo = new GameObject("Label", typeof(RectTransform));
-            var labelRect = labelGo.GetComponent<RectTransform>();
-            labelRect.SetParent(_rect, false);
-            labelRect.anchorMin = Vector2.zero;
-            labelRect.anchorMax = Vector2.one;
-            labelRect.offsetMin = new Vector2(2f, 2f);
-            labelRect.offsetMax = new Vector2(-2f, -2f);
-
-            _label = labelGo.AddComponent<Text>();
-            _label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            _label.fontSize = 12;
-            _label.alignment = TextAnchor.MiddleCenter;
-            _label.horizontalOverflow = HorizontalWrapMode.Wrap;
-            _label.verticalOverflow = VerticalWrapMode.Overflow;
-            _label.color = Color.white;
-            _label.raycastTarget = false;
-            _label.text = BuildLabel(skill, keyHint);
+            WireFromScene(direction);
+            Bind(skill, keyHint, onSelect, panel);
         }
 
         private static string BuildLabel(SkillDefinitionSO skill, string keyHint)

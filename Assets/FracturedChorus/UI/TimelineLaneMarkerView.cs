@@ -152,6 +152,19 @@ namespace FracturedChorus.UI
             }
         }
 
+        public void SetInvalidPreview(bool invalid)
+        {
+            if (_background == null)
+            {
+                return;
+            }
+
+            if (invalid)
+            {
+                _background.color = new Color(0.85f, 0.2f, 0.2f, 0.55f);
+            }
+        }
+
         private static Color GetGlowColor(ActionGlowType glowType)
         {
             return glowType switch

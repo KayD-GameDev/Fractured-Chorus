@@ -646,6 +646,37 @@ namespace FracturedChorus.Editor
 
             so.ApplyModifiedPropertiesWithoutUndo();
         }
+
+        [MenuItem("Fractured Chorus/Setup Skill Panel in Hierarchy")]
+        public static void EnsureSkillPanelInHierarchy()
+        {
+            var canvas = ResolveCombatCanvasTransform();
+            if (canvas == null)
+            {
+                Debug.LogWarning("[Fractured Chorus] CombatCanvas not found.");
+                return;
+            }
+
+            var panel = Object.FindAnyObjectByType<SkillPanelUIView>(FindObjectsInactive.Include);
+            if (panel == null)
+            {
+                panel = TimelineHierarchyBuilder.BuildSkillPanel(canvas);
+                Undo.RegisterCreatedObjectUndo(panel.gameObject, "Setup Skill Panel");
+            }
+            else
+            {
+                panel.WireReferences();
+            }
+
+            EditorUtility.SetDirty(panel);
+            var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+            if (scene.IsValid() && scene.isLoaded)
+            {
+                EditorSceneManager.MarkSceneDirty(scene);
+            }
+
+            Debug.Log("[Fractured Chorus] Skill panel hierarchy wired (Radial + 3 slots). Save scene.");
+        }
     }
 }
 #endif

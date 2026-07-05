@@ -124,6 +124,7 @@ namespace FracturedChorus.Editor
             }
 
             CombatUiHierarchy.EnsurePartyCardsInHierarchy();
+            CombatUiHierarchy.EnsureSkillPanelInHierarchy();
             if (Object.FindAnyObjectByType<EnemyStatusBarUIView>(FindObjectsInactive.Include) == null)
             {
                 CombatUiHierarchy.AddEnemyStatusBarToScene();

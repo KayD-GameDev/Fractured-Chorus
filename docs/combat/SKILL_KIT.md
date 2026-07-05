@@ -151,6 +151,8 @@
 
 | Ngày | Nội dung |
 |------|----------|
-| 2026-07-03 | Đổi tên asset skill đúng kit (ren_skill→Crosscut · tank_skill→Anchor · tank_ult→Bulwark · mage_skill→Mend · mage_ult→Encore) + set footprint S1-S-S2 · UI hiện tên thật (`SkillUiNames`) |
+| 2026-07-05 | Audit project: scene sync (beat map, Deploy label, null unitViews, orphan UI); fix overlay binding; callback wiring; docs + verify script |
+| 2026-07-03 | Fix: intro-pause `PlanningPauseLocalBeat=0.5`; footprint refresh lúc pause; nhãn Deploy/Continue ép runtime |
+| 2026-07-03 | Đổi tên asset skill đúng kit + set footprint S1-S-S2 · UI hiện tên thật (`SkillUiNames`) |
 | 2026-07-03 | Làm rõ 3 pha Standing 1 / Using / Standing 2 (chống spam) · field footprint `SkillDefinitionSO` · UI nút xám S1/S2 |
 | 2026-06-30 | Cycle Shift · CoreFinal vs MiniDmg · dmg table · effect kinds mới |

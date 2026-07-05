@@ -9,6 +9,63 @@ Newest first.
 
 ---
 
+## 2026-07-05 — Combat: skill UI scene-first, 2-phase round, footprint overlap
+
+**Focus:** code (Unity) · editor · docs · verify
+
+**Owner:** Khoa
+
+**Done**
+- **Skill panel Hierarchy-first:** `SkillPanelUI/Radial/SkillSlot_{Top,Left,Right}`; menu **Setup Skill Panel in Hierarchy** + Apply All.
+- **Bỏ slow-mo panel, center token, arm-at-scan;** click/W/A/D highlight; gán chỉ kéo-thả.
+- **`SkillFootprintUtil`** — overlap enforce + drag preview S1/S/S2.
+- **Quái 2 pha** S1 wind-up + S impact; **round 2 timeline phase** → nút Execute.
+
+**Refs:** `SkillFootprintUtil.cs`, `SkillPanelUIView.cs`, `BeatTimelineUIView.cs`, `CombatController.cs`, `SimpleEnemyAI.cs`
+
+---
+
+## 2026-07-05 — Combat: intro-pause, Deploy/Continue, scene sync + audit fixes
+
+**Focus:** code (Unity) · scene · docs · verify script
+
+**Owner:** Khoa
+
+**Done**
+- **Intro-pause theo vị trí vạch quét:** `BeatTimelineUIView.PlanningPauseLocalBeat = 0.5` (hằng số code) — beat 0 kêu + lướt qua vạch, dừng **trước** beat 1 chạm vạch. `TryEnterPlanningPauseByLocalBeat()` trong scan loop; `CombatMusicController.PausePlayback()` / `ResumePlayback()`.
+- **Nút Deploy → Continue:** `CombatController` ép nhãn runtime (`DeployLabel`/`ResumeLabel`); bỏ `CombatExecuteOverlayUIView.Start()` re-bind (tránh ghi đè pause flow). Sau intro-pause hiện **Continue**; auto-resume khi cả đội đã xếp skill hoặc bấm tay.
+- **Footprint 3 pha trên lane:** `RefreshFootprintDots` — S1/S2 tròn xám · S chip màu unit; refresh qua `RefreshLaneMarkers()` (không rebuild 619 slot mỗi lần gán skill).
+- **Luật quái:** `TimelineConstants.EnemyFirstAttackBeat = 2` — telegraph chỉ từ beat thứ 3.
+- **Scene `CombatPrototype.unity`:** wire `beatMap` + `beatMapCsv`; nhãn ExecuteButton **Deploy**; xóa `unitViews` null; xóa `HealthBarFill` mồ côi ở scene root.
+- **Editor Apply All:** gộp wire combat music, prune null unitViews, Deploy label, orphan cleanup; bỏ reference `respectSceneAuthoring` (field đã xóa).
+- **Timeline ↔ Controller:** callback `onPlanningPause` / `onConfirmPlanning` trong `BeatTimelineUIView.Bind()` — bỏ `FindAnyObjectByType<CombatController>()`.
+- **Scene-first UI sizing:** `RectSizeUtil` — party/enemy card, badge, skill panel đọc kích thước từ scene; fallback constants chỉ khi chưa authored.
+- **Verify script:** `scripts/verify_combat_scene_sync.py` cập nhật checklist (beat map, Deploy, null unitViews, overlay Start bind).
+
+**Decisions**
+- Pause timing = **phân số localBeat**, không dùng serialized field trên scene (tránh Unity ghi đè giá trị cũ).
+- Không hiện điểm tròn trống trên lane — chỉ footprint khi player **đặt skill**.
+- Nhãn nút do `CombatController` làm chủ duy nhất; scene YAML + Apply All chỉ để đồng bộ Inspector.
+
+**Refs:** `UI/BeatTimelineUIView.cs`, `Combat/Core/CombatController.cs`, `UI/CombatExecuteOverlayUIView.cs`, `Audio/CombatMusicController.cs`, `Editor/CombatSceneSetupEditor.cs`, `Editor/CombatMusicSceneSetup.cs`, `UI/RectSizeUtil.cs`, `Scenes/CombatPrototype.unity`, `docs/combat/COMBAT_MECHANICS.md`, `scripts/verify_combat_scene_sync.py`
+
+---
+
+## 2026-07-03 — Combat: intro-pause design lock + footprint UI
+
+**Focus:** code (Unity) · docs
+
+**Owner:** Khoa
+
+**Done**
+- Thiết kế intro-pause: Deploy → nhạc chạy → pause cho player set up skill → Continue / auto-resume.
+- Footprint S1/S/S2 trên lane; đổi tên skill asset theo `SKILL_KIT.md` (Crosscut, Anchor, Bulwark, Mend, Encore).
+- `SkillUiNames` hiện `displayName` thật thay vì placeholder Skill 1/2.
+
+**Refs:** `docs/combat/SKILL_KIT.md`, `Resources/Skills/*.asset`
+
+---
+
 ## 2026-07-01 — Combat: reset stat units (Lv15) + canh Y thẻ quái theo players
 
 **Focus:** code (Unity) · data

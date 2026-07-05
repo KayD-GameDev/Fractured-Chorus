@@ -13,50 +13,39 @@ using UnityEngine.InputSystem;
 namespace FracturedChorus.UI
 {
     /// <summary>
-    /// Bảng skill dạng radial: 3 ô (Top=W, Left=A, Right=D) + token tròn ở tâm để kéo-thả.
-    /// Bảng hiện ngay tại con trỏ chuột. Không còn ô Guard (guard nay dùng giữ Spacebar).
+    /// Bảng skill dạng radial: 3 ô scene (Top=W, Left=A, Right=D).
+    /// Click/W/A/D chỉ highlight; gán skill bằng kéo-thả vào timeline.
     /// </summary>
     public class SkillPanelUIView : MonoBehaviour
     {
         private const float FallbackPanelSize = 240f;
 
         [SerializeField] private RectTransform panelRect;
+        [SerializeField] private RectTransform radialRoot;
+        [SerializeField] private SkillRadialSlotView slotTop;
+        [SerializeField] private SkillRadialSlotView slotLeft;
+        [SerializeField] private SkillRadialSlotView slotRight;
         [SerializeField] private RectTransform buttonContainer;
         [SerializeField] private Text titleLabel;
         [SerializeField] private Camera worldCamera;
         [SerializeField] private GameObject dismissBackdrop;
 
-        [Header("Radial layout — panel size from scene; adjust ratios in Inspector")]
-        [Tooltip("Keep the panel size authored in Hierarchy; use fallback only when the panel has no size set.")]
+        [Header("Layout")]
         [SerializeField] private bool preserveSceneLayout = true;
         [SerializeField] private float fallbackPanelSize = FallbackPanelSize;
-        [SerializeField, Range(0.1f, 0.5f)] private float slotSizeRatio = 70f / FallbackPanelSize;
-        [SerializeField, Range(0.1f, 0.5f)] private float tokenSizeRatio = 56f / FallbackPanelSize;
-        [SerializeField, Range(0.1f, 0.5f)] private float radiusRatio = 78f / FallbackPanelSize;
-
-        // Kích thước panel hiệu dụng (đọc từ scene) — cập nhật mỗi lần ShowForUnit.
-        private float _panelSize = FallbackPanelSize;
-
-        private float SlotSize => _panelSize * slotSizeRatio;
-        private float TokenSize => _panelSize * tokenSizeRatio;
-        private float Radius => _panelSize * radiusRatio;
 
         private CombatSession _session;
         private CombatUnit _currentUnit;
         private UnitView _currentUnitView;
-        private Func<CombatUnit, SkillDefinitionSO, bool> _onSkillSelected;
         private Func<CombatUnit, SkillDefinitionSO, Vector2, bool> _onSkillDroppedAtScreen;
-        private Action<CombatUnit, Vector2> _onSkillDragPreview;
+        private Action<CombatUnit, SkillDefinitionSO, Vector2> _onSkillDragPreview;
         private Action _onSkillDragEnd;
         private Coroutine _enableBackdropRoutine;
         private float _backdropDismissUnlockTime;
-
-        private RectTransform _radialRoot;
-        private readonly List<SkillRadialSlotView> _slots = new();
-        private SkillCenterTokenView _token;
+        private SkillDefinitionSO _draggingSkill;
         private GameObject _dragGhost;
 
-        public event Action<bool> VisibilityChanged;
+        private readonly List<SkillRadialSlotView> _slots = new();
 
         public bool ShouldIgnoreOutsideDismiss => Time.unscaledTime < _backdropDismissUnlockTime;
 
@@ -75,38 +64,69 @@ namespace FracturedChorus.UI
                 panelRect = transform as RectTransform;
             }
 
+            if (radialRoot == null)
+            {
+                radialRoot = transform.Find("Radial") as RectTransform;
+            }
+
+            if (slotTop == null)
+            {
+                slotTop = radialRoot?.Find("SkillSlot_Top")?.GetComponent<SkillRadialSlotView>();
+            }
+
+            if (slotLeft == null)
+            {
+                slotLeft = radialRoot?.Find("SkillSlot_Left")?.GetComponent<SkillRadialSlotView>();
+            }
+
+            if (slotRight == null)
+            {
+                slotRight = radialRoot?.Find("SkillSlot_Right")?.GetComponent<SkillRadialSlotView>();
+            }
+
             if (buttonContainer == null)
             {
-                var buttons = transform.Find("Buttons");
-                if (buttons != null)
-                {
-                    buttonContainer = buttons as RectTransform;
-                }
+                buttonContainer = transform.Find("Buttons") as RectTransform;
             }
 
             if (titleLabel == null)
             {
-                var title = transform.Find("Title");
-                if (title != null)
-                {
-                    titleLabel = title.GetComponent<Text>();
-                }
+                titleLabel = transform.Find("Title")?.GetComponent<Text>();
             }
 
             if (worldCamera == null)
             {
                 worldCamera = Camera.main;
             }
+
+            CacheSceneSlots();
+        }
+
+        private void CacheSceneSlots()
+        {
+            _slots.Clear();
+            if (slotTop != null)
+            {
+                _slots.Add(slotTop);
+            }
+
+            if (slotLeft != null)
+            {
+                _slots.Add(slotLeft);
+            }
+
+            if (slotRight != null)
+            {
+                _slots.Add(slotRight);
+            }
         }
 
         public void Bind(CombatSession session,
-            Func<CombatUnit, SkillDefinitionSO, bool> onSkillSelected,
             Func<CombatUnit, SkillDefinitionSO, Vector2, bool> onSkillDroppedAtScreen = null,
-            Action<CombatUnit, Vector2> onSkillDragPreview = null,
+            Action<CombatUnit, SkillDefinitionSO, Vector2> onSkillDragPreview = null,
             Action onSkillDragEnd = null)
         {
             _session = session;
-            _onSkillSelected = onSkillSelected;
             _onSkillDroppedAtScreen = onSkillDroppedAtScreen;
             _onSkillDragPreview = onSkillDragPreview;
             _onSkillDragEnd = onSkillDragEnd;
@@ -142,7 +162,7 @@ namespace FracturedChorus.UI
 
             WireReferences();
             StripNestedCanvasIfAny();
-            ApplyRadialPanelLayout();
+            ApplyPanelLayout();
 
             _currentUnit = unit;
             _currentUnitView = unitView;
@@ -151,7 +171,7 @@ namespace FracturedChorus.UI
                 titleLabel.text = unit.DisplayName;
             }
 
-            BuildRadial();
+            BindRadialSlots();
 
             if (!gameObject.activeSelf)
             {
@@ -169,7 +189,6 @@ namespace FracturedChorus.UI
             }
 
             _enableBackdropRoutine = StartCoroutine(EnableBackdropNextFrame());
-            VisibilityChanged?.Invoke(true);
         }
 
         private IEnumerator EnableBackdropNextFrame()
@@ -179,22 +198,20 @@ namespace FracturedChorus.UI
             _enableBackdropRoutine = null;
         }
 
-        private void ApplyRadialPanelLayout()
+        private void ApplyPanelLayout()
         {
             if (panelRect == null)
             {
                 return;
             }
 
-            _panelSize = ResolvePanelSize();
-
             panelRect.anchorMin = new Vector2(0.5f, 0.5f);
             panelRect.anchorMax = new Vector2(0.5f, 0.5f);
             panelRect.pivot = new Vector2(0.5f, 0.5f);
             if (!preserveSceneLayout)
             {
-                // Chỉ ép size khi được phép; mặc định tôn trọng kích thước panel trong scene.
-                panelRect.sizeDelta = new Vector2(_panelSize, _panelSize);
+                var size = RectSizeUtil.ResolveMinExtent(panelRect, fallbackPanelSize);
+                panelRect.sizeDelta = new Vector2(size, size);
             }
 
             var bg = panelRect.GetComponent<Image>();
@@ -205,54 +222,73 @@ namespace FracturedChorus.UI
                 bg.color = new Color(0.06f, 0.06f, 0.1f, 0.82f);
             }
 
-            ConfigureTitle();
-        }
-
-        /// <summary>Kích thước panel = size trong scene (nếu preserveSceneLayout), fallback khi chưa set.</summary>
-        private float ResolvePanelSize()
-        {
-            if (preserveSceneLayout)
+            if (titleLabel != null)
             {
-                return RectSizeUtil.ResolveMinExtent(panelRect, fallbackPanelSize);
+                titleLabel.alignment = TextAnchor.MiddleCenter;
+                titleLabel.raycastTarget = false;
             }
-
-            return fallbackPanelSize;
         }
 
-        private void ConfigureTitle()
+        private void BindRadialSlots()
         {
-            if (titleLabel == null)
-            {
-                return;
-            }
-
-            var titleRect = titleLabel.rectTransform;
-            titleRect.anchorMin = new Vector2(0.5f, 1f);
-            titleRect.anchorMax = new Vector2(0.5f, 1f);
-            titleRect.pivot = new Vector2(0.5f, 1f);
-            titleRect.anchoredPosition = new Vector2(0f, -6f);
-            titleRect.sizeDelta = new Vector2(_panelSize - 12f, 24f);
-            titleLabel.alignment = TextAnchor.MiddleCenter;
-            titleLabel.raycastTarget = false;
-        }
-
-        private void BuildRadial()
-        {
-            EnsureRadialRoot();
-            ClearRadial();
-
             if (buttonContainer != null)
             {
                 buttonContainer.gameObject.SetActive(false);
             }
 
             var skills = CollectUsableSkills();
+            EnsureSceneSlotsExist();
 
-            CreateSlot(SkillRadialDirection.Top, TopPosition(), "W", skills, 0);
-            CreateSlot(SkillRadialDirection.Left, LeftPosition(), "A", skills, 1);
-            CreateSlot(SkillRadialDirection.Right, RightPosition(), "D", skills, 2);
+            BindSlot(slotTop, SkillRadialDirection.Top, "W", skills, 0);
+            BindSlot(slotLeft, SkillRadialDirection.Left, "A", skills, 1);
+            BindSlot(slotRight, SkillRadialDirection.Right, "D", skills, 2);
+        }
 
-            CreateToken();
+        private void EnsureSceneSlotsExist()
+        {
+            if (_slots.Count >= 3)
+            {
+                return;
+            }
+
+            EnsureRadialRoot();
+            if (slotTop == null)
+            {
+                slotTop = CreateFallbackSlot(SkillRadialDirection.Top, new Vector2(0f, 78f));
+            }
+
+            if (slotLeft == null)
+            {
+                slotLeft = CreateFallbackSlot(SkillRadialDirection.Left, new Vector2(-68f, -39f));
+            }
+
+            if (slotRight == null)
+            {
+                slotRight = CreateFallbackSlot(SkillRadialDirection.Right, new Vector2(68f, -39f));
+            }
+
+            CacheSceneSlots();
+        }
+
+        private SkillRadialSlotView CreateFallbackSlot(SkillRadialDirection dir, Vector2 pos)
+        {
+            var slotGo = new GameObject($"SkillSlot_{dir}");
+            var slot = slotGo.AddComponent<SkillRadialSlotView>();
+            slot.Build(radialRoot, pos, 70f, dir, null, string.Empty, null, this);
+            return slot;
+        }
+
+        private void BindSlot(SkillRadialSlotView slot, SkillRadialDirection dir, string keyHint,
+            List<SkillDefinitionSO> skills, int skillIndex)
+        {
+            if (slot == null)
+            {
+                return;
+            }
+
+            slot.WireFromScene(dir);
+            var skill = skillIndex < skills.Count ? skills[skillIndex] : null;
+            slot.Bind(skill, keyHint, () => HandleSkillHighlighted(slot, skill), this);
         }
 
         private List<SkillDefinitionSO> CollectUsableSkills()
@@ -280,118 +316,44 @@ namespace FracturedChorus.UI
             return result;
         }
 
-        private void CreateSlot(SkillRadialDirection dir, Vector2 pos, string keyHint,
-            List<SkillDefinitionSO> skills, int skillIndex)
-        {
-            var skill = skillIndex < skills.Count ? skills[skillIndex] : null;
-            var slotGo = new GameObject($"SkillSlot_{dir}");
-            var slot = slotGo.AddComponent<SkillRadialSlotView>();
-            var capturedSkill = skill;
-            slot.Build(_radialRoot, pos, SlotSize, dir, skill, keyHint, () => HandleSkillChosen(capturedSkill), this);
-            _slots.Add(slot);
-        }
-
-        private void CreateToken()
-        {
-            var tokenGo = new GameObject("SkillCenterToken");
-            _token = tokenGo.AddComponent<SkillCenterTokenView>();
-            _token.Build(_radialRoot, TokenSize, this, GetRootCanvas(), GetUiCamera(), Vector2.zero);
-            _token.transform.SetAsLastSibling();
-        }
-
-        private void HandleSkillChosen(SkillDefinitionSO skill)
+        private void HandleSkillHighlighted(SkillRadialSlotView slot, SkillDefinitionSO skill)
         {
             if (skill == null)
             {
                 return;
             }
 
-            var armed = _onSkillSelected?.Invoke(_currentUnit, skill) ?? false;
-            if (armed)
+            foreach (var s in _slots)
             {
-                Hide();
-            }
-            else
-            {
-                FlashUnaffordable(skill);
+                s?.SetHighlight(s == slot);
             }
         }
-
-        private void FlashUnaffordable(SkillDefinitionSO skill)
-        {
-            _token?.ResetToHome();
-        }
-
-        /// <summary>Token được thả tại điểm màn hình — chọn ô gần/chứa điểm đó. True nếu đã chọn.</summary>
-        public bool TrySelectSlotAtScreenPoint(Vector2 screenPoint)
-        {
-            var camera = GetUiCamera();
-            SkillRadialSlotView best = null;
-            var bestDist = float.MaxValue;
-
-            foreach (var slot in _slots)
-            {
-                if (slot == null || !slot.HasSkill || slot.Rect == null)
-                {
-                    continue;
-                }
-
-                if (RectTransformUtility.RectangleContainsScreenPoint(slot.Rect, screenPoint, camera))
-                {
-                    best = slot;
-                    break;
-                }
-
-                if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                        _radialRoot, screenPoint, camera, out var local))
-                {
-                    var dist = Vector2.Distance(local, slot.Rect.anchoredPosition);
-                    if (dist < bestDist && dist <= SlotSize)
-                    {
-                        bestDist = dist;
-                        best = slot;
-                    }
-                }
-            }
-
-            if (best == null)
-            {
-                return false;
-            }
-
-            best.SetHighlight(true);
-            best.Select();
-            return true;
-        }
-
-        // ---------------------------------------------------------------------
-        // Kéo skill từ ô radial → thả lên timeline (lane của unit)
-        // ---------------------------------------------------------------------
 
         public void BeginSkillDrag(SkillDefinitionSO skill)
         {
+            _draggingSkill = skill;
             EnsureDragGhost(skill);
         }
 
         public void UpdateSkillDrag(Vector2 screenPos)
         {
             MoveDragGhost(screenPos);
-            _onSkillDragPreview?.Invoke(_currentUnit, screenPos);
+            if (_draggingSkill != null)
+            {
+                _onSkillDragPreview?.Invoke(_currentUnit, _draggingSkill, screenPos);
+            }
         }
 
         public bool EndSkillDrag(SkillDefinitionSO skill, Vector2 screenPos)
         {
             DestroyDragGhost();
+            _draggingSkill = null;
             _onSkillDragEnd?.Invoke();
 
             var consumed = _onSkillDroppedAtScreen?.Invoke(_currentUnit, skill, screenPos) ?? false;
             if (consumed)
             {
                 Hide();
-            }
-            else
-            {
-                _token?.ResetToHome();
             }
 
             return consumed;
@@ -410,7 +372,7 @@ namespace FracturedChorus.UI
                 _dragGhost = new GameObject("SkillDragGhost", typeof(RectTransform));
                 var rect = _dragGhost.GetComponent<RectTransform>();
                 rect.SetParent(canvasRect, false);
-                rect.sizeDelta = new Vector2(TokenSize, TokenSize);
+                rect.sizeDelta = new Vector2(56f, 56f);
 
                 var img = _dragGhost.AddComponent<Image>();
                 img.sprite = UiCircleSpriteUtil.Circle;
@@ -533,44 +495,21 @@ namespace FracturedChorus.UI
             }
         }
 
-        private Vector2 TopPosition() => new Vector2(0f, Radius);
-        private Vector2 LeftPosition() => new Vector2(-Radius * 0.866f, -Radius * 0.5f);
-        private Vector2 RightPosition() => new Vector2(Radius * 0.866f, -Radius * 0.5f);
-
         private void EnsureRadialRoot()
         {
-            if (_radialRoot != null)
+            if (radialRoot != null)
             {
                 return;
             }
 
             var rootGo = new GameObject("Radial", typeof(RectTransform));
-            _radialRoot = rootGo.GetComponent<RectTransform>();
-            _radialRoot.SetParent(panelRect, false);
-            _radialRoot.anchorMin = new Vector2(0.5f, 0.5f);
-            _radialRoot.anchorMax = new Vector2(0.5f, 0.5f);
-            _radialRoot.pivot = new Vector2(0.5f, 0.5f);
-            _radialRoot.anchoredPosition = new Vector2(0f, -10f);
-            _radialRoot.sizeDelta = new Vector2(_panelSize, _panelSize);
-        }
-
-        private void ClearRadial()
-        {
-            foreach (var slot in _slots)
-            {
-                if (slot != null)
-                {
-                    Destroy(slot.gameObject);
-                }
-            }
-
-            _slots.Clear();
-
-            if (_token != null)
-            {
-                Destroy(_token.gameObject);
-                _token = null;
-            }
+            radialRoot = rootGo.GetComponent<RectTransform>();
+            radialRoot.SetParent(panelRect, false);
+            radialRoot.anchorMin = new Vector2(0.5f, 0.5f);
+            radialRoot.anchorMax = new Vector2(0.5f, 0.5f);
+            radialRoot.pivot = new Vector2(0.5f, 0.5f);
+            radialRoot.anchoredPosition = new Vector2(0f, -10f);
+            radialRoot.sizeDelta = panelRect != null ? panelRect.sizeDelta : new Vector2(FallbackPanelSize, FallbackPanelSize);
         }
 
         private void PositionAboveUnit(UnitView unitView)
@@ -591,7 +530,6 @@ namespace FracturedChorus.UI
                 return;
             }
 
-            // Pivot đáy-giữa → bảng nổi PHÍA TRÊN đầu nhân vật, cách 1 khoảng nhỏ.
             panelRect.anchorMin = new Vector2(0.5f, 0.5f);
             panelRect.anchorMax = new Vector2(0.5f, 0.5f);
             panelRect.pivot = new Vector2(0.5f, 0f);
@@ -607,12 +545,6 @@ namespace FracturedChorus.UI
             panelRect.anchoredPosition = localPoint;
         }
 
-        private Canvas GetRootCanvas()
-        {
-            var rect = GetRootCanvasRectTransform();
-            return rect != null ? rect.GetComponent<Canvas>() : null;
-        }
-
         private Camera GetUiCamera()
         {
             var rootCanvas = GetRootCanvas();
@@ -622,6 +554,12 @@ namespace FracturedChorus.UI
             }
 
             return null;
+        }
+
+        private Canvas GetRootCanvas()
+        {
+            var rect = GetRootCanvasRectTransform();
+            return rect != null ? rect.GetComponent<Canvas>() : null;
         }
 
         private void ShowDismissBackdrop()
@@ -727,12 +665,12 @@ namespace FracturedChorus.UI
 
             HideDismissBackdrop();
             DestroyDragGhost();
+            _draggingSkill = null;
             _onSkillDragEnd?.Invoke();
 
             if (panelRect != null && panelRect.gameObject.activeSelf)
             {
                 panelRect.gameObject.SetActive(false);
-                VisibilityChanged?.Invoke(false);
             }
 
             _currentUnit = null;

@@ -251,16 +251,80 @@ namespace FracturedChorus.Editor
             layout.childControlWidth = true;
             layout.childControlHeight = false;
             layout.childForceExpandWidth = true;
+            buttonsGo.SetActive(false);
+
+            var radialGo = CreateUiObject("Radial", panelGo.transform);
+            var radialRect = radialGo.GetComponent<RectTransform>();
+            radialRect.anchorMin = new Vector2(0.5f, 0.5f);
+            radialRect.anchorMax = new Vector2(0.5f, 0.5f);
+            radialRect.pivot = new Vector2(0.5f, 0.5f);
+            radialRect.anchoredPosition = new Vector2(0f, -10f);
+            radialRect.sizeDelta = new Vector2(180f, 180f);
+
+            const float slotSize = 70f;
+            var slotTop = CreateRadialSkillSlot(radialRect, "SkillSlot_Top", new Vector2(0f, 78f), slotSize);
+            var slotLeft = CreateRadialSkillSlot(radialRect, "SkillSlot_Left", new Vector2(-68f, -39f), slotSize);
+            var slotRight = CreateRadialSkillSlot(radialRect, "SkillSlot_Right", new Vector2(68f, -39f), slotSize);
 
             panelGo.SetActive(false);
 
             var ui = panelGo.AddComponent<SkillPanelUIView>();
             SetField(ui, "panelRect", panelRect);
+            SetField(ui, "radialRoot", radialRect);
+            SetField(ui, "slotTop", slotTop);
+            SetField(ui, "slotLeft", slotLeft);
+            SetField(ui, "slotRight", slotRight);
             SetField(ui, "buttonContainer", buttonsRect);
             SetField(ui, "titleLabel", title);
-            SetField(ui, "screenPaddingPx", 1.5f);
+            SetField(ui, "preserveSceneLayout", true);
             ui.WireReferences();
             return ui;
+        }
+
+        private static SkillRadialSlotView CreateRadialSkillSlot(RectTransform parent, string name, Vector2 pos, float size)
+        {
+            var slotGo = CreateUiObject(name, parent);
+            var slotRect = slotGo.GetComponent<RectTransform>();
+            slotRect.anchorMin = new Vector2(0.5f, 0.5f);
+            slotRect.anchorMax = new Vector2(0.5f, 0.5f);
+            slotRect.pivot = new Vector2(0.5f, 0.5f);
+            slotRect.anchoredPosition = pos;
+            slotRect.sizeDelta = new Vector2(size, size);
+
+            var ringGo = CreateUiObject("Ring", slotGo.transform);
+            var ringRect = ringGo.GetComponent<RectTransform>();
+            StretchWithPadding(ringRect, 0f, 0f, 1f, 1f);
+            ringRect.offsetMin = new Vector2(-3f, -3f);
+            ringRect.offsetMax = new Vector2(3f, 3f);
+            var ringImg = ringGo.AddComponent<Image>();
+            ringImg.sprite = UiCircleSpriteUtil.Circle;
+            ringImg.type = Image.Type.Simple;
+            ringImg.color = new Color(0.75f, 0.8f, 0.95f, 1f);
+            ringImg.raycastTarget = false;
+
+            var bg = slotGo.AddComponent<Image>();
+            bg.sprite = UiCircleSpriteUtil.Circle;
+            bg.type = Image.Type.Simple;
+            bg.color = new Color(0.16f, 0.16f, 0.22f, 0.96f);
+
+            var labelGo = CreateUiObject("Label", slotGo.transform);
+            var labelRect = labelGo.GetComponent<RectTransform>();
+            StretchWithPadding(labelRect, 0f, 0f, 1f, 1f);
+            labelRect.offsetMin = new Vector2(2f, 2f);
+            labelRect.offsetMax = new Vector2(-2f, -2f);
+            var label = labelGo.AddComponent<Text>();
+            ApplyText(label);
+            label.fontSize = 12;
+            label.alignment = TextAnchor.MiddleCenter;
+            label.horizontalOverflow = HorizontalWrapMode.Wrap;
+            label.verticalOverflow = VerticalWrapMode.Overflow;
+            label.raycastTarget = false;
+            label.text = "—";
+
+            var slot = slotGo.AddComponent<SkillRadialSlotView>();
+            slot.WireFromScene(name.Contains("Top") ? SkillRadialDirection.Top
+                : name.Contains("Left") ? SkillRadialDirection.Left : SkillRadialDirection.Right);
+            return slot;
         }
 
         public static CombatExecuteOverlayUIView BuildExecuteOverlay(Transform canvasTransform)

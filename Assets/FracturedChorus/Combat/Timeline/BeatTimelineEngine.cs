@@ -15,6 +15,8 @@ namespace FracturedChorus.Combat.Timeline
         public CombatUnit Unit;
         public SkillDefinitionSO Skill;
         public int BeatIndex;
+        /// <summary>True = S1 wind-up beat; damage resolves only on impact telegraphs.</summary>
+        public bool IsWindupOnly;
     }
 
     public class BeatTimelineEngine
@@ -59,20 +61,32 @@ namespace FracturedChorus.Combat.Timeline
             OnTelegraphsChanged?.Invoke();
         }
 
-        public void AddTelegraph(CombatUnit unit, SkillDefinitionSO skill, int beatIndex)
+        public void AddTelegraph(CombatUnit unit, SkillDefinitionSO skill, int beatIndex, bool isWindupOnly = false)
         {
             if (unit == null || skill == null || beatIndex < 0 || beatIndex >= BeatCount)
             {
                 return;
             }
 
-            _telegraphs.Add(new EnemyTelegraph { Unit = unit, Skill = skill, BeatIndex = beatIndex });
+            _telegraphs.Add(new EnemyTelegraph
+            {
+                Unit = unit,
+                Skill = skill,
+                BeatIndex = beatIndex,
+                IsWindupOnly = isWindupOnly
+            });
             OnTelegraphsChanged?.Invoke();
         }
 
         public EnemyTelegraph GetTelegraphAtBeat(int beatIndex)
         {
             return _telegraphs.FirstOrDefault(t => t.BeatIndex == beatIndex);
+        }
+
+        /// <summary>Impact telegraph at beat (excludes S1 wind-up markers).</summary>
+        public EnemyTelegraph GetImpactTelegraphAtBeat(int beatIndex)
+        {
+            return _telegraphs.FirstOrDefault(t => t.BeatIndex == beatIndex && !t.IsWindupOnly);
         }
 
         public bool TryAssignAction(CombatUnit unit, SkillDefinitionSO skill, int beatIndex)
@@ -82,7 +96,7 @@ namespace FracturedChorus.Combat.Timeline
                 return false;
             }
 
-            if (!CanAssignAction(unit, beatIndex))
+            if (!CanAssignAction(unit, skill, beatIndex))
             {
                 return false;
             }
@@ -93,9 +107,9 @@ namespace FracturedChorus.Combat.Timeline
             return true;
         }
 
-        public bool CanAssignAction(CombatUnit unit, int beatIndex)
+        public bool CanAssignAction(CombatUnit unit, SkillDefinitionSO skill, int beatIndex)
         {
-            if (Phase != CombatPhase.Planning || unit == null)
+            if (Phase != CombatPhase.Planning || unit == null || skill == null)
             {
                 return false;
             }
@@ -105,7 +119,12 @@ namespace FracturedChorus.Combat.Timeline
                 return false;
             }
 
-            return !_agenda.Any(a => a.BeatIndex == beatIndex && a.Unit == unit);
+            return SkillFootprintUtil.CanPlace(_agenda, unit, skill, beatIndex);
+        }
+
+        public void ClearPlayerAgenda()
+        {
+            _agenda.RemoveAll(a => a.Unit != null && a.Unit.Side == GridSide.Player);
         }
 
         public int FindNextEmptyBeat(int startIndex = 0)
