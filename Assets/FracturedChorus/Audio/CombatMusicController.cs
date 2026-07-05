@@ -171,6 +171,11 @@ namespace FracturedChorus.Audio
             }
         }
 
+        /// <summary>TODO: one-shot transition sting when entering the next 2-phase block (asset TBD).</summary>
+        public void PlaySegmentTransitionMusic(int segmentIndex)
+        {
+        }
+
         private void HandleLoopRegions()
         {
             var passEnd = ResolveFirstPassEndSec();

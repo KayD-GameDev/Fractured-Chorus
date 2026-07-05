@@ -92,6 +92,14 @@ namespace FracturedChorus.UI
             }
         }
 
+        public void SetPlanningInteractionEnabled(bool enabled)
+        {
+            if (_background != null)
+            {
+                _background.raycastTarget = enabled;
+            }
+        }
+
         /// <summary>Đặt vị trí trong lane. animate=true → chạy hiệu ứng bay vào.</summary>
         public void SetLanePosition(Vector2 localPos, bool animate)
         {

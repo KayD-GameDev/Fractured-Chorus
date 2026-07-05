@@ -15,10 +15,12 @@ namespace FracturedChorus.UI
     }
 
     /// <summary>
-    /// Một ô kỹ năng tròn trên bảng radial. Click/W/A/D để highlight; kéo vào timeline để gán.
+    /// Một ô kỹ năng tròn trên bảng radial. Click highlight; W/A/D hoặc kéo vào timeline để gán.
     /// </summary>
     public class SkillRadialSlotView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
     {
+        private const int LabelFontSize = 20;
+
         private static readonly Color IdleColor = new Color(0.16f, 0.16f, 0.22f, 0.96f);
         private static readonly Color HighlightColor = new Color(0.95f, 0.62f, 0.25f, 1f);
         private static readonly Color RingColor = new Color(0.75f, 0.8f, 0.95f, 1f);
@@ -57,19 +59,14 @@ namespace FracturedChorus.UI
                 labelRect.offsetMax = new Vector2(-2f, -2f);
                 _label = labelGo.AddComponent<Text>();
                 _label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-                _label.fontSize = 12;
                 _label.alignment = TextAnchor.MiddleCenter;
                 _label.horizontalOverflow = HorizontalWrapMode.Wrap;
                 _label.verticalOverflow = VerticalWrapMode.Overflow;
-                _label.color = Color.white;
                 _label.raycastTarget = false;
             }
 
-            if (_background.sprite == null)
-            {
-                _background.sprite = UiCircleSpriteUtil.Circle;
-                _background.type = Image.Type.Simple;
-            }
+            ApplyCircleStyle();
+            ApplyLabelStyle();
 
             var button = GetComponent<Button>();
             if (button == null)
@@ -162,7 +159,7 @@ namespace FracturedChorus.UI
                 return $"[{keyHint}]\n—";
             }
 
-            return $"[{keyHint}]\n{SkillUiNames.GetDisplayName(skill)}\n{skill.GetAvCost()} AV";
+            return $"[{keyHint}]\n{SkillUiNames.GetDisplayName(skill)}";
         }
 
         public void SetHighlight(bool on)
@@ -181,6 +178,38 @@ namespace FracturedChorus.UI
             }
 
             _onSelect?.Invoke();
+        }
+
+        private void ApplyCircleStyle()
+        {
+            if (_background != null && _background.sprite == null)
+            {
+                _background.sprite = UiCircleSpriteUtil.Circle;
+                _background.type = Image.Type.Simple;
+            }
+
+            var ring = transform.Find("Ring")?.GetComponent<Image>();
+            if (ring != null && ring.sprite == null)
+            {
+                ring.sprite = UiCircleSpriteUtil.Circle;
+                ring.type = Image.Type.Simple;
+            }
+        }
+
+        private void ApplyLabelStyle()
+        {
+            if (_label == null)
+            {
+                return;
+            }
+
+            if (_label.font == null)
+            {
+                _label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            }
+
+            _label.fontSize = LabelFontSize;
+            _label.color = Color.black;
         }
 
         public void OnBeginDrag(PointerEventData eventData)

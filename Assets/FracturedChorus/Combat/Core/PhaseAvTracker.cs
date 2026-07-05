@@ -17,23 +17,6 @@ namespace FracturedChorus.Combat.Core
             SpentThisPhase = 0;
         }
 
-        public void SyncToTimelinePhase(int beatIndex)
-        {
-            SyncToTimelinePhaseIndex(ResolveTimelinePhaseIndex(beatIndex));
-        }
-
-        public void SyncToTimelinePhaseIndex(int phaseIndex)
-        {
-            phaseIndex = Mathf.Clamp(phaseIndex, 0, TimelineConstants.PhaseCount - 1);
-            if (phaseIndex == TimelinePhaseIndex)
-            {
-                return;
-            }
-
-            TimelinePhaseIndex = phaseIndex;
-            SpentThisPhase = 0;
-        }
-
         public static int ResolveTimelinePhaseIndex(int beatIndex)
         {
             var phaseIndex = TimelineConstants.GetPhaseIndex(beatIndex);
@@ -64,6 +47,14 @@ namespace FracturedChorus.Combat.Core
             if (cost > 0)
             {
                 SpentThisPhase += cost;
+            }
+        }
+
+        public void RecordRefund(int cost)
+        {
+            if (cost > 0)
+            {
+                SpentThisPhase = Mathf.Max(0, SpentThisPhase - cost);
             }
         }
     }

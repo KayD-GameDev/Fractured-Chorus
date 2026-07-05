@@ -27,9 +27,9 @@ namespace FracturedChorus.Editor
             var mageBlock = CreateStatBlock("StatBlock_Mage", HarmonyElement.Harmony, DamageType.Magical, 50, 9.8f, 147, 16, 1.3f, 73, 10);
             var gruntBlock = CreateStatBlock("StatBlock_Grunt", HarmonyElement.Rhythm, DamageType.Physical, 60, 8, 120, 5, 1.1f, 150, 9);
 
-            var renSkills = CreateStandardSkills("ren", "Strike", "Riposte", "Finale", "Guard");
-            var tankSkills = CreateStandardSkills("tank", "Ram", "Bulwark", "Hold", "Parry");
-            var mageSkills = CreateStandardSkills("mage", "Pulse", "Arc", "Cataclysm", "Ward");
+            var renSkills = CreateStandardSkills("ren", "Strike", "Riposte", "Finale");
+            var tankSkills = CreateStandardSkills("tank", "Ram", "Bulwark", "Hold");
+            var mageSkills = CreateStandardSkills("mage", "Pulse", "Arc", "Cataclysm");
             var gruntStrike = CreateSkillAsset("grunt_strike", "Strike", SkillSlotKind.BasicAttack, 1,
                 ActionGlowType.Attack, 0);
 
@@ -95,6 +95,7 @@ namespace FracturedChorus.Editor
                 new Color(0.45f, 0.2f, 0.55f));
             preset.battleSprite = battleSprite;
             preset.portraitSprite = battleSprite;
+            preset.telegraphAttacksPerPhase = 3;
             EditorUtility.SetDirty(preset);
         }
 
@@ -170,15 +171,13 @@ namespace FracturedChorus.Editor
             string prefix,
             string basic,
             string skill,
-            string ult,
-            string guard)
+            string ult)
         {
             return new[]
             {
                 CreateSkillAsset($"{prefix}_basic", basic, SkillSlotKind.BasicAttack, 1, ActionGlowType.Attack, 0),
                 CreateSkillAsset($"{prefix}_skill", skill, SkillSlotKind.Skill, 2, ActionGlowType.Attack, 0),
-                CreateSkillAsset($"{prefix}_ult", ult, SkillSlotKind.Ultimate, 3, ActionGlowType.Rush, 0),
-                CreateSkillAsset($"{prefix}_guard", guard, SkillSlotKind.Guard, 1, ActionGlowType.Guard, 0)
+                CreateSkillAsset($"{prefix}_ult", ult, SkillSlotKind.Ultimate, 3, ActionGlowType.Rush, 0)
             };
         }
 

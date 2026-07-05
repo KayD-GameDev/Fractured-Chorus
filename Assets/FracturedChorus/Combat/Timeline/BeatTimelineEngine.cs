@@ -9,6 +9,13 @@ using UnityEngine;
 
 namespace FracturedChorus.Combat.Timeline
 {
+    public enum BossNoteTier
+    {
+        Red = 1,
+        Blue = 2,
+        Purple = 3
+    }
+
     [Serializable]
     public class EnemyTelegraph
     {
@@ -17,6 +24,8 @@ namespace FracturedChorus.Combat.Timeline
         public int BeatIndex;
         /// <summary>True = S1 wind-up beat; damage resolves only on impact telegraphs.</summary>
         public bool IsWindupOnly;
+        public BossNoteTier NoteTier;
+        public int HitsRequired = 1;
     }
 
     public class BeatTimelineEngine
@@ -61,7 +70,23 @@ namespace FracturedChorus.Combat.Timeline
             OnTelegraphsChanged?.Invoke();
         }
 
-        public void AddTelegraph(CombatUnit unit, SkillDefinitionSO skill, int beatIndex, bool isWindupOnly = false)
+        public void RemoveTelegraphsForUnitInRange(CombatUnit unit, int startBeat, int beatCount)
+        {
+            if (unit == null || beatCount <= 0)
+            {
+                return;
+            }
+
+            var endBeat = startBeat + beatCount;
+            var removed = _telegraphs.RemoveAll(t => t.Unit == unit && t.BeatIndex >= startBeat && t.BeatIndex < endBeat);
+            if (removed > 0)
+            {
+                OnTelegraphsChanged?.Invoke();
+            }
+        }
+
+        public void AddTelegraph(CombatUnit unit, SkillDefinitionSO skill, int beatIndex, bool isWindupOnly = false,
+            BossNoteTier noteTier = BossNoteTier.Red, int hitsRequired = 1)
         {
             if (unit == null || skill == null || beatIndex < 0 || beatIndex >= BeatCount)
             {
@@ -73,9 +98,16 @@ namespace FracturedChorus.Combat.Timeline
                 Unit = unit,
                 Skill = skill,
                 BeatIndex = beatIndex,
-                IsWindupOnly = isWindupOnly
+                IsWindupOnly = isWindupOnly,
+                NoteTier = noteTier,
+                HitsRequired = hitsRequired
             });
             OnTelegraphsChanged?.Invoke();
+        }
+
+        public List<EnemyTelegraph> GetImpactTelegraphsAtBeat(int beatIndex)
+        {
+            return _telegraphs.Where(t => t.BeatIndex == beatIndex && !t.IsWindupOnly).ToList();
         }
 
         public EnemyTelegraph GetTelegraphAtBeat(int beatIndex)
@@ -125,6 +157,23 @@ namespace FracturedChorus.Combat.Timeline
         public void ClearPlayerAgenda()
         {
             _agenda.RemoveAll(a => a.Unit != null && a.Unit.Side == GridSide.Player);
+        }
+
+        public bool TryRemovePlayerAction(CombatUnit unit, int placementBeat)
+        {
+            if (Phase != CombatPhase.Planning || unit == null || unit.Side != GridSide.Player)
+            {
+                return false;
+            }
+
+            var removed = _agenda.RemoveAll(a =>
+                a.Unit == unit && a.BeatIndex == placementBeat && a.Unit.Side == GridSide.Player);
+            return removed > 0;
+        }
+
+        public AgendaEntry FindPlayerEntry(CombatUnit unit, int placementBeat)
+        {
+            return _agenda.FirstOrDefault(a => a.Unit == unit && a.BeatIndex == placementBeat);
         }
 
         public int FindNextEmptyBeat(int startIndex = 0)

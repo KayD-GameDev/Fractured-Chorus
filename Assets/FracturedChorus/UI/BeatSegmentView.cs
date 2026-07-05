@@ -234,40 +234,61 @@ namespace FracturedChorus.UI
             {
                 background.color = isWindup
                     ? new Color(0.35f, 0.14f, 0.14f, 0.75f)
-                    : new Color(0.28f, 0.1f, 0.1f, 0.95f);
+                    : new Color(0.12f, 0.12f, 0.18f, 0.85f);
                 _backgroundBaseColor = background.color;
             }
 
             if (glow != null)
             {
-                var glowColor = GetGlowColor(skill.glowType);
-                glow.color = isWindup
-                    ? new Color(glowColor.r, glowColor.g, glowColor.b, glowColor.a * 0.45f)
-                    : glowColor;
+                var glowColor = isWindup
+                    ? new Color(1f, 0.25f, 0.15f, 0.2f)
+                    : new Color(1f, 1f, 1f, 0.08f);
+                glow.color = glowColor;
                 _glowBaseColor = glow.color;
             }
 
             if (portrait != null)
             {
-                portrait.color = telegraph.Unit?.PlaceholderColor ?? Color.gray;
+                portrait.gameObject.SetActive(true);
+                portrait.color = isWindup
+                    ? new Color(0.85f, 0.2f, 0.2f, 0.75f)
+                    : GetNotePortraitColor(telegraph.NoteTier);
             }
 
             if (actionLabel != null)
             {
-                actionLabel.text = isWindup
-                    ? "↑"
-                    : skill.displayName.ToUpperInvariant();
+                if (isWindup)
+                {
+                    actionLabel.text = "↑";
+                }
+                else if (telegraph.HitsRequired > 1)
+                {
+                    actionLabel.text = $"{GetNoteLabel(telegraph.NoteTier)} · {telegraph.HitsRequired}";
+                }
+                else
+                {
+                    actionLabel.text = skill.displayName.ToUpperInvariant();
+                }
             }
         }
 
-        private static Color GetGlowColor(ActionGlowType glowType)
+        private static Color GetNotePortraitColor(BossNoteTier tier)
         {
-            return glowType switch
+            return tier switch
             {
-                ActionGlowType.Rush => new Color(0.2f, 0.5f, 1f, 0.45f),
-                ActionGlowType.Support => new Color(0.2f, 0.9f, 0.4f, 0.4f),
-                ActionGlowType.Guard => new Color(0.9f, 0.8f, 0.2f, 0.4f),
-                _ => new Color(1f, 0.25f, 0.15f, 0.45f)
+                BossNoteTier.Purple => new Color(0.55f, 0.2f, 0.75f, 1f),
+                BossNoteTier.Blue => new Color(0.2f, 0.5f, 0.9f, 1f),
+                _ => new Color(0.85f, 0.2f, 0.2f, 1f)
+            };
+        }
+
+        private static string GetNoteLabel(BossNoteTier tier)
+        {
+            return tier switch
+            {
+                BossNoteTier.Purple => "TÍM",
+                BossNoteTier.Blue => "XANH",
+                _ => "ĐỎ"
             };
         }
     }

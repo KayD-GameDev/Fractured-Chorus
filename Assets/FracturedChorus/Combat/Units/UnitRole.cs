@@ -6,6 +6,7 @@ namespace FracturedChorus.Combat.Units
         Dps,
         Mage,
         Grunt,
+        Elite,
         Boss
     }
 }

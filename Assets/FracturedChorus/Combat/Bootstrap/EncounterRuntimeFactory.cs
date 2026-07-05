@@ -86,7 +86,7 @@ namespace FracturedChorus.Combat.Bootstrap
             preset.role = UnitRole.Dps;
             preset.stats = UnitStats.CreateRenPreset();
             preset.placeholderColor = new Color(0.9f, 0.35f, 0.45f);
-            preset.skills = CreateStandardKit("ren", "Strike", "Riposte", "Finale", "Guard");
+            preset.skills = CreateStandardKit("ren", "Strike", "Riposte", "Finale");
             return preset;
         }
 
@@ -98,7 +98,7 @@ namespace FracturedChorus.Combat.Bootstrap
             preset.role = UnitRole.Tank;
             preset.stats = UnitStats.CreateTankPreset();
             preset.placeholderColor = new Color(0.35f, 0.55f, 0.95f);
-            preset.skills = CreateStandardKit("tank", "Ram", "Bulwark", "Hold", "Parry");
+            preset.skills = CreateStandardKit("tank", "Ram", "Bulwark", "Hold");
             return preset;
         }
 
@@ -110,7 +110,7 @@ namespace FracturedChorus.Combat.Bootstrap
             preset.role = UnitRole.Mage;
             preset.stats = UnitStats.CreateMagePreset();
             preset.placeholderColor = new Color(0.65f, 0.35f, 0.95f);
-            preset.skills = CreateStandardKit("mage", "Pulse", "Arc", "Cataclysm", "Ward");
+            preset.skills = CreateStandardKit("mage", "Pulse", "Arc", "Cataclysm");
             return preset;
         }
 
@@ -166,15 +166,13 @@ namespace FracturedChorus.Combat.Bootstrap
             string prefix,
             string basic,
             string skill,
-            string ult,
-            string guard)
+            string ult)
         {
             return new[]
             {
                 CreateSkill($"{prefix}_basic", basic, SkillSlotKind.BasicAttack, 1, ActionGlowType.Attack),
                 CreateSkill($"{prefix}_skill", skill, SkillSlotKind.Skill, 2, ActionGlowType.Attack),
-                CreateSkill($"{prefix}_ult", ult, SkillSlotKind.Ultimate, 3, ActionGlowType.Rush),
-                CreateSkill($"{prefix}_guard", guard, SkillSlotKind.Guard, 1, ActionGlowType.Guard)
+                CreateSkill($"{prefix}_ult", ult, SkillSlotKind.Ultimate, 3, ActionGlowType.Rush)
             };
         }
 

@@ -1,0 +1,147 @@
+using System.Collections.Generic;
+using System.Linq;
+using FracturedChorus.Combat.Grid;
+using FracturedChorus.Combat.Timeline;
+using FracturedChorus.Combat.Units;
+using FracturedChorus.Data;
+
+namespace FracturedChorus.Combat.Core
+{
+    public static class CombatCounterResolver
+    {
+        /// <summary>Player active beat overlaps enemy impact telegraph at beat E.</summary>
+        public static bool IsCounterEntry(AgendaEntry entry, EnemyTelegraph telegraph)
+        {
+            if (entry?.Unit == null || entry.Skill == null || telegraph == null || entry.Skill.IsGuard)
+            {
+                return false;
+            }
+
+            if (entry.Unit.Side != GridSide.Player)
+            {
+                return false;
+            }
+
+            return GetActiveBeatIndices(entry).Contains(telegraph.BeatIndex);
+        }
+
+        public static int CountCountersAtBeat(BeatTimelineEngine timeline, int beatIndex)
+        {
+            if (timeline == null)
+            {
+                return 0;
+            }
+
+            var telegraphs = timeline.GetImpactTelegraphsAtBeat(beatIndex);
+            if (telegraphs.Count == 0)
+            {
+                return 0;
+            }
+
+            var count = 0;
+            foreach (var entry in timeline.Agenda)
+            {
+                if (entry.Unit == null || entry.Unit.Side != GridSide.Player || entry.Skill == null || entry.Skill.IsGuard)
+                {
+                    continue;
+                }
+
+                if (!GetActiveBeatIndices(entry).Contains(beatIndex))
+                {
+                    continue;
+                }
+
+                count++;
+            }
+
+            return count;
+        }
+
+        public static bool HasCounterOnBeat(BeatTimelineEngine timeline, int beatIndex) =>
+            CountCountersAtBeat(timeline, beatIndex) > 0;
+
+        public static bool IsTelegraphFullyCountered(EnemyTelegraph telegraph, BeatTimelineEngine timeline)
+        {
+            if (telegraph == null || timeline == null)
+            {
+                return false;
+            }
+
+            var required = telegraph.HitsRequired > 0 ? telegraph.HitsRequired : 1;
+            return CountCountersAtBeat(timeline, telegraph.BeatIndex) >= required;
+        }
+
+        public static CombatUnit ResolvePlayerCounterTarget(AgendaEntry entry, BeatTimelineEngine timeline)
+        {
+            if (entry?.Skill == null || timeline == null)
+            {
+                return null;
+            }
+
+            if (entry.Skill.targetType != SkillTargetType.SingleEnemy)
+            {
+                return null;
+            }
+
+            foreach (var telegraph in timeline.Telegraphs)
+            {
+                if (telegraph == null || telegraph.IsWindupOnly || telegraph.Unit == null || !telegraph.Unit.IsAlive)
+                {
+                    continue;
+                }
+
+                if (IsCounterEntry(entry, telegraph))
+                {
+                    return telegraph.Unit;
+                }
+            }
+
+            return null;
+        }
+
+        public static bool HasStandingOverlapOnBeat(BeatTimelineEngine timeline, int beatIndex)
+        {
+            if (timeline == null)
+            {
+                return false;
+            }
+
+            foreach (var entry in timeline.Agenda)
+            {
+                if (entry.Unit == null || entry.Unit.Side != GridSide.Player || entry.Skill == null)
+                {
+                    continue;
+                }
+
+                foreach (var info in SkillFootprintUtil.EnumerateFootprintBeats(entry.Skill, entry.BeatIndex))
+                {
+                    if (info.BeatIndex != beatIndex)
+                    {
+                        continue;
+                    }
+
+                    if (info.Role == FootprintBeatRole.StandingBefore || info.Role == FootprintBeatRole.StandingAfter)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        public static IEnumerable<int> GetActiveBeatIndices(AgendaEntry entry)
+        {
+            if (entry?.Skill == null)
+            {
+                yield break;
+            }
+
+            var active = SkillFootprintUtil.GetActiveBeats(entry.Skill);
+            for (var i = 0; i < active; i++)
+            {
+                yield return entry.BeatIndex + i;
+            }
+        }
+    }
+}

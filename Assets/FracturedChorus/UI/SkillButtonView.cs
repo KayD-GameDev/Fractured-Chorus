@@ -39,7 +39,7 @@ namespace FracturedChorus.UI
             _label.fontSize = 14;
             _label.alignment = TextAnchor.MiddleCenter;
             _label.color = Color.white;
-            _label.text = skill != null ? $"{SkillUiNames.GetDisplayName(skill)} ({skill.GetAvCost()} phase AV)" : "Skill";
+            _label.text = skill != null ? SkillUiNames.GetDisplayName(skill) : "Skill";
         }
     }
 }

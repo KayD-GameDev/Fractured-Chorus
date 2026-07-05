@@ -31,3 +31,4 @@ MonoBehaviour:
   placeholderColor: {r: 0.45, g: 0.2, b: 0.55, a: 1}
   battleSprite: {fileID: 4943192094725736257, guid: 2a25fb408a665924ea76caefa300424e, type: 3}
   portraitSprite: {fileID: 4943192094725736257, guid: 2a25fb408a665924ea76caefa300424e, type: 3}
+  telegraphAttacksPerPhase: 3

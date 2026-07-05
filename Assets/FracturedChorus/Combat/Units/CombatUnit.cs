@@ -26,6 +26,8 @@ namespace FracturedChorus.Combat.Units
 
         public float ActionPriority => Stats.ActionPriority;
 
+        public int TelegraphAttacksPerPhase { get; }
+
         public bool IsAlive => CurrentHp > 0;
 
         public event Action<CombatUnit> OnHpChanged;
@@ -40,6 +42,7 @@ namespace FracturedChorus.Combat.Units
             Stats = preset.ResolveStats();
             Skills = preset.skills ?? Array.Empty<SkillDefinitionSO>();
             PlaceholderColor = preset.placeholderColor;
+            TelegraphAttacksPerPhase = Mathf.Max(1, preset.telegraphAttacksPerPhase);
             CurrentHp = Stats.MaxHp;
         }
 

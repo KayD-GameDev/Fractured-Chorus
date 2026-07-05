@@ -665,7 +665,7 @@ namespace FracturedChorus.Editor
             }
             else
             {
-                panel.WireReferences();
+                TimelineHierarchyBuilder.MigrateExistingSkillPanel(panel);
             }
 
             EditorUtility.SetDirty(panel);

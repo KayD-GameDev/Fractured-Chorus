@@ -1,41 +1,71 @@
 using System.Collections.Generic;
 using System.Linq;
+using FracturedChorus.Combat.Grid;
+using FracturedChorus.Combat.Timeline;
 using FracturedChorus.Combat.Units;
 
 namespace FracturedChorus.Combat.Grid
 {
-    /// <summary>
-    /// Enemy targeting: cột đầu tiên (C1 / index 0) trước → C2 → C3.
-    /// Tank chết thì chuyển sang cột Ren, rồi Mage.
-    /// </summary>
     public static class CombatTargetPicker
     {
-        public static CombatUnit PickEnemyAttackTarget(DualGrid grid)
+        public static CombatUnit PickEnemyAttackTargetForBeat(DualGrid grid, BeatTimelineEngine timeline, int beatIndex)
         {
             if (grid == null)
             {
                 return null;
             }
 
-            var alive = grid.PlayerUnits.Where(u => u.IsAlive).ToList();
-            if (alive.Count == 0)
+            var standingUnits = GetStandingUnitsOnBeat(grid, timeline, beatIndex);
+            if (standingUnits.Count > 0)
             {
-                return null;
+                return standingUnits.OrderByDescending(u => u.Stats.BaseAv).First();
             }
 
-            for (var column = 0; column < DualGrid.Columns; column++)
+            return PickHighestBaseAvAlive(grid.PlayerUnits);
+        }
+
+        public static List<CombatUnit> GetStandingUnitsOnBeat(DualGrid grid, BeatTimelineEngine timeline, int beatIndex)
+        {
+            var result = new List<CombatUnit>();
+            if (grid == null || timeline == null)
             {
-                var inColumn = alive.Where(u => u.GridPosition.Column == column).ToList();
-                if (inColumn.Count == 0)
+                return result;
+            }
+
+            foreach (var entry in timeline.Agenda)
+            {
+                if (entry.Unit == null || entry.Unit.Side != GridSide.Player || !entry.Unit.IsAlive || entry.Skill == null)
                 {
                     continue;
                 }
 
-                return PickPrimaryInColumn(inColumn);
+                foreach (var info in SkillFootprintUtil.EnumerateFootprintBeats(entry.Skill, entry.BeatIndex))
+                {
+                    if (info.BeatIndex != beatIndex)
+                    {
+                        continue;
+                    }
+
+                    if (info.Role == FootprintBeatRole.StandingBefore || info.Role == FootprintBeatRole.StandingAfter)
+                    {
+                        if (!result.Contains(entry.Unit))
+                        {
+                            result.Add(entry.Unit);
+                        }
+                    }
+                }
             }
 
-            return alive[0];
+            return result;
         }
+
+        public static CombatUnit PickHighestBaseAvAlive(IEnumerable<CombatUnit> units)
+        {
+            return units.Where(u => u != null && u.IsAlive).OrderByDescending(u => u.Stats.BaseAv).FirstOrDefault();
+        }
+
+        public static CombatUnit PickEnemyAttackTarget(DualGrid grid) =>
+            PickHighestBaseAvAlive(grid?.PlayerUnits);
 
         public static CombatUnit PickPlayerAttackTarget(DualGrid grid)
         {
@@ -62,14 +92,6 @@ namespace FracturedChorus.Combat.Grid
             }
 
             return alive[0];
-        }
-
-        private static CombatUnit PickPrimaryInColumn(IReadOnlyList<CombatUnit> inColumn)
-        {
-            return inColumn
-                .OrderBy(u => u.Role == UnitRole.Tank ? 0 : u.Role == UnitRole.Dps ? 1 : 2)
-                .ThenBy(u => u.GridPosition.Row)
-                .First();
         }
     }
 }

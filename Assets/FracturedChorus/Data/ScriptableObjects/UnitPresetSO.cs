@@ -20,6 +20,8 @@ namespace FracturedChorus.Data
         public Sprite battleSprite;
         [Tooltip("Party card portrait — if empty, uses battleSprite.")]
         public Sprite portraitSprite;
+        [Tooltip("Impact telegraphs planned per timeline phase for this unit.")]
+        [Min(1)] public int telegraphAttacksPerPhase = 1;
 
         public Sprite ResolvePortraitSprite()
         {

@@ -25,6 +25,22 @@ namespace FracturedChorus.Combat.Timeline
             return startBeat + count;
         }
 
+        public static int GetSegmentBeatCount() => GetRoundEndBeatExclusive();
+
+        public static int GetSegmentStartBeat(int segmentIndex) => segmentIndex * GetSegmentBeatCount();
+
+        public static int GetSegmentEndBeatExclusive(int segmentIndex)
+        {
+            return GetSegmentStartBeat(segmentIndex) + GetSegmentBeatCountForSegment(segmentIndex);
+        }
+
+        /// <summary>Beat count for a segment — clamped at song end.</summary>
+        public static int GetSegmentBeatCountForSegment(int segmentIndex)
+        {
+            var start = GetSegmentStartBeat(segmentIndex);
+            return System.Math.Min(GetSegmentBeatCount(), System.Math.Max(0, TotalBeats - start));
+        }
+
         /// <summary>Beat indices after which a phase divider is drawn (between 15|16, 25|26, …).</summary>
         public static bool IsPhaseDividerAfter(int beatIndex)
         {

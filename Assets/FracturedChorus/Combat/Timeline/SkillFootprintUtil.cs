@@ -38,6 +38,10 @@ namespace FracturedChorus.Combat.Timeline
         public static int GetStandingAfter(SkillDefinitionSO skill) =>
             skill != null ? Mathf.Max(0, skill.standingBeatsAfter) : 0;
 
+        /// <summary>Earliest placement beat (start of S phase) — needs room for S1 standing beats before.</summary>
+        public static int GetMinimumPlacementBeat(SkillDefinitionSO skill) =>
+            GetStandingBefore(skill);
+
         /// <summary>Every beat index occupied by this skill when placed at placementBeat.</summary>
         public static void CollectOccupiedBeats(SkillDefinitionSO skill, int placementBeat, List<int> results)
         {
@@ -114,6 +118,11 @@ namespace FracturedChorus.Combat.Timeline
             int placementBeat)
         {
             if (unit == null || skill == null || placementBeat < 0 || placementBeat >= TimelineConstants.TotalBeats)
+            {
+                return false;
+            }
+
+            if (placementBeat < GetMinimumPlacementBeat(skill))
             {
                 return false;
             }

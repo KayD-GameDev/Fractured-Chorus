@@ -805,51 +805,6 @@ namespace FracturedChorus.Editor
             return button;
         }
 
-        private static SkillPanelUIView CreateSkillPanel(Canvas canvas)
-        {
-            var panelGo = CreateUiObject("SkillPanelUI", canvas.transform);
-            var panelRect = panelGo.GetComponent<RectTransform>();
-            panelRect.sizeDelta = new Vector2(160f, 180f);
-            panelRect.pivot = new Vector2(0f, 0.5f);
-            panelRect.anchoredPosition = new Vector2(120f, 0f);
-            panelGo.AddComponent<Image>().color = new Color(0.08f, 0.08f, 0.12f, 0.92f);
-
-            var titleGo = CreateUiObject("Title", panelGo.transform);
-            var titleRect = titleGo.GetComponent<RectTransform>();
-            titleRect.anchorMin = new Vector2(0f, 1f);
-            titleRect.anchorMax = new Vector2(1f, 1f);
-            titleRect.pivot = new Vector2(0.5f, 1f);
-            titleRect.anchoredPosition = new Vector2(0f, -8f);
-            titleRect.sizeDelta = new Vector2(-16f, 24f);
-            var title = titleGo.AddComponent<Text>();
-            ApplyTextDefaults(title);
-            title.fontStyle = FontStyle.Bold;
-            title.text = "Skills";
-
-            var buttonsGo = CreateUiObject("Buttons", panelGo.transform);
-            var buttonsRect = buttonsGo.GetComponent<RectTransform>();
-            buttonsRect.anchorMin = Vector2.zero;
-            buttonsRect.anchorMax = Vector2.one;
-            buttonsRect.offsetMin = new Vector2(8f, 8f);
-            buttonsRect.offsetMax = new Vector2(-8f, -36f);
-            var layout = buttonsGo.AddComponent<VerticalLayoutGroup>();
-            layout.spacing = 6f;
-            layout.childAlignment = TextAnchor.UpperCenter;
-            layout.childControlWidth = true;
-            layout.childControlHeight = false;
-            layout.childForceExpandWidth = true;
-
-            panelGo.SetActive(false);
-
-            var ui = Undo.AddComponent<SkillPanelUIView>(panelGo);
-            SetSerializedField(ui, "panelRect", panelRect);
-            SetSerializedField(ui, "buttonContainer", buttonsRect);
-            SetSerializedField(ui, "titleLabel", title);
-            SetSerializedField(ui, "screenPaddingPx", 1.5f);
-            ui.WireReferences();
-            return ui;
-        }
-
         private static void WireBootstrap(
             CombatPrototypeBootstrap bootstrap,
             CombatController controller,

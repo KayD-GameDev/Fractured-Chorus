@@ -14,7 +14,7 @@ namespace FracturedChorus.UI
 {
     /// <summary>
     /// Bảng skill dạng radial: 3 ô scene (Top=W, Left=A, Right=D).
-    /// Click/W/A/D chỉ highlight; gán skill bằng kéo-thả vào timeline.
+    /// Click highlight; W/A/D gắn skill vào chuột; thả vào timeline để gán.
     /// </summary>
     public class SkillPanelUIView : MonoBehaviour
     {
@@ -25,7 +25,6 @@ namespace FracturedChorus.UI
         [SerializeField] private SkillRadialSlotView slotTop;
         [SerializeField] private SkillRadialSlotView slotLeft;
         [SerializeField] private SkillRadialSlotView slotRight;
-        [SerializeField] private RectTransform buttonContainer;
         [SerializeField] private Text titleLabel;
         [SerializeField] private Camera worldCamera;
         [SerializeField] private GameObject dismissBackdrop;
@@ -44,6 +43,7 @@ namespace FracturedChorus.UI
         private float _backdropDismissUnlockTime;
         private SkillDefinitionSO _draggingSkill;
         private GameObject _dragGhost;
+        private bool _keyboardDragActive;
 
         private readonly List<SkillRadialSlotView> _slots = new();
 
@@ -82,11 +82,6 @@ namespace FracturedChorus.UI
             if (slotRight == null)
             {
                 slotRight = radialRoot?.Find("SkillSlot_Right")?.GetComponent<SkillRadialSlotView>();
-            }
-
-            if (buttonContainer == null)
-            {
-                buttonContainer = transform.Find("Buttons") as RectTransform;
             }
 
             if (titleLabel == null)
@@ -217,9 +212,16 @@ namespace FracturedChorus.UI
             var bg = panelRect.GetComponent<Image>();
             if (bg != null)
             {
-                bg.sprite = UiCircleSpriteUtil.Circle;
-                bg.type = Image.Type.Simple;
-                bg.color = new Color(0.06f, 0.06f, 0.1f, 0.82f);
+                if (bg.sprite == null || !preserveSceneLayout)
+                {
+                    bg.sprite = UiCircleSpriteUtil.Circle;
+                    bg.type = Image.Type.Simple;
+                }
+
+                if (!preserveSceneLayout)
+                {
+                    bg.color = new Color(0.06f, 0.06f, 0.1f, 0.82f);
+                }
             }
 
             if (titleLabel != null)
@@ -231,51 +233,19 @@ namespace FracturedChorus.UI
 
         private void BindRadialSlots()
         {
-            if (buttonContainer != null)
-            {
-                buttonContainer.gameObject.SetActive(false);
-            }
-
             var skills = CollectUsableSkills();
-            EnsureSceneSlotsExist();
+            WireReferences();
+
+            if (_slots.Count < 3)
+            {
+                Debug.LogWarning(
+                    "[SkillPanelUI] Missing scene Radial slots — run Fractured Chorus → Setup Skill Panel in Hierarchy and save scene.");
+                return;
+            }
 
             BindSlot(slotTop, SkillRadialDirection.Top, "W", skills, 0);
             BindSlot(slotLeft, SkillRadialDirection.Left, "A", skills, 1);
             BindSlot(slotRight, SkillRadialDirection.Right, "D", skills, 2);
-        }
-
-        private void EnsureSceneSlotsExist()
-        {
-            if (_slots.Count >= 3)
-            {
-                return;
-            }
-
-            EnsureRadialRoot();
-            if (slotTop == null)
-            {
-                slotTop = CreateFallbackSlot(SkillRadialDirection.Top, new Vector2(0f, 78f));
-            }
-
-            if (slotLeft == null)
-            {
-                slotLeft = CreateFallbackSlot(SkillRadialDirection.Left, new Vector2(-68f, -39f));
-            }
-
-            if (slotRight == null)
-            {
-                slotRight = CreateFallbackSlot(SkillRadialDirection.Right, new Vector2(68f, -39f));
-            }
-
-            CacheSceneSlots();
-        }
-
-        private SkillRadialSlotView CreateFallbackSlot(SkillRadialDirection dir, Vector2 pos)
-        {
-            var slotGo = new GameObject($"SkillSlot_{dir}");
-            var slot = slotGo.AddComponent<SkillRadialSlotView>();
-            slot.Build(radialRoot, pos, 70f, dir, null, string.Empty, null, this);
-            return slot;
         }
 
         private void BindSlot(SkillRadialSlotView slot, SkillRadialDirection dir, string keyHint,
@@ -388,7 +358,7 @@ namespace FracturedChorus.UI
                 labelRect.offsetMax = new Vector2(-2f, -2f);
                 var label = labelGo.AddComponent<Text>();
                 label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-                label.fontSize = 11;
+                label.fontSize = 14;
                 label.alignment = TextAnchor.MiddleCenter;
                 label.horizontalOverflow = HorizontalWrapMode.Wrap;
                 label.verticalOverflow = VerticalWrapMode.Overflow;
@@ -437,6 +407,12 @@ namespace FracturedChorus.UI
 
         private void Update()
         {
+            if (_keyboardDragActive)
+            {
+                HandleKeyboardDrag();
+                return;
+            }
+
             if (!IsVisible || _slots.Count == 0)
             {
                 return;
@@ -445,71 +421,127 @@ namespace FracturedChorus.UI
             HandleKeyboardSelection();
         }
 
+        private void HandleKeyboardDrag()
+        {
+            if (_draggingSkill == null)
+            {
+                _keyboardDragActive = false;
+                return;
+            }
+
+            if (TryGetDirectionKeyPressedThisFrame(out var direction))
+            {
+                SelectDirection(direction);
+            }
+
+            UpdateSkillDrag(GetMouseScreenPosition());
+
+            if (WasMouseButtonReleasedThisFrame())
+            {
+                EndSkillDrag(_draggingSkill, GetMouseScreenPosition());
+                _keyboardDragActive = false;
+            }
+        }
+
+        private static Vector2 GetMouseScreenPosition()
+        {
+#if ENABLE_INPUT_SYSTEM
+            if (Mouse.current != null)
+            {
+                return Mouse.current.position.ReadValue();
+            }
+#endif
+            return Input.mousePosition;
+        }
+
+        private static bool WasMouseButtonReleasedThisFrame()
+        {
+#if ENABLE_INPUT_SYSTEM
+            if (Mouse.current != null)
+            {
+                return Mouse.current.leftButton.wasReleasedThisFrame;
+            }
+#endif
+            return Input.GetMouseButtonUp(0);
+        }
+
         private void HandleKeyboardSelection()
+        {
+            if (TryGetDirectionKeyPressedThisFrame(out var direction))
+            {
+                SelectDirection(direction);
+            }
+        }
+
+        private static bool TryGetDirectionKeyPressedThisFrame(out SkillRadialDirection direction)
         {
 #if ENABLE_INPUT_SYSTEM
             var kb = Keyboard.current;
             if (kb == null)
             {
-                return;
+                direction = default;
+                return false;
             }
 
             if (kb.wKey.wasPressedThisFrame || kb.upArrowKey.wasPressedThisFrame)
             {
-                SelectDirection(SkillRadialDirection.Top);
+                direction = SkillRadialDirection.Top;
+                return true;
             }
-            else if (kb.aKey.wasPressedThisFrame || kb.leftArrowKey.wasPressedThisFrame)
+
+            if (kb.aKey.wasPressedThisFrame || kb.leftArrowKey.wasPressedThisFrame)
             {
-                SelectDirection(SkillRadialDirection.Left);
+                direction = SkillRadialDirection.Left;
+                return true;
             }
-            else if (kb.dKey.wasPressedThisFrame || kb.rightArrowKey.wasPressedThisFrame)
+
+            if (kb.dKey.wasPressedThisFrame || kb.rightArrowKey.wasPressedThisFrame)
             {
-                SelectDirection(SkillRadialDirection.Right);
+                direction = SkillRadialDirection.Right;
+                return true;
             }
 #else
             if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
             {
-                SelectDirection(SkillRadialDirection.Top);
+                direction = SkillRadialDirection.Top;
+                return true;
             }
-            else if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
+
+            if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
             {
-                SelectDirection(SkillRadialDirection.Left);
+                direction = SkillRadialDirection.Left;
+                return true;
             }
-            else if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
+
+            if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
             {
-                SelectDirection(SkillRadialDirection.Right);
+                direction = SkillRadialDirection.Right;
+                return true;
             }
 #endif
+            direction = default;
+            return false;
         }
 
         private void SelectDirection(SkillRadialDirection direction)
         {
             foreach (var slot in _slots)
             {
-                if (slot != null && slot.Direction == direction && slot.HasSkill)
+                if (slot == null || slot.Direction != direction || !slot.HasSkill)
                 {
-                    slot.SetHighlight(true);
-                    slot.Select();
-                    return;
+                    continue;
                 }
-            }
-        }
 
-        private void EnsureRadialRoot()
-        {
-            if (radialRoot != null)
-            {
+                foreach (var s in _slots)
+                {
+                    s?.SetHighlight(s == slot);
+                }
+
+                BeginSkillDrag(slot.Skill);
+                UpdateSkillDrag(GetMouseScreenPosition());
+                _keyboardDragActive = true;
                 return;
             }
-
-            var rootGo = new GameObject("Radial", typeof(RectTransform));
-            radialRoot = rootGo.GetComponent<RectTransform>();
-            radialRoot.SetParent(panelRect, false);
-            radialRoot.anchorMin = new Vector2(0.5f, 0.5f);
-            radialRoot.anchorMax = new Vector2(0.5f, 0.5f);
-            radialRoot.pivot = new Vector2(0.5f, 0.5f);
-            radialRoot.anchoredPosition = new Vector2(0f, -10f);
-            radialRoot.sizeDelta = panelRect != null ? panelRect.sizeDelta : new Vector2(FallbackPanelSize, FallbackPanelSize);
         }
 
         private void PositionAboveUnit(UnitView unitView)
@@ -666,6 +698,7 @@ namespace FracturedChorus.UI
             HideDismissBackdrop();
             DestroyDragGhost();
             _draggingSkill = null;
+            _keyboardDragActive = false;
             _onSkillDragEnd?.Invoke();
 
             if (panelRect != null && panelRect.gameObject.activeSelf)
