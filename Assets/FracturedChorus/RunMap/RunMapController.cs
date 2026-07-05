@@ -20,7 +20,6 @@ namespace FracturedChorus.RunMap
         public RunState State { get; } = new RunState();
 
         private bool _bootStarted;
-        private bool _cadenceManaged;
         private bool _loadingBossScene;
         private Coroutine _bossLoadCoroutine;
 
@@ -34,7 +33,6 @@ namespace FracturedChorus.RunMap
         {
             if (GetComponentInParent<CadenceMapController>(true) != null)
             {
-                _cadenceManaged = true;
                 return;
             }
 

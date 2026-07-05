@@ -107,12 +107,7 @@ namespace FracturedChorus.Editor
             FixInputSystemInScene();
             MigrateUnitCollidersTo2D();
             RestoreUnitSpritesFromPresets();
-
-            foreach (var bootstrap in Object.FindObjectsByType<CombatPrototypeBootstrap>(FindObjectsInactive.Include))
-            {
-                SetSerializedField(bootstrap, "respectSceneAuthoring", true);
-                EditorUtility.SetDirty(bootstrap);
-            }
+            WireCombatMusicInScene();
 
             foreach (var marker in Object.FindObjectsByType<GridCellMarker>(FindObjectsInactive.Include))
             {
@@ -140,7 +135,8 @@ namespace FracturedChorus.Editor
             ElementBadgeIconSetup.ApplyToStatBlocks();
 
             CleanOrphanedUiLeftovers();
-            ApplyBeginLabelToExecuteOverlay();
+            ApplyDeployLabelToExecuteOverlay();
+            PruneNullUnitViewsInScene();
 
             var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
             if (scene.IsValid() && scene.isLoaded)
@@ -182,7 +178,7 @@ namespace FracturedChorus.Editor
         }
 
         /// <summary>Đổi nhãn nút Execute → "Deploy" cho pha dàn trận (đồng bộ với runtime).</summary>
-        private static void ApplyBeginLabelToExecuteOverlay()
+        private static void ApplyDeployLabelToExecuteOverlay()
         {
             foreach (var overlay in Object.FindObjectsByType<CombatExecuteOverlayUIView>(FindObjectsInactive.Include))
             {
@@ -195,6 +191,43 @@ namespace FracturedChorus.Editor
                 }
 
                 EditorUtility.SetDirty(overlay);
+            }
+        }
+
+        /// <summary>Gán beat map + CSV lên CombatMusicController trong scene hiện tại.</summary>
+        private static void WireCombatMusicInScene()
+        {
+            CombatMusicSceneSetup.WireCurrentScene();
+        }
+
+        /// <summary>Loại phần tử null khỏi unitViews trên bootstrap (tránh MissingReference).</summary>
+        private static void PruneNullUnitViewsInScene()
+        {
+            foreach (var bootstrap in Object.FindObjectsByType<CombatPrototypeBootstrap>(FindObjectsInactive.Include))
+            {
+                var so = new SerializedObject(bootstrap);
+                var prop = so.FindProperty("unitViews");
+                if (prop == null || !prop.isArray)
+                {
+                    continue;
+                }
+
+                var removed = 0;
+                for (var i = prop.arraySize - 1; i >= 0; i--)
+                {
+                    if (prop.GetArrayElementAtIndex(i).objectReferenceValue == null)
+                    {
+                        prop.DeleteArrayElementAtIndex(i);
+                        removed++;
+                    }
+                }
+
+                if (removed > 0)
+                {
+                    so.ApplyModifiedPropertiesWithoutUndo();
+                    EditorUtility.SetDirty(bootstrap);
+                    Debug.Log($"[Fractured Chorus] Pruned {removed} null unitViews entry on {bootstrap.name}.");
+                }
             }
         }
 
@@ -636,8 +669,6 @@ namespace FracturedChorus.Editor
             var budgetLabel = timelineGo.transform.Find("Header/Budget/BudgetText")?.GetComponent<Text>();
 
             var ui = Undo.AddComponent<BeatTimelineUIView>(timelineGo);
-            SetSerializedField(ui, "rootRect", rootRect);
-            SetSerializedField(ui, "segments", segments);
             SetSerializedField(ui, "confirmButton", confirmButton);
             SetSerializedField(ui, "phaseLabel", phaseLabel);
             SetSerializedField(ui, "budgetLabel", budgetLabel);

@@ -58,7 +58,7 @@ namespace FracturedChorus.Combat.Core
 
             if (timelineView != null)
             {
-                timelineView.Bind(_timeline, _session, OnScanBeatReached, music);
+                timelineView.Bind(_timeline, _session, OnScanBeatReached, music, OnTimelinePlanningPause, ConfirmPlanning);
             }
 
             if (skillPanelView != null)
@@ -179,7 +179,6 @@ namespace FracturedChorus.Combat.Core
 
             _planningPaused = false;
             executeOverlay?.SetVisible(false);
-            BindDeployButton();
             timelineView?.ResumeRoundPlayback();
         }
 
@@ -308,7 +307,8 @@ namespace FracturedChorus.Combat.Core
             }
 
             ClearArmedSkill();
-            timelineView?.RefreshAll();
+            timelineView?.RefreshBeat(beatIndex);
+            timelineView?.RefreshLaneMarkers();
             return true;
         }
 
@@ -343,7 +343,7 @@ namespace FracturedChorus.Combat.Core
         private void HandleActionAssigned(AgendaEntry entry)
         {
             timelineView?.RefreshBeat(entry.BeatIndex);
-            timelineView?.RefreshAll();
+            timelineView?.RefreshLaneMarkers();
             MaybeAutoResumeAfterPlanning();
         }
 

@@ -12,11 +12,15 @@ namespace FracturedChorus.Editor
     public static class CombatMusicSceneSetup
     {
         private const string ClipPath = "Assets/FracturedChorus/Audio/Music/EternalSpark_CadenceRemix.mp3";
+        private const string BeatMapPath = "Assets/FracturedChorus/Audio/Music/EternalSpark_CadenceRemix_BeatMap.asset";
+        private const string BeatMapCsvPath = "Assets/FracturedChorus/Audio/Music/EternalSpark_CadenceRemix_beats.csv";
 
         [MenuItem("Fractured Chorus/Wire Combat Music (Current Scene)")]
         public static void WireCurrentScene()
         {
             var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(ClipPath);
+            var beatMap = AssetDatabase.LoadAssetAtPath<MusicBeatMapSO>(BeatMapPath);
+            var beatMapCsv = AssetDatabase.LoadAssetAtPath<TextAsset>(BeatMapCsvPath);
             if (clip == null)
             {
                 Debug.LogError($"[CombatMusic] Missing clip at {ClipPath}. Re-import project.");
@@ -44,6 +48,8 @@ namespace FracturedChorus.Editor
 
             var so = new SerializedObject(music);
             so.FindProperty("bossTrack").objectReferenceValue = clip;
+            so.FindProperty("beatMap").objectReferenceValue = beatMap;
+            so.FindProperty("beatMapCsv").objectReferenceValue = beatMapCsv;
             var sourceProp = so.FindProperty("source");
             if (sourceProp.objectReferenceValue == null)
             {
@@ -73,7 +79,7 @@ namespace FracturedChorus.Editor
             }
 
             EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
-            Debug.Log("[Fractured Chorus] Combat music wired. Press Play, then EXECUTE to start the round.");
+            Debug.Log("[Fractured Chorus] Combat music wired (clip + beat map + CSV). Press Play, then Deploy to start the round.");
         }
     }
 }

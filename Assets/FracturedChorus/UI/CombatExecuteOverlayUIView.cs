@@ -79,15 +79,6 @@ namespace FracturedChorus.UI
             WireReferences();
         }
 
-        private void Start()
-        {
-            WireReferences();
-            if (combatController != null)
-            {
-                Bind(combatController.StartRound);
-            }
-        }
-
         public void Bind(Action onExecuteClicked)
         {
             WireReferences();

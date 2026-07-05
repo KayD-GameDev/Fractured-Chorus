@@ -45,6 +45,11 @@ namespace FracturedChorus.Audio
                 return;
             }
 
+            if (beatMap == null)
+            {
+                beatMap = Resources.Load<MusicBeatMapSO>("Music/EternalSpark_CadenceRemix_BeatMap");
+            }
+
 #if UNITY_EDITOR
             if (beatMapCsv == null)
             {

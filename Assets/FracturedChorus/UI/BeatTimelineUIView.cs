@@ -49,6 +49,8 @@ namespace FracturedChorus.UI
         private float _lastViewportWidth;
         private int _autoPlayBeat;
         private Action<int> _onScanBeatReached;
+        private Action _onPlanningPause;
+        private Action _onConfirmPlanning;
         private float _scanSpeedMultiplier = 1f;
         private float _totalScrollPx;
         private float _localBeat;
@@ -205,7 +207,7 @@ namespace FracturedChorus.UI
         }
 
         public void Bind(BeatTimelineEngine timeline, CombatSession session, Action<int> onScanBeatReached = null,
-            CombatMusicController music = null)
+            CombatMusicController music = null, Action onPlanningPause = null, Action onConfirmPlanning = null)
         {
             if (music != null)
             {
@@ -215,6 +217,8 @@ namespace FracturedChorus.UI
             _timeline = timeline;
             _session = session;
             _onScanBeatReached = onScanBeatReached;
+            _onPlanningPause = onPlanningPause;
+            _onConfirmPlanning = onConfirmPlanning;
             WireReferences();
             RebuildLayout();
 
@@ -288,7 +292,7 @@ namespace FracturedChorus.UI
             ResetAllScanHighlights();
             RefreshLaneMarkers();
             Debug.Log($"[BeatTimeline] Intro-pause at localBeat={_localBeat:F2} (threshold {PlanningPauseLocalBeat}). Press Continue to resume.");
-            FindAnyObjectByType<CombatController>()?.OnTimelinePlanningPause();
+            _onPlanningPause?.Invoke();
         }
 
         private void StartAutoPlayIfNeeded()
@@ -414,7 +418,7 @@ namespace FracturedChorus.UI
 
             if (_session != null && _session.Phase == CombatPhase.Planning)
             {
-                FindAnyObjectByType<CombatController>()?.ConfirmPlanning();
+                _onConfirmPlanning?.Invoke();
             }
         }
 
