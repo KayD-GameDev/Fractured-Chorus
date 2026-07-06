@@ -12,14 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce73a71ac68f23f48a5aad627d27478a, type: 3}
   m_Name: UnitPreset_Ren
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.UnitPresetSO
-  unitId: ren
+  unitId: DPS
   displayName: Ren
   role: 1
   statBlock: {fileID: 11400000, guid: b5b6bcbfbbe8aae43bfbf63bb565f5d5, type: 2}
   stats:
     Element: 1
+    StrengthType: 0
     Strength: 100
-    Magic: 100
     Endurance: 10
     HeartBeat: 160
     BaseLuck: 15
@@ -33,3 +33,5 @@ MonoBehaviour:
   - {fileID: 11400000, guid: fcbb0489821738d46a5d3fd3f651abba, type: 2}
   placeholderColor: {r: 0.9, g: 0.35, b: 0.45, a: 1}
   battleSprite: {fileID: 7369638930748108147, guid: 9a437a3dfde73224686f2d2a81ee930e, type: 3}
+  portraitSprite: {fileID: -3871321260492947868, guid: 9be542aaf8bb9d54a945c84d6e15c628, type: 3}
+  telegraphAttacksPerPhase: 1

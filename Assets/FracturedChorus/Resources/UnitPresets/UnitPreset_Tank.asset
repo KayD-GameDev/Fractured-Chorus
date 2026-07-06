@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce73a71ac68f23f48a5aad627d27478a, type: 3}
   m_Name: UnitPreset_Tank
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.UnitPresetSO
-  unitId: tank
-  displayName: Tank
+  unitId: Tank
+  displayName: Charlott
   role: 0
   statBlock: {fileID: 11400000, guid: 79831804a5028c7418b2a6443baf1935, type: 2}
   stats:
@@ -33,4 +33,5 @@ MonoBehaviour:
   - {fileID: 11400000, guid: f4aa555b847836548b298f0b13bd4d9e, type: 2}
   placeholderColor: {r: 0.35, g: 0.55, b: 0.95, a: 1}
   battleSprite: {fileID: -7428215157034606851, guid: c717b6aad7a95364c80e530ab2dde0db, type: 3}
-  portraitSprite: {fileID: 0}
+  portraitSprite: {fileID: -7502558182293009521, guid: e316fd4281afcab41a31cf63bbd8c9a3, type: 3}
+  telegraphAttacksPerPhase: 1

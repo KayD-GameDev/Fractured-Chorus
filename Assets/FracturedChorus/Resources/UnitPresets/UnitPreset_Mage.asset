@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: UnitPreset_Mage
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.UnitPresetSO
   unitId: mage
-  displayName: Mage
+  displayName: Coda
   role: 2
   statBlock: {fileID: 11400000, guid: 8873912d1c1e343429b94e5e7ebbe7e2, type: 2}
   stats:
@@ -33,4 +33,5 @@ MonoBehaviour:
   - {fileID: 11400000, guid: c8fdd7bdae73901438ed6ef1a7380d14, type: 2}
   placeholderColor: {r: 0.65, g: 0.35, b: 0.95, a: 1}
   battleSprite: {fileID: 2945500796298478541, guid: a9071c51aaeebd347b170019af54e848, type: 3}
-  portraitSprite: {fileID: 0}
+  portraitSprite: {fileID: 6040493282411374642, guid: 23350dbf56367854b8d887f8b12f7fd4, type: 3}
+  telegraphAttacksPerPhase: 1
