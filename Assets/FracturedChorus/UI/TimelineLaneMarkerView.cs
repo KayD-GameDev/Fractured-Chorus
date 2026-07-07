@@ -18,7 +18,9 @@ namespace FracturedChorus.UI
         private RectTransform _rect;
         private Image _background;
         private Image _glow;
+        private Image _outline;
         private Text _label;
+        private bool _gapAnchorMode;
 
         private Vector2 _targetPos;
         private float _animT = 1f;
@@ -50,6 +52,20 @@ namespace FracturedChorus.UI
             _glow.type = Image.Type.Simple;
             _glow.raycastTarget = false;
 
+            var outlineGo = new GameObject("Outline", typeof(RectTransform));
+            var outlineRect = outlineGo.GetComponent<RectTransform>();
+            outlineRect.SetParent(_rect, false);
+            outlineRect.anchorMin = Vector2.zero;
+            outlineRect.anchorMax = Vector2.one;
+            outlineRect.offsetMin = new Vector2(-3f, -3f);
+            outlineRect.offsetMax = new Vector2(3f, 3f);
+            outlineRect.SetAsFirstSibling();
+            _outline = outlineGo.AddComponent<Image>();
+            _outline.sprite = UiCircleSpriteUtil.Circle;
+            _outline.type = Image.Type.Simple;
+            _outline.color = new Color(1f, 1f, 1f, 0.92f);
+            _outline.raycastTarget = false;
+
             _background = gameObject.AddComponent<Image>();
             _background.sprite = UiCircleSpriteUtil.Circle;
             _background.type = Image.Type.Simple;
@@ -73,22 +89,64 @@ namespace FracturedChorus.UI
             _label.raycastTarget = false;
         }
 
+        public void SetGapAnchorMode(bool gapAnchor)
+        {
+            _gapAnchorMode = gapAnchor;
+            ApplyCircleVisibility();
+        }
+
         public void SetContent(CombatUnit unit, SkillDefinitionSO skill)
         {
-            if (_background != null)
+            if (_background != null && !_gapAnchorMode)
             {
                 var tint = unit?.PlaceholderColor ?? Color.gray;
-                _background.color = new Color(tint.r, tint.g, tint.b, 1f);
+                _background.color = new Color(tint.r, tint.g, tint.b, 0.2f);
             }
 
-            if (_glow != null)
+            if (_glow != null && !_gapAnchorMode)
             {
                 _glow.color = GetGlowColor(skill != null ? skill.glowType : ActionGlowType.Rush);
             }
 
             if (_label != null)
             {
-                _label.text = skill != null ? SkillUiNames.GetDisplayName(skill).ToUpperInvariant() : string.Empty;
+                var skillName = skill != null ? SkillUiNames.GetDisplayName(skill).ToUpperInvariant() : string.Empty;
+                _label.text = string.IsNullOrEmpty(skillName) ? string.Empty : $"▸ {skillName}";
+            }
+
+            ApplyCircleVisibility();
+        }
+
+        private void ApplyCircleVisibility()
+        {
+            if (_gapAnchorMode)
+            {
+                if (_background != null)
+                {
+                    _background.color = new Color(0f, 0f, 0f, 0f);
+                }
+
+                if (_glow != null)
+                {
+                    _glow.enabled = false;
+                }
+
+                if (_outline != null)
+                {
+                    _outline.enabled = false;
+                }
+
+                return;
+            }
+
+            if (_glow != null)
+            {
+                _glow.enabled = true;
+            }
+
+            if (_outline != null)
+            {
+                _outline.enabled = true;
             }
         }
 
@@ -100,7 +158,6 @@ namespace FracturedChorus.UI
             }
         }
 
-        /// <summary>Đặt vị trí trong lane. animate=true → chạy hiệu ứng bay vào.</summary>
         public void SetLanePosition(Vector2 localPos, bool animate)
         {
             _targetPos = localPos;
@@ -147,22 +204,24 @@ namespace FracturedChorus.UI
 
         public void SetGhost(bool ghost)
         {
-            var alpha = ghost ? 0.45f : 1f;
-            if (_background != null)
-            {
-                var c = _background.color;
-                _background.color = new Color(c.r, c.g, c.b, alpha);
-            }
-
             if (_label != null)
             {
                 _label.enabled = !ghost;
             }
+
+            if (_gapAnchorMode || _background == null)
+            {
+                return;
+            }
+
+            var alpha = ghost ? 0.45f : 1f;
+            var c = _background.color;
+            _background.color = new Color(c.r, c.g, c.b, alpha);
         }
 
         public void SetInvalidPreview(bool invalid)
         {
-            if (_background == null)
+            if (_background == null || _gapAnchorMode)
             {
                 return;
             }

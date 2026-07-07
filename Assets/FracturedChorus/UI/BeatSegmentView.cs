@@ -250,24 +250,34 @@ namespace FracturedChorus.UI
             if (portrait != null)
             {
                 portrait.gameObject.SetActive(true);
-                portrait.color = isWindup
-                    ? new Color(0.85f, 0.2f, 0.2f, 0.75f)
-                    : GetNotePortraitColor(telegraph.NoteTier);
+                if (isWindup)
+                {
+                    portrait.color = new Color(0.85f, 0.2f, 0.2f, 0.75f);
+                }
+                else
+                {
+                    portrait.color = GetNotePortraitColor(telegraph.NoteTier);
+                }
+
+                if (portrait.rectTransform != null)
+                {
+                    portrait.rectTransform.sizeDelta = new Vector2(22f, 22f);
+                }
             }
 
             if (actionLabel != null)
             {
                 if (isWindup)
                 {
-                    actionLabel.text = "↑";
+                    actionLabel.text = "◆ ↑";
                 }
                 else if (telegraph.HitsRequired > 1)
                 {
-                    actionLabel.text = $"{GetNoteLabel(telegraph.NoteTier)} · {telegraph.HitsRequired}";
+                    actionLabel.text = $"◆ {GetNoteLabel(telegraph.NoteTier)} · {telegraph.HitsRequired}";
                 }
                 else
                 {
-                    actionLabel.text = skill.displayName.ToUpperInvariant();
+                    actionLabel.text = $"◆ {skill.displayName.ToUpperInvariant()}";
                 }
             }
         }
@@ -277,7 +287,7 @@ namespace FracturedChorus.UI
             return tier switch
             {
                 BossNoteTier.Purple => new Color(0.55f, 0.2f, 0.75f, 1f),
-                BossNoteTier.Blue => new Color(0.2f, 0.5f, 0.9f, 1f),
+                BossNoteTier.Blue => new Color(0.25f, 0.85f, 0.35f, 1f),
                 _ => new Color(0.85f, 0.2f, 0.2f, 1f)
             };
         }
@@ -287,7 +297,7 @@ namespace FracturedChorus.UI
             return tier switch
             {
                 BossNoteTier.Purple => "TÍM",
-                BossNoteTier.Blue => "XANH",
+                BossNoteTier.Blue => "LÁ",
                 _ => "ĐỎ"
             };
         }

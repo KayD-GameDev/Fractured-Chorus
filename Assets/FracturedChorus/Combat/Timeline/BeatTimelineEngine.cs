@@ -40,6 +40,8 @@ namespace FracturedChorus.Combat.Timeline
         public IReadOnlyList<EnemyTelegraph> Telegraphs => _telegraphs;
         public int ScanBeatIndex => _scanBeatIndex;
         public int ScrollOffset { get; private set; }
+        /// <summary>Beat đầu tiên hợp lệ để đặt S1 (phía sau thanh đỏ). Cập nhật mỗi khi vào planning.</summary>
+        public int PlanningHorizonBeat { get; set; }
         public int VisibleWindowSize { get; set; } = TimelineConstants.DefaultVisibleBeatHint;
         public CombatPhase Phase { get; private set; } = CombatPhase.Planning;
 
@@ -151,7 +153,7 @@ namespace FracturedChorus.Combat.Timeline
                 return false;
             }
 
-            return SkillFootprintUtil.CanPlace(_agenda, unit, skill, beatIndex);
+            return SkillFootprintUtil.CanPlace(_agenda, unit, skill, beatIndex, PlanningHorizonBeat);
         }
 
         public void ClearPlayerAgenda()
