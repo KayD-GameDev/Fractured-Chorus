@@ -78,11 +78,12 @@ namespace FracturedChorus.Combat.AI
         {
             var takenBeats = new HashSet<int>(taken.Select(t => t.impactBeat));
             var pool = new List<int>(slotCount);
+            var minImpact = TimelineConstants.GetMinEnemyImpactBeat(startBeat);
 
             for (var i = 0; i < slotCount; i++)
             {
                 var impact = startBeat + i;
-                if (impact < TimelineConstants.EnemyFirstAttackBeat || takenBeats.Contains(impact))
+                if (impact < minImpact || takenBeats.Contains(impact))
                 {
                     continue;
                 }

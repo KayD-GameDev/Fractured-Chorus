@@ -16,12 +16,26 @@ namespace FracturedChorus.Audio
         [SerializeField] private float crossfadeSec = 0.05f;
         [SerializeField] private float loopDetectLeadSec = 0.05f;
 
+        [Header("Planning BGM")]
+        [SerializeField] private AudioSource planningSource;
+        [SerializeField] private AudioClip planningClip;
+        [SerializeField] private float planningStartSec = 17f;
+        [SerializeField] private float planningVolume = 0.25f;
+
+        [Header("Planning Transition SFX")]
+        [SerializeField] private AudioSource transitionSource;
+        [SerializeField] private AudioClip planningTransitionClip;
+        [SerializeField] private float planningTransitionVolume = 1f;
+
         private float _totalMusicalBeat;
         private int _loopCount;
         private bool _inLoopBody;
         private bool _playing;
         private Coroutine _crossfadeRoutine;
+        private Coroutine _planningEnterRoutine;
         private float _playbackSpeedMultiplier = 1f;
+        private bool _planningMusicActive;
+        private float _planningResumeTimeSec = -1f;
 
         public MusicBeatMapSO BeatMap => beatMap;
         public float TotalMusicalBeat => _totalMusicalBeat;
@@ -36,6 +50,7 @@ namespace FracturedChorus.Audio
             EnsureAudioSource();
             TryAssignDefaultClip();
             TryLoadBeatMapFromCsv();
+            PreloadPlanningTransition();
         }
 
         private void TryLoadBeatMapFromCsv()
@@ -73,6 +88,11 @@ namespace FracturedChorus.Audio
 
         private void Update()
         {
+            if (_planningMusicActive && planningSource != null && planningSource.isPlaying)
+            {
+                HandlePlanningLoopRegion();
+            }
+
             if (!_playing || source == null || !source.isPlaying)
             {
                 return;
@@ -111,6 +131,7 @@ namespace FracturedChorus.Audio
             }
 
             EnsureAudioSource();
+            CancelPlanningEnterRoutine();
             StopAllCoroutines();
             _crossfadeRoutine = null;
 
@@ -118,6 +139,7 @@ namespace FracturedChorus.Audio
             _loopCount = 0;
             _inLoopBody = false;
             _playing = true;
+            _planningResumeTimeSec = -1f;
 
             source.clip = bossTrack;
             source.loop = false;
@@ -141,6 +163,7 @@ namespace FracturedChorus.Audio
         public void StopMusic()
         {
             _playing = false;
+            CancelPlanningEnterRoutine();
             StopAllCoroutines();
             _crossfadeRoutine = null;
 
@@ -148,10 +171,51 @@ namespace FracturedChorus.Audio
             {
                 source.Stop();
             }
+
+            StopPlanningMusic();
         }
 
         /// <summary>Đang phát nhưng bị tạm dừng (giữ nguyên vị trí bài) — dùng cho intro-pause planning.</summary>
         public bool IsPaused => _playing && source != null && !source.isPlaying;
+
+        /// <summary>Vào planning: pause boss → transition SFX → silent BGM @17s.</summary>
+        public void EnterPlanningPhase()
+        {
+            if (source != null && source.isPlaying)
+            {
+                source.Pause();
+            }
+
+            StopPlanningMusic();
+            CancelPlanningEnterRoutine();
+            _planningEnterRoutine = StartCoroutine(EnterPlanningPhaseRoutine());
+        }
+
+        private IEnumerator EnterPlanningPhaseRoutine()
+        {
+            if (planningTransitionClip != null)
+            {
+                PlayPlanningTransitionSound();
+                while (transitionSource != null && transitionSource.isPlaying)
+                {
+                    yield return null;
+                }
+            }
+
+            PlayPlanningMusic(forceRestart: true);
+            _planningEnterRoutine = null;
+        }
+
+        private void CancelPlanningEnterRoutine()
+        {
+            if (_planningEnterRoutine == null)
+            {
+                return;
+            }
+
+            StopCoroutine(_planningEnterRoutine);
+            _planningEnterRoutine = null;
+        }
 
         /// <summary>Tạm dừng nhạc tại chỗ (không reset). Beat nhạc đóng băng theo source.time.</summary>
         public void PausePlayback()
@@ -160,15 +224,139 @@ namespace FracturedChorus.Audio
             {
                 source.Pause();
             }
+
+            PlayPlanningMusic();
         }
 
         /// <summary>Phát tiếp từ chỗ đã pause.</summary>
         public void ResumePlayback()
         {
+            CancelPlanningEnterRoutine();
+            if (transitionSource != null && transitionSource.isPlaying)
+            {
+                transitionSource.Stop();
+            }
+
+            StopPlanningMusic();
             if (_playing && source != null && !source.isPlaying)
             {
                 source.UnPause();
             }
+        }
+
+        /// <summary>Planning BGM lần đầu bắt đầu @17s; các lần planning sau tiếp tục từ vị trí đã dừng lần trước.</summary>
+        public void PlayPlanningMusic(bool forceRestart = false)
+        {
+            if (planningClip == null)
+            {
+                return;
+            }
+
+            EnsurePlanningSource();
+            if (!forceRestart && _planningMusicActive && planningSource != null && planningSource.isPlaying)
+            {
+                return;
+            }
+
+            var startSec = _planningResumeTimeSec >= 0f ? _planningResumeTimeSec : planningStartSec;
+            planningSource.clip = planningClip;
+            planningSource.loop = false;
+            planningSource.volume = planningVolume;
+            planningSource.time = Mathf.Clamp(startSec, 0f, Mathf.Max(0f, planningClip.length - 0.01f));
+            planningSource.Play();
+            _planningMusicActive = true;
+        }
+
+        public void StopPlanningMusic()
+        {
+            if (_planningMusicActive && planningSource != null)
+            {
+                _planningResumeTimeSec = planningSource.time;
+            }
+
+            _planningMusicActive = false;
+            if (planningSource != null && planningSource.isPlaying)
+            {
+                planningSource.Stop();
+            }
+        }
+
+        public void PlayPlanningTransitionSound()
+        {
+            if (planningTransitionClip == null)
+            {
+                return;
+            }
+
+            EnsureTransitionSource();
+            transitionSource.Stop();
+            transitionSource.clip = planningTransitionClip;
+            transitionSource.volume = planningTransitionVolume;
+            transitionSource.time = 0f;
+            transitionSource.Play();
+        }
+
+        private void HandlePlanningLoopRegion()
+        {
+            if (planningClip == null || planningSource == null)
+            {
+                return;
+            }
+
+            var loopEnd = planningClip.length - 0.02f;
+            if (planningSource.time >= loopEnd)
+            {
+                planningSource.time = Mathf.Clamp(planningStartSec, 0f, loopEnd);
+            }
+        }
+
+        private void PreloadPlanningTransition()
+        {
+            if (planningTransitionClip == null)
+            {
+                return;
+            }
+
+            EnsureTransitionSource();
+            transitionSource.clip = planningTransitionClip;
+            transitionSource.volume = 0f;
+            transitionSource.Play();
+            transitionSource.Stop();
+            transitionSource.volume = planningTransitionVolume;
+        }
+
+        private void EnsurePlanningSource()
+        {
+            if (planningSource != null)
+            {
+                return;
+            }
+
+            var go = new GameObject("PlanningBGM");
+            go.transform.SetParent(transform, false);
+            planningSource = go.AddComponent<AudioSource>();
+            planningSource.playOnAwake = false;
+            planningSource.loop = true;
+            planningSource.spatialBlend = 0f;
+            planningSource.bypassReverbZones = true;
+            planningSource.priority = 64;
+        }
+
+        private void EnsureTransitionSource()
+        {
+            if (transitionSource != null)
+            {
+                return;
+            }
+
+            var go = new GameObject("TransitionSFX");
+            go.transform.SetParent(transform, false);
+            transitionSource = go.AddComponent<AudioSource>();
+            transitionSource.playOnAwake = false;
+            transitionSource.loop = false;
+            transitionSource.spatialBlend = 0f;
+            transitionSource.bypassReverbZones = true;
+            transitionSource.priority = 0;
         }
 
         /// <summary>TODO: one-shot transition sting when entering the next 2-phase block (asset TBD).</summary>
@@ -288,6 +476,18 @@ namespace FracturedChorus.Audio
             {
                 beatMap = UnityEditor.AssetDatabase.LoadAssetAtPath<MusicBeatMapSO>(
                     "Assets/FracturedChorus/Audio/Music/EternalSpark_CadenceRemix_BeatMap.asset");
+            }
+
+            if (planningClip == null)
+            {
+                planningClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>(
+                    "Assets/FracturedChorus/Audio/Music/EternalSpark_PlanningSilent.mp3");
+            }
+
+            if (planningTransitionClip == null)
+            {
+                planningTransitionClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>(
+                    "Assets/FracturedChorus/Audio/SFX/Combat_PlanningTransition.wav");
             }
 #endif
         }

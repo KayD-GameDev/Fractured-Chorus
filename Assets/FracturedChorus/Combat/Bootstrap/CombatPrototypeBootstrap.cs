@@ -28,6 +28,7 @@ namespace FracturedChorus.Combat.Bootstrap
         [SerializeField] private EncounterDefinitionSO encounterDefinition;
 
         [SerializeField] private CombatMusicController musicController;
+        [SerializeField] private CombatSfxController combatSfxController;
 
         [Header("Grid layout")]
         [SerializeField] private float sideGap = HexBoardLayout.DefaultSideGap;
@@ -43,6 +44,7 @@ namespace FracturedChorus.Combat.Bootstrap
             CombatInputSetup.Configure(mainCamera != null ? mainCamera : Camera.main);
             ResolveSceneReferences();
             EnsureMusicController();
+            EnsureCombatSfxController();
             EnsureAudioListener();
 
             _grid = new DualGrid();
@@ -197,6 +199,30 @@ namespace FracturedChorus.Combat.Bootstrap
             var audioGo = new GameObject("CombatMusic");
             audioGo.transform.SetParent(transform, false);
             musicController = audioGo.AddComponent<CombatMusicController>();
+        }
+
+        private void EnsureCombatSfxController()
+        {
+            if (combatSfxController != null)
+            {
+                return;
+            }
+
+            combatSfxController = FindAnyObjectByType<CombatSfxController>();
+            if (combatSfxController != null)
+            {
+                return;
+            }
+
+            if (musicController != null)
+            {
+                combatSfxController = musicController.gameObject.AddComponent<CombatSfxController>();
+                return;
+            }
+
+            var sfxGo = new GameObject("CombatSfx");
+            sfxGo.transform.SetParent(transform, false);
+            combatSfxController = sfxGo.AddComponent<CombatSfxController>();
         }
 
         private void EnsureAudioListener()

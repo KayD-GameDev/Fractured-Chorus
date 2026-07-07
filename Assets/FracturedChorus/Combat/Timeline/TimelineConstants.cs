@@ -16,6 +16,21 @@ namespace FracturedChorus.Combat.Timeline
         /// <summary>Quái chỉ được phép ra đòn (đặt telegraph) từ beat này trở đi — "beat thứ 3" = index 2.</summary>
         public const int EnemyFirstAttackBeat = 2;
 
+        /// <summary>Beat index cuối intro trước planning-pause (beat thứ 6 = index 6).</summary>
+        public const int IntroPlanningPauseAfterBeatIndex = 6;
+
+        /// <summary>Beat execute đầu tiên sau intro-pause.</summary>
+        public const int IntroExecuteStartBeatIndex = IntroPlanningPauseAfterBeatIndex + 1;
+
+        /// <summary>Vùng bắt đầu boss có thể spawn impact: pause + 1 + 3 (chỉ min beat, không ép spawn).</summary>
+        public const int IntroEnemySpawnZoneStartBeat = IntroPlanningPauseAfterBeatIndex + 1 + 3;
+
+        /// <summary>Beat nhỏ nhất cho impact của quái trong segment — clamp về IntroEnemySpawnZoneStartBeat khi là segment 0.</summary>
+        public static int GetMinEnemyImpactBeat(int segmentStartBeat)
+        {
+            return System.Math.Max(segmentStartBeat, segmentStartBeat == 0 ? IntroEnemySpawnZoneStartBeat : segmentStartBeat);
+        }
+
         /// <summary>Timeline phases executed per round segment before returning to Execute.</summary>
         public const int RoundPhaseCount = 2;
 

@@ -35,12 +35,45 @@ namespace FracturedChorus.Combat.Timeline
         public static int GetActiveBeats(SkillDefinitionSO skill) =>
             skill != null ? Mathf.Max(1, skill.activeBeats) : 1;
 
+        public static bool UsesGapCenterAnchor(SkillDefinitionSO skill) =>
+            skill != null && GetActiveBeats(skill) % 2 == 0;
+
+        public static float GetActiveCenterBeatOffset(SkillDefinitionSO skill) =>
+            (GetActiveBeats(skill) - 1) * 0.5f;
+
+        public static float GetActiveVisualCenterBeat(SkillDefinitionSO skill, int placementBeat) =>
+            placementBeat + GetActiveCenterBeatOffset(skill);
+
+        public static int ResolvePlacementBeatFromCenter(SkillDefinitionSO skill, float centerBeat) =>
+            Mathf.RoundToInt(centerBeat - GetActiveCenterBeatOffset(skill));
+
         public static int GetStandingAfter(SkillDefinitionSO skill) =>
             skill != null ? Mathf.Max(0, skill.standingBeatsAfter) : 0;
 
         /// <summary>Earliest placement beat (start of S phase) — needs room for S1 standing beats before.</summary>
-        public static int GetMinimumPlacementBeat(SkillDefinitionSO skill) =>
-            GetStandingBefore(skill);
+        public static int GetMinimumPlacementBeat(SkillDefinitionSO skill, int planningHorizonBeat = 0)
+        {
+            var s1 = GetStandingBefore(skill);
+            return Mathf.Max(s1, planningHorizonBeat + s1);
+        }
+
+        public static bool FootprintHasS1BeforeHorizon(SkillDefinitionSO skill, int placementBeat, int planningHorizonBeat)
+        {
+            if (skill == null || planningHorizonBeat <= 0)
+            {
+                return false;
+            }
+
+            foreach (var info in EnumerateFootprintBeats(skill, placementBeat))
+            {
+                if (info.Role == FootprintBeatRole.StandingBefore && info.BeatIndex < planningHorizonBeat)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
 
         /// <summary>Every beat index occupied by this skill when placed at placementBeat.</summary>
         public static void CollectOccupiedBeats(SkillDefinitionSO skill, int placementBeat, List<int> results)
@@ -115,14 +148,20 @@ namespace FracturedChorus.Combat.Timeline
             IReadOnlyList<AgendaEntry> agenda,
             CombatUnit unit,
             SkillDefinitionSO skill,
-            int placementBeat)
+            int placementBeat,
+            int planningHorizonBeat = 0)
         {
             if (unit == null || skill == null || placementBeat < 0 || placementBeat >= TimelineConstants.TotalBeats)
             {
                 return false;
             }
 
-            if (placementBeat < GetMinimumPlacementBeat(skill))
+            if (placementBeat < GetMinimumPlacementBeat(skill, planningHorizonBeat))
+            {
+                return false;
+            }
+
+            if (FootprintHasS1BeforeHorizon(skill, placementBeat, planningHorizonBeat))
             {
                 return false;
             }

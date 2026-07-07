@@ -118,9 +118,16 @@ namespace FracturedChorus.Combat.Core
 
             {
 
-                timelineView.Bind(_timeline, _session, music, OnTimelinePlanningPause, OnRoundSegmentComplete);
+                CombatSfxController combatSfx = null;
+                if (music != null)
+                {
+                    combatSfx = music.GetComponent<CombatSfxController>();
+                }
+
+                timelineView.Bind(_timeline, _session, music, OnTimelinePlanningPause, OnRoundSegmentComplete, combatSfx);
                 timelineView.SetSkillRemoveHandler(RemoveSkillAtBeat);
                 timelineView.BindBlockBarriers(_session.BlockBarriers);
+                timelineView.SetLaneAvatarClickHandler(OnLaneAvatarClicked);
 
             }
 
@@ -315,6 +322,22 @@ namespace FracturedChorus.Combat.Core
             }
         }
 
+        private void OnLaneAvatarClicked(CombatUnit unit)
+        {
+            FocusPlayerUnit(unit);
+        }
+
+        public void FocusPlayerUnit(CombatUnit unit, UnitView view = null)
+        {
+            if (_session == null || _session.Phase != CombatPhase.Planning || _session.AllowPlayerReposition)
+            {
+                return;
+            }
+
+            timelineView?.SetSelectedLaneUnit(unit);
+            skillPanelView?.ToggleForUnit(unit, view);
+        }
+
         private void RemoveSkillAtBeat(CombatUnit unit, int beatIndex)
         {
             if (_session == null || _session.AllowPlayerReposition)
@@ -402,9 +425,6 @@ namespace FracturedChorus.Combat.Core
             _awaitingExecute = true;
 
             _session.EndRoundSegment();
-
-            // TODO: layer transition clip when PlaySegmentTransitionMusic assets exist
-            _musicController?.PlaySegmentTransitionMusic(_session.RoundSegmentIndex);
 
             timelineView?.HoldAtRoundEnd();
 
@@ -497,7 +517,7 @@ namespace FracturedChorus.Combat.Core
 
 
 
-            if (timelineView == null || !timelineView.TryGetBeatAtScreenPoint(screenPos, out var beat))
+            if (timelineView == null || !timelineView.TryGetPlacementBeatAtScreenPoint(screenPos, skill, out var beat))
 
             {
 
