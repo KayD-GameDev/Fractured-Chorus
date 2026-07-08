@@ -7,11 +7,17 @@ namespace FracturedChorus.Audio
         [SerializeField] private AudioSource perfectCounterSource;
         [SerializeField] private AudioClip perfectCounterClip;
         [SerializeField] private float perfectCounterVolume = 1f;
+        [SerializeField] private AudioSource clashHitSource;
+        [SerializeField] private AudioClip clashHitClip;
+        [SerializeField] private float clashHitVolume = 1f;
 
         private void Awake()
         {
             EnsurePerfectCounterSource();
-            TryAssignDefaultClip();
+            EnsureClashHitSource();
+            TryAssignDefaultClips();
+            PrimePerfectCounterSource();
+            PrimeClashHitSource();
         }
 
         public void PlayPerfectCounter()
@@ -23,11 +29,56 @@ namespace FracturedChorus.Audio
             }
 
             EnsurePerfectCounterSource();
-            perfectCounterSource.Stop();
+            EnsureClashHitSource();
+            PrimePerfectCounterSource();
+            PrimeClashHitSource();
+
+            var dspTime = AudioSettings.dspTime;
             perfectCounterSource.clip = perfectCounterClip;
             perfectCounterSource.volume = perfectCounterVolume;
-            perfectCounterSource.time = 0f;
-            perfectCounterSource.Play();
+            perfectCounterSource.PlayScheduled(dspTime);
+            PlayClashHitImmediate(dspTime);
+        }
+
+        private void PlayClashHitImmediate(double dspStartTime = -1)
+        {
+            if (clashHitClip == null || clashHitSource == null)
+            {
+                return;
+            }
+
+            clashHitSource.clip = clashHitClip;
+            clashHitSource.volume = clashHitVolume;
+            if (dspStartTime >= 0d)
+            {
+                clashHitSource.PlayScheduled(dspStartTime);
+            }
+            else
+            {
+                clashHitSource.PlayOneShot(clashHitClip, clashHitVolume);
+            }
+        }
+
+        private void PrimePerfectCounterSource()
+        {
+            if (perfectCounterSource == null || perfectCounterClip == null)
+            {
+                return;
+            }
+
+            perfectCounterSource.clip = perfectCounterClip;
+            perfectCounterSource.volume = perfectCounterVolume;
+        }
+
+        private void PrimeClashHitSource()
+        {
+            if (clashHitSource == null || clashHitClip == null)
+            {
+                return;
+            }
+
+            clashHitSource.clip = clashHitClip;
+            clashHitSource.volume = clashHitVolume;
         }
 
         private void EnsurePerfectCounterSource()
@@ -37,33 +88,51 @@ namespace FracturedChorus.Audio
                 return;
             }
 
-            var existing = transform.Find("PerfectCounterSfx");
-            if (existing != null)
-            {
-                perfectCounterSource = existing.GetComponent<AudioSource>();
-                if (perfectCounterSource != null)
-                {
-                    return;
-                }
-            }
-
-            var go = new GameObject("PerfectCounterSfx");
-            go.transform.SetParent(transform, false);
-            perfectCounterSource = go.AddComponent<AudioSource>();
-            perfectCounterSource.playOnAwake = false;
-            perfectCounterSource.loop = false;
-            perfectCounterSource.spatialBlend = 0f;
-            perfectCounterSource.bypassReverbZones = true;
-            perfectCounterSource.priority = 0;
+            perfectCounterSource = FindOrCreateSfxSource("PerfectCounterSfx");
         }
 
-        private void TryAssignDefaultClip()
+        private void EnsureClashHitSource()
+        {
+            if (clashHitSource != null)
+            {
+                return;
+            }
+
+            clashHitSource = FindOrCreateSfxSource("ClashHitSfx");
+        }
+
+        private AudioSource FindOrCreateSfxSource(string name)
+        {
+            var existing = transform.Find(name);
+            if (existing != null && existing.TryGetComponent<AudioSource>(out var existingSource))
+            {
+                return existingSource;
+            }
+
+            var go = new GameObject(name);
+            go.transform.SetParent(transform, false);
+            var source = go.AddComponent<AudioSource>();
+            source.playOnAwake = false;
+            source.loop = false;
+            source.spatialBlend = 0f;
+            source.bypassReverbZones = true;
+            source.priority = 0;
+            return source;
+        }
+
+        private void TryAssignDefaultClips()
         {
 #if UNITY_EDITOR
             if (perfectCounterClip == null)
             {
                 perfectCounterClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>(
                     "Assets/FracturedChorus/Audio/SFX/Combat_PerfectCounter.wav");
+            }
+
+            if (clashHitClip == null)
+            {
+                clashHitClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>(
+                    "Assets/FracturedChorus/Audio/SFX/Combat_ClashHit.wav");
             }
 #endif
         }

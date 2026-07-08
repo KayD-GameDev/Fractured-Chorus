@@ -5480,6 +5480,9 @@ MonoBehaviour:
   transitionSource: {fileID: 0}
   planningTransitionClip: {fileID: 8300000, guid: b3c4d5e6f708192a3b4c5d6e7f8091a2, type: 3}
   planningTransitionVolume: 1
+  counterSlowMoMinFactor: 0.35
+  counterSlowMoRampDownSec: 0.07
+  counterSlowMoRampUpSec: 0.7
 --- !u!114 &888001005
 MonoBehaviour:
   m_ObjectHideFlags: 0
