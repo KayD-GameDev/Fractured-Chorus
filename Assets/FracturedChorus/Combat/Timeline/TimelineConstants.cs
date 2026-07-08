@@ -22,13 +22,20 @@ namespace FracturedChorus.Combat.Timeline
         /// <summary>Beat execute đầu tiên sau intro-pause.</summary>
         public const int IntroExecuteStartBeatIndex = IntroPlanningPauseAfterBeatIndex + 1;
 
-        /// <summary>Vùng bắt đầu boss có thể spawn impact: pause + 1 + 3 (chỉ min beat, không ép spawn).</summary>
-        public const int IntroEnemySpawnZoneStartBeat = IntroPlanningPauseAfterBeatIndex + 1 + 3;
+        /// <summary>Vùng bắt đầu boss có thể spawn impact: execute start + buffer (segment 0 intro).</summary>
+        public const int EnemySpawnBufferBeatsAfterHorizon = 3;
 
-        /// <summary>Beat nhỏ nhất cho impact của quái trong segment — clamp về IntroEnemySpawnZoneStartBeat khi là segment 0.</summary>
-        public static int GetMinEnemyImpactBeat(int segmentStartBeat)
+        public const int IntroEnemySpawnZoneStartBeat = IntroExecuteStartBeatIndex + EnemySpawnBufferBeatsAfterHorizon;
+
+        /// <summary>Beat nhỏ nhất cho impact của quái trong phase — phase start + buffer (segment 0 intro dùng IntroEnemySpawnZoneStartBeat).</summary>
+        public static int GetMinEnemyImpactBeat(int phaseStartBeat)
         {
-            return System.Math.Max(segmentStartBeat, segmentStartBeat == 0 ? IntroEnemySpawnZoneStartBeat : segmentStartBeat);
+            if (phaseStartBeat <= 0)
+            {
+                return IntroEnemySpawnZoneStartBeat;
+            }
+
+            return phaseStartBeat + EnemySpawnBufferBeatsAfterHorizon;
         }
 
         /// <summary>Timeline phases executed per round segment before returning to Execute.</summary>

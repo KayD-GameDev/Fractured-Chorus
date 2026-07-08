@@ -2,6 +2,7 @@ using FracturedChorus.Combat.Bootstrap;
 using FracturedChorus.Combat.Grid;
 using FracturedChorus.Combat.Units;
 using FracturedChorus.Data;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -30,6 +31,11 @@ namespace FracturedChorus.UI
         [FormerlySerializedAs("clickCollider")]
         [SerializeField] private BoxCollider2D bodyCollider;
         [SerializeField] private UnitFeetAnchor feetAnchor;
+        [SerializeField] private Animator animator;
+        [SerializeField] private string counterStateName;
+        [SerializeField] private string guardStateName;
+        [SerializeField] private string beCounteredStateName;
+        [SerializeField] private string idleStateName;
         [Tooltip("Keep sprite/color/Transform scale authored in the scene.")]
         [SerializeField] private bool preserveSceneVisuals = true;
         [Tooltip("Keep BoxCollider2D size/offset authored in the scene — used as click + drag area.")]
@@ -39,6 +45,170 @@ namespace FracturedChorus.UI
         public UnitPresetSO Preset => preset;
         public string DemoUnitKey => demoUnitKey;
         public UnitFeetAnchor FeetAnchor => feetAnchor;
+
+        public static UnitView FindForUnit(CombatUnit unit)
+        {
+            if (unit == null)
+            {
+                return null;
+            }
+
+            foreach (var view in Object.FindObjectsByType<UnitView>(FindObjectsInactive.Exclude))
+            {
+                if (view != null && view.Unit == unit)
+                {
+                    return view;
+                }
+            }
+
+            return null;
+        }
+
+        public void PlayCounterAnimation()
+        {
+            ResolveAnimatorReference();
+            var clip = ResolveCounterClip(out var stateName);
+            if (clip == null)
+            {
+                clip = ResolveGuardClip(out stateName);
+            }
+
+            PlayCombatAnimation(clip, stateName);
+        }
+
+        public void PlayBeCounteredAnimation()
+        {
+            ResolveAnimatorReference();
+            var clip = ResolveBeCounteredClip(out var stateName);
+            PlayCombatAnimation(clip, stateName);
+        }
+
+        private Coroutine _combatAnimRoutine;
+
+        private void PlayCombatAnimation(AnimationClip clip, string stateName)
+        {
+            if (animator == null || clip == null || string.IsNullOrEmpty(stateName))
+            {
+                return;
+            }
+
+            if (_combatAnimRoutine != null)
+            {
+                StopCoroutine(_combatAnimRoutine);
+            }
+
+            animator.Play(stateName, 0, 0f);
+            _combatAnimRoutine = StartCoroutine(ReturnToIdleAfter(clip.length));
+        }
+
+        private IEnumerator ReturnToIdleAfter(float seconds)
+        {
+            if (seconds > 0f)
+            {
+                yield return new WaitForSeconds(seconds);
+            }
+
+            var idleState = ResolveIdleStateName();
+            if (animator != null && !string.IsNullOrEmpty(idleState))
+            {
+                animator.Play(idleState, 0, 0f);
+            }
+
+            _combatAnimRoutine = null;
+        }
+
+        private void ResolveAnimatorReference()
+        {
+            if (animator != null)
+            {
+                return;
+            }
+
+            animator = GetComponent<Animator>();
+            if (animator == null)
+            {
+                animator = GetComponentInChildren<Animator>();
+            }
+        }
+
+        private AnimationClip ResolveCounterClip(out string stateName)
+        {
+            return ResolveClipByKeyword(counterStateName, "Counter", out stateName);
+        }
+
+        private AnimationClip ResolveGuardClip(out string stateName)
+        {
+            return ResolveClipByKeyword(guardStateName, "Guard", out stateName);
+        }
+
+        private AnimationClip ResolveBeCounteredClip(out string stateName)
+        {
+            return ResolveClipByKeyword(beCounteredStateName, "Be Countered", out stateName);
+        }
+
+        private AnimationClip ResolveClipByKeyword(string preferredName, string keyword, out string stateName)
+        {
+            stateName = preferredName;
+            if (animator == null || animator.runtimeAnimatorController == null)
+            {
+                return null;
+            }
+
+            var clips = animator.runtimeAnimatorController.animationClips;
+            if (!string.IsNullOrEmpty(stateName))
+            {
+                foreach (var clip in clips)
+                {
+                    if (clip != null && clip.name == stateName)
+                    {
+                        return clip;
+                    }
+                }
+            }
+
+            foreach (var clip in clips)
+            {
+                if (clip == null || clip.name.IndexOf(keyword, System.StringComparison.OrdinalIgnoreCase) < 0)
+                {
+                    continue;
+                }
+
+                stateName = clip.name;
+                return clip;
+            }
+
+            stateName = null;
+            return null;
+        }
+
+        private string ResolveIdleStateName()
+        {
+            if (!string.IsNullOrEmpty(idleStateName))
+            {
+                return idleStateName;
+            }
+
+            if (animator == null || animator.runtimeAnimatorController == null)
+            {
+                return null;
+            }
+
+            AnimationClip best = null;
+            foreach (var clip in animator.runtimeAnimatorController.animationClips)
+            {
+                if (clip == null || clip.name.IndexOf("Idle", System.StringComparison.OrdinalIgnoreCase) < 0)
+                {
+                    continue;
+                }
+
+                if (best == null || clip.name.Length < best.name.Length)
+                {
+                    best = clip;
+                }
+            }
+
+            return best != null ? best.name : null;
+        }
 
         /// <summary>World position used for grid snap / drop detection.</summary>
         public Vector3 FeetWorldPosition =>
@@ -164,6 +334,7 @@ namespace FracturedChorus.UI
             }
 
             Unit = unit;
+            ResolveAnimatorReference();
             ResolveSpriteRendererReference();
             EnsureHpLabel();
             EnsureInteractionColliders();
@@ -474,6 +645,12 @@ namespace FracturedChorus.UI
 
         private void OnDestroy()
         {
+            if (_combatAnimRoutine != null)
+            {
+                StopCoroutine(_combatAnimRoutine);
+                _combatAnimRoutine = null;
+            }
+
             if (Unit != null)
             {
                 Unit.OnHpChanged -= HandleHpChanged;

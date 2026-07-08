@@ -60,6 +60,77 @@ namespace FracturedChorus.Combat.Core
         public static bool HasCounterOnBeat(BeatTimelineEngine timeline, int beatIndex) =>
             CountCountersAtBeat(timeline, beatIndex) > 0;
 
+        public static void CollectCounteringPlayerUnits(
+            BeatTimelineEngine timeline,
+            int beatIndex,
+            List<CombatUnit> results)
+        {
+            results.Clear();
+            if (timeline == null || beatIndex < 0)
+            {
+                return;
+            }
+
+            var telegraphs = timeline.GetImpactTelegraphsAtBeat(beatIndex);
+            if (telegraphs.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var entry in timeline.Agenda)
+            {
+                if (entry?.Unit == null || entry.Unit.Side != GridSide.Player || entry.Skill == null || entry.Skill.IsGuard)
+                {
+                    continue;
+                }
+
+                if (!GetActiveBeatIndices(entry).Contains(beatIndex))
+                {
+                    continue;
+                }
+
+                var countersTelegraph = false;
+                foreach (var telegraph in telegraphs)
+                {
+                    if (IsCounterEntry(entry, telegraph))
+                    {
+                        countersTelegraph = true;
+                        break;
+                    }
+                }
+
+                if (countersTelegraph && !results.Contains(entry.Unit))
+                {
+                    results.Add(entry.Unit);
+                }
+            }
+        }
+
+        public static void CollectCounteredEnemyUnits(
+            BeatTimelineEngine timeline,
+            int beatIndex,
+            List<CombatUnit> results)
+        {
+            results.Clear();
+            if (timeline == null || beatIndex < 0 || !HasCounterOnBeat(timeline, beatIndex))
+            {
+                return;
+            }
+
+            foreach (var telegraph in timeline.GetImpactTelegraphsAtBeat(beatIndex))
+            {
+                if (telegraph?.Unit == null || telegraph.Unit.Side != GridSide.Enemy || !telegraph.Unit.IsAlive)
+                {
+                    continue;
+                }
+
+                if (!results.Contains(telegraph.Unit))
+                {
+                    results.Add(telegraph.Unit);
+                }
+            }
+        }
+
         public static bool IsTelegraphFullyCountered(EnemyTelegraph telegraph, BeatTimelineEngine timeline)
         {
             if (telegraph == null || timeline == null)
