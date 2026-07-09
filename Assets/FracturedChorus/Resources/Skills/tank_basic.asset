@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: tank_basic
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.SkillDefinitionSO
   skillId: tank_basic
+  icon: {fileID: 21300000, guid: a08fd57982ff4834a18f5faec38622af, type: 3}
   displayName: Ram
   description: 'Damage'
   slotKind: 0

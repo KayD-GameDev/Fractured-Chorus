@@ -40,6 +40,18 @@ namespace FracturedChorus.Audio
             PlayClashHitImmediate(dspTime);
         }
 
+        public void PlayClashHit()
+        {
+            if (clashHitClip == null)
+            {
+                return;
+            }
+
+            EnsureClashHitSource();
+            PrimeClashHitSource();
+            PlayClashHitImmediate();
+        }
+
         private void PlayClashHitImmediate(double dspStartTime = -1)
         {
             if (clashHitClip == null || clashHitSource == null)

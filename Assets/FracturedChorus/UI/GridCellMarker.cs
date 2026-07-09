@@ -89,6 +89,21 @@ namespace FracturedChorus.UI
             }
         }
 
+        /// <summary>Ẩn/hiện hex floor (giữ Transform/collider cho snap).</summary>
+        public void SetFloorVisible(bool visible)
+        {
+            var hexRoot = transform.Find(HexFloorChildName);
+            if (hexRoot != null)
+            {
+                hexRoot.gameObject.SetActive(visible);
+            }
+
+            if (!visible)
+            {
+                SetDropHighlight(false);
+            }
+        }
+
         public void EnsureBorder()
         {
             EnsureVisuals();

@@ -152,9 +152,21 @@ namespace FracturedChorus.RunMap.UI
                 var viewportImage = scrollRect.viewport.GetComponent<Image>();
                 if (viewportImage != null)
                 {
-                    viewportImage.raycastTarget = false;
+                    viewportImage.raycastTarget = true;
                 }
+
+                EnsureLayerScrollForwarder(floorLabelsLayer);
             }
+        }
+
+        private static void EnsureLayerScrollForwarder(RectTransform layer)
+        {
+            if (layer == null || layer.GetComponent<MapNodeScrollForwarder>() != null)
+            {
+                return;
+            }
+
+            layer.gameObject.AddComponent<MapNodeScrollForwarder>();
         }
 
         private void EnsureScrollDriver()
@@ -343,6 +355,7 @@ namespace FracturedChorus.RunMap.UI
             label.color = FloorLabelColor;
             label.alignment = TextAnchor.MiddleRight;
             label.font = s_floorLabelFont ??= Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            label.raycastTarget = false;
             _floorLabels.Add(label);
         }
 

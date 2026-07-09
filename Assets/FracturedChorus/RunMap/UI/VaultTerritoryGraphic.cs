@@ -18,7 +18,9 @@ namespace FracturedChorus.RunMap.UI
         [SerializeField] private Vector2[] normalizedVertices;
         [SerializeField] private Color baseTint = new Color(1f, 1f, 1f, 0.18f);
         [SerializeField] private Color hoverTint = new Color(1f, 1f, 1f, 0.42f);
-        [SerializeField] private Color lockedTint = new Color(0.2f, 0.2f, 0.2f, 0.12f);
+        [SerializeField] private Color lockedTint = new Color(0f, 0f, 0f, 0.68f);
+        [SerializeField] private Color lockedHoverTint = new Color(0f, 0f, 0f, 0.58f);
+        [SerializeField] private Color lockedOverlayTint = new Color(0f, 0f, 0f, 0.42f);
         [SerializeField] private bool unlocked;
 
         private bool _hovered;
@@ -48,7 +50,7 @@ namespace FracturedChorus.RunMap.UI
 
         public bool IsRaycastLocationValid(Vector2 sp, Camera eventCamera)
         {
-            if (!unlocked || normalizedVertices == null || normalizedVertices.Length < 3)
+            if (normalizedVertices == null || normalizedVertices.Length < 3)
             {
                 return false;
             }
@@ -67,11 +69,6 @@ namespace FracturedChorus.RunMap.UI
 
         public void OnPointerEnter(PointerEventData eventData)
         {
-            if (!unlocked)
-            {
-                return;
-            }
-
             _hovered = true;
             SetVerticesDirty();
             TerritoryHovered?.Invoke(this);
@@ -116,13 +113,36 @@ namespace FracturedChorus.RunMap.UI
 
             centroid /= normalizedVertices.Length;
 
-            var tint = unlocked && _hovered ? hoverTint : Color.clear;
+            Color tint;
+            if (!unlocked)
+            {
+                tint = _hovered ? lockedHoverTint : lockedTint;
+            }
+            else if (_hovered)
+            {
+                tint = hoverTint;
+            }
+            else
+            {
+                tint = baseTint;
+            }
+
             var color32 = (Color32)tint;
 
             for (var i = 0; i < _localVertices.Count; i++)
             {
                 var next = (i + 1) % _localVertices.Count;
                 AddTriangle(vh, centroid, _localVertices[i], _localVertices[next], color32);
+            }
+
+            if (!unlocked)
+            {
+                var overlay32 = (Color32)lockedOverlayTint;
+                for (var i = 0; i < _localVertices.Count; i++)
+                {
+                    var next = (i + 1) % _localVertices.Count;
+                    AddTriangle(vh, centroid, _localVertices[i], _localVertices[next], overlay32);
+                }
             }
         }
 

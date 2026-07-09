@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: ren_skill
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.SkillDefinitionSO
   skillId: ren_skill
+  icon: {fileID: 21300000, guid: 6ec16ca507bb4880a948392e728d96a5, type: 3}
   displayName: Crosscut
   description: 'Damage · 2 counter hit'
   slotKind: 1

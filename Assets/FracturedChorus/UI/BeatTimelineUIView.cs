@@ -8,6 +8,7 @@ using FracturedChorus.Data;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -191,6 +192,13 @@ namespace FracturedChorus.UI
 
             ConfigureAvLabelLayout();
             ExpandViewportWidth();
+
+            if (musicController == null)
+            {
+                musicController = FindAnyObjectByType<CombatMusicController>();
+            }
+
+            EnsureCombatSfx();
         }
 
         private void ConfigureAvLabelLayout()
@@ -870,9 +878,40 @@ namespace FracturedChorus.UI
             _session?.OnTimelineScanBeat(beat);
             RefreshPhaseHeader(beat);
             _session?.ResolveBeatAtScan(beat);
+            PlayAttackAnimationsAtBeat(beat);
             RefreshBeat(beat);
             RefreshPhaseAvLabel();
             UpdateScanHighlights();
+        }
+
+        private void PlayAttackAnimationsAtBeat(int beatIndex)
+        {
+            if (_timeline == null || beatIndex < 0)
+            {
+                return;
+            }
+
+            var isCounterBeat = _precomputedCounterBeats.Contains(beatIndex);
+
+            foreach (var entry in _timeline.Agenda)
+            {
+                if (entry.Unit == null || entry.Unit.Side != GridSide.Player || entry.Skill == null || entry.Skill.IsGuard)
+                {
+                    continue;
+                }
+
+                if (!CombatCounterResolver.GetActiveBeatIndices(entry).Contains(beatIndex))
+                {
+                    continue;
+                }
+
+                if (isCounterBeat)
+                {
+                    continue;
+                }
+
+                UnitView.FindForUnit(entry.Unit)?.PlayAttackAnimation(entry.Skill);
+            }
         }
 
         private void ApplyScrollVisual(float scrollPx)
@@ -1555,7 +1594,7 @@ namespace FracturedChorus.UI
         {
             var go = new GameObject("LaneMarker", typeof(RectTransform));
             var marker = go.AddComponent<TimelineLaneMarkerView>();
-            marker.Build(_laneMarkersLayer, activeFootprintDotSize);
+            marker.Build(_laneMarkersLayer, laneMarkerSize);
             marker.SetPlanningInteractionEnabled(true);
 
             var drag = go.AddComponent<TimelineLaneMarkerDrag>();

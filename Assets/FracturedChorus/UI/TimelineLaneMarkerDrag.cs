@@ -6,13 +6,10 @@ using UnityEngine.EventSystems;
 namespace FracturedChorus.UI
 {
     /// <summary>Drag assigned skill marker off timeline to remove during planning.</summary>
-    public class TimelineLaneMarkerDrag : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
+    public class TimelineLaneMarkerDrag : MonoBehaviour, IBeginDragHandler, IEndDragHandler
     {
         private CombatUnit _unit;
         private int _placementBeat;
-        private RectTransform _rect;
-        private Canvas _canvas;
-        private Vector2 _dragOffset;
         private Func<bool> _canDrag;
         private Action<CombatUnit, int> _onRemove;
         private Action _onSnapBack;
@@ -30,8 +27,6 @@ namespace FracturedChorus.UI
             _canDrag = canDrag;
             _onRemove = onRemove;
             _onSnapBack = onSnapBack;
-            _rect = transform as RectTransform;
-            _canvas = GetComponentInParent<Canvas>();
         }
 
         public void OnBeginDrag(PointerEventData eventData)
@@ -45,28 +40,6 @@ namespace FracturedChorus.UI
 
             _onRemove?.Invoke(_unit, _placementBeat);
             _removedOnBegin = true;
-        }
-
-        public void OnDrag(PointerEventData eventData)
-        {
-            if (_removedOnBegin || _rect == null || _canvas == null)
-            {
-                return;
-            }
-
-            if (_canDrag != null && !_canDrag())
-            {
-                return;
-            }
-
-            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                    _rect.parent as RectTransform,
-                    eventData.position,
-                    _canvas.worldCamera,
-                    out var local))
-            {
-                _rect.anchoredPosition = local - _dragOffset;
-            }
         }
 
         public void OnEndDrag(PointerEventData eventData)

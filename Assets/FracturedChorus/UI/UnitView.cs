@@ -143,7 +143,37 @@ namespace FracturedChorus.UI
 
         private AnimationClip ResolveBeCounteredClip(out string stateName)
         {
-            return ResolveClipByKeyword(beCounteredStateName, "Be Countered", out stateName);
+            var clip = ResolveClipByKeyword(beCounteredStateName, "Be Countered", out stateName);
+            if (clip != null)
+            {
+                return clip;
+            }
+
+            return ResolveClipByKeyword(null, "Hurt", out stateName);
+        }
+
+        public void PlayAttackAnimation(SkillDefinitionSO skill = null)
+        {
+            ResolveAnimatorReference();
+            AnimationClip clip = null;
+            string stateName = null;
+
+            if (skill != null && !string.IsNullOrEmpty(skill.displayName))
+            {
+                clip = ResolveClipByKeyword(skill.displayName, skill.displayName, out stateName);
+            }
+
+            if (clip == null)
+            {
+                clip = ResolveClipByKeyword(null, "Skill", out stateName);
+            }
+
+            if (clip == null)
+            {
+                clip = ResolveClipByKeyword(null, "Attack", out stateName);
+            }
+
+            PlayCombatAnimation(clip, stateName);
         }
 
         private AnimationClip ResolveClipByKeyword(string preferredName, string keyword, out string stateName)

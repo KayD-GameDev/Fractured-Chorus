@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: ren_basic
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.SkillDefinitionSO
   skillId: ren_basic
+  icon: {fileID: 21300000, guid: 9ec30180d622408391610b872dab29b8, type: 3}
   displayName: Strike
   description: 'Damage + Cycle Shift'
   slotKind: 0
