@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: mage_basic
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.SkillDefinitionSO
   skillId: mage_basic
+  icon: {fileID: 21300000, guid: 7a1164cff173487ab5e639c0169d8f39, type: 3}
   displayName: Pulse
   description: 'Damage (Ma)'
   slotKind: 0

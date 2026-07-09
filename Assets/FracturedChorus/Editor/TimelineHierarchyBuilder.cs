@@ -15,9 +15,13 @@ namespace FracturedChorus.Editor
         public const float PartyCardWidth = 115f;
         public const float PartyCardHeight = 167f;
         public const float PartyBarWidth = 713f;
-        private const float DefaultSkillPanelSize = 220f;
-        private const float RadialSlotSize = 70f;
-        private const int RadialSlotLabelFontSize = 20;
+        private const float DefaultSkillPanelSize = 300f;
+        private const float RadialSlotSize = 96f;
+        private const float RadialRootSize = 248f;
+        private const float RadialSlotTopY = 107f;
+        private const float RadialSlotSideX = 93f;
+        private const float RadialSlotBottomY = -53f;
+        private const int RadialSlotLabelFontSize = 12;
 
         public static BeatTimelineUIView BuildTimeline(Transform canvasTransform)
         {
@@ -247,12 +251,12 @@ namespace FracturedChorus.Editor
             radialRect.anchorMax = new Vector2(0.5f, 0.5f);
             radialRect.pivot = new Vector2(0.5f, 0.5f);
             radialRect.anchoredPosition = new Vector2(0f, -10f);
-            radialRect.sizeDelta = new Vector2(180f, 180f);
+            radialRect.sizeDelta = new Vector2(RadialRootSize, RadialRootSize);
 
             const float slotSize = RadialSlotSize;
-            var slotTop = CreateRadialSkillSlot(radialRect, "SkillSlot_Top", new Vector2(0f, 78f), slotSize);
-            var slotLeft = CreateRadialSkillSlot(radialRect, "SkillSlot_Left", new Vector2(-68f, -39f), slotSize);
-            var slotRight = CreateRadialSkillSlot(radialRect, "SkillSlot_Right", new Vector2(68f, -39f), slotSize);
+            var slotTop = CreateRadialSkillSlot(radialRect, "SkillSlot_Top", new Vector2(0f, RadialSlotTopY), slotSize);
+            var slotLeft = CreateRadialSkillSlot(radialRect, "SkillSlot_Left", new Vector2(-RadialSlotSideX, RadialSlotBottomY), slotSize);
+            var slotRight = CreateRadialSkillSlot(radialRect, "SkillSlot_Right", new Vector2(RadialSlotSideX, RadialSlotBottomY), slotSize);
 
             panelGo.SetActive(false);
 
@@ -294,14 +298,14 @@ namespace FracturedChorus.Editor
                 radialTransform.anchorMax = new Vector2(0.5f, 0.5f);
                 radialTransform.pivot = new Vector2(0.5f, 0.5f);
                 radialTransform.anchoredPosition = new Vector2(0f, -10f);
-                radialTransform.sizeDelta = new Vector2(180f, 180f);
+                radialTransform.sizeDelta = new Vector2(RadialRootSize, RadialRootSize);
                 Undo.RegisterCreatedObjectUndo(radialGo, "Setup Skill Panel Radial");
             }
 
             const float slotSize = RadialSlotSize;
-            var slotTop = EnsureRadialSkillSlot(radialTransform, "SkillSlot_Top", new Vector2(0f, 78f), slotSize);
-            var slotLeft = EnsureRadialSkillSlot(radialTransform, "SkillSlot_Left", new Vector2(-68f, -39f), slotSize);
-            var slotRight = EnsureRadialSkillSlot(radialTransform, "SkillSlot_Right", new Vector2(68f, -39f), slotSize);
+            var slotTop = EnsureRadialSkillSlot(radialTransform, "SkillSlot_Top", new Vector2(0f, RadialSlotTopY), slotSize);
+            var slotLeft = EnsureRadialSkillSlot(radialTransform, "SkillSlot_Left", new Vector2(-RadialSlotSideX, RadialSlotBottomY), slotSize);
+            var slotRight = EnsureRadialSkillSlot(radialTransform, "SkillSlot_Right", new Vector2(RadialSlotSideX, RadialSlotBottomY), slotSize);
 
             var panelRect = panelTransform as RectTransform;
             var panelBg = panelRect != null ? panelRect.GetComponent<Image>() : null;
@@ -327,6 +331,12 @@ namespace FracturedChorus.Editor
             var existing = parent.Find(name)?.GetComponent<SkillRadialSlotView>();
             if (existing != null)
             {
+                if (existing.transform is RectTransform slotRect)
+                {
+                    slotRect.anchoredPosition = pos;
+                    slotRect.sizeDelta = new Vector2(size, size);
+                }
+
                 UpgradeRadialSlotStyle(existing.transform);
                 existing.WireFromScene(DirectionFromSlotName(name));
                 return existing;
@@ -417,6 +427,24 @@ namespace FracturedChorus.Editor
                 label.fontSize = RadialSlotLabelFontSize;
                 label.color = Color.black;
             }
+
+            EnsureRadialSlotIcon(slotTransform);
+        }
+
+        private static void EnsureRadialSlotIcon(Transform slotTransform)
+        {
+            var iconTransform = slotTransform.Find("Icon");
+            if (iconTransform == null)
+            {
+                var iconGo = CreateUiObject("Icon", slotTransform);
+                iconTransform = iconGo.transform;
+                var iconRect = iconGo.GetComponent<RectTransform>();
+                StretchWithPadding(iconRect, 0.1f, 0.1f, 0.9f, 0.9f);
+                var iconImg = iconGo.AddComponent<Image>();
+                iconImg.raycastTarget = false;
+                iconImg.preserveAspect = true;
+                iconImg.enabled = false;
+            }
         }
 
         private static SkillRadialSlotView CreateRadialSkillSlot(RectTransform parent, string name, Vector2 pos, float size)
@@ -459,6 +487,14 @@ namespace FracturedChorus.Editor
             label.raycastTarget = false;
             label.color = Color.black;
             label.text = "—";
+
+            var iconGo = CreateUiObject("Icon", slotGo.transform);
+            var iconRect = iconGo.GetComponent<RectTransform>();
+            StretchWithPadding(iconRect, 0.1f, 0.1f, 0.9f, 0.9f);
+            var iconImg = iconGo.AddComponent<Image>();
+            iconImg.raycastTarget = false;
+            iconImg.preserveAspect = true;
+            iconImg.enabled = false;
 
             var slot = slotGo.AddComponent<SkillRadialSlotView>();
             slot.WireFromScene(DirectionFromSlotName(name));

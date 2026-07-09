@@ -493,7 +493,7 @@ namespace FracturedChorus.Editor
             viewport.AddComponent<Mask>().showMaskGraphic = false;
             var viewportImage = viewport.AddComponent<Image>();
             viewportImage.color = Color.white;
-            viewportImage.raycastTarget = false;
+            viewportImage.raycastTarget = true;
 
             var content = CreateUiObject("MapContent", viewport.transform);
             contentRect = content.GetComponent<RectTransform>();
@@ -511,6 +511,7 @@ namespace FracturedChorus.Editor
 
             var floorLabelsLayer = CreateUiObject("FloorLabelsLayer", content.transform);
             ConfigureBottomLayer(floorLabelsLayer, contentRect.sizeDelta);
+            floorLabelsLayer.AddComponent<MapNodeScrollForwarder>();
 
             var nodeTemplate = CreateNodeTemplate(nodesLayer.transform);
             var connectionTemplate = CreateConnectionTemplate(connectionsLayer.transform);
@@ -553,6 +554,7 @@ namespace FracturedChorus.Editor
             var strokeImg = stroke.AddComponent<Image>();
             strokeImg.sprite = UiCircleSpriteUtil.Circle;
             strokeImg.color = Color.white;
+            strokeImg.raycastTarget = false;
 
             var fill = CreateUiObject("Fill", go.transform);
             StretchRect(fill, Vector2.zero, Vector2.one, new Vector2(3f, 3f), new Vector2(-3f, -3f));
@@ -561,12 +563,14 @@ namespace FracturedChorus.Editor
             fillImg.color = Color.white;
 
             var label = CreateText("Label", go.transform, "?", MapLayoutConstants.NodeLabelFontSize(MapNodeType.Battle, false), TextAnchor.MiddleCenter);
+            label.raycastTarget = false;
             StretchRect(label.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
 
             var button = go.AddComponent<Button>();
             button.targetGraphic = fillImg;
 
             var view = Undo.AddComponent<MapNodeView>(go);
+            go.AddComponent<MapNodeScrollForwarder>();
             view.WireImages(fillImg, strokeImg, label, button);
             return view;
         }
@@ -858,6 +862,7 @@ namespace FracturedChorus.Editor
             text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             text.horizontalOverflow = HorizontalWrapMode.Wrap;
             text.verticalOverflow = VerticalWrapMode.Truncate;
+            text.raycastTarget = false;
             return text;
         }
 

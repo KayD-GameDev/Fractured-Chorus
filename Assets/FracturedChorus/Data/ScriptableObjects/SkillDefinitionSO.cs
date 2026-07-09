@@ -24,6 +24,7 @@ namespace FracturedChorus.Data
     {
         public string skillId;
         public string displayName;
+        public Sprite icon;
         [TextArea] public string description;
         public SkillSlotKind slotKind = SkillSlotKind.BasicAttack;
         public int avCost;

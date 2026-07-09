@@ -12,9 +12,10 @@ namespace FracturedChorus.RunMap.UI
         [SerializeField] private ScrollRect scrollRect;
 
         [Header("Drag / wheel feel")]
-        [SerializeField] [Range(0.1f, 1f)] private float scrollSpeedScale = 0.5f;
-        [SerializeField] private float scrollSensitivity = 42f;
-        [SerializeField] private float decelerationRate = 0.038f;
+        [SerializeField] [Range(0.1f, 1f)] private float scrollSpeedScale = 1f;
+        [SerializeField] private float scrollSensitivity = 58f;
+        [SerializeField] private float wheelScrollMultiplier = 0.17f;
+        [SerializeField] private float decelerationRate = 0.035f;
         [SerializeField] private float elasticity = 0.04f;
 
         [Header("Animated scroll")]
@@ -44,9 +45,20 @@ namespace FracturedChorus.RunMap.UI
             scrollRect.vertical = true;
             scrollRect.inertia = true;
             scrollRect.movementType = ScrollRect.MovementType.Clamped;
-            scrollRect.scrollSensitivity = scrollSensitivity * scrollSpeedScale;
+            scrollRect.scrollSensitivity = scrollSensitivity * scrollSpeedScale * wheelScrollMultiplier;
             scrollRect.decelerationRate = decelerationRate;
             scrollRect.elasticity = elasticity;
+        }
+
+        public void ApplyWheelScroll(PointerEventData eventData)
+        {
+            if (scrollRect == null || eventData == null)
+            {
+                return;
+            }
+
+            StopScrollAnimation();
+            scrollRect.OnScroll(eventData);
         }
 
         public void ScrollToNormalized(float target, bool immediate = false, bool useInitialTiming = false)
@@ -113,6 +125,6 @@ namespace FracturedChorus.RunMap.UI
 
         public void OnBeginDrag(PointerEventData eventData) => StopScrollAnimation();
 
-        public void OnScroll(PointerEventData eventData) => StopScrollAnimation();
+        public void OnScroll(PointerEventData eventData) => ApplyWheelScroll(eventData);
     }
 }

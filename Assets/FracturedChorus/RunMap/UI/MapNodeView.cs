@@ -18,6 +18,11 @@ namespace FracturedChorus.RunMap.UI
 
         private void Awake()
         {
+            if (GetComponent<MapNodeScrollForwarder>() == null)
+            {
+                gameObject.AddComponent<MapNodeScrollForwarder>();
+            }
+
             button ??= GetComponent<Button>();
             if (button != null)
             {
@@ -25,6 +30,20 @@ namespace FracturedChorus.RunMap.UI
             }
 
             EnsureCircleSprites();
+            DisableChildRaycastsExceptButtonTarget();
+        }
+
+        private void DisableChildRaycastsExceptButtonTarget()
+        {
+            if (strokeImage != null)
+            {
+                strokeImage.raycastTarget = false;
+            }
+
+            if (labelText != null)
+            {
+                labelText.raycastTarget = false;
+            }
         }
 
         private void EnsureCircleSprites()
@@ -103,6 +122,7 @@ namespace FracturedChorus.RunMap.UI
             strokeImage = stroke;
             labelText = label;
             button = btn;
+            DisableChildRaycastsExceptButtonTarget();
         }
     }
 }

@@ -43,6 +43,8 @@ namespace FracturedChorus.UI
         private float _backdropDismissUnlockTime;
         private SkillDefinitionSO _draggingSkill;
         private GameObject _dragGhost;
+        private Image _dragGhostIcon;
+        private Text _dragGhostLabel;
         private bool _keyboardDragActive;
 
         private readonly List<SkillRadialSlotView> _slots = new();
@@ -342,34 +344,89 @@ namespace FracturedChorus.UI
                 _dragGhost = new GameObject("SkillDragGhost", typeof(RectTransform));
                 var rect = _dragGhost.GetComponent<RectTransform>();
                 rect.SetParent(canvasRect, false);
-                rect.sizeDelta = new Vector2(56f, 56f);
+                rect.sizeDelta = new Vector2(72f, 72f);
 
                 var img = _dragGhost.AddComponent<Image>();
                 img.sprite = UiCircleSpriteUtil.Circle;
                 img.color = new Color(0.95f, 0.62f, 0.25f, 0.75f);
                 img.raycastTarget = false;
 
+                var iconGo = new GameObject("Icon", typeof(RectTransform));
+                var iconRect = iconGo.GetComponent<RectTransform>();
+                iconRect.SetParent(rect, false);
+                iconRect.anchorMin = new Vector2(0.1f, 0.1f);
+                iconRect.anchorMax = new Vector2(0.9f, 0.9f);
+                iconRect.offsetMin = Vector2.zero;
+                iconRect.offsetMax = Vector2.zero;
+                _dragGhostIcon = iconGo.AddComponent<Image>();
+                _dragGhostIcon.raycastTarget = false;
+                _dragGhostIcon.preserveAspect = true;
+
                 var labelGo = new GameObject("Label", typeof(RectTransform));
                 var labelRect = labelGo.GetComponent<RectTransform>();
                 labelRect.SetParent(rect, false);
-                labelRect.anchorMin = Vector2.zero;
-                labelRect.anchorMax = Vector2.one;
-                labelRect.offsetMin = new Vector2(2f, 2f);
-                labelRect.offsetMax = new Vector2(-2f, -2f);
-                var label = labelGo.AddComponent<Text>();
-                label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-                label.fontSize = 14;
-                label.alignment = TextAnchor.MiddleCenter;
-                label.horizontalOverflow = HorizontalWrapMode.Wrap;
-                label.verticalOverflow = VerticalWrapMode.Overflow;
-                label.color = Color.white;
-                label.raycastTarget = false;
+                labelRect.anchorMin = new Vector2(1f, 1f);
+                labelRect.anchorMax = new Vector2(1f, 1f);
+                labelRect.pivot = new Vector2(1f, 1f);
+                labelRect.anchoredPosition = new Vector2(-4f, -2f);
+                labelRect.sizeDelta = new Vector2(28f, 18f);
+                _dragGhostLabel = labelGo.AddComponent<Text>();
+                _dragGhostLabel.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+                _dragGhostLabel.fontSize = 12;
+                _dragGhostLabel.alignment = TextAnchor.UpperRight;
+                _dragGhostLabel.horizontalOverflow = HorizontalWrapMode.Overflow;
+                _dragGhostLabel.verticalOverflow = VerticalWrapMode.Overflow;
+                _dragGhostLabel.color = Color.white;
+                _dragGhostLabel.raycastTarget = false;
             }
 
-            var ghostLabel = _dragGhost.GetComponentInChildren<Text>();
-            if (ghostLabel != null)
+            if (_dragGhostIcon == null)
             {
-                ghostLabel.text = skill != null ? SkillUiNames.GetDisplayName(skill) : string.Empty;
+                _dragGhostIcon = _dragGhost.transform.Find("Icon")?.GetComponent<Image>();
+            }
+
+            if (_dragGhostLabel == null)
+            {
+                _dragGhostLabel = _dragGhost.GetComponentInChildren<Text>();
+            }
+
+            var hasIcon = skill != null && skill.icon != null;
+            var bg = _dragGhost.GetComponent<Image>();
+            if (bg != null)
+            {
+                bg.enabled = !hasIcon;
+            }
+
+            if (_dragGhostIcon != null)
+            {
+                _dragGhostIcon.sprite = hasIcon ? skill.icon : null;
+                _dragGhostIcon.enabled = hasIcon;
+            }
+
+            if (_dragGhostLabel != null)
+            {
+                var labelRect = _dragGhostLabel.rectTransform;
+                if (hasIcon)
+                {
+                    labelRect.anchorMin = new Vector2(1f, 1f);
+                    labelRect.anchorMax = new Vector2(1f, 1f);
+                    labelRect.pivot = new Vector2(1f, 1f);
+                    labelRect.anchoredPosition = new Vector2(-4f, -2f);
+                    labelRect.sizeDelta = new Vector2(28f, 18f);
+                    _dragGhostLabel.fontSize = 12;
+                    _dragGhostLabel.alignment = TextAnchor.UpperRight;
+                    _dragGhostLabel.text = string.Empty;
+                }
+                else
+                {
+                    labelRect.anchorMin = Vector2.zero;
+                    labelRect.anchorMax = Vector2.one;
+                    labelRect.offsetMin = new Vector2(2f, 2f);
+                    labelRect.offsetMax = new Vector2(-2f, -2f);
+                    _dragGhostLabel.fontSize = 14;
+                    _dragGhostLabel.alignment = TextAnchor.MiddleCenter;
+                    _dragGhostLabel.text = skill != null ? SkillUiNames.GetDisplayName(skill) : string.Empty;
+                }
             }
 
             _dragGhost.SetActive(true);

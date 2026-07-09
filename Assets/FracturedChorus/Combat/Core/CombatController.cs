@@ -2,6 +2,8 @@ using FracturedChorus.Audio;
 
 using FracturedChorus.Combat.Core;
 
+using FracturedChorus.Combat.Grid;
+
 using FracturedChorus.Combat.Timeline;
 
 using FracturedChorus.Combat.Units;
@@ -245,6 +247,8 @@ namespace FracturedChorus.Combat.Core
             _session.PrepareTelegraphsForCurrentSegment();
 
             _boardDrag?.CancelActiveDrag();
+
+            _boardDrag?.SetSlotFloorsVisible(false, GridSide.Player);
 
             skillPanelView?.Hide();
 
@@ -586,6 +590,8 @@ namespace FracturedChorus.Combat.Core
                 _awaitingExecute = false;
 
                 skillPanelView?.Hide();
+
+                _boardDrag?.SetSlotFloorsVisible(true, GridSide.Player);
 
             }
 

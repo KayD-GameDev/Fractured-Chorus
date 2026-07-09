@@ -19,7 +19,8 @@ namespace FracturedChorus.UI
     /// </summary>
     public class SkillRadialSlotView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
     {
-        private const int LabelFontSize = 20;
+        private const int LabelFontSize = 12;
+        private const int FallbackLabelFontSize = 20;
 
         private static readonly Color IdleColor = new Color(0.16f, 0.16f, 0.22f, 0.96f);
         private static readonly Color HighlightColor = new Color(0.95f, 0.62f, 0.25f, 1f);
@@ -27,6 +28,7 @@ namespace FracturedChorus.UI
 
         private RectTransform _rect;
         private Image _background;
+        private Image _icon;
         private Text _label;
         private Action _onSelect;
         private SkillPanelUIView _panel;
@@ -47,20 +49,36 @@ namespace FracturedChorus.UI
                 _background = gameObject.AddComponent<Image>();
             }
 
+            _icon = transform.Find("Icon")?.GetComponent<Image>();
+            if (_icon == null)
+            {
+                var iconGo = new GameObject("Icon", typeof(RectTransform));
+                var iconRect = iconGo.GetComponent<RectTransform>();
+                iconRect.SetParent(_rect, false);
+                iconRect.anchorMin = new Vector2(0.1f, 0.1f);
+                iconRect.anchorMax = new Vector2(0.9f, 0.9f);
+                iconRect.offsetMin = Vector2.zero;
+                iconRect.offsetMax = Vector2.zero;
+                _icon = iconGo.AddComponent<Image>();
+                _icon.raycastTarget = false;
+                _icon.preserveAspect = true;
+            }
+
             _label = transform.Find("Label")?.GetComponent<Text>();
             if (_label == null)
             {
                 var labelGo = new GameObject("Label", typeof(RectTransform));
                 var labelRect = labelGo.GetComponent<RectTransform>();
                 labelRect.SetParent(_rect, false);
-                labelRect.anchorMin = Vector2.zero;
-                labelRect.anchorMax = Vector2.one;
-                labelRect.offsetMin = new Vector2(2f, 2f);
-                labelRect.offsetMax = new Vector2(-2f, -2f);
+                labelRect.anchorMin = new Vector2(1f, 1f);
+                labelRect.anchorMax = new Vector2(1f, 1f);
+                labelRect.pivot = new Vector2(1f, 1f);
+                labelRect.anchoredPosition = new Vector2(-4f, -2f);
+                labelRect.sizeDelta = new Vector2(28f, 18f);
                 _label = labelGo.AddComponent<Text>();
                 _label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-                _label.alignment = TextAnchor.MiddleCenter;
-                _label.horizontalOverflow = HorizontalWrapMode.Wrap;
+                _label.alignment = TextAnchor.UpperRight;
+                _label.horizontalOverflow = HorizontalWrapMode.Overflow;
                 _label.verticalOverflow = VerticalWrapMode.Overflow;
                 _label.raycastTarget = false;
             }
@@ -83,11 +101,7 @@ namespace FracturedChorus.UI
             _onSelect = onSelect;
             _panel = panel;
             SetHighlight(false);
-
-            if (_label != null)
-            {
-                _label.text = BuildLabel(skill, keyHint);
-            }
+            ApplySkillPresentation(skill, keyHint);
         }
 
         /// <summary>Runtime fallback when scene slots are missing.</summary>
@@ -152,7 +166,36 @@ namespace FracturedChorus.UI
             Bind(skill, keyHint, onSelect, panel);
         }
 
-        private static string BuildLabel(SkillDefinitionSO skill, string keyHint)
+        private void ApplySkillPresentation(SkillDefinitionSO skill, string keyHint)
+        {
+            var hasIcon = skill != null && skill.icon != null;
+
+            if (_icon != null)
+            {
+                _icon.sprite = hasIcon ? skill.icon : null;
+                _icon.enabled = hasIcon;
+            }
+
+            if (_label == null)
+            {
+                return;
+            }
+
+            if (hasIcon)
+            {
+                _label.fontSize = LabelFontSize;
+                _label.alignment = TextAnchor.UpperRight;
+                _label.text = skill != null ? $"[{keyHint}]" : $"[{keyHint}]\n—";
+            }
+            else
+            {
+                _label.fontSize = FallbackLabelFontSize;
+                _label.alignment = TextAnchor.MiddleCenter;
+                _label.text = BuildFallbackLabel(skill, keyHint);
+            }
+        }
+
+        private static string BuildFallbackLabel(SkillDefinitionSO skill, string keyHint)
         {
             if (skill == null)
             {

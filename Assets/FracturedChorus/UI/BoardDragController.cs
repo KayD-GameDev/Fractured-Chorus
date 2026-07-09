@@ -185,6 +185,29 @@ namespace FracturedChorus.UI
             _pointerDownUnit = null;
         }
 
+        public void SetSlotFloorsVisible(bool visible, GridSide? side = null)
+        {
+            foreach (var marker in _markers.Values)
+            {
+                if (marker == null)
+                {
+                    continue;
+                }
+
+                if (side.HasValue && marker.Side != side.Value)
+                {
+                    continue;
+                }
+
+                marker.SetFloorVisible(visible);
+            }
+
+            if (!visible)
+            {
+                ClearHighlight();
+            }
+        }
+
         public void BeginDrag(UnitView view)
         {
             if (!CanDragUnit(view))

@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: tank_ult
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.SkillDefinitionSO
   skillId: tank_ult
+  icon: {fileID: 21300000, guid: 293ee5bcbfda4a4780635013e3d80771, type: 3}
   displayName: Bulwark
   description: 'Shield 65 + counter dmg'
   slotKind: 2

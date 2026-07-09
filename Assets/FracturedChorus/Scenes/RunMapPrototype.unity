@@ -5421,8 +5421,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.RunMap.UI.RunMapScrollDriver
   scrollRect: {fileID: 1666908400}
-  scrollSpeedScale: 0.5
-  scrollSensitivity: 42
+  scrollSpeedScale: 1
+  scrollSensitivity: 58
+  wheelScrollMultiplier: 0.17
   decelerationRate: 0.038
   elasticity: 0.04
   smoothTime: 0.36

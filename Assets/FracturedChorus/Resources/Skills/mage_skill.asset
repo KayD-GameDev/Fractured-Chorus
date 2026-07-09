@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: mage_skill
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.SkillDefinitionSO
   skillId: mage_skill
+  icon: {fileID: 21300000, guid: 169166fc1fbc41aa9bec731a0f24b48b, type: 3}
   displayName: Mend
   description: 'Heal 25 + Ma×0.5'
   slotKind: 1
