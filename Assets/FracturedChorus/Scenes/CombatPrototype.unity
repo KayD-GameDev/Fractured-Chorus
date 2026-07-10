@@ -5513,10 +5513,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Audio.CombatSfxController
   perfectCounterSource: {fileID: 0}
-  perfectCounterClip: {fileID: 8300000, guid: a2b3c4d5e6f708192a3b4c5d6e7f8091, type: 3}
+  perfectCounterClip: {fileID: 8300000, guid: ca3332a67d4ac904b8a6b7e883551a29, type: 3}
   perfectCounterVolume: 1
   clashHitSource: {fileID: 0}
-  clashHitClip: {fileID: 0}
+  clashHitClip: {fileID: 8300000, guid: 55d37665aa0217043a7b0c1c7dbfac36, type: 3}
   clashHitVolume: 1
 --- !u!1 &908022647
 GameObject:
