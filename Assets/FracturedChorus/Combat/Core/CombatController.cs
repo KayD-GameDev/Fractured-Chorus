@@ -54,9 +54,9 @@ namespace FracturedChorus.Combat.Core
 
         private bool _introPauseConsumed;
 
-
-
-        public CombatSession Session => _session;
+        private CombatUnit _relocateUnit;
+        private SkillDefinitionSO _relocateSkill;
+        private int _relocateFromBeat = -1;
 
 
 
@@ -127,7 +127,7 @@ namespace FracturedChorus.Combat.Core
                 }
 
                 timelineView.Bind(_timeline, _session, music, OnTimelinePlanningPause, OnRoundSegmentComplete, combatSfx);
-                timelineView.SetSkillRemoveHandler(RemoveSkillAtBeat);
+                timelineView.SetSkillRelocateHandlers(BeginRelocateSkill, UpdateRelocateSkill, EndRelocateSkill);
                 timelineView.BindBlockBarriers(_session.BlockBarriers);
                 timelineView.SetLaneAvatarClickHandler(OnLaneAvatarClicked);
 
@@ -342,20 +342,91 @@ namespace FracturedChorus.Combat.Core
             skillPanelView?.ToggleForUnit(unit, view);
         }
 
-        private void RemoveSkillAtBeat(CombatUnit unit, int beatIndex)
+        private bool BeginRelocateSkill(CombatUnit unit, int beatIndex)
         {
-            if (_session == null || _session.AllowPlayerReposition)
+            if (_session == null || _session.AllowPlayerReposition || _session.Timeline == null)
             {
-                return;
+                return false;
             }
+
+            var entry = _session.Timeline.FindPlayerEntry(unit, beatIndex);
+            if (entry?.Skill == null)
+            {
+                return false;
+            }
+
+            _relocateUnit = unit;
+            _relocateSkill = entry.Skill;
+            _relocateFromBeat = beatIndex;
 
             if (!_session.TryRemovePlayerAction(unit, beatIndex))
             {
+                ClearRelocateState();
+                return false;
+            }
+
+            timelineView?.PrepareLaneMarkerRelocate(unit, beatIndex);
+            timelineView?.RefreshLaneMarkers();
+            return true;
+        }
+
+        private void UpdateRelocateSkill(Vector2 screenPos)
+        {
+            if (_relocateSkill == null || timelineView == null)
+            {
                 return;
             }
 
+            if (timelineView.IsScreenPointInViewport(screenPos))
+            {
+                timelineView.ShowDropGhost(_relocateUnit, _relocateSkill, screenPos);
+            }
+            else
+            {
+                timelineView.HideDropGhost();
+            }
+        }
+
+        private void EndRelocateSkill(Vector2 screenPos)
+        {
+            if (_relocateSkill == null)
+            {
+                timelineView?.HideDropGhost();
+                return;
+            }
+
+            timelineView?.HideDropGhost();
+
+            if (timelineView != null && timelineView.IsScreenPointInViewport(screenPos)
+                && timelineView.TryGetPlacementBeatAtScreenPoint(screenPos, _relocateSkill, out var beat)
+                && _session.TryAssignPlayerAction(_relocateUnit, _relocateSkill, beat))
+            {
+                ClearRelocateState();
+                timelineView.RefreshBeat(beat);
+                timelineView.RefreshLaneMarkers();
+                return;
+            }
+
+            if (timelineView != null && timelineView.IsScreenPointInViewport(screenPos))
+            {
+                _session.TryAssignPlayerAction(_relocateUnit, _relocateSkill, _relocateFromBeat);
+                ClearRelocateState();
+                timelineView.RefreshLaneMarkers();
+                return;
+            }
+
+            ClearRelocateState();
             timelineView?.RefreshAll();
             timelineView?.RefreshLaneMarkers();
+        }
+
+        private void ClearRelocateState()
+        {
+            timelineView?.HideDropGhost();
+            timelineView?.ClearLaneMarkerRelocatePrepare();
+            _relocateUnit = null;
+            _relocateSkill = null;
+            _relocateFromBeat = -1;
         }
 
 

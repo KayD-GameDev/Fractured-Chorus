@@ -17,6 +17,8 @@ namespace FracturedChorus.UI
 
         private RectTransform _rect;
         private Image _background;
+        private Image _hitTarget;
+        private TimelineLaneSkillDragHandle _dragHandle;
         private Image _glow;
         private Image _outline;
         private Text _label;
@@ -152,10 +154,59 @@ namespace FracturedChorus.UI
 
         public void SetPlanningInteractionEnabled(bool enabled)
         {
+            EnsureHitTarget();
+
+            if (_hitTarget != null)
+            {
+                _hitTarget.raycastTarget = enabled;
+            }
+
+            if (_dragHandle != null)
+            {
+                _dragHandle.SetInteractionEnabled(enabled);
+            }
+
             if (_background != null)
             {
-                _background.raycastTarget = enabled;
+                _background.raycastTarget = false;
             }
+        }
+
+        public void WireSkillDrag(BeatTimelineUIView timeline, CombatUnit unit, int placementBeat)
+        {
+            EnsureHitTarget();
+            if (_dragHandle == null)
+            {
+                return;
+            }
+
+            _dragHandle.Configure(timeline, unit, placementBeat);
+            _dragHandle.SetInteractionEnabled(true);
+        }
+
+        private void EnsureHitTarget()
+        {
+            if (_hitTarget != null || _rect == null)
+            {
+                return;
+            }
+
+            var hitGo = new GameObject("HitTarget", typeof(RectTransform));
+            var hitRect = hitGo.GetComponent<RectTransform>();
+            hitRect.SetParent(_rect, false);
+            hitRect.anchorMin = new Vector2(0.5f, 0.5f);
+            hitRect.anchorMax = new Vector2(0.5f, 0.5f);
+            hitRect.pivot = new Vector2(0.5f, 0.5f);
+            hitRect.anchoredPosition = Vector2.zero;
+            var size = _rect.sizeDelta;
+            hitRect.sizeDelta = new Vector2(Mathf.Max(size.x * 2f, 48f), Mathf.Max(size.y * 2f, 48f));
+            _hitTarget = hitGo.AddComponent<Image>();
+            _hitTarget.sprite = UiCircleSpriteUtil.Circle;
+            _hitTarget.type = Image.Type.Simple;
+            _hitTarget.color = new Color(1f, 1f, 1f, 0.01f);
+            _hitTarget.raycastTarget = false;
+            _dragHandle = hitGo.AddComponent<TimelineLaneSkillDragHandle>();
+            hitGo.transform.SetAsLastSibling();
         }
 
         public void SetLanePosition(Vector2 localPos, bool animate)
@@ -199,6 +250,29 @@ namespace FracturedChorus.UI
             if (t >= 1f)
             {
                 _animating = false;
+            }
+        }
+
+        public void SetRelocateVisualHidden(bool hidden)
+        {
+            if (_glow != null)
+            {
+                _glow.enabled = !hidden && !_gapAnchorMode;
+            }
+
+            if (_outline != null)
+            {
+                _outline.enabled = !hidden && !_gapAnchorMode;
+            }
+
+            if (_background != null)
+            {
+                _background.enabled = !hidden;
+            }
+
+            if (_label != null)
+            {
+                _label.enabled = !hidden;
             }
         }
 

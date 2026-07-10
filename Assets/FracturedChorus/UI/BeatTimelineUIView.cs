@@ -91,7 +91,10 @@ namespace FracturedChorus.UI
         private readonly Dictionary<(CombatUnit unit, int beat), Image> _footprintDots = new();
         private readonly Dictionary<(CombatUnit unit, int beat), TimelineLaneMarkerView> _laneMarkers = new();
         private TimelineLaneMarkerView _dropGhost;
-        private Action<CombatUnit, int> _onRemoveSkillAtBeat;
+        private (CombatUnit unit, int beat)? _relocatePendingKey;
+        private Func<CombatUnit, int, bool> _onBeginSkillRelocate;
+        private Action<Vector2> _onSkillRelocateDrag;
+        private Action<Vector2> _onEndSkillRelocate;
         private RectTransform _blockBarrierLayer;
         private readonly List<Image> _blockBarrierViews = new();
         private BlockBarrierTracker _blockBarriers;
@@ -241,6 +244,12 @@ namespace FracturedChorus.UI
             {
                 viewport.gameObject.AddComponent<RectMask2D>();
             }
+
+            var viewportImage = viewport.GetComponent<Image>();
+            if (viewportImage != null)
+            {
+                viewportImage.raycastTarget = false;
+            }
         }
 
         public void Bind(BeatTimelineEngine timeline, CombatSession session,
@@ -285,9 +294,59 @@ namespace FracturedChorus.UI
             RefreshPhaseAvLabel();
         }
 
-        public void SetSkillRemoveHandler(Action<CombatUnit, int> handler)
+        public void SetSkillRelocateHandlers(
+            Func<CombatUnit, int, bool> onBeginRelocate,
+            Action<Vector2> onRelocateDrag,
+            Action<Vector2> onEndRelocate)
         {
-            _onRemoveSkillAtBeat = handler;
+            _onBeginSkillRelocate = onBeginRelocate;
+            _onSkillRelocateDrag = onRelocateDrag;
+            _onEndSkillRelocate = onEndRelocate;
+            RefreshLaneMarkerDragWiring();
+        }
+
+        public bool CanRelocateLaneMarker()
+        {
+            return _session != null && _session.Phase == CombatPhase.Planning && !_session.AllowPlayerReposition;
+        }
+
+        public bool TryBeginLaneMarkerRelocate(CombatUnit unit, int beatIndex)
+        {
+            return _onBeginSkillRelocate != null && _onBeginSkillRelocate.Invoke(unit, beatIndex);
+        }
+
+        public void UpdateLaneMarkerRelocate(Vector2 screenPos)
+        {
+            _onSkillRelocateDrag?.Invoke(screenPos);
+        }
+
+        public void EndLaneMarkerRelocate(Vector2 screenPos)
+        {
+            _onEndSkillRelocate?.Invoke(screenPos);
+        }
+
+        public void PrepareLaneMarkerRelocate(CombatUnit unit, int beatIndex)
+        {
+            _relocatePendingKey = (unit, beatIndex);
+            if (_laneMarkers.TryGetValue((unit, beatIndex), out var marker) && marker != null)
+            {
+                marker.SetRelocateVisualHidden(true);
+            }
+        }
+
+        public void ClearLaneMarkerRelocatePrepare()
+        {
+            _relocatePendingKey = null;
+        }
+
+        public bool IsScreenPointInViewport(Vector2 screen)
+        {
+            if (viewport == null)
+            {
+                return false;
+            }
+
+            return RectTransformUtility.RectangleContainsScreenPoint(viewport, screen, GetUiCameraForTimeline());
         }
 
         public void SetLaneAvatarClickHandler(Action<CombatUnit> handler)
@@ -1085,37 +1144,61 @@ namespace FracturedChorus.UI
 
             if (_laneLinesLayer == null)
             {
-                var go = new GameObject("LaneLines", typeof(RectTransform));
-                _laneLinesLayer = go.GetComponent<RectTransform>();
-                _laneLinesLayer.SetParent(viewport, false);
-                _laneLinesLayer.anchorMin = Vector2.zero;
-                _laneLinesLayer.anchorMax = Vector2.one;
-                _laneLinesLayer.offsetMin = Vector2.zero;
-                _laneLinesLayer.offsetMax = Vector2.zero;
+                var existingLines = viewport.Find("LaneLines") as RectTransform;
+                if (existingLines != null)
+                {
+                    _laneLinesLayer = existingLines;
+                }
+                else
+                {
+                    var go = new GameObject("LaneLines", typeof(RectTransform));
+                    _laneLinesLayer = go.GetComponent<RectTransform>();
+                    _laneLinesLayer.SetParent(viewport, false);
+                    _laneLinesLayer.anchorMin = Vector2.zero;
+                    _laneLinesLayer.anchorMax = Vector2.one;
+                    _laneLinesLayer.offsetMin = Vector2.zero;
+                    _laneLinesLayer.offsetMax = Vector2.zero;
+                }
             }
 
             if (_footprintLayer == null)
             {
-                var go = new GameObject("LaneFootprint", typeof(RectTransform));
-                _footprintLayer = go.GetComponent<RectTransform>();
-                _footprintLayer.SetParent(viewport, false);
-                _footprintLayer.anchorMin = new Vector2(0f, 0f);
-                _footprintLayer.anchorMax = new Vector2(0f, 1f);
-                _footprintLayer.pivot = new Vector2(0f, 0.5f);
-                _footprintLayer.offsetMin = Vector2.zero;
-                _footprintLayer.offsetMax = Vector2.zero;
+                var existingFootprint = viewport.Find("LaneFootprint") as RectTransform;
+                if (existingFootprint != null)
+                {
+                    _footprintLayer = existingFootprint;
+                }
+                else
+                {
+                    var go = new GameObject("LaneFootprint", typeof(RectTransform));
+                    _footprintLayer = go.GetComponent<RectTransform>();
+                    _footprintLayer.SetParent(viewport, false);
+                    _footprintLayer.anchorMin = new Vector2(0f, 0f);
+                    _footprintLayer.anchorMax = new Vector2(0f, 1f);
+                    _footprintLayer.pivot = new Vector2(0f, 0.5f);
+                    _footprintLayer.offsetMin = Vector2.zero;
+                    _footprintLayer.offsetMax = Vector2.zero;
+                }
             }
 
             if (_laneMarkersLayer == null)
             {
-                var go = new GameObject("LaneMarkers", typeof(RectTransform));
-                _laneMarkersLayer = go.GetComponent<RectTransform>();
-                _laneMarkersLayer.SetParent(viewport, false);
-                _laneMarkersLayer.anchorMin = new Vector2(0f, 0f);
-                _laneMarkersLayer.anchorMax = new Vector2(0f, 1f);
-                _laneMarkersLayer.pivot = new Vector2(0f, 0.5f);
-                _laneMarkersLayer.offsetMin = Vector2.zero;
-                _laneMarkersLayer.offsetMax = Vector2.zero;
+                var existing = viewport.Find("LaneMarkers") as RectTransform;
+                if (existing != null)
+                {
+                    _laneMarkersLayer = existing;
+                }
+                else
+                {
+                    var go = new GameObject("LaneMarkers", typeof(RectTransform));
+                    _laneMarkersLayer = go.GetComponent<RectTransform>();
+                    _laneMarkersLayer.SetParent(viewport, false);
+                    _laneMarkersLayer.anchorMin = new Vector2(0f, 0f);
+                    _laneMarkersLayer.anchorMax = new Vector2(0f, 1f);
+                    _laneMarkersLayer.pivot = new Vector2(0f, 0.5f);
+                    _laneMarkersLayer.offsetMin = Vector2.zero;
+                    _laneMarkersLayer.offsetMax = Vector2.zero;
+                }
             }
 
             _footprintLayer.SetAsLastSibling();
@@ -1438,6 +1521,8 @@ namespace FracturedChorus.UI
                 var gapAnchor = SkillFootprintUtil.UsesGapCenterAnchor(entry.Skill);
                 if (_laneMarkers.TryGetValue(key, out var existing) && existing != null)
                 {
+                    existing.SetRelocateVisualHidden(false);
+                    existing.gameObject.SetActive(true);
                     existing.SetGapAnchorMode(gapAnchor);
                     existing.SetContent(entry.Unit, entry.Skill);
                     existing.SetLanePosition(pos, false);
@@ -1456,6 +1541,7 @@ namespace FracturedChorus.UI
 
             ReconcileLaneMarkers(wanted);
             ReconcileFootprintDots(wantedFootprint);
+            RefreshLaneMarkerDragWiring();
 
             SyncLaneMarkersScroll();
         }
@@ -1477,16 +1563,16 @@ namespace FracturedChorus.UI
                 if (info.Role == FootprintBeatRole.Active)
                 {
                     var color = new Color(unitColor.r, unitColor.g, unitColor.b, 0.95f);
-                    TryPlaceFootprintDot(entry.Unit, info.BeatIndex, laneY, color, wanted, activeFootprintDotSize);
+                    TryPlaceFootprintDot(entry.Unit, info.BeatIndex, laneY, color, wanted, activeFootprintDotSize, placement, enableDrag: true);
                     continue;
                 }
 
-                TryPlaceFootprintDot(entry.Unit, info.BeatIndex, laneY, StandingDotColor, wanted, footprintDotSize);
+                TryPlaceFootprintDot(entry.Unit, info.BeatIndex, laneY, StandingDotColor, wanted, footprintDotSize, placement, enableDrag: false);
             }
         }
 
         private void TryPlaceFootprintDot(CombatUnit unit, int beat, float laneY, Color color,
-            HashSet<(CombatUnit unit, int beat)> wanted, float size)
+            HashSet<(CombatUnit unit, int beat)> wanted, float size, int placementBeat, bool enableDrag)
         {
             if (beat < 0 || beat >= TotalBeats)
             {
@@ -1502,6 +1588,7 @@ namespace FracturedChorus.UI
                 dot.color = color;
                 dot.rectTransform.anchoredPosition = pos;
                 dot.rectTransform.sizeDelta = new Vector2(size, size);
+                ConfigureFootprintDotInteraction(dot, unit, placementBeat, enableDrag);
                 return;
             }
 
@@ -1509,6 +1596,37 @@ namespace FracturedChorus.UI
             created.color = color;
             created.rectTransform.anchoredPosition = pos;
             _footprintDots[key] = created;
+            ConfigureFootprintDotInteraction(created, unit, placementBeat, enableDrag);
+        }
+
+        private void ConfigureFootprintDotInteraction(Image dot, CombatUnit unit, int placementBeat, bool enableDrag)
+        {
+            if (dot == null)
+            {
+                return;
+            }
+
+            if (!enableDrag)
+            {
+                dot.raycastTarget = false;
+                var staleHandle = dot.GetComponent<TimelineLaneSkillDragHandle>();
+                if (staleHandle != null)
+                {
+                    Destroy(staleHandle);
+                }
+
+                return;
+            }
+
+            dot.raycastTarget = CanRelocateLaneMarker();
+            var handle = dot.GetComponent<TimelineLaneSkillDragHandle>();
+            if (handle == null)
+            {
+                handle = dot.gameObject.AddComponent<TimelineLaneSkillDragHandle>();
+            }
+
+            handle.Configure(this, unit, placementBeat);
+            handle.SetInteractionEnabled(CanRelocateLaneMarker());
         }
 
         private void ReconcileLaneMarkers(HashSet<(CombatUnit unit, int beat)> wanted)
@@ -1524,6 +1642,11 @@ namespace FracturedChorus.UI
 
             foreach (var key in stale)
             {
+                if (_relocatePendingKey is { } pending && pending == key)
+                {
+                    continue;
+                }
+
                 if (_laneMarkers.TryGetValue(key, out var marker) && marker != null)
                 {
                     Destroy(marker.gameObject);
@@ -1590,22 +1713,56 @@ namespace FracturedChorus.UI
             _footprintDots.Clear();
         }
 
-        private TimelineLaneMarkerView CreateLaneMarker(CombatUnit unit, int placementBeat)
+        private TimelineLaneMarkerView CreateLaneMarker(CombatUnit unit, int placementBeat, bool enableDrag = true)
         {
             var go = new GameObject("LaneMarker", typeof(RectTransform));
             var marker = go.AddComponent<TimelineLaneMarkerView>();
             marker.Build(_laneMarkersLayer, laneMarkerSize);
-            marker.SetPlanningInteractionEnabled(true);
+            marker.SetPlanningInteractionEnabled(enableDrag);
 
-            var drag = go.AddComponent<TimelineLaneMarkerDrag>();
-            drag.Configure(
-                unit,
-                placementBeat,
-                () => _session != null && _session.Phase == CombatPhase.Planning && !_session.AllowPlayerReposition,
-                (u, b) => _onRemoveSkillAtBeat?.Invoke(u, b),
-                RefreshLaneMarkers);
+            if (enableDrag)
+            {
+                WireLaneMarkerDrag(marker, unit, placementBeat);
+            }
 
             return marker;
+        }
+
+        private void WireLaneMarkerDrag(TimelineLaneMarkerView marker, CombatUnit unit, int placementBeat)
+        {
+            marker?.WireSkillDrag(this, unit, placementBeat);
+        }
+
+        private void RefreshLaneMarkerDragWiring()
+        {
+            var canRelocate = CanRelocateLaneMarker();
+
+            foreach (var kvp in _laneMarkers)
+            {
+                if (kvp.Value == null || kvp.Value == _dropGhost)
+                {
+                    continue;
+                }
+
+                WireLaneMarkerDrag(kvp.Value, kvp.Key.unit, kvp.Key.beat);
+            }
+
+            foreach (var kvp in _footprintDots)
+            {
+                if (kvp.Value == null)
+                {
+                    continue;
+                }
+
+                var handle = kvp.Value.GetComponent<TimelineLaneSkillDragHandle>();
+                if (handle == null)
+                {
+                    continue;
+                }
+
+                kvp.Value.raycastTarget = canRelocate;
+                handle.SetInteractionEnabled(canRelocate);
+            }
         }
 
         private void EnsureBlockBarrierLayer()
@@ -1780,7 +1937,7 @@ namespace FracturedChorus.UI
 
             if (_dropGhost == null)
             {
-                _dropGhost = CreateLaneMarker(unit, beat);
+                _dropGhost = CreateLaneMarker(unit, beat, enableDrag: false);
             }
 
             _dropGhost.gameObject.SetActive(true);
