@@ -10,6 +10,9 @@ EditorBuildSettings:
     guid: 465d5b554ad955f4ab4ad78e104bfbf9
   - enabled: 1
     path: Assets/FracturedChorus/Scenes/PrologueVN.unity
+    guid: 6e002106d88c16e4c8b6b444cd6100de
+  - enabled: 1
+    path: Assets/FracturedChorus/Scenes/CampusHub.unity
     guid: 00000000000000000000000000000000
   - enabled: 1
     path: Assets/FracturedChorus/Scenes/RunMapPrototype.unity

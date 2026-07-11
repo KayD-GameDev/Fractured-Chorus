@@ -5,6 +5,7 @@ namespace FracturedChorus.RunMap
     {
         public const string MainMenuStartGame = "MainMenuStartGame";
         public const string PrologueVN = "PrologueVN";
+        public const string CampusHub = "CampusHub";
         public const string RunMapPrototype = "RunMapPrototype";
         public const string CombatPrototype = "CombatPrototype";
     }

@@ -1,5 +1,6 @@
 using System.Collections;
 using FracturedChorus.Menu;
+using FracturedChorus.Meta;
 using FracturedChorus.RunMap;
 using UnityEngine;
 using UnityEngine.UI;
@@ -58,7 +59,7 @@ namespace FracturedChorus.Narrative
         [SerializeField] private float disclaimerExitHoldSeconds = 0.4f;
         [SerializeField] private float butterflyFadeInDuration = 1.45f;
         [SerializeField] private float contractRevealDuration = 1.35f;
-        [SerializeField] private string nextSceneName = RunMapSceneCatalog.RunMapPrototype;
+        [SerializeField] private string nextSceneName = RunMapSceneCatalog.CampusHub;
         [SerializeField] private CanvasGroup choiceBackdrop;
         [SerializeField] private PrologueVNLayoutConfig layoutConfig;
         [SerializeField] private PrologueEditorPreview editorPreview = PrologueEditorPreview.Contract;
@@ -74,6 +75,7 @@ namespace FracturedChorus.Narrative
         private void Start()
         {
             RunProfile.ResetForNewRun();
+            GameMetaSession.ResetSession();
             disclaimerTypewriter?.Bind(audioController);
             dialogueTypewriter?.Bind(audioController);
             choiceView?.Bind(audioController);
