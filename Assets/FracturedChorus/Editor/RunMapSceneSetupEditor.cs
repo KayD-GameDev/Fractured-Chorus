@@ -20,6 +20,7 @@ namespace FracturedChorus.Editor
         private const string CadenceLayoutAssetPath = "Assets/FracturedChorus/Data/ScriptableObjects/Presets/CadenceMapLayout_Default.asset";
         private const string PinkyVaultConfigPath = "Assets/FracturedChorus/Data/ScriptableObjects/Presets/PinkyVaultConfig_Default.asset";
         private const string CadenceBackgroundPath = "Assets/FracturedChorus/Art/Backgrounds/cadence_macro_map_bg_v2_5fingers.png";
+        private const string WorldMapBgmPath = "Assets/FracturedChorus/Audio/Music/The_Locked_Vault.mp3";
 
         [MenuItem("Fractured Chorus/Run Map/Setup Cadence Macro Layer", false, 20)]
         public static void SetupCadenceMacroMapLayer()
@@ -388,11 +389,55 @@ namespace FracturedChorus.Editor
             WireBootstrap(bootstrap, controller);
             WireController(controller, mapView, topBar.status, topBar.seed);
             SetupCadenceMacroMapLayer();
+            EnsureRunMapBgm(root.transform);
 
             EditorSceneManager.MarkSceneDirty(root.scene);
             Selection.activeGameObject = root;
 
             Debug.Log("[Fractured Chorus] Run map + Cadence macro layer created. Save scene → Play.");
+        }
+
+        [MenuItem("Fractured Chorus/Run Map/Wire World Map BGM", false, 15)]
+        public static void WireRunMapWorldMapBgm()
+        {
+            var root = GameObject.Find("RunMapRoot");
+            if (root == null)
+            {
+                EditorUtility.DisplayDialog(
+                    "Wire World Map BGM",
+                    "Không tìm thấy RunMapRoot. Mở RunMapPrototype hoặc chạy Run Map → Setup Scene Hierarchy.",
+                    "OK");
+                return;
+            }
+
+            EnsureRunMapBgm(root.transform);
+            EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
+            Debug.Log("[Fractured Chorus] World map BGM wired — Save scene (Ctrl+S).");
+        }
+
+        public static void BatchWireRunMapWorldMapBgm()
+        {
+            if (!System.IO.File.Exists(ScenePath))
+            {
+                Debug.LogError($"[Fractured Chorus] Scene not found: {ScenePath}");
+                EditorApplication.Exit(1);
+                return;
+            }
+
+            EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            var root = GameObject.Find("RunMapRoot");
+            if (root == null)
+            {
+                Debug.LogError("[Fractured Chorus] RunMapRoot not found in RunMapPrototype.");
+                EditorApplication.Exit(1);
+                return;
+            }
+
+            EnsureRunMapBgm(root.transform);
+            EditorSceneManager.SaveOpenScenes();
+            AssetDatabase.SaveAssets();
+            Debug.Log("[Fractured Chorus] RunMapPrototype world map BGM batch wire complete.");
+            EditorApplication.Exit(0);
         }
 
         [MenuItem("Fractured Chorus/Run Map/Create Prototype Scene", false, 0)]
@@ -894,6 +939,31 @@ namespace FracturedChorus.Editor
             }
 
             go.transform.SetParent(parent, true);
+        }
+
+        private static void EnsureRunMapBgm(Transform root)
+        {
+            var existing = root.Find("RunMapBgm");
+            if (existing == null)
+            {
+                var bgmGo = new GameObject("RunMapBgm");
+                Undo.RegisterCreatedObjectUndo(bgmGo, "Create RunMapBgm");
+                bgmGo.transform.SetParent(root, false);
+                existing = bgmGo.transform;
+                bgmGo.AddComponent<AudioSource>();
+                bgmGo.AddComponent<RunMapBgmController>();
+            }
+
+            var bgm = existing.GetComponent<RunMapBgmController>();
+            var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(WorldMapBgmPath);
+            if (clip == null)
+            {
+                Debug.LogWarning($"[Fractured Chorus] World map BGM clip not found at {WorldMapBgmPath}.");
+            }
+
+            SetSerializedField(bgm, "worldMapClip", clip);
+            SetSerializedField(bgm, "volume", 0.5f);
+            EditorUtility.SetDirty(bgm);
         }
 
         private static void SetSerializedField(Object target, string fieldName, object value)

@@ -22,6 +22,7 @@ namespace FracturedChorus.RunMap
         [SerializeField] private RunMapBootstrap bootstrap;
         [SerializeField] private Text statusLabel;
         [SerializeField] private Button backToMacroButton;
+        [SerializeField] private Button returnToHubButton;
 
         [Header("Combat")]
         [SerializeField] private string bossCombatSceneName = RunMapSceneCatalog.CombatPrototype;
@@ -54,7 +55,32 @@ namespace FracturedChorus.RunMap
                 backToMacroButton.onClick.AddListener(ShowMacroMap);
             }
 
+            if (returnToHubButton != null)
+            {
+                returnToHubButton.onClick.AddListener(ReturnToCampusHub);
+            }
+
             ResolveLayerReferences();
+        }
+
+        private void Update()
+        {
+            if (!FracturedChorus.Meta.GameMetaSession.HasSession
+                || !FracturedChorus.Meta.GameMetaSession.Current.RunSnapshot.HasActiveRun)
+            {
+                return;
+            }
+
+            if (UnityEngine.InputSystem.Keyboard.current != null &&
+                UnityEngine.InputSystem.Keyboard.current.escapeKey.wasPressedThisFrame)
+            {
+                ReturnToCampusHub();
+            }
+        }
+
+        public void ReturnToCampusHub()
+        {
+            RunMapHubBridge.ReturnToCampusHub();
         }
 
         private void ResolveLayerReferences()
