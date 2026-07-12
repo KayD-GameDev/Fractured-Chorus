@@ -1,7 +1,7 @@
 # PrologueVN — Scene setup
 
-**Scene:** `Assets/FracturedChorus/Scenes/PrologueVN.unity`  
-**Flow:** Main Menu NEW GAME → PrologueVN → RunMapPrototype
+**Scene:** `Assets/FracturedChorus/Scenes/PrologueVN.unity`
+**Flow:** Main Menu NEW GAME → PrologueVN → OpeningInvestigation → CampusHub
 
 ## Tạo / rebuild scene
 

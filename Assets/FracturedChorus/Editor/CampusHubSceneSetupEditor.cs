@@ -80,7 +80,7 @@ namespace FracturedChorus.Editor
                 return;
             }
 
-            var townMap = UnityEngine.Object.FindFirstObjectByType<TownMapView>();
+            var townMap = UnityEngine.Object.FindAnyObjectByType<TownMapView>();
             if (townMap == null)
             {
                 EditorUtility.DisplayDialog("Wire Status Menu", "Không tìm thấy TownMapView trong scene.", "OK");
@@ -309,6 +309,9 @@ namespace FracturedChorus.Editor
             controllerSo.FindProperty("townMapView").objectReferenceValue = townMap;
             controllerSo.FindProperty("statusLabel").objectReferenceValue = statusLabel;
             controllerSo.ApplyModifiedPropertiesWithoutUndo();
+
+            controller.SetEditorPreview(CampusHubController.CampusHubEditorPreview.TownDay);
+            EditorUtility.SetDirty(controller);
         }
 
         private static TownMapPinView CreatePinTemplate(Transform parent)

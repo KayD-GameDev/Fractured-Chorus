@@ -3,6 +3,7 @@ namespace FracturedChorus.Meta
     public static class StoryFlagIds
     {
         public const string LuminaCaseOpen = "lumina_case_open";
+        public const string OpeningInvestigationDone = "opening_investigation_done";
         public const string RenArrivedHima = "ren_arrived_hima";
         public const string AstraMet = "astra_met";
         public const string HimaTourDone = "hima_tour_done";

@@ -80,6 +80,42 @@ namespace FracturedChorus.Hub
             return false;
         }
 
+        public static bool MonthPrevPressed()
+        {
+            RefreshScheme();
+            if (Keyboard.current != null && Keyboard.current.qKey.wasPressedThisFrame)
+            {
+                CurrentScheme = TownMapPromptScheme.Keyboard;
+                return true;
+            }
+
+            if (Gamepad.current != null && Gamepad.current.leftShoulder.wasPressedThisFrame)
+            {
+                CurrentScheme = TownMapPromptScheme.Gamepad;
+                return true;
+            }
+
+            return false;
+        }
+
+        public static bool MonthNextPressed()
+        {
+            RefreshScheme();
+            if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame)
+            {
+                CurrentScheme = TownMapPromptScheme.Keyboard;
+                return true;
+            }
+
+            if (Gamepad.current != null && Gamepad.current.rightShoulder.wasPressedThisFrame)
+            {
+                CurrentScheme = TownMapPromptScheme.Gamepad;
+                return true;
+            }
+
+            return false;
+        }
+
         private static bool WasGamepadUsedRecently()
         {
             var pad = Gamepad.current;

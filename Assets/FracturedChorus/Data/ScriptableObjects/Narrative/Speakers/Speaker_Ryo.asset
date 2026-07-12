@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 562e89a45d311e24884ec69fda05b8d2, type: 3}
+  m_Name: Speaker_Ryo
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Narrative.Vn.VnSpeakerDefinitionSO
+  speakerId: ryo
+  displayName: Ryo
+  bustSprite: {fileID: 21300000, guid: 8777fbc4be7348f997fcf37489f0b984, type: 3}
+  expressionSprites:
+  - expressionId: neutral
+    sprite: {fileID: 21300000, guid: 8777fbc4be7348f997fcf37489f0b984, type: 3}
+  - expressionId: nervous
+    sprite: {fileID: 21300000, guid: b525989f6e3a4d21b8e814c311401e8d, type: 3}
+  - expressionId: startled
+    sprite: {fileID: 21300000, guid: aaa33984feb34b7191aaf8c48929f8e5, type: 3}
+  - expressionId: uneasy
+    sprite: {fileID: 21300000, guid: 9c3a0327a25c4f1f86e3401eba8956cc, type: 3}
+  - expressionId: concerned
+    sprite: {fileID: 21300000, guid: 8f2c4df063cf414aab6663e60f3efce6, type: 3}
+  shadowColor: {r: 0.06, g: 0.18, b: 0.14, a: 0.9}
+  shadowOffsetPixels: {x: -18, y: 14}
+  facesRight: 1
