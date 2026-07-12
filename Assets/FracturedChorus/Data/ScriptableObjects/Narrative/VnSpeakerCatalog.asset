@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 367be59771ae0ee4997403fda9a46009, type: 3}
+  m_Name: VnSpeakerCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Narrative.Vn.VnSpeakerCatalogSO
+  speakers:
+  - {fileID: 11400000, guid: 76b6b003f4e5f9148ad759c828e097eb, type: 2}
+  - {fileID: 11400000, guid: ac09720efe4c0274cb62a6717a99fb98, type: 2}
+  - {fileID: 11400000, guid: 4611b9d0b11b2de4b9fd939a9fa07519, type: 2}
+  - {fileID: 11400000, guid: 1a9937d865a02ea4eb7be4bcd53f04e6, type: 2}

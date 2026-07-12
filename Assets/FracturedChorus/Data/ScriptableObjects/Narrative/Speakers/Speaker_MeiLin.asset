@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 562e89a45d311e24884ec69fda05b8d2, type: 3}
+  m_Name: Speaker_MeiLin
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Narrative.Vn.VnSpeakerDefinitionSO
+  speakerId: mei_lin
+  displayName: Mei Lin
+  bustSprite: {fileID: 21300000, guid: 689f43dd2f004b6cadaf10f8b60e18a9, type: 3}
+  expressionSprites:
+  - expressionId: neutral
+    sprite: {fileID: 21300000, guid: 689f43dd2f004b6cadaf10f8b60e18a9, type: 3}
+  - expressionId: stern
+    sprite: {fileID: 21300000, guid: 4cdb310a7b2c426db0b842f33d15b788, type: 3}
+  - expressionId: weary
+    sprite: {fileID: 21300000, guid: 7ae8f3794b6e42089b983f43b0495cb1, type: 3}
+  - expressionId: concerned
+    sprite: {fileID: 21300000, guid: 40696d7e59a147a19489ffa039af000a, type: 3}
+  - expressionId: warning
+    sprite: {fileID: 21300000, guid: 93847e3aed564d4da5c9f61b647907c5, type: 3}
+  shadowColor: {r: 0.22, g: 0.08, b: 0.14, a: 0.9}
+  shadowOffsetPixels: {x: -18, y: 14}
+  facesRight: 1

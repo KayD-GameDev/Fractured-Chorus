@@ -33,7 +33,8 @@ namespace FracturedChorus.Hub
 
         private const int DisplayYear = 2026;
         private const int ArcMonth = 9;
-        private const int DaysInArcMonth = 30;
+        private const int MinViewMonth = 9;
+        private const int MaxViewMonth = 10;
 
         [SerializeField] private GameObject root;
         [SerializeField] private Image backgroundImage;
@@ -50,6 +51,8 @@ namespace FracturedChorus.Hub
         [SerializeField] private RectTransform gridRoot;
         [SerializeField] private Text selectedDayInfoLabel;
         [SerializeField] private Button closeButton;
+        [SerializeField] private Button hintQButton;
+        [SerializeField] private Button hintEButton;
         [SerializeField] private TownMapSfxController sfx;
 
         private readonly List<DayCell> _cells = new List<DayCell>(42);
@@ -81,7 +84,8 @@ namespace FracturedChorus.Hub
         {
             _state = state;
             _onClosed = onClosed;
-            _viewMonth = ArcMonth;
+            var currentMonth = state?.Calendar.CurrentDate.Month ?? ArcMonth;
+            _viewMonth = Mathf.Clamp(currentMonth, MinViewMonth, MaxViewMonth);
             _selectedDay = state?.Calendar.CurrentDate.Day ?? 1;
             EnsureRuntimeBindings();
             Wire();
@@ -115,6 +119,18 @@ namespace FracturedChorus.Hub
         {
             if (!IsOpen)
             {
+                return;
+            }
+
+            if (TownMapInput.MonthPrevPressed())
+            {
+                ShiftMonth(-1);
+                return;
+            }
+
+            if (TownMapInput.MonthNextPressed())
+            {
+                ShiftMonth(1);
                 return;
             }
 
@@ -199,6 +215,34 @@ namespace FracturedChorus.Hub
                 }
             }
 
+            if (hintQButton == null)
+            {
+                hintQButton = FindButton(transform, "LeftPanel/HintQ", "L01_LeftPanel/HintQ", "HintQ");
+            }
+
+            if (hintEButton == null)
+            {
+                hintEButton = FindButton(transform, "LeftPanel/HintE", "L01_LeftPanel/HintE", "HintE");
+            }
+
+            if (monthBigLabel == null)
+            {
+                var monthBig = FindTransform(transform, "LeftPanel/MonthBig", "L01_LeftPanel/L02a_MonthBig", "MonthBig");
+                if (monthBig != null)
+                {
+                    monthBigLabel = monthBig.GetComponent<Text>();
+                }
+            }
+
+            if (monthNextLabel == null)
+            {
+                var monthNext = FindTransform(transform, "LeftPanel/MonthNext", "L01_LeftPanel/L02b_MonthNext", "MonthNext");
+                if (monthNext != null)
+                {
+                    monthNextLabel = monthNext.GetComponent<Text>();
+                }
+            }
+
             if (_cells.Count == 0 && gridRoot != null)
             {
                 if (gridRoot.childCount == 42)
@@ -216,6 +260,31 @@ namespace FracturedChorus.Hub
         {
             var tf = FindTransform(root, paths);
             return tf as RectTransform;
+        }
+
+        private static Button FindButton(Transform root, params string[] paths)
+        {
+            var tf = FindTransform(root, paths);
+            if (tf == null)
+            {
+                return null;
+            }
+
+            var button = tf.GetComponent<Button>();
+            if (button != null)
+            {
+                return button;
+            }
+
+            var image = tf.GetComponent<Image>();
+            if (image != null)
+            {
+                image.raycastTarget = true;
+            }
+
+            button = tf.gameObject.AddComponent<Button>();
+            button.targetGraphic = image;
+            return button;
         }
 
         private static Transform FindTransform(Transform root, params string[] paths)
@@ -306,8 +375,8 @@ namespace FracturedChorus.Hub
             Stretch(arrow.rectTransform, new Vector2(0.4f, 0.74f), new Vector2(0.46f, 0.82f), Vector2.zero, Vector2.zero);
             arrow.color = Pink;
 
-            CreateKeyHint(left.transform, "HintQ", "Q", new Vector2(0.05f, 0.74f), new Vector2(0.12f, 0.82f));
-            CreateKeyHint(left.transform, "HintE", "E", new Vector2(0.62f, 0.74f), new Vector2(0.69f, 0.82f));
+            var hintQ = CreateKeyHint(left.transform, "HintQ", "Q", new Vector2(0.05f, 0.74f), new Vector2(0.12f, 0.82f));
+            var hintE = CreateKeyHint(left.transform, "HintE", "E", new Vector2(0.62f, 0.74f), new Vector2(0.69f, 0.82f));
 
             var weekdayRowGo = new GameObject("WeekdayRow", typeof(RectTransform));
             weekdayRowGo.transform.SetParent(left.transform, false);
@@ -379,6 +448,8 @@ namespace FracturedChorus.Hub
             overlay.gridRoot = grid.GetComponent<RectTransform>();
             overlay.selectedDayInfoLabel = info;
             overlay.closeButton = close;
+            overlay.hintQButton = hintQ;
+            overlay.hintEButton = hintE;
             overlay.BuildDayCells();
             overlay.Rewire();
             rootGo.SetActive(false);
@@ -409,12 +480,43 @@ namespace FracturedChorus.Hub
                 closeButton.onClick.AddListener(Hide);
             }
 
+            if (hintQButton != null)
+            {
+                hintQButton.onClick.RemoveAllListeners();
+                hintQButton.onClick.AddListener(() => ShiftMonth(-1));
+            }
+
+            if (hintEButton != null)
+            {
+                hintEButton.onClick.RemoveAllListeners();
+                hintEButton.onClick.AddListener(() => ShiftMonth(1));
+            }
+
             if (_cells.Count == 0 && gridRoot != null)
             {
                 BuildDayCells();
             }
 
             _wired = true;
+        }
+
+        private void ShiftMonth(int delta)
+        {
+            var target = Mathf.Clamp(_viewMonth + delta, MinViewMonth, MaxViewMonth);
+            if (target == _viewMonth)
+            {
+                return;
+            }
+
+            _viewMonth = target;
+            var daysInMonth = GameDate.GetDaysInMonth(_viewMonth);
+            if (_selectedDay > daysInMonth)
+            {
+                _selectedDay = daysInMonth;
+            }
+
+            sfx?.PlaySelect();
+            Refresh();
         }
 
         private void BuildDayCells()
@@ -513,8 +615,9 @@ namespace FracturedChorus.Hub
 
             var current = _state.Calendar.CurrentDate;
             var month = _viewMonth;
+            var daysInMonth = GameDate.GetDaysInMonth(month);
             var startWeekday = (int)new DateTime(DisplayYear, month, 1).DayOfWeek;
-            var eventDays = CollectEventDays(_state);
+            var eventDays = month == ArcMonth ? CollectEventDays(_state) : new HashSet<int>();
             DayCell todayCell = null;
 
             if (monthBigLabel != null)
@@ -529,9 +632,19 @@ namespace FracturedChorus.Hub
 
             if (monthNextLabel != null)
             {
-                monthNextLabel.text = month >= 12 ? "1" : (month + 1).ToString();
-                monthNextLabel.color = new Color(1f, 1f, 1f, 0.22f);
+                if (month >= MaxViewMonth)
+                {
+                    monthNextLabel.text = string.Empty;
+                    monthNextLabel.color = new Color(1f, 1f, 1f, 0.08f);
+                }
+                else
+                {
+                    monthNextLabel.text = (month + 1).ToString();
+                    monthNextLabel.color = new Color(1f, 1f, 1f, 0.22f);
+                }
             }
+
+            RefreshMonthHints();
 
             for (var i = 0; i < _cells.Count; i++)
             {
@@ -539,7 +652,7 @@ namespace FracturedChorus.Hub
                 var dayNumber = (i - startWeekday) + 1;
                 cell.DayNumber = dayNumber;
 
-                if (dayNumber < 1 || dayNumber > DaysInArcMonth || month != ArcMonth)
+                if (dayNumber < 1 || dayNumber > daysInMonth)
                 {
                     cell.Label.text = string.Empty;
                     cell.Ring.color = Color.clear;
@@ -594,6 +707,12 @@ namespace FracturedChorus.Hub
             }
 
             var chipDay = _selectedDay > 0 ? _selectedDay : current.Day;
+            if (chipDay < 1 || chipDay > daysInMonth)
+            {
+                chipDay = Mathf.Clamp(current.Month == month ? current.Day : 1, 1, daysInMonth);
+                _selectedDay = chipDay;
+            }
+
             if (dateChipLabel != null)
             {
                 dateChipLabel.text = $"{month}/{chipDay}";
@@ -618,6 +737,35 @@ namespace FracturedChorus.Hub
             }
         }
 
+        private void RefreshMonthHints()
+        {
+            ApplyHintVisual(hintQButton, _viewMonth > MinViewMonth);
+            ApplyHintVisual(hintEButton, _viewMonth < MaxViewMonth);
+        }
+
+        private static void ApplyHintVisual(Button hint, bool enabled)
+        {
+            if (hint == null)
+            {
+                return;
+            }
+
+            hint.interactable = enabled;
+            var image = hint.targetGraphic as Image ?? hint.GetComponent<Image>();
+            if (image != null)
+            {
+                image.color = enabled
+                    ? new Color(0.08f, 0.12f, 0.28f, 0.9f)
+                    : new Color(0.08f, 0.12f, 0.28f, 0.28f);
+            }
+
+            var label = hint.GetComponentInChildren<Text>();
+            if (label != null)
+            {
+                label.color = enabled ? Color.white : new Color(1f, 1f, 1f, 0.25f);
+            }
+        }
+
         private static string BuildDayInfo(int month, int day, GameDate current, HashSet<int> eventDays)
         {
             var date = new GameDate(month, day);
@@ -631,7 +779,7 @@ namespace FracturedChorus.Hub
                 parts.Add("TODAY");
             }
 
-            if (day == GameDate.VaultDeadline.Day)
+            if (month == ArcMonth && day == GameDate.VaultDeadline.Day)
             {
                 parts.Add("Vault deadline");
             }
@@ -657,18 +805,21 @@ namespace FracturedChorus.Hub
             return new HashSet<int> { 1, 2, 5, 6, GameDate.VaultDeadline.Day };
         }
 
-        private static void CreateKeyHint(Transform parent, string name, string key, Vector2 anchorMin, Vector2 anchorMax)
+        private static Button CreateKeyHint(Transform parent, string name, string key, Vector2 anchorMin, Vector2 anchorMax)
         {
-            var go = new GameObject(name, typeof(RectTransform), typeof(Image));
+            var go = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
             go.transform.SetParent(parent, false);
             Stretch(go.GetComponent<RectTransform>(), anchorMin, anchorMax, Vector2.zero, Vector2.zero);
             var image = go.GetComponent<Image>();
             image.color = new Color(0.08f, 0.12f, 0.28f, 0.9f);
-            image.raycastTarget = false;
+            image.raycastTarget = true;
+            var button = go.GetComponent<Button>();
+            button.targetGraphic = image;
             var label = CreateText(go.transform, "Label", key, 16, TextAnchor.MiddleCenter);
             Stretch(label.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             label.fontStyle = FontStyle.Bold;
             label.color = Color.white;
+            return button;
         }
 
         private static Button CreateCloseButton(Transform parent)

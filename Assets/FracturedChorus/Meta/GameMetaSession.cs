@@ -27,7 +27,13 @@ namespace FracturedChorus.Meta
 
         public static void BeginHubAfterPrologue()
         {
+            BeginHubAfterOpening();
+        }
+
+        public static void BeginHubAfterOpening()
+        {
             s_state = GameMetaState.CreateHubStart();
+            s_state.SetFlag(StoryFlagIds.OpeningInvestigationDone);
             GameMetaSaveLoad.TrySave(s_state);
         }
 

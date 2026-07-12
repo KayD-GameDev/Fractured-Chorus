@@ -11,17 +11,30 @@ namespace FracturedChorus.Narrative
         [SerializeField] private Text bodyText;
         [SerializeField] private float charsPerSecond = 32f;
         [SerializeField] private float punctuationPause = 0.14f;
+        [SerializeField] private AudioClip typingClip;
+        [SerializeField] private float typingVolume = 0.55f;
 
         private readonly StringBuilder _builder = new StringBuilder();
         private Coroutine _routine;
         private PrologueAudioController _audio;
+        private AudioSource _localTypingSource;
         private Action _onComplete;
+        private bool _localTypingActive;
 
         public bool IsTyping { get; private set; }
+
+        public Text BodyText => bodyText;
 
         public void Bind(PrologueAudioController audio)
         {
             _audio = audio;
+        }
+
+        public void BindTypingClip(AudioClip clip, float volume = 0.55f)
+        {
+            typingClip = clip;
+            typingVolume = volume;
+            EnsureLocalTypingSource();
         }
 
         public void Clear()
@@ -32,7 +45,7 @@ namespace FracturedChorus.Narrative
                 _routine = null;
             }
 
-            _audio?.StopTypingLine();
+            StopTypingSound();
             IsTyping = false;
             _onComplete = null;
             _builder.Clear();
@@ -86,7 +99,7 @@ namespace FracturedChorus.Narrative
             IsTyping = true;
             _builder.Clear();
             bodyText.text = string.Empty;
-            _audio?.BeginTypingLine();
+            BeginTypingSound();
 
             var delay = 1f / Mathf.Max(1f, charsPerSecond);
             for (var i = 0; i < text.Length; i++)
@@ -112,10 +125,74 @@ namespace FracturedChorus.Narrative
         private void CompleteTyping()
         {
             IsTyping = false;
-            _audio?.StopTypingLine();
+            StopTypingSound();
             var callback = _onComplete;
             _onComplete = null;
             callback?.Invoke();
+        }
+
+        private void BeginTypingSound()
+        {
+            if (_audio != null)
+            {
+                _audio.BeginTypingLine();
+                return;
+            }
+
+            if (typingClip == null)
+            {
+                return;
+            }
+
+            EnsureLocalTypingSource();
+            if (_localTypingSource == null)
+            {
+                return;
+            }
+
+            _localTypingActive = true;
+            _localTypingSource.clip = typingClip;
+            _localTypingSource.loop = true;
+            _localTypingSource.time = 0f;
+            _localTypingSource.pitch = 1f;
+            _localTypingSource.volume = typingVolume;
+            _localTypingSource.Play();
+        }
+
+        private void StopTypingSound()
+        {
+            if (_audio != null)
+            {
+                _audio.StopTypingLine();
+            }
+
+            _localTypingActive = false;
+            if (_localTypingSource != null && _localTypingSource.isPlaying)
+            {
+                _localTypingSource.Stop();
+            }
+        }
+
+        private void EnsureLocalTypingSource()
+        {
+            if (_localTypingSource != null)
+            {
+                return;
+            }
+
+            var go = new GameObject("VnTyping");
+            go.transform.SetParent(transform, false);
+            _localTypingSource = go.AddComponent<AudioSource>();
+            _localTypingSource.playOnAwake = false;
+            _localTypingSource.loop = true;
+        }
+
+        private void OnDisable()
+        {
+            if (_localTypingActive)
+            {
+                StopTypingSound();
+            }
         }
     }
 }

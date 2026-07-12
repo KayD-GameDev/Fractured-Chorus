@@ -28,7 +28,7 @@ Hub-calendar meta layer tại campus (Persona-style): 30 ngày/arc, buổi sáng
 ## 3. Scene Flow
 
 ```
-MainMenu → OpeningScene (17/08) → PrologueVN → CampusHub (01/09)
+MainMenu → PrologueVN → OpeningInvestigation → CampusHub (01/09)
                            │
          ┌─────────────────┼─────────────────┐
          ▼                 ▼                 ▼
@@ -37,6 +37,8 @@ MainMenu → OpeningScene (17/08) → PrologueVN → CampusHub (01/09)
          │                 │
          └────────→ advance slot/day ←──┘
 ```
+
+> **Flow supersede (2026-07-12):** OpeningInvestigation plays **after** PrologueVN (not before). See `docs/superpowers/specs/2026-07-12-opening-investigation-vn-design.md`.
 
 - **CampusHub** = meta hub scene dùng BG **Lumina City town map** (`lumina-city-town-map-bg_v1.png`); HIMA là 1 địa điểm trên map, không phải toàn cảnh hub
 - Run map/combat không thay calendar — chỉ là activity tiêu tốn slot
@@ -324,15 +326,17 @@ Assets/FracturedChorus/
 
 ## 16. Story Calendar — Arc 1 (Tháng 9)
 
-### 16.1 Pre-hub: Opening (17/08)
+### 16.1 Pre-hub: Opening Investigation
 
-**Scene:** `OpeningInvestigation` (trước `PrologueVN`, không dùng hub calendar)
+**Scene:** `OpeningInvestigation` — plays **after** `PrologueVN`, before `CampusHub` (supersedes older “17/08 before Prologue” order; see `2026-07-12-opening-investigation-vn-design.md`).
 
-| Thời điểm | Sự kiện | Flag |
-|-----------|---------|------|
-| **17/08** | Ryo + thanh tra Mei Lin điều tra dân Lumina bị rút cân sinh lực | `lumina_case_open` |
+| Beat | Sự kiện | Flag |
+|------|---------|------|
+| Haruto / SyncPod | Night hijack in Lumina | — |
+| Crime scene | Mei Lin + Ryo; log `SW-ES-040` / StellaWorks off-record | `lumina_case_open` |
+| Ren arrival | Same hour; forced Top-1 *Eternal Spark* (clean) | `ren_arrived_hima`, `opening_investigation_done` |
 
-- Không tiêu slot; cinematic / VN ngắn
+- Không tiêu hub slot; linear VN
 - Thiết lập thread điều tra → nối vụ 05/09 và deadline vault
 
 ### 16.2 Hub start — Tháng 9

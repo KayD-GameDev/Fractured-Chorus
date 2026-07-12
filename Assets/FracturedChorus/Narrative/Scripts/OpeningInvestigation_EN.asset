@@ -1,0 +1,599 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fce9501d141271844b9aaee7b6e0b170, type: 3}
+  m_Name: OpeningInvestigation_EN
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Narrative.Vn.VnScriptSO
+  id: opening_investigation_en
+  nextScene: CampusHub
+  beats:
+  - kind: 1
+    speakerId: 
+    text: 'Late night in Lumina.
+
+      A city that never sleeps.'
+    expression: 
+    bgId: lumina_street_night
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 1
+    speakerId: 
+    text: "On the giant screens, Prime Unit MVs loop again and again \u2014 no one
+      remembers how many times.\nPeople pass by humming along, almost unconscious."
+    expression: 
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: haruto
+    text: "\u2026Another late shift. I\u2019m wiped."
+    expression: neutral
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 1
+    speakerId: 
+    text: "SyncPod on his right ear. Blue LED. Slow pulse.\nPersonal playlist \u2014
+      track three: Bring Me Home."
+    expression: 
+    bgId: 
+    bgmId: bring_me_home
+    sfxId: 
+    bgmPitch: 0
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: haruto
+    text: "Bring Me Home\u2026 Yeah. That fits."
+    expression: neutral
+    bgId: 
+    bgmId: 
+    sfxId: 
+    bgmPitch: 0
+    duration: 0
+    setFlags: []
+  - kind: 1
+    speakerId: 
+    text: "A line of the hit bleeds in through his left ear.\nHaruto shakes his head
+      \u2014 his SyncPod stays on his own track."
+    expression: 
+    bgId: 
+    bgmId: 
+    sfxId: 
+    bgmPitch: 0
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: haruto
+    text: Not now.
+    expression: neutral
+    bgId: 
+    bgmId: 
+    sfxId: 
+    bgmPitch: 0
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: haruto
+    text: "\u2014!"
+    expression: startled
+    bgId: 
+    bgmId: eternal_spark
+    sfxId: 
+    bgmPitch: 1
+    duration: 0
+    setFlags: []
+  - kind: 1
+    speakerId: 
+    text: The LED on his ear flickers. Once. Twice.
+    expression: 
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: haruto
+    text: "What the\u2026? Why did it change tracks on its own?"
+    expression: startled
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: haruto
+    text: It hurts. What is this?
+    expression: pain
+    bgId: 
+    bgmId: 
+    sfxId: 
+    bgmPitch: 0.38
+    duration: 0
+    setFlags: []
+  - kind: 1
+    speakerId: 
+    text: "Not the song he was listening to.\nNot the song on the billboard.\nSomething
+      else \u2014 like a thousand needles driven into the heart."
+    expression: 
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: haruto
+    text: "Stop\u2026! I have to shut it off!"
+    expression: fear
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 1
+    speakerId: 
+    text: "The SyncPod doesn\u2019t answer. His feet keep moving.\nNot toward home."
+    expression: 
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: haruto
+    text: "No\u2026 don\u2019t\u2026"
+    expression: fear
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 1
+    speakerId: 
+    text: "Vision blurs. His body feels heavy \u2014 pulled forward on an invisible
+      wire.\nHe slips through the crowd. No one notices."
+    expression: 
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 1
+    speakerId: 
+    text: "Lotus Service Lane \u2014 no billboards here.\nOnly emergency lights and
+      the damp breath of shop ACs."
+    expression: 
+    bgId: lumina_alley_night
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: haruto
+    text: "\u2026Someone\u2026 help me\u2026"
+    expression: desperate
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 1
+    speakerId: 
+    text: "The SyncPod burns red. The waveform spins \u2014 not music.\nLike suction."
+    expression: 
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: haruto
+    text: "ARRGHH\u2026!"
+    expression: agony
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 1
+    speakerId: 
+    text: "The neon on the wall glitches for one beat \u2014 then settles.\nHaruto
+      drops to his knees. One hand clawing at the SyncPod. It won\u2019t come off."
+    expression: 
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: haruto
+    text: "Help\u2026 \u2014"
+    expression: desperate
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 1
+    speakerId: 
+    text: 'The whine cuts dead.
+
+      Silence.'
+    expression: 
+    bgId: 
+    bgmId: stop
+    sfxId: 
+    bgmPitch: 0
+    duration: 0
+    setFlags: []
+  - kind: 3
+    speakerId: 
+    text: Four hours later
+    expression: 
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 1.6
+    setFlags: []
+  - kind: 4
+    speakerId: 
+    text: 
+    expression: 
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0.8
+    setFlags: []
+  - kind: 1
+    speakerId: 
+    text: 'Yellow tape across the mouth of the lane.
+
+      A patrol car. Two people.'
+    expression: 
+    bgId: lumina_alley_night
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: ryo
+    text: "Inspector Lin\u2026 how many is this now?"
+    expression: nervous
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: mei_lin
+    text: "Don\u2019t count. Counting just makes it worse."
+    expression: weary
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 1
+    speakerId: 
+    text: 'Male victim. Mid-to-late twenties.
+
+      Face-down. One hand reaching
+      toward his ear.'
+    expression: 
+    bgId: lumina_alley_haruto_body
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: ryo
+    text: "His skin\u2026"
+    expression: startled
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: mei_lin
+    text: Like a husk. Like something drank him dry from the inside.
+    expression: stern
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: ryo
+    text: Overdose? Or the same as the others?
+    expression: uneasy
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: mei_lin
+    text: "\u2026"
+    expression: concerned
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 1
+    speakerId: 
+    text: "SyncPod SP-01. Red LED \u2014 a crack down the glass."
+    expression: 
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: ryo
+    text: What was he listening to before he died?
+    expression: concerned
+    bgId: lumina_alley_night
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: mei_lin
+    text: "Chorus Board logged the device online at 23:51.\nPersonal playlist: indie.\nBut
+      the last entry\u2026"
+    expression: stern
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 1
+    speakerId: 
+    text: Mei Lin opens her tablet. The screen stays angled away from the player.
+    expression: 
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: mei_lin
+    text: "\u2026a track that isn\u2019t in the public catalog.\nID: SW-ES-040"
+    expression: warning
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: ryo
+    text: "SW is\u2026"
+    expression: nervous
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: mei_lin
+    text: "StellaWorks. Guesswork only. Don\u2019t put it in the report."
+    expression: warning
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: ryo
+    text: Why not, Inspector?
+    expression: uneasy
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: mei_lin
+    text: 'Because a report with that name vanishes before it can ever be filed.
+
+      Same
+      as the three before this.'
+    expression: weary
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: ryo
+    text: "Damn it\u2026 so what do we do?"
+    expression: nervous
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: mei_lin
+    text: "\u2026."
+    expression: concerned
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 1
+    speakerId: 
+    text: "From the mouth of the lane, the Eternal Spark hook still carries \u2014
+      thin, far, innocent."
+    expression: 
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: ryo
+    text: "Inspector\u2026"
+    expression: concerned
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: mei_lin
+    text: "Do your job.\nAnd hope this time it doesn\u2019t happen to you."
+    expression: stern
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: mei_lin
+    text: "\u2026If you ever hear something strange in your ears\u2026\nSave yourself
+      first."
+    expression: warning
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 4
+    speakerId: 
+    text: 
+    expression: 
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 1
+    setFlags: []
+  - kind: 1
+    speakerId: 
+    text: "At the same hour \u2014 across the city.\nThe station. The crowd. Neon
+      still singing."
+    expression: 
+    bgId: lumina_street_night
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 1
+    speakerId: 
+    text: "A SyncPod on Ren\u2019s ear. Blue LED.\nOne pulse \u2014 then the track
+      cuts out."
+    expression: 
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 1
+    speakerId: 
+    text: "Mandatory broadcast window.\nCurrent Chorus Board #1: Eternal Spark \u2014
+      LUXE."
+    expression: 
+    bgId: 
+    bgmId: eternal_spark
+    sfxId: 
+    bgmPitch: 1
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: ren
+    text: "\u2026This one again."
+    expression: 
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 1
+    speakerId: 
+    text: "He doesn\u2019t switch it off. Doesn\u2019t flinch.\nJust tightens his
+      backpack strap and steps into the flow."
+    expression: 
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: ren
+    text: "If it\u2019s number one, you listen. That\u2019s how this city works."
+    expression: 
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 1
+    speakerId: 
+    text: "Around him, mouths hum the hook without looking at the billboards.\nRen
+      hears it with them \u2014 clear, clean, on the beat."
+    expression: 
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 1
+    speakerId: 
+    text: "No pain. No tug on his feet.\nJust a hit song\u2026 and a newcomer to
+      Lumina."
+    expression: 
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 1
+    speakerId: 
+    text: 'Bag on his shoulder. Early-enrollment papers for HIMA.
+
+      Light rain
+      still falling.'
+    expression: 
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 3
+    speakerId: 
+    text: "September 1 \u2014 Ren Takahashi arrives in Lumina."
+    expression: 
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 2
+    setFlags: []
+  - kind: 5
+    speakerId: 
+    text: 
+    expression: 
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags:
+    - lumina_case_open
+    - opening_investigation_done
+    - ren_arrived_hima

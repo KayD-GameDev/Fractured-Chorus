@@ -218,9 +218,18 @@ namespace FracturedChorus.Hub
         {
             foreach (var row in _rows)
             {
-                if (row != null)
+                if (row == null)
+                {
+                    continue;
+                }
+
+                if (Application.isPlaying)
                 {
                     Destroy(row.gameObject);
+                }
+                else
+                {
+                    DestroyImmediate(row.gameObject);
                 }
             }
 

@@ -126,7 +126,7 @@ namespace FracturedChorus.Editor
 
         private static void SetPreviewMode(UiEditPreviewRoot.PreviewMode mode)
         {
-            var preview = Object.FindFirstObjectByType<UiEditPreviewRoot>();
+            var preview = Object.FindAnyObjectByType<UiEditPreviewRoot>();
             if (preview == null)
             {
                 EditorUtility.DisplayDialog("UI Edit Preview", "Chưa có UI_EditPreview. Chạy Create UI Edit Preview trước.", "OK");
@@ -194,7 +194,7 @@ namespace FracturedChorus.Editor
 
         private static void EnsureEventSystem()
         {
-            if (Object.FindFirstObjectByType<EventSystem>() != null)
+            if (Object.FindAnyObjectByType<EventSystem>() != null)
             {
                 return;
             }
