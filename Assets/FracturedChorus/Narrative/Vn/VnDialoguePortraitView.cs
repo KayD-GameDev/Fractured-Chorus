@@ -32,6 +32,9 @@ namespace FracturedChorus.Narrative.Vn
         private string _activeSpeakerId;
         private string _leftExpression;
         private string _rightExpression;
+#if UNITY_EDITOR
+        private bool _previewRefreshQueued;
+#endif
 
         public RectTransform LeftRoot => leftRoot;
         public RectTransform RightRoot => rightRoot;
@@ -128,6 +131,11 @@ namespace FracturedChorus.Narrative.Vn
             }
         }
 
+        public void ApplySavedLayoutToSlots()
+        {
+            ApplyFixedSlotLayout();
+        }
+
         public void ApplyEditorPreview(VnSpeakerDefinitionSO left, VnSpeakerDefinitionSO right)
         {
             EnsureDualSlotsExist();
@@ -139,7 +147,7 @@ namespace FracturedChorus.Narrative.Vn
             _leftExpression = null;
             _rightExpression = null;
             _activeSpeakerId = right != null ? right.speakerId : left != null ? left.speakerId : null;
-            ApplyFixedSlotLayout();
+            CaptureLayoutFromSlots();
             RefreshSlots();
         }
 
@@ -154,27 +162,30 @@ namespace FracturedChorus.Narrative.Vn
 #if UNITY_EDITOR
         private void OnValidate()
         {
-            if (Application.isPlaying || !editorPreview)
+            if (Application.isPlaying || !editorPreview || _previewRefreshQueued)
             {
                 return;
             }
 
-            UnityEditor.EditorApplication.delayCall += () =>
-            {
-                if (this == null || Application.isPlaying || !editorPreview)
-                {
-                    return;
-                }
+            _previewRefreshQueued = true;
+            UnityEditor.EditorApplication.delayCall += RefreshEditorPreviewDeferred;
+        }
 
-                EnsureDualSlotsExist();
-                ApplyFixedSlotLayout();
-                _leftSpeaker = previewLeftSpeaker;
-                _rightSpeaker = previewRightSpeaker;
-                _activeSpeakerId = previewRightSpeaker != null
-                    ? previewRightSpeaker.speakerId
-                    : previewLeftSpeaker != null ? previewLeftSpeaker.speakerId : null;
-                RefreshSlots();
-            };
+        private void RefreshEditorPreviewDeferred()
+        {
+            _previewRefreshQueued = false;
+            if (this == null || Application.isPlaying || !editorPreview)
+            {
+                return;
+            }
+
+            EnsureDualSlotsExist();
+            _leftSpeaker = previewLeftSpeaker;
+            _rightSpeaker = previewRightSpeaker;
+            _activeSpeakerId = previewRightSpeaker != null
+                ? previewRightSpeaker.speakerId
+                : previewLeftSpeaker != null ? previewLeftSpeaker.speakerId : null;
+            RefreshSlots();
         }
 #endif
 
@@ -418,7 +429,7 @@ namespace FracturedChorus.Narrative.Vn
                 EnsureDualFromLegacy(leftRoot, leftShadow, leftPortrait);
             }
 
-            ApplyFixedSlotLayout();
+            CaptureLayoutFromSlots();
 
             if (!Application.isPlaying && editorPreview)
             {

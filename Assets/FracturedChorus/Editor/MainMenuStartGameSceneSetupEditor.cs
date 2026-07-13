@@ -20,7 +20,7 @@ namespace FracturedChorus.Editor
         private const string MenuFemaleVoicePath = "Assets/FracturedChorus/Audio/Voice/MainMenu_Female_Voice.mp3";
         private const string MenuMaleVoicePath = "Assets/FracturedChorus/Audio/Voice/MainMenu_Male_Voice.mp3";
         private const string MenuChangeMenuSfxPath = "Assets/FracturedChorus/Audio/SFX/MainMenu_ChangeMenu_Ting.mp3";
-        private const string MenuButtonPressSfxPath = "Assets/FracturedChorus/Audio/SFX/MainMenu_ButtonPress.mp3";
+        private const string MenuButtonPressSfxPath = "Assets/FracturedChorus/Audio/SFX/MainMenu_ButtonPress.wav";
         private const string ConfigBackgroundPath = "Assets/FracturedChorus/Art/UI/ConfigMenu/ConfigMenu_Background_v1.png";
 
         [MenuItem("Fractured Chorus/Create MainMenuStartGame Scene")]

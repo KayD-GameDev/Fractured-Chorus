@@ -15,6 +15,17 @@ MonoBehaviour:
   speakerId: ren
   displayName: Ren
   bustSprite: {fileID: 21300000, guid: 496f083b97a24364bd70327ca5c33b13, type: 3}
+  expressionSprites:
+  - expressionId: neutral
+    sprite: {fileID: 21300000, guid: 953c91274e2e403a8a8b556cfb1e2038, type: 3}
+  - expressionId: startled
+    sprite: {fileID: 21300000, guid: ecfb1890d5a34358be152869617063ba, type: 3}
+  - expressionId: smile
+    sprite: {fileID: 21300000, guid: e0d8faa873464347871ea54b0e137c5e, type: 3}
+  - expressionId: curious
+    sprite: {fileID: 21300000, guid: 09cb2917d19e4e26b183372afa2f4f15, type: 3}
+  - expressionId: annoyed
+    sprite: {fileID: 21300000, guid: 39d9ff10018d4b889bd38e7cbd214a24, type: 3}
   shadowColor: {r: 0.05, g: 0.12, b: 0.35, a: 0.92}
   shadowOffsetPixels: {x: -18, y: 14}
   facesRight: 0

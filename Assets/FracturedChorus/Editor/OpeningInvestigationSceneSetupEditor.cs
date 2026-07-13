@@ -26,9 +26,15 @@ namespace FracturedChorus.Editor
             "Assets/FracturedChorus/Art/Backgrounds/lumina_alley_night_rain_v1.png";
         private const string HarutoBodyBgPath =
             "Assets/FracturedChorus/Art/Backgrounds/lumina_alley_haruto_body_close_v1.png";
+        private const string LuxeConcertBgPath =
+            "Assets/FracturedChorus/Art/Backgrounds/luxe_concert_astra_arena_live_v2.png";
+        private const string LuminaSquareBgPath =
+            "Assets/FracturedChorus/Art/Backgrounds/lumina_square_ren_night_rain_v1.png";
         private const string RainPath = "Assets/FracturedChorus/Audio/SFX/Ambience_Rain_Loop.mp3";
+        private const string FootStepPath = "Assets/FracturedChorus/Audio/SFX/Foot_Step.mp3";
         private const string BringMeHomePath = "Assets/FracturedChorus/Audio/Music/Bring_Me_Home.mp3";
         private const string EternalSparkPath = "Assets/FracturedChorus/Audio/Music/EternalSpark.mp3";
+        private const string TownMapUiRoot = "Assets/FracturedChorus/Art/UI/TownMap/";
 
         [MenuItem("Fractured Chorus/Narrative/Populate Opening Investigation Script")]
         public static void PopulateScriptAsset()
@@ -55,7 +61,7 @@ namespace FracturedChorus.Editor
         {
             PopulateScriptAsset();
             var scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
-            var runtime = Object.FindFirstObjectByType<VnRuntimeController>();
+            var runtime = Object.FindAnyObjectByType<VnRuntimeController>();
             if (runtime == null)
             {
                 Debug.LogError("[Fractured Chorus] VnRuntimeController missing in OpeningInvestigation.");
@@ -72,18 +78,24 @@ namespace FracturedChorus.Editor
                 SetSerializedField(typewriter, "typingClip", typing);
             }
 
-            var cueResolver = Object.FindFirstObjectByType<VnCueResolver>();
+            var cueResolver = Object.FindAnyObjectByType<VnCueResolver>();
             if (cueResolver != null)
             {
                 BindOpeningBackgroundCues(cueResolver);
             }
 
+            var canvas = GameObject.Find("OpeningCanvas");
+            var dateHud = EnsureStoryDateHud(canvas != null ? canvas.transform : null);
+            SetSerializedField(runtime, "dateHud", dateHud);
+            SetSerializedField(runtime, "openingDateDisplay", "17/08");
+            SetSerializedField(runtime, "openingPhaseDisplay", "Late Night");
+
             var bg = GameObject.Find("Background")?.GetComponent<Image>();
             if (bg != null)
             {
-                bg.sprite = LoadSprite(StreetBgPath);
+                bg.sprite = null;
                 bg.preserveAspect = false;
-                bg.color = Color.white;
+                bg.color = Color.black;
             }
 
             var dialogueFrame = GameObject.Find("DialogueFrame")?.GetComponent<Image>();
@@ -99,7 +111,6 @@ namespace FracturedChorus.Editor
             var dialoguePanel = GameObject.Find("DialoguePanel");
             if (dialoguePanel != null)
             {
-                StretchRect(dialoguePanel, new Vector2(0.04f, 0.03f), new Vector2(0.96f, 0.36f), Vector2.zero, Vector2.zero);
                 dialoguePanel.transform.SetAsLastSibling();
             }
 
@@ -108,27 +119,14 @@ namespace FracturedChorus.Editor
             var nameplate = GameObject.Find("Nameplate")?.GetComponent<Text>();
             var body = GameObject.Find("DialogueBody")?.GetComponent<Text>();
             var textCard = GameObject.Find("TextCardBody")?.GetComponent<Text>();
-            VnUiFont.Apply(nameplate, 26, FontStyle.Bold);
-            VnUiFont.Apply(body, 30, FontStyle.Normal);
-            VnUiFont.Apply(textCard, 40, FontStyle.Normal);
-
-            if (nameplate != null)
-            {
-                nameplate.alignment = TextAnchor.MiddleCenter;
-                nameplate.raycastTarget = false;
-                StretchRect(nameplate.gameObject, new Vector2(0.05f, 0.80f), new Vector2(0.24f, 0.96f), Vector2.zero, Vector2.zero);
-            }
-
-            if (body != null)
-            {
-                body.raycastTarget = false;
-                StretchRect(body.gameObject, new Vector2(0.06f, 0.14f), new Vector2(0.94f, 0.72f), Vector2.zero, Vector2.zero);
-            }
+            VnUiFont.ApplyAssetOnly(nameplate);
+            VnUiFont.ApplyAssetOnly(body);
+            VnUiFont.ApplyAssetOnly(textCard);
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
             AssetDatabase.SaveAssets();
-            Debug.Log("[Fractured Chorus] Healed OpeningInvestigation UI, BG cues, portraits, and script.");
+            Debug.Log("[Fractured Chorus] Healed OpeningInvestigation cues/script/font asset. Layout & font size trên scene được giữ nguyên.");
         }
 
         private static void BindOpeningBackgroundCues(VnCueResolver cueResolver)
@@ -136,20 +134,108 @@ namespace FracturedChorus.Editor
             var street = LoadSprite(StreetBgPath);
             var alley = LoadSprite(AlleyBgPath);
             var harutoBody = LoadSprite(HarutoBodyBgPath);
+            var luxeConcert = LoadSprite(LuxeConcertBgPath);
+            var luminaSquare = LoadSprite(LuminaSquareBgPath);
             var rain = AssetDatabase.LoadAssetAtPath<AudioClip>(RainPath);
+            var footsteps = AssetDatabase.LoadAssetAtPath<AudioClip>(FootStepPath);
             var bringMeHome = AssetDatabase.LoadAssetAtPath<AudioClip>(BringMeHomePath);
             var eternalSpark = AssetDatabase.LoadAssetAtPath<AudioClip>(EternalSparkPath);
             var so = new SerializedObject(cueResolver);
             var entries = so.FindProperty("entries");
-            entries.arraySize = 6;
+            entries.arraySize = 9;
             SetCueEntry(entries.GetArrayElementAtIndex(0), VnBgIds.LuminaStreetNight, street, null);
             SetCueEntry(entries.GetArrayElementAtIndex(1), VnBgIds.LuminaAlleyNight, alley, null);
             SetCueEntry(entries.GetArrayElementAtIndex(2), VnBgIds.LuminaAlleyHarutoBody, harutoBody, null);
-            SetCueEntry(entries.GetArrayElementAtIndex(3), VnAudioIds.RainAmbience, null, rain);
-            SetCueEntry(entries.GetArrayElementAtIndex(4), VnAudioIds.BringMeHome, null, bringMeHome);
-            SetCueEntry(entries.GetArrayElementAtIndex(5), VnAudioIds.EternalSpark, null, eternalSpark);
+            SetCueEntry(entries.GetArrayElementAtIndex(3), VnBgIds.LuxeConcert, luxeConcert, null);
+            SetCueEntry(entries.GetArrayElementAtIndex(4), VnBgIds.LuminaSquareNight, luminaSquare, null);
+            SetCueEntry(entries.GetArrayElementAtIndex(5), VnAudioIds.RainAmbience, null, rain);
+            SetCueEntry(entries.GetArrayElementAtIndex(6), VnAudioIds.BringMeHome, null, bringMeHome);
+            SetCueEntry(entries.GetArrayElementAtIndex(7), VnAudioIds.EternalSpark, null, eternalSpark);
+            SetCueEntry(entries.GetArrayElementAtIndex(8), VnAudioIds.Footsteps, null, footsteps);
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(cueResolver);
+        }
+
+        private static VnStoryDateHud EnsureStoryDateHud(Transform canvas)
+        {
+            if (canvas == null)
+            {
+                return null;
+            }
+
+            var existing = canvas.Find("StoryDateHud")?.GetComponent<VnStoryDateHud>();
+            if (existing != null)
+            {
+                existing.gameObject.SetActive(false);
+                return existing;
+            }
+
+            var go = new GameObject("StoryDateHud");
+            go.transform.SetParent(canvas, false);
+            var rect = go.AddComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0.62f, 1f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.pivot = new Vector2(1f, 1f);
+            rect.offsetMin = new Vector2(0f, -150f);
+            rect.offsetMax = Vector2.zero;
+
+            var image = go.AddComponent<Image>();
+            image.sprite = LoadSprite(TownMapUiRoot + "townmap_slash_banner.png");
+            image.type = Image.Type.Sliced;
+            image.color = Color.white;
+            image.raycastTarget = false;
+
+            var date = CreateText("DateLabel", go.transform, "17/08", 70, TextAnchor.MiddleRight);
+            PlaceRect(
+                date.gameObject,
+                new Vector2(0.08f, 0.45f),
+                new Vector2(0.78f, 0.95f),
+                new Vector2(-13f, -16f),
+                new Vector2(-297.6024f, 45f));
+            date.fontStyle = FontStyle.Bold;
+            date.resizeTextForBestFit = false;
+            date.horizontalOverflow = HorizontalWrapMode.Overflow;
+            date.verticalOverflow = VerticalWrapMode.Overflow;
+            date.raycastTarget = false;
+
+            var phaseIcon = CreateImage("PhaseIcon", go.transform, LoadSprite(TownMapUiRoot + "townmap_icon_moon.png"), Color.white);
+            PlaceRect(
+                phaseIcon.gameObject,
+                new Vector2(0.8f, 0.35f),
+                new Vector2(0.96f, 0.9f),
+                new Vector2(-104.06128f, -22.5f),
+                new Vector2(91.8775f, 60f));
+            phaseIcon.preserveAspect = true;
+            phaseIcon.raycastTarget = false;
+
+            var phase = CreateText("PhaseLabel", go.transform, "Late Night", 35, TextAnchor.MiddleRight);
+            PlaceRect(
+                phase.gameObject,
+                new Vector2(0.08f, 0.15f),
+                new Vector2(0.78f, 0.5f),
+                new Vector2(-32f, -12f),
+                new Vector2(-251.4571f, 0f));
+            phase.color = new Color(0.55f, 0.9f, 0.95f);
+            phase.verticalOverflow = VerticalWrapMode.Overflow;
+            phase.raycastTarget = false;
+
+            var hud = go.AddComponent<VnStoryDateHud>();
+            SetSerializedField(hud, "bannerImage", image);
+            SetSerializedField(hud, "dateLabel", date);
+            SetSerializedField(hud, "phaseLabel", phase);
+            SetSerializedField(hud, "phaseIcon", phaseIcon);
+            SetSerializedField(hud, "sunSprite", LoadSprite(TownMapUiRoot + "townmap_icon_sun.png"));
+            SetSerializedField(hud, "moonSprite", LoadSprite(TownMapUiRoot + "townmap_icon_moon.png"));
+            SetSerializedField(hud, "dawnSprite", LoadSprite(TownMapUiRoot + "townmap_icon_dawn.png"));
+
+            var fade = canvas.Find("FadeOverlay");
+            if (fade != null)
+            {
+                go.transform.SetSiblingIndex(fade.GetSiblingIndex());
+            }
+
+            go.SetActive(false);
+            return hud;
         }
 
         private static void SetCueEntry(SerializedProperty entry, string id, Sprite sprite, AudioClip clip)
@@ -161,73 +247,11 @@ namespace FracturedChorus.Editor
 
         private static void ApplyPortraitLayoutInScene()
         {
-            foreach (var view in Object.FindObjectsByType<VnDialoguePortraitView>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (var view in Object.FindObjectsByType<VnDialoguePortraitView>(FindObjectsInactive.Include))
             {
-                var so = new SerializedObject(view);
-                ApplySlotRect(so, "leftRoot", true);
-                ApplySlotRect(so, "rightRoot", false);
-                var legacy = so.FindProperty("leftRoot")?.objectReferenceValue as RectTransform;
-                if (legacy != null)
-                {
-                    LayoutPortraitRect(legacy, true);
-                }
-
-                so.ApplyModifiedPropertiesWithoutUndo();
+                view.CaptureLayoutFromSlots();
                 EditorUtility.SetDirty(view);
             }
-
-            var left = GameObject.Find("DialoguePortrait_Left")?.GetComponent<RectTransform>();
-            var right = GameObject.Find("DialoguePortrait_Right")?.GetComponent<RectTransform>();
-            var single = GameObject.Find("DialoguePortrait")?.GetComponent<RectTransform>();
-            if (left != null)
-            {
-                LayoutPortraitRect(left, true);
-            }
-
-            if (right != null)
-            {
-                LayoutPortraitRect(right, false);
-            }
-
-            if (single != null)
-            {
-                LayoutPortraitRect(single, true);
-            }
-        }
-
-        private static void ApplySlotRect(SerializedObject so, string propName, bool left)
-        {
-            var prop = so.FindProperty(propName);
-            if (prop?.objectReferenceValue is RectTransform rect)
-            {
-                LayoutPortraitRect(rect, left);
-            }
-        }
-
-        private static void LayoutPortraitRect(RectTransform rect, bool left)
-        {
-            if (rect == null)
-            {
-                return;
-            }
-
-            if (left)
-            {
-                rect.anchorMin = VnDialoguePortraitLayout.LeftAnchorMin;
-                rect.anchorMax = VnDialoguePortraitLayout.LeftAnchorMax;
-                rect.pivot = VnDialoguePortraitLayout.LeftPivot;
-                rect.anchoredPosition = VnDialoguePortraitLayout.LeftAnchoredPosition;
-            }
-            else
-            {
-                rect.anchorMin = VnDialoguePortraitLayout.RightAnchorMin;
-                rect.anchorMax = VnDialoguePortraitLayout.RightAnchorMax;
-                rect.pivot = VnDialoguePortraitLayout.RightPivot;
-                rect.anchoredPosition = VnDialoguePortraitLayout.RightAnchoredPosition;
-            }
-
-            rect.sizeDelta = VnDialoguePortraitLayout.SizeDelta;
-            EditorUtility.SetDirty(rect);
         }
 
         [MenuItem("Fractured Chorus/Create OpeningInvestigation Scene")]
@@ -338,7 +362,7 @@ namespace FracturedChorus.Editor
             scaler.matchWidthOrHeight = 0.5f;
             canvasGo.AddComponent<GraphicRaycaster>();
 
-            var bg = CreateImage("Background", canvasGo.transform, LoadSprite(StreetBgPath), Color.white);
+            var bg = CreateImage("Background", canvasGo.transform, null, Color.black);
             StretchRect(bg.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             bg.preserveAspect = false;
 
@@ -401,7 +425,7 @@ namespace FracturedChorus.Editor
             dialogueFrame.raycastTarget = false;
 
             var nameplateGo = CreateUiObject("Nameplate", dialogueRoot.transform);
-            StretchRect(nameplateGo, new Vector2(0.05f, 0.82f), new Vector2(0.28f, 0.96f), Vector2.zero, Vector2.zero);
+            StretchRect(nameplateGo, new Vector2(0.018f, 0.90f), new Vector2(0.195f, 1.06f), Vector2.zero, Vector2.zero);
             var nameplateText = nameplateGo.AddComponent<Text>();
             VnUiFont.Apply(nameplateText, 26, FontStyle.Bold);
             nameplateText.alignment = TextAnchor.MiddleCenter;
@@ -429,6 +453,8 @@ namespace FracturedChorus.Editor
             StretchRect(textCardBody.gameObject, new Vector2(0.15f, 0.35f), new Vector2(0.85f, 0.65f), Vector2.zero, Vector2.zero);
             textCardBody.color = new Color(0.9f, 0.95f, 1f, 1f);
 
+            var dateHud = EnsureStoryDateHud(canvasGo.transform);
+
             var fadeGo = CreateUiObject("FadeOverlay", canvasGo.transform);
             StretchRect(fadeGo, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             var fadeImage = fadeGo.AddComponent<Image>();
@@ -452,6 +478,9 @@ namespace FracturedChorus.Editor
             SetSerializedField(runtime, "textCardPanel", textCardGroup);
             SetSerializedField(runtime, "fadeOverlay", fadeGroup);
             SetSerializedField(runtime, "backgroundImage", bg);
+            SetSerializedField(runtime, "dateHud", dateHud);
+            SetSerializedField(runtime, "openingDateDisplay", "17/08");
+            SetSerializedField(runtime, "openingPhaseDisplay", "Late Night");
             SetSerializedField(runtime, "typingClip", AssetDatabase.LoadAssetAtPath<AudioClip>(TypingPath));
             SetSerializedField(runtime, "beginHubOnEnd", true);
             SetSerializedField(runtime, "playOnStart", true);
@@ -550,6 +579,21 @@ namespace FracturedChorus.Editor
             rect.anchorMax = anchorMax;
             rect.offsetMin = offsetMin;
             rect.offsetMax = offsetMax;
+        }
+
+        private static void PlaceRect(
+            GameObject go,
+            Vector2 anchorMin,
+            Vector2 anchorMax,
+            Vector2 anchoredPosition,
+            Vector2 sizeDelta)
+        {
+            var rect = go.GetComponent<RectTransform>();
+            rect.anchorMin = anchorMin;
+            rect.anchorMax = anchorMax;
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = anchoredPosition;
+            rect.sizeDelta = sizeDelta;
         }
 
         private static void SetSerializedField(Object target, string fieldName, object value)

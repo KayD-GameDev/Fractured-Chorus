@@ -20,15 +20,36 @@ namespace FracturedChorus.Narrative.Vn
         [SerializeField] private CanvasGroup textCardPanel;
         [SerializeField] private CanvasGroup fadeOverlay;
         [SerializeField] private Image backgroundImage;
+        [SerializeField] private VnStoryDateHud dateHud;
         [SerializeField] private AudioClip typingClip;
         [SerializeField] private float defaultFadeSeconds = 0.6f;
+        [SerializeField] private float dramaticBgFadeSeconds = 0.28f;
         [SerializeField] private bool beginHubOnEnd;
         [SerializeField] private bool playOnStart = true;
+        [SerializeField] private string openingDateDisplay = "17/08";
+        [SerializeField] private string openingPhaseDisplay = "Late Night";
 
         private int _index;
         private bool _waitingAdvance;
         private bool _running;
         private string _pendingText;
+        private string _currentBgId;
+        private Coroutine _beatRoutine;
+        private bool _transitionBusy;
+        private bool _skipTransitionRequested;
+        private bool _textCardBusy;
+        private bool _skipTextCardRequested;
+        private string _dateHudDate;
+        private string _dateHudPhase;
+        private AudioSource _textCardTypingSource;
+
+        public Text NameplateText => nameplateText;
+        public Text TextCardBody => textCardBody;
+        public CanvasGroup DialoguePanel => dialoguePanel;
+        public CanvasGroup TextCardPanel => textCardPanel;
+        public VnStoryDateHud DateHud => dateHud;
+        public Image BackgroundImage => backgroundImage;
+        public VnDialoguePortraitView PortraitView => portraitView;
 
         public void SetScript(VnScriptSO next)
         {
@@ -61,15 +82,22 @@ namespace FracturedChorus.Narrative.Vn
 
         private void ApplyDialogueFonts()
         {
-            VnUiFont.Apply(nameplateText, 26, FontStyle.Bold);
+            VnUiFont.ApplyAssetOnly(nameplateText);
             var body = typewriter != null ? typewriter.BodyText : null;
             if (body == null && typewriter != null)
             {
                 body = typewriter.GetComponent<Text>() ?? typewriter.GetComponentInChildren<Text>(true);
             }
 
-            VnUiFont.Apply(body, 30, FontStyle.Normal);
-            VnUiFont.Apply(textCardBody, 40, FontStyle.Normal);
+            VnUiFont.ApplyAssetOnly(body);
+            VnUiFont.ApplyAssetOnly(textCardBody);
+            if (dateHud != null)
+            {
+                foreach (var label in dateHud.GetComponentsInChildren<Text>(true))
+                {
+                    VnUiFont.ApplyAssetOnly(label);
+                }
+            }
         }
 
         private void Update()
@@ -81,6 +109,18 @@ namespace FracturedChorus.Narrative.Vn
 
             if (!VnInput.WasAdvancePressedThisFrame())
             {
+                return;
+            }
+
+            if (_transitionBusy)
+            {
+                _skipTransitionRequested = true;
+                return;
+            }
+
+            if (_textCardBusy)
+            {
+                _skipTextCardRequested = true;
                 return;
             }
 
@@ -107,13 +147,23 @@ namespace FracturedChorus.Narrative.Vn
                 return;
             }
 
+            StopBeatRoutine();
             StopAllCoroutines();
             _running = true;
             _index = 0;
             _waitingAdvance = false;
+            _transitionBusy = false;
+            _textCardBusy = false;
+            _skipTransitionRequested = false;
+            _skipTextCardRequested = false;
             SetPanel(textCardPanel, false);
-            SetPanel(dialoguePanel, true);
-            audioPlayer?.PlayAmbience(VnAudioIds.RainAmbience);
+            SetPanel(dialoguePanel, false);
+            _dateHudDate = openingDateDisplay;
+            _dateHudPhase = openingPhaseDisplay;
+            dateHud?.Hide();
+            audioPlayer?.StopAmbience();
+            ApplyBlackBackground();
+            _currentBgId = VnBgIds.Black;
             if (fadeOverlay != null)
             {
                 fadeOverlay.alpha = 0f;
@@ -143,18 +193,100 @@ namespace FracturedChorus.Narrative.Vn
                 return;
             }
 
-            ApplyCues(beat);
+            StopBeatRoutine();
 
+            if (NeedsDramaticBackgroundCrossfade(beat))
+            {
+                _beatRoutine = StartCoroutine(PlayBeatWithBgCrossfade(beat));
+                return;
+            }
+
+            ApplyCues(beat);
+            DispatchBeatView(beat);
+        }
+
+        private void StopBeatRoutine()
+        {
+            if (_beatRoutine != null)
+            {
+                StopCoroutine(_beatRoutine);
+                _beatRoutine = null;
+            }
+
+            StopTextCardTypingSound();
+            _transitionBusy = false;
+            _textCardBusy = false;
+            _skipTransitionRequested = false;
+            _skipTextCardRequested = false;
+        }
+
+        private bool NeedsDramaticBackgroundCrossfade(VnBeat beat)
+        {
+            if (fadeOverlay == null || string.IsNullOrWhiteSpace(beat.bgId))
+            {
+                return false;
+            }
+
+            if (beat.kind == VnBeatKind.Fade || beat.kind == VnBeatKind.End)
+            {
+                return false;
+            }
+
+            if (string.Equals(_currentBgId, beat.bgId, System.StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            return IsDramaticBackground(_currentBgId) || IsDramaticBackground(beat.bgId);
+        }
+
+        private static bool IsDramaticBackground(string bgId)
+        {
+            return bgId == VnBgIds.Black
+                || bgId == VnBgIds.LuxeConcert
+                || bgId == VnBgIds.LuminaSquareNight;
+        }
+
+        private IEnumerator PlayBeatWithBgCrossfade(VnBeat beat)
+        {
+            _transitionBusy = true;
+            _skipTransitionRequested = false;
+            _waitingAdvance = false;
+            SetPanel(textCardPanel, false);
+            SetPanel(dialoguePanel, false);
+
+            if (fadeOverlay != null)
+            {
+                fadeOverlay.blocksRaycasts = true;
+                var half = Mathf.Max(0.08f, dramaticBgFadeSeconds * 0.5f);
+                yield return FadeCanvasSkippable(fadeOverlay, fadeOverlay.alpha, 1f, half);
+                ApplyCues(beat);
+                yield return FadeCanvasSkippable(fadeOverlay, 1f, 0f, half);
+                fadeOverlay.alpha = 0f;
+                fadeOverlay.blocksRaycasts = false;
+            }
+            else
+            {
+                ApplyCues(beat);
+            }
+
+            _transitionBusy = false;
+            _beatRoutine = null;
+            DispatchBeatView(beat);
+        }
+
+        private void DispatchBeatView(VnBeat beat)
+        {
             switch (beat.kind)
             {
                 case VnBeatKind.Cue:
                     Advance();
                     break;
                 case VnBeatKind.Fade:
-                    StartCoroutine(FadeRoutine(beat.duration > 0f ? beat.duration : defaultFadeSeconds));
+                    _beatRoutine = StartCoroutine(FadeRoutine(beat.duration > 0f ? beat.duration : defaultFadeSeconds));
                     break;
                 case VnBeatKind.TextCard:
-                    StartCoroutine(TextCardRoutine(beat));
+                    _beatRoutine = StartCoroutine(TextCardRoutine(beat));
                     break;
                 case VnBeatKind.End:
                     Finish(beat);
@@ -216,43 +348,139 @@ namespace FracturedChorus.Narrative.Vn
 
         private IEnumerator TextCardRoutine(VnBeat beat)
         {
+            _textCardBusy = true;
+            _skipTextCardRequested = false;
+            _waitingAdvance = false;
             SetPanel(dialoguePanel, false);
             portraitView?.ClearStage();
             SetPanel(textCardPanel, true);
-            if (textCardBody != null)
+
+            yield return null;
+
+            var fullText = beat.text ?? string.Empty;
+            var hold = beat.duration > 0f ? beat.duration : 1.2f;
+
+            if (textCardBody != null && !string.IsNullOrEmpty(fullText))
             {
-                textCardBody.text = beat.text ?? string.Empty;
+                textCardBody.text = string.Empty;
+                yield return StartCoroutine(TypeTextCard(fullText));
+            }
+            else if (textCardBody != null)
+            {
+                textCardBody.text = fullText;
             }
 
-            var hold = beat.duration > 0f ? beat.duration : 1.2f;
             var elapsed = 0f;
-            while (elapsed < hold)
+            while (elapsed < hold && !_skipTextCardRequested)
             {
-                if (elapsed > 0.2f && VnInput.WasAdvancePressedThisFrame())
-                {
-                    break;
-                }
-
-                elapsed += Time.deltaTime;
+                elapsed += Time.unscaledDeltaTime;
                 yield return null;
             }
 
+            StopTextCardTypingSound();
+            _textCardBusy = false;
+            _beatRoutine = null;
             _waitingAdvance = true;
+        }
+
+        private IEnumerator TypeTextCard(string text)
+        {
+            if (textCardBody == null)
+            {
+                yield break;
+            }
+
+            BeginTextCardTypingSound();
+            const float charsPerSecond = 36f;
+            var builder = new System.Text.StringBuilder();
+            for (var i = 0; i < text.Length; i++)
+            {
+                if (_skipTextCardRequested && i > 1)
+                {
+                    textCardBody.text = text;
+                    StopTextCardTypingSound();
+                    yield break;
+                }
+
+                builder.Append(text[i]);
+                textCardBody.text = builder.ToString();
+                var c = text[i];
+                var delay = 1f / charsPerSecond;
+                if (c == '.' || c == '!' || c == '?' || c == ',' || c == '—' || c == '\n')
+                {
+                    delay *= 1.8f;
+                }
+
+                var waited = 0f;
+                while (waited < delay)
+                {
+                    if (_skipTextCardRequested)
+                    {
+                        textCardBody.text = text;
+                        StopTextCardTypingSound();
+                        yield break;
+                    }
+
+                    waited += Time.unscaledDeltaTime;
+                    yield return null;
+                }
+            }
+
+            StopTextCardTypingSound();
+        }
+
+        private void BeginTextCardTypingSound()
+        {
+            if (typingClip == null)
+            {
+                return;
+            }
+
+            if (_textCardTypingSource == null)
+            {
+                var go = new GameObject("VnTextCardTyping");
+                go.transform.SetParent(transform, false);
+                _textCardTypingSource = go.AddComponent<AudioSource>();
+                _textCardTypingSource.playOnAwake = false;
+                _textCardTypingSource.loop = true;
+            }
+
+            _textCardTypingSource.clip = typingClip;
+            _textCardTypingSource.volume = 0.55f;
+            _textCardTypingSource.time = 0f;
+            _textCardTypingSource.Play();
+        }
+
+        private void StopTextCardTypingSound()
+        {
+            if (_textCardTypingSource != null && _textCardTypingSource.isPlaying)
+            {
+                _textCardTypingSource.Stop();
+            }
         }
 
         private IEnumerator FadeRoutine(float seconds)
         {
+            _transitionBusy = true;
+            _skipTransitionRequested = false;
+            _waitingAdvance = false;
+
             if (fadeOverlay == null)
             {
+                _transitionBusy = false;
+                _beatRoutine = null;
                 Advance();
                 yield break;
             }
 
             fadeOverlay.blocksRaycasts = true;
             var half = Mathf.Max(0.05f, seconds * 0.5f);
-            yield return FadeCanvas(fadeOverlay, 0f, 1f, half);
-            yield return FadeCanvas(fadeOverlay, 1f, 0f, half);
+            yield return FadeCanvasSkippable(fadeOverlay, 0f, 1f, half);
+            yield return FadeCanvasSkippable(fadeOverlay, 1f, 0f, half);
+            fadeOverlay.alpha = 0f;
             fadeOverlay.blocksRaycasts = false;
+            _transitionBusy = false;
+            _beatRoutine = null;
             Advance();
         }
 
@@ -260,17 +488,25 @@ namespace FracturedChorus.Narrative.Vn
         {
             if (!string.IsNullOrWhiteSpace(beat.bgId) && backgroundImage != null)
             {
-                if (cueResolver != null && cueResolver.TryGetSprite(beat.bgId, out var sprite))
+                if (beat.bgId == VnBgIds.Black)
+                {
+                    ApplyBlackBackground();
+                }
+                else if (cueResolver != null && cueResolver.TryGetSprite(beat.bgId, out var sprite))
                 {
                     backgroundImage.sprite = sprite;
+                    backgroundImage.color = Color.white;
                     backgroundImage.enabled = true;
                 }
+
+                _currentBgId = beat.bgId;
+                ApplyAmbienceForBackground(beat.bgId);
             }
 
             if (!string.IsNullOrWhiteSpace(beat.bgmId))
             {
                 var pitch = beat.bgmPitch > 0.01f ? beat.bgmPitch : 1f;
-                audioPlayer?.PlayBgm(beat.bgmId, true, pitch);
+                audioPlayer?.PlayBgm(beat.bgmId, true, pitch, beat.bgmStartTime);
             }
             else if (beat.bgmPitch > 0.01f)
             {
@@ -281,12 +517,98 @@ namespace FracturedChorus.Narrative.Vn
             {
                 audioPlayer?.PlaySfx(beat.sfxId);
             }
+
+            ApplyDateHud(beat);
+        }
+
+        private void ApplyDateHud(VnBeat beat)
+        {
+            if (dateHud == null || beat == null)
+            {
+                return;
+            }
+
+            if (beat.hideDateHud
+                || beat.kind == VnBeatKind.TextCard
+                || beat.kind == VnBeatKind.Fade
+                || beat.kind == VnBeatKind.End)
+            {
+                dateHud.Hide();
+                return;
+            }
+
+            var showForDialogue = beat.kind == VnBeatKind.Line
+                || beat.kind == VnBeatKind.Narration
+                || beat.kind == VnBeatKind.Choice
+                || beat.showDateHud;
+            if (!showForDialogue)
+            {
+                return;
+            }
+
+            if (beat.dateHudFromMeta)
+            {
+                dateHud.ShowFromMeta();
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(beat.dateHudDate))
+            {
+                _dateHudDate = beat.dateHudDate.Trim();
+            }
+
+            if (!string.IsNullOrWhiteSpace(beat.dateHudPhase))
+            {
+                _dateHudPhase = beat.dateHudPhase.Trim();
+            }
+
+            if (string.IsNullOrWhiteSpace(_dateHudDate))
+            {
+                _dateHudDate = openingDateDisplay;
+            }
+
+            if (string.IsNullOrWhiteSpace(_dateHudPhase))
+            {
+                _dateHudPhase = openingPhaseDisplay;
+            }
+
+            dateHud.ShowStatic(_dateHudDate, _dateHudPhase, useMoon: true);
+        }
+
+        private void ApplyAmbienceForBackground(string bgId)
+        {
+            if (bgId == VnBgIds.LuminaStreetNight
+                || bgId == VnBgIds.LuminaAlleyNight
+                || bgId == VnBgIds.LuminaAlleyHarutoBody
+                || bgId == VnBgIds.LuminaSquareNight)
+            {
+                audioPlayer?.PlayAmbience(VnAudioIds.RainAmbience);
+                return;
+            }
+
+            if (bgId == VnBgIds.Black || bgId == VnBgIds.LuxeConcert)
+            {
+                audioPlayer?.StopAmbience();
+            }
+        }
+
+        private void ApplyBlackBackground()
+        {
+            if (backgroundImage == null)
+            {
+                return;
+            }
+
+            backgroundImage.sprite = null;
+            backgroundImage.color = Color.black;
+            backgroundImage.enabled = true;
         }
 
         private void Finish(VnBeat endBeat)
         {
             _running = false;
             _waitingAdvance = false;
+            StopBeatRoutine();
             audioPlayer?.StopBgm();
             audioPlayer?.StopAmbience();
 
@@ -329,13 +651,30 @@ namespace FracturedChorus.Narrative.Vn
             GameMetaSession.Save();
         }
 
-        private static IEnumerator FadeCanvas(CanvasGroup group, float from, float to, float seconds)
+        private IEnumerator FadeCanvasSkippable(CanvasGroup group, float from, float to, float seconds)
         {
+            if (group == null)
+            {
+                yield break;
+            }
+
+            if (_skipTransitionRequested || seconds <= 0.001f)
+            {
+                group.alpha = to;
+                yield break;
+            }
+
             var t = 0f;
             group.alpha = from;
             while (t < seconds)
             {
-                t += Time.deltaTime;
+                if (_skipTransitionRequested)
+                {
+                    group.alpha = to;
+                    yield break;
+                }
+
+                t += Time.unscaledDeltaTime;
                 group.alpha = Mathf.Lerp(from, to, t / seconds);
                 yield return null;
             }
@@ -355,5 +694,59 @@ namespace FracturedChorus.Narrative.Vn
             group.blocksRaycasts = active;
             group.interactable = active;
         }
+
+#if UNITY_EDITOR
+        public void EditorPreviewDialogueSample()
+        {
+            SetPanel(textCardPanel, false);
+            SetPanel(dialoguePanel, true);
+            if (nameplateText != null)
+            {
+                nameplateText.text = "Mei Lin";
+            }
+
+            if (typewriter != null && typewriter.BodyText != null)
+            {
+                typewriter.BodyText.text = "Sample dialogue — kéo Nameplate / DialoguePanel / DialogueBody trên Scene.";
+            }
+
+            dateHud?.ShowStatic(openingDateDisplay, openingPhaseDisplay, useMoon: true);
+        }
+
+        public void EditorPreviewTextCardSample()
+        {
+            SetPanel(dialoguePanel, false);
+            SetPanel(textCardPanel, true);
+            if (textCardBody != null)
+            {
+                textCardBody.text = "AT NEON CROSSING, LUMINA CITY";
+            }
+
+            dateHud?.Hide();
+        }
+
+        public void EditorHideSamples()
+        {
+            SetPanel(dialoguePanel, false);
+            SetPanel(textCardPanel, false);
+            if (nameplateText != null)
+            {
+                nameplateText.text = string.Empty;
+            }
+
+            if (typewriter != null && typewriter.BodyText != null)
+            {
+                typewriter.BodyText.text = string.Empty;
+            }
+
+            if (textCardBody != null)
+            {
+                textCardBody.text = string.Empty;
+            }
+
+            dateHud?.Hide();
+            portraitView?.Hide();
+        }
+#endif
     }
 }

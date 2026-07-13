@@ -9,6 +9,10 @@ namespace FracturedChorus.Narrative.Vn
             "Assets/FracturedChorus/Narrative/Scripts/OpeningInvestigation_EN.asset";
 
         private const float EarPainPitch = 0.38f;
+        private const string OpeningDate = "17/08";
+        private const string OpeningPhase = "Late Night";
+        private const string RenDate = "01/09";
+        private const string RenPhase = "Night";
 
         public static void ApplyTo(VnScriptSO script)
         {
@@ -26,7 +30,17 @@ namespace FracturedChorus.Narrative.Vn
         {
             return new[]
             {
-                N("Late night in Lumina.\nA city that never sleeps.", VnBgIds.LuminaStreetNight),
+                Card("LUMINA, 17 AUGUST 20XX", 2.2f, VnBgIds.Black),
+                N("Under the lights of Astra Arena,\nLUXE holds the city in one chorus.",
+                    VnBgIds.LuxeConcert, VnAudioIds.EternalSpark),
+                N("The crowd detonates — lightsticks surge, a thousand voices roar the hook."),
+                L("LUXE", "Thank you, Lumina!\nWe'll carry this spark to the next stage!"),
+                L("Astra", "Stay with us. Eternal Spark — forever!"),
+                N("The broadcast cuts. The street waits."),
+                Card("AT NEON CROSSING, LUMINA CITY", 2.0f, VnBgIds.Black, VnAudioIds.StopBgm),
+
+                N("Late night in Lumina.\nA city that never sleeps.", VnBgIds.LuminaStreetNight,
+                    dateHudDate: OpeningDate, dateHudPhase: OpeningPhase),
                 N("On the giant screens, Prime Unit MVs loop again and again — no one remembers how many times.\nPeople pass by humming along, almost unconscious."),
                 L(VnSpeakerIds.Haruto, "…Another late shift. I’m wiped.", "neutral"),
                 N("SyncPod on his right ear. Blue LED. Slow pulse.\nPersonal playlist — track three: Bring Me Home.",
@@ -84,13 +98,16 @@ namespace FracturedChorus.Narrative.Vn
 
                 Fade(1.0f),
 
-                N("At the same hour — across the city.\nThe station. The crowd. Neon still singing.", VnBgIds.LuminaStreetNight),
+                Card("AT LUMINA SQUARE", 2.0f, VnBgIds.Black),
+                N("Across the city — Lumina Square.\nRain sheets the crossing. Neon sings on wet asphalt.",
+                    VnBgIds.LuminaSquareNight, sfxId: VnAudioIds.Footsteps,
+                    dateHudDate: RenDate, dateHudPhase: RenPhase),
                 N("A SyncPod on Ren’s ear. Blue LED.\nOne pulse — then the track cuts out."),
                 N("Mandatory broadcast window.\nCurrent Chorus Board #1: Eternal Spark — LUXE.",
                     bgmId: VnAudioIds.EternalSpark),
-                L(VnSpeakerIds.Ren, "…This one again."),
-                N("He doesn’t switch it off. Doesn’t flinch.\nJust tightens his backpack strap and steps into the flow."),
-                L(VnSpeakerIds.Ren, "If it’s number one, you listen. That’s how this city works."),
+                L(VnSpeakerIds.Ren, "…This one again.", "annoyed"),
+                N("He keeps walking under the rain, letting the song fill him."),
+                L(VnSpeakerIds.Ren, "If it’s number one, you listen. That’s how this city works.", "smile"),
                 N("Around him, mouths hum the hook without looking at the billboards.\nRen hears it with them — clear, clean, on the beat."),
                 N("No pain. No tug on his feet.\nJust a hit song… and a newcomer to Lumina."),
                 N("Bag on his shoulder. Early-enrollment papers for HIMA.\nLight rain still falling."),
@@ -108,13 +125,19 @@ namespace FracturedChorus.Narrative.Vn
             string text,
             string bgId = null,
             string bgmId = null,
-            float bgmPitch = 0f) => new VnBeat
+            float bgmPitch = 0f,
+            string sfxId = null,
+            string dateHudDate = null,
+            string dateHudPhase = null) => new VnBeat
         {
             kind = VnBeatKind.Narration,
             text = text,
             bgId = bgId,
             bgmId = bgmId,
-            bgmPitch = bgmPitch
+            bgmPitch = bgmPitch,
+            sfxId = sfxId,
+            dateHudDate = dateHudDate,
+            dateHudPhase = dateHudPhase
         };
 
         private static VnBeat L(
@@ -123,7 +146,8 @@ namespace FracturedChorus.Narrative.Vn
             string expression = null,
             string bgId = null,
             string bgmId = null,
-            float bgmPitch = 0f) => new VnBeat
+            float bgmPitch = 0f,
+            string sfxId = null) => new VnBeat
         {
             kind = VnBeatKind.Line,
             speakerId = speakerId,
@@ -131,20 +155,29 @@ namespace FracturedChorus.Narrative.Vn
             expression = expression,
             bgId = bgId,
             bgmId = bgmId,
-            bgmPitch = bgmPitch
+            bgmPitch = bgmPitch,
+            sfxId = sfxId
         };
 
-        private static VnBeat Card(string text, float duration) => new VnBeat
+        private static VnBeat Card(
+            string text,
+            float duration,
+            string bgId = null,
+            string bgmId = null) => new VnBeat
         {
             kind = VnBeatKind.TextCard,
             text = text,
-            duration = duration
+            duration = duration,
+            bgId = bgId,
+            bgmId = bgmId,
+            hideDateHud = true
         };
 
         private static VnBeat Fade(float duration) => new VnBeat
         {
             kind = VnBeatKind.Fade,
-            duration = duration
+            duration = duration,
+            hideDateHud = true
         };
 
         private static VnBeat End(params string[] flags) => new VnBeat

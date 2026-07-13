@@ -14,6 +14,12 @@ namespace FracturedChorus.Menu
 
         public void OnPointerDown(PointerEventData eventData)
         {
+            var button = GetComponentInParent<UnityEngine.UI.Button>();
+            if (button != null && !button.interactable)
+            {
+                return;
+            }
+
             _controller?.PlayButtonPressSfx();
         }
     }

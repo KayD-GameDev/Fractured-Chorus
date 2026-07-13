@@ -241,7 +241,7 @@ namespace FracturedChorus.Editor
             sfxGo.transform.SetParent(townMapGo.transform, false);
             sfxGo.AddComponent<AudioSource>();
             var sfx = sfxGo.AddComponent<TownMapSfxController>();
-            var buttonClip = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/FracturedChorus/Audio/SFX/MainMenu_ButtonPress.mp3");
+            var buttonClip = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/FracturedChorus/Audio/SFX/MainMenu_ButtonPress.wav");
             sfx.Configure(buttonClip, buttonClip, buttonClip, buttonClip);
 
             EnsureStatusMenuSpriteImport();
