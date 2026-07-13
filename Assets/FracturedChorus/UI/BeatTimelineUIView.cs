@@ -72,6 +72,11 @@ namespace FracturedChorus.UI
         private readonly HashSet<int> _precomputedCounterBeats = new();
         private readonly List<CombatUnit> _counterUnitsScratch = new();
         private readonly List<CombatUnit> _counteredEnemyUnitsScratch = new();
+        private RectTransform _resolveChipLayer;
+        private readonly List<CounterNoteResolveChipView> _resolveChipPool = new();
+        private readonly Queue<CounterNoteResolveChipView> _resolveChipActive = new();
+        private CounterMultiBannerView _multiBanner;
+        private const int ResolveChipPoolCap = 6;
         private float _roundStartMusicalBeat;
         private int _roundSegmentIndex;
         private int _segmentStartBeat;
@@ -309,14 +314,119 @@ namespace FracturedChorus.UI
 
         public void SpawnNoteResolveChip(int beatIndex, BossNoteTier tier, int hitsDelta)
         {
+            EnsureResolveFeedbackUi();
+            if (_resolveChipLayer == null || scanBar == null)
+            {
+                return;
+            }
+
+            while (_resolveChipActive.Count >= ResolveChipPoolCap)
+            {
+                var oldest = _resolveChipActive.Dequeue();
+                oldest?.ForceHide();
+            }
+
+            var chip = RentResolveChip();
+            var stack = _resolveChipActive.Count;
+            var pos = new Vector2(stack * 10f - 12f, 36f + stack * 6f);
+            if (scanBar != null)
+            {
+                chip.transform.SetParent(scanBar, false);
+            }
+
+            chip.Play(pos, tier, hitsDelta);
+            _resolveChipActive.Enqueue(chip);
         }
 
         public void ShowOrRefreshMultiBanner(int count)
         {
+            EnsureResolveFeedbackUi();
+            _multiBanner?.ShowOrRefresh(count);
         }
 
         public void HideMultiBanner()
         {
+            _multiBanner?.HideImmediate();
+            while (_resolveChipActive.Count > 0)
+            {
+                _resolveChipActive.Dequeue()?.ForceHide();
+            }
+        }
+
+        private void EnsureResolveFeedbackUi()
+        {
+            if (viewport == null)
+            {
+                WireReferences();
+            }
+
+            if (viewport == null)
+            {
+                return;
+            }
+
+            if (_resolveChipLayer == null)
+            {
+                var existing = viewport.Find("ResolveChipLayer") as RectTransform;
+                if (existing != null)
+                {
+                    _resolveChipLayer = existing;
+                }
+                else
+                {
+                    var go = new GameObject("ResolveChipLayer", typeof(RectTransform));
+                    _resolveChipLayer = go.GetComponent<RectTransform>();
+                    _resolveChipLayer.SetParent(viewport, false);
+                    _resolveChipLayer.anchorMin = Vector2.zero;
+                    _resolveChipLayer.anchorMax = Vector2.one;
+                    _resolveChipLayer.offsetMin = Vector2.zero;
+                    _resolveChipLayer.offsetMax = Vector2.zero;
+                }
+
+                _resolveChipLayer.SetAsLastSibling();
+            }
+
+            if (_multiBanner == null)
+            {
+                var existingBanner = viewport.Find("MultiBanner");
+                if (existingBanner != null)
+                {
+                    _multiBanner = existingBanner.GetComponent<CounterMultiBannerView>();
+                }
+
+                if (_multiBanner == null && scanBar != null)
+                {
+                    _multiBanner = CounterMultiBannerView.Create(scanBar);
+                    var bannerRect = _multiBanner.transform as RectTransform;
+                    if (bannerRect != null)
+                    {
+                        bannerRect.anchorMin = new Vector2(0.5f, 1f);
+                        bannerRect.anchorMax = new Vector2(0.5f, 1f);
+                        bannerRect.pivot = new Vector2(0.5f, 0f);
+                        bannerRect.anchoredPosition = new Vector2(0f, 8f);
+                    }
+                }
+                else if (_multiBanner == null)
+                {
+                    _multiBanner = CounterMultiBannerView.Create(viewport);
+                }
+            }
+        }
+
+        private CounterNoteResolveChipView RentResolveChip()
+        {
+            var parent = scanBar != null ? scanBar : _resolveChipLayer;
+            foreach (var chip in _resolveChipPool)
+            {
+                if (chip != null && !chip.gameObject.activeSelf)
+                {
+                    return chip;
+                }
+            }
+
+            var created = CounterNoteResolveChipView.Create(parent);
+            _resolveChipPool.Add(created);
+            return created;
         }
 
         public void SetSkillRelocateHandlers(
