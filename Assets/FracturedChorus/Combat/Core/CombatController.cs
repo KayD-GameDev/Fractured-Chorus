@@ -4,6 +4,8 @@ using FracturedChorus.Combat.Core;
 
 using FracturedChorus.Combat.Grid;
 
+using FracturedChorus.Combat.Presentation;
+
 using FracturedChorus.Combat.Timeline;
 
 using FracturedChorus.Combat.Units;
@@ -126,7 +128,15 @@ namespace FracturedChorus.Combat.Core
                     combatSfx = music.GetComponent<CombatSfxController>();
                 }
 
-                timelineView.Bind(_timeline, _session, music, OnTimelinePlanningPause, OnRoundSegmentComplete, combatSfx);
+                var presentation = GetComponent<CounterPresentationDriver>();
+                if (presentation == null)
+                {
+                    presentation = FindAnyObjectByType<CounterPresentationDriver>();
+                }
+
+                presentation?.Configure(combatSfx, timelineView);
+                timelineView.Bind(_timeline, _session, music, OnTimelinePlanningPause, OnRoundSegmentComplete, combatSfx,
+                    presentation);
                 timelineView.SetSkillRelocateHandlers(BeginRelocateSkill, UpdateRelocateSkill, EndRelocateSkill);
                 timelineView.BindBlockBarriers(_session.BlockBarriers);
                 timelineView.SetLaneAvatarClickHandler(OnLaneAvatarClicked);

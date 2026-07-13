@@ -1,6 +1,7 @@
 using FracturedChorus.Audio;
 using FracturedChorus.Combat.Core;
 using FracturedChorus.Combat.Grid;
+using FracturedChorus.Combat.Presentation;
 using FracturedChorus.Combat.Timeline;
 using FracturedChorus.Combat.Units;
 using FracturedChorus.Data;
@@ -29,6 +30,7 @@ namespace FracturedChorus.Combat.Bootstrap
 
         [SerializeField] private CombatMusicController musicController;
         [SerializeField] private CombatSfxController combatSfxController;
+        [SerializeField] private CounterPresentationDriver counterPresentation;
 
         [Header("Grid layout")]
         [SerializeField] private float sideGap = HexBoardLayout.DefaultSideGap;
@@ -45,6 +47,7 @@ namespace FracturedChorus.Combat.Bootstrap
             ResolveSceneReferences();
             EnsureMusicController();
             EnsureCombatSfxController();
+            EnsureCounterPresentation();
             EnsureAudioListener();
 
             _grid = new DualGrid();
@@ -82,6 +85,9 @@ namespace FracturedChorus.Combat.Bootstrap
 
             combatController.Initialize(_session, _timeline, timelineView, skillPanelView, musicController,
                 executeOverlay, _boardDrag);
+
+            counterPresentation?.Configure(combatSfxController, timelineView);
+            timelineView?.SetCounterPresentation(counterPresentation);
 
             RefreshPartyStatusBar();
             EnsureEnemyStatusBar();
@@ -223,6 +229,26 @@ namespace FracturedChorus.Combat.Bootstrap
             var sfxGo = new GameObject("CombatSfx");
             sfxGo.transform.SetParent(transform, false);
             combatSfxController = sfxGo.AddComponent<CombatSfxController>();
+        }
+
+        private void EnsureCounterPresentation()
+        {
+            if (counterPresentation == null)
+            {
+                counterPresentation = GetComponent<CounterPresentationDriver>();
+            }
+
+            if (counterPresentation == null)
+            {
+                counterPresentation = FindAnyObjectByType<CounterPresentationDriver>();
+            }
+
+            if (counterPresentation == null)
+            {
+                counterPresentation = gameObject.AddComponent<CounterPresentationDriver>();
+            }
+
+            counterPresentation.Configure(combatSfxController, timelineView);
         }
 
         private void EnsureAudioListener()

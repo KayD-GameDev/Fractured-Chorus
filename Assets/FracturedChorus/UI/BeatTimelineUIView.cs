@@ -2,6 +2,7 @@ using FracturedChorus.Audio;
 using FracturedChorus.Combat.Block;
 using FracturedChorus.Combat.Core;
 using FracturedChorus.Combat.Grid;
+using FracturedChorus.Combat.Presentation;
 using FracturedChorus.Combat.Timeline;
 using FracturedChorus.Combat.Units;
 using FracturedChorus.Data;
@@ -38,6 +39,7 @@ namespace FracturedChorus.UI
         [SerializeField] [Range(0f, 1f)] private float beatHitAnchorT = 0.5f;
         [SerializeField] private CombatMusicController musicController;
         [SerializeField] private CombatSfxController combatSfxController;
+        [SerializeField] private CounterPresentationDriver counterPresentation;
         [Tooltip("Keep Header / outer BeatTimeline frame position. Internal layout (TrackLine, ScrollContent, ScanBar) still auto-layouts.")]
         [SerializeField] private bool preserveSceneLayout = true;
 
@@ -254,7 +256,7 @@ namespace FracturedChorus.UI
 
         public void Bind(BeatTimelineEngine timeline, CombatSession session,
             CombatMusicController music = null, Action onPlanningPause = null, Action onRoundSegmentComplete = null,
-            CombatSfxController combatSfx = null)
+            CombatSfxController combatSfx = null, CounterPresentationDriver presentation = null)
         {
             if (music != null)
             {
@@ -264,6 +266,11 @@ namespace FracturedChorus.UI
             if (combatSfx != null)
             {
                 combatSfxController = combatSfx;
+            }
+
+            if (presentation != null)
+            {
+                counterPresentation = presentation;
             }
 
             _timeline = timeline;
@@ -292,6 +299,24 @@ namespace FracturedChorus.UI
             PopulateAllSlots();
             RefreshPhaseHeader(0);
             RefreshPhaseAvLabel();
+            counterPresentation?.ResetPresentation();
+        }
+
+        public void SetCounterPresentation(CounterPresentationDriver presentation)
+        {
+            counterPresentation = presentation;
+        }
+
+        public void SpawnNoteResolveChip(int beatIndex, BossNoteTier tier, int hitsDelta)
+        {
+        }
+
+        public void ShowOrRefreshMultiBanner(int count)
+        {
+        }
+
+        public void HideMultiBanner()
+        {
         }
 
         public void SetSkillRelocateHandlers(
@@ -397,6 +422,7 @@ namespace FracturedChorus.UI
             _pausedForPlanning = false;
             _planningPauseArmed = _planningPauseEnabled;
             ResetCounterSfxState();
+            counterPresentation?.ResetPresentation();
 
             if (_autoPlayRoutine != null)
             {
@@ -1075,13 +1101,19 @@ namespace FracturedChorus.UI
                 return;
             }
 
+            _lastCounterSfxBeat = beatIndex;
+            if (counterPresentation != null)
+            {
+                counterPresentation.NotifyPerfect(beatIndex, _timeline);
+                return;
+            }
+
             EnsureCombatSfx();
             if (combatSfxController == null)
             {
                 return;
             }
 
-            _lastCounterSfxBeat = beatIndex;
             combatSfxController.PlayPerfectCounter();
             PlayCounterAnimations(beatIndex);
         }

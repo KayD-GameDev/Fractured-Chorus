@@ -26,14 +26,33 @@ namespace FracturedChorus.Combat.Presentation
             _burstFiredThisWindow = false;
         }
 
-        public CounterBodyMode Decide(string unitKey, double dspNow)
+        public int RegisterPartyPerfect(double dspNow, out bool burstTriggered)
+        {
+            Prune(dspNow);
+            _partyHits.Add(dspNow);
+            var count = _partyHits.Count;
+            burstTriggered = false;
+            if (count >= BurstCount && !_burstFiredThisWindow)
+            {
+                _burstFiredThisWindow = true;
+                burstTriggered = true;
+            }
+
+            return count;
+        }
+
+        public CounterBodyMode DecideUnitBody(string unitKey, double dspNow, bool useBurst)
         {
             if (string.IsNullOrEmpty(unitKey))
             {
                 unitKey = "_";
             }
 
-            Prune(dspNow);
+            if (useBurst)
+            {
+                _lastUnitHit[unitKey] = dspNow;
+                return CounterBodyMode.Burst;
+            }
 
             var gapOk = true;
             if (_lastUnitHit.TryGetValue(unitKey, out var last))
@@ -41,16 +60,7 @@ namespace FracturedChorus.Combat.Presentation
                 gapOk = (dspNow - last) >= RestartGapSec;
             }
 
-            _partyHits.Add(dspNow);
             _lastUnitHit[unitKey] = dspNow;
-
-            var inWindow = _partyHits.Count;
-            if (inWindow >= BurstCount && !_burstFiredThisWindow)
-            {
-                _burstFiredThisWindow = true;
-                return CounterBodyMode.Burst;
-            }
-
             return gapOk ? CounterBodyMode.Restart : CounterBodyMode.HitRetrigger;
         }
 
