@@ -110,14 +110,15 @@ namespace FracturedChorus.Menu
             _transitionSfxController?.PlayChangeMenu();
         }
 
-        public void BeginNewGame()
+        public bool BeginNewGame()
         {
-            if (_transitioning)
+            if (_transitioning || !_attractDismissed)
             {
-                return;
+                return false;
             }
 
             StartCoroutine(BeginNewGameRoutine());
+            return true;
         }
 
         public void PlayButtonPressSfx()
@@ -489,7 +490,7 @@ namespace FracturedChorus.Menu
             if (buttonPressSfxClip == null)
             {
                 buttonPressSfxClip = AssetDatabase.LoadAssetAtPath<AudioClip>(
-                    "Assets/FracturedChorus/Audio/SFX/MainMenu_ButtonPress.mp3");
+                    "Assets/FracturedChorus/Audio/SFX/MainMenu_ButtonPress.wav");
             }
 #endif
 
@@ -656,7 +657,6 @@ namespace FracturedChorus.Menu
             }
 
             ApplyLayerState(showAttract: false, immediate: true);
-            menuController?.SetEnabled(true);
 
             if (_transitionSfxController != null)
             {
@@ -665,6 +665,7 @@ namespace FracturedChorus.Menu
 
             _bgmController?.RestoreVolume();
             _transitioning = false;
+            menuController?.SetEnabled(true);
         }
 
         private void ApplyLayerState(bool showAttract, bool immediate)
@@ -675,8 +676,8 @@ namespace FracturedChorus.Menu
             {
                 attractLayer.alpha = 1f;
                 attractLayer.interactable = false;
-                attractLayer.blocksRaycasts = false;
-                SetMainMenuRuntimeActive(!immediate);
+                attractLayer.blocksRaycasts = true;
+                SetMainMenuRuntimeActive(false);
                 SetMainMenuAlpha(0f, interactable: false, blocksRaycasts: false);
             }
             else

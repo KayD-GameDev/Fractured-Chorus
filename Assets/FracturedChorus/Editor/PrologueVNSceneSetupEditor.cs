@@ -19,7 +19,7 @@ namespace FracturedChorus.Editor
         private const string TypingPath = "Assets/FracturedChorus/Audio/SFX/Prologue_Typing.mp3";
         private const string ButterflyPath = "Assets/FracturedChorus/Audio/SFX/Prologue_ButterflyWings.mp3";
         private const string PenSignPath = "Assets/FracturedChorus/Audio/SFX/Prologue_PenSign.mp3";
-        private const string ButtonPressPath = "Assets/FracturedChorus/Audio/SFX/MainMenu_ButtonPress.mp3";
+        private const string ButtonPressPath = "Assets/FracturedChorus/Audio/SFX/MainMenu_ButtonPress.wav";
         private const string MenuTingPath = "Assets/FracturedChorus/Audio/SFX/MainMenu_ChangeMenu_Ting.mp3";
 
         [MenuItem("Fractured Chorus/Create PrologueVN Scene")]

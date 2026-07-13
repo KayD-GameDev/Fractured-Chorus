@@ -73,6 +73,17 @@ namespace FracturedChorus.Editor
                 new[] { "neutral", "stern", "weary", "concerned", "warning" });
         }
 
+        [MenuItem("Fractured Chorus/Narrative/Bind Ren Expression Sprites")]
+        public static void BindRenExpressions()
+        {
+            BindExpressionSet(
+                "Speaker_Ren.asset",
+                "Assets/FracturedChorus/Art/Characters/Ren/VnBust",
+                "ren_bust_",
+                PortraitsFolder + "/ren_school_bust_neutral_v1.png",
+                new[] { "neutral", "startled", "smile", "curious", "annoyed" });
+        }
+
         [MenuItem("Fractured Chorus/Narrative/Bind Ryo Expression Sprites")]
         public static void BindRyoExpressions()
         {
@@ -90,6 +101,7 @@ namespace FracturedChorus.Editor
             BindHarutoExpressions();
             BindMeiLinExpressions();
             BindRyoExpressions();
+            BindRenExpressions();
         }
 
         private static void BindExpressionSet(

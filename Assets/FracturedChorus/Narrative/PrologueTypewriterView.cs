@@ -131,7 +131,7 @@ namespace FracturedChorus.Narrative
             callback?.Invoke();
         }
 
-        private void BeginTypingSound()
+        public void BeginTypingSound()
         {
             if (_audio != null)
             {
@@ -159,7 +159,7 @@ namespace FracturedChorus.Narrative
             _localTypingSource.Play();
         }
 
-        private void StopTypingSound()
+        public void StopTypingSound()
         {
             if (_audio != null)
             {

@@ -14,7 +14,13 @@ namespace FracturedChorus.Narrative.Vn
         public string bgmId;
         public string sfxId;
         public float bgmPitch;
+        public float bgmStartTime;
         public float duration;
         public string[] setFlags;
+        public bool showDateHud;
+        public bool hideDateHud;
+        public string dateHudDate;
+        public string dateHudPhase;
+        public bool dateHudFromMeta;
     }
 }

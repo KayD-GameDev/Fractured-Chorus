@@ -45,7 +45,7 @@ namespace FracturedChorus.Narrative.Vn
             return s_cached;
         }
 
-        public static void Apply(Text text, int fontSize = -1, FontStyle style = FontStyle.Normal)
+        public static void Apply(Text text, int fontSize = -1, FontStyle? style = null)
         {
             if (text == null)
             {
@@ -63,12 +63,19 @@ namespace FracturedChorus.Narrative.Vn
                 text.fontSize = fontSize;
             }
 
-            text.fontStyle = style;
+            if (style.HasValue)
+            {
+                text.fontStyle = style.Value;
+            }
+
             text.supportRichText = false;
-            text.horizontalOverflow = HorizontalWrapMode.Wrap;
-            text.verticalOverflow = VerticalWrapMode.Overflow;
             text.resizeTextForBestFit = false;
             text.alignByGeometry = false;
+        }
+
+        public static void ApplyAssetOnly(Text text)
+        {
+            Apply(text);
         }
     }
 }
