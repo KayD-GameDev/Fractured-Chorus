@@ -515,7 +515,7 @@ namespace FracturedChorus.Editor
             overlayRect.anchorMax = new Vector2(0.5f, 0.5f);
             overlayRect.pivot = new Vector2(0.5f, 0.5f);
             overlayRect.anchoredPosition = Vector2.zero;
-            overlayRect.sizeDelta = Vector2.zero;
+            overlayRect.sizeDelta = new Vector2(360f, 140f);
 
             var btnGo = CreateUiObject("ExecuteButton", overlayGo.transform);
             var btnRect = btnGo.GetComponent<RectTransform>();
@@ -523,8 +523,10 @@ namespace FracturedChorus.Editor
             btnRect.anchorMax = new Vector2(0.5f, 0.5f);
             btnRect.pivot = new Vector2(0.5f, 0.5f);
             btnRect.anchoredPosition = Vector2.zero;
-            btnRect.sizeDelta = new Vector2(160f, 56f);
-            btnGo.AddComponent<Image>().color = new Color(0.35f, 0.15f, 0.55f, 0.95f);
+            btnRect.sizeDelta = new Vector2(360f, 140f);
+            var btnImage = btnGo.AddComponent<Image>();
+            btnImage.color = Color.white;
+            btnImage.preserveAspect = true;
             var button = btnGo.AddComponent<Button>();
 
             var labelGo = CreateUiObject("Label", btnGo.transform);
@@ -538,6 +540,9 @@ namespace FracturedChorus.Editor
             var overlay = overlayGo.AddComponent<CombatExecuteOverlayUIView>();
             SetField(overlay, "executeButton", button);
             SetField(overlay, "labelText", label);
+            SetField(overlay, "buttonImage", btnImage);
+            SetField(overlay, "buttonRect", btnRect);
+            SetField(overlay, "buttonSize", 360f, 140f);
             overlay.WireReferences();
             return overlay;
         }
@@ -765,6 +770,17 @@ namespace FracturedChorus.Editor
             if (prop != null)
             {
                 prop.floatValue = value;
+                so.ApplyModifiedPropertiesWithoutUndo();
+            }
+        }
+
+        private static void SetField(Object target, string fieldName, float x, float y)
+        {
+            var so = new SerializedObject(target);
+            var prop = so.FindProperty(fieldName);
+            if (prop != null && prop.propertyType == SerializedPropertyType.Vector2)
+            {
+                prop.vector2Value = new Vector2(x, y);
                 so.ApplyModifiedPropertiesWithoutUndo();
             }
         }
