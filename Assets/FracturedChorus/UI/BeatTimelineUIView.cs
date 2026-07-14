@@ -2,6 +2,7 @@ using FracturedChorus.Audio;
 using FracturedChorus.Combat.Block;
 using FracturedChorus.Combat.Core;
 using FracturedChorus.Combat.Grid;
+using FracturedChorus.Combat.Presentation;
 using FracturedChorus.Combat.Timeline;
 using FracturedChorus.Combat.Units;
 using FracturedChorus.Data;
@@ -38,6 +39,7 @@ namespace FracturedChorus.UI
         [SerializeField] [Range(0f, 1f)] private float beatHitAnchorT = 0.5f;
         [SerializeField] private CombatMusicController musicController;
         [SerializeField] private CombatSfxController combatSfxController;
+        [SerializeField] private CounterPresentationDriver counterPresentation;
         [Tooltip("Keep Header / outer BeatTimeline frame position. Internal layout (TrackLine, ScrollContent, ScanBar) still auto-layouts.")]
         [SerializeField] private bool preserveSceneLayout = true;
 
@@ -70,6 +72,11 @@ namespace FracturedChorus.UI
         private readonly HashSet<int> _precomputedCounterBeats = new();
         private readonly List<CombatUnit> _counterUnitsScratch = new();
         private readonly List<CombatUnit> _counteredEnemyUnitsScratch = new();
+        private RectTransform _resolveChipLayer;
+        private readonly List<CounterNoteResolveChipView> _resolveChipPool = new();
+        private readonly Queue<CounterNoteResolveChipView> _resolveChipActive = new();
+        private CounterMultiBannerView _multiBanner;
+        private const int ResolveChipPoolCap = 6;
         private float _roundStartMusicalBeat;
         private int _roundSegmentIndex;
         private int _segmentStartBeat;
@@ -254,7 +261,7 @@ namespace FracturedChorus.UI
 
         public void Bind(BeatTimelineEngine timeline, CombatSession session,
             CombatMusicController music = null, Action onPlanningPause = null, Action onRoundSegmentComplete = null,
-            CombatSfxController combatSfx = null)
+            CombatSfxController combatSfx = null, CounterPresentationDriver presentation = null)
         {
             if (music != null)
             {
@@ -264,6 +271,11 @@ namespace FracturedChorus.UI
             if (combatSfx != null)
             {
                 combatSfxController = combatSfx;
+            }
+
+            if (presentation != null)
+            {
+                counterPresentation = presentation;
             }
 
             _timeline = timeline;
@@ -292,6 +304,161 @@ namespace FracturedChorus.UI
             PopulateAllSlots();
             RefreshPhaseHeader(0);
             RefreshPhaseAvLabel();
+            counterPresentation?.ResetPresentation();
+        }
+
+        public void SetCounterPresentation(CounterPresentationDriver presentation)
+        {
+            counterPresentation = presentation;
+        }
+
+        public void SpawnNoteResolveChip(int beatIndex, BossNoteTier tier, int hitsDelta)
+        {
+            EnsureResolveFeedbackUi();
+            if (_resolveChipLayer == null)
+            {
+                return;
+            }
+
+            BringResolveFeedbackToFront();
+
+            while (_resolveChipActive.Count >= ResolveChipPoolCap)
+            {
+                var oldest = _resolveChipActive.Dequeue();
+                oldest?.ForceHide();
+            }
+
+            var chip = RentResolveChip();
+            chip.transform.SetParent(_resolveChipLayer, false);
+            chip.transform.SetAsLastSibling();
+
+            var stack = _resolveChipActive.Count;
+            var pos = GetPerfectChipAnchoredPos(stack);
+            chip.Play(pos, tier);
+            _resolveChipActive.Enqueue(chip);
+        }
+
+        public void ShowOrRefreshMultiBanner(int count)
+        {
+            EnsureResolveFeedbackUi();
+            BringResolveFeedbackToFront();
+            _multiBanner?.ShowOrRefresh(count);
+        }
+
+        public void HideMultiBanner()
+        {
+            _multiBanner?.HideImmediate();
+            while (_resolveChipActive.Count > 0)
+            {
+                _resolveChipActive.Dequeue()?.ForceHide();
+            }
+        }
+
+        private Vector2 GetPerfectChipAnchoredPos(int stackIndex)
+        {
+            var offset = new Vector2(stackIndex * 14f - 8f, 56f + stackIndex * 8f);
+            if (_resolveChipLayer == null || scanBar == null)
+            {
+                return offset;
+            }
+
+            var scanLocal = (Vector2)_resolveChipLayer.InverseTransformPoint(scanBar.position);
+            return scanLocal + offset;
+        }
+
+        private void BringResolveFeedbackToFront()
+        {
+            if (_resolveChipLayer != null)
+            {
+                _resolveChipLayer.SetAsLastSibling();
+            }
+
+            if (_multiBanner != null && _multiBanner.transform.parent == viewport)
+            {
+                _multiBanner.transform.SetAsLastSibling();
+            }
+        }
+
+        private void EnsureResolveFeedbackUi()
+        {
+            if (viewport == null)
+            {
+                WireReferences();
+            }
+
+            if (viewport == null)
+            {
+                return;
+            }
+
+            if (_resolveChipLayer == null)
+            {
+                var existing = viewport.Find("ResolveChipLayer") as RectTransform;
+                if (existing != null)
+                {
+                    _resolveChipLayer = existing;
+                }
+                else
+                {
+                    var go = new GameObject("ResolveChipLayer", typeof(RectTransform));
+                    _resolveChipLayer = go.GetComponent<RectTransform>();
+                    _resolveChipLayer.SetParent(viewport, false);
+                    _resolveChipLayer.anchorMin = Vector2.zero;
+                    _resolveChipLayer.anchorMax = Vector2.one;
+                    _resolveChipLayer.pivot = new Vector2(0.5f, 0.5f);
+                    _resolveChipLayer.offsetMin = Vector2.zero;
+                    _resolveChipLayer.offsetMax = Vector2.zero;
+                }
+            }
+
+            BringResolveFeedbackToFront();
+
+            if (_multiBanner == null)
+            {
+                var existingBanner = _resolveChipLayer != null
+                    ? _resolveChipLayer.Find("MultiBanner")
+                    : null;
+                if (existingBanner == null && viewport != null)
+                {
+                    existingBanner = viewport.Find("MultiBanner");
+                }
+
+                if (existingBanner != null)
+                {
+                    _multiBanner = existingBanner.GetComponent<CounterMultiBannerView>();
+                }
+
+                if (_multiBanner == null)
+                {
+                    var parent = _resolveChipLayer != null ? _resolveChipLayer : viewport;
+                    _multiBanner = CounterMultiBannerView.Create(parent);
+                    var bannerRect = _multiBanner.transform as RectTransform;
+                    if (bannerRect != null && scanBar != null && _resolveChipLayer != null)
+                    {
+                        var scanLocal = (Vector2)_resolveChipLayer.InverseTransformPoint(scanBar.position);
+                        bannerRect.anchorMin = new Vector2(0.5f, 0.5f);
+                        bannerRect.anchorMax = new Vector2(0.5f, 0.5f);
+                        bannerRect.pivot = new Vector2(0.5f, 0f);
+                        bannerRect.anchoredPosition = scanLocal + new Vector2(0f, 72f);
+                    }
+                }
+            }
+        }
+
+        private CounterNoteResolveChipView RentResolveChip()
+        {
+            var parent = _resolveChipLayer != null ? _resolveChipLayer : viewport;
+            foreach (var chip in _resolveChipPool)
+            {
+                if (chip != null && !chip.gameObject.activeSelf)
+                {
+                    return chip;
+                }
+            }
+
+            var created = CounterNoteResolveChipView.Create(parent);
+            _resolveChipPool.Add(created);
+            return created;
         }
 
         public void SetSkillRelocateHandlers(
@@ -397,6 +564,7 @@ namespace FracturedChorus.UI
             _pausedForPlanning = false;
             _planningPauseArmed = _planningPauseEnabled;
             ResetCounterSfxState();
+            counterPresentation?.ResetPresentation();
 
             if (_autoPlayRoutine != null)
             {
@@ -1075,13 +1243,19 @@ namespace FracturedChorus.UI
                 return;
             }
 
+            _lastCounterSfxBeat = beatIndex;
+            if (counterPresentation != null)
+            {
+                counterPresentation.NotifyPerfect(beatIndex, _timeline);
+                return;
+            }
+
             EnsureCombatSfx();
             if (combatSfxController == null)
             {
                 return;
             }
 
-            _lastCounterSfxBeat = beatIndex;
             combatSfxController.PlayPerfectCounter();
             PlayCounterAnimations(beatIndex);
         }
@@ -1203,6 +1377,7 @@ namespace FracturedChorus.UI
 
             _footprintLayer.SetAsLastSibling();
             _laneMarkersLayer.SetAsLastSibling();
+            BringResolveFeedbackToFront();
             _footprintLayer.sizeDelta = new Vector2(_contentWidthPx, 0f);
             _laneMarkersLayer.sizeDelta = new Vector2(_contentWidthPx, 0f);
         }
