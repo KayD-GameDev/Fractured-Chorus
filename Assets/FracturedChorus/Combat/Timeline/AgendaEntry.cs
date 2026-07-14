@@ -13,6 +13,9 @@ namespace FracturedChorus.Combat.Timeline
         public SkillDefinitionSO Skill;
         public int BeatIndex;
         public int Delay;
+        public bool IsEmpowered;
+        public bool EmpowerResolved;
+        public bool EffectPayloadApplied;
 
         public AgendaEntry(CombatUnit unit, SkillDefinitionSO skill, int beatIndex)
         {

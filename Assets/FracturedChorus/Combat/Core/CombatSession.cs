@@ -170,6 +170,11 @@ namespace FracturedChorus.Combat.Core
             }
 
             PhaseAv.RecordSpend(cost);
+            if (unit.PendingReduceS2 > 0)
+            {
+                unit.PendingReduceS2 = 0;
+            }
+
             Debug.Log($"[Combat] {unit.DisplayName} → {skill.displayName} @ beat {beatIndex}");
             return true;
         }
@@ -271,6 +276,8 @@ namespace FracturedChorus.Combat.Core
             var telegraphs = Timeline.GetImpactTelegraphsAtBeat(beatIndex);
             var playerEntries = GetPlayerEntriesActiveAtBeat(beatIndex);
 
+            TryResolveEmpowerAtBeat(beatIndex, playerEntries);
+            TryChannelPrepAtBeat(beatIndex, playerEntries, telegraphs);
             ResolvePlayerAttacksAtBeat(beatIndex, playerEntries, telegraphs);
 
             foreach (var telegraph in telegraphs)
@@ -302,6 +309,84 @@ namespace FracturedChorus.Combat.Core
             }
 
             return result;
+        }
+
+        private static void TryResolveEmpowerAtBeat(int beatIndex, IReadOnlyList<AgendaEntry> entries)
+        {
+            if (entries == null || entries.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var entry in entries)
+            {
+                if (entry?.Unit == null || entry.Skill == null || entry.EmpowerResolved)
+                {
+                    continue;
+                }
+
+                var firstActive = entry.BeatIndex;
+                if (beatIndex != firstActive)
+                {
+                    continue;
+                }
+
+                entry.EmpowerResolved = true;
+                var skill = entry.Skill;
+                if (!skill.usesPrepEmpower)
+                {
+                    continue;
+                }
+
+                var threshold = Mathf.Max(1, skill.prepEmpowerThreshold);
+                var cost = Mathf.Max(1, skill.prepEmpowerCost);
+                if (entry.Unit.Prep < threshold)
+                {
+                    continue;
+                }
+
+                if (!entry.Unit.TrySpendPrep(cost))
+                {
+                    continue;
+                }
+
+                entry.IsEmpowered = true;
+                Debug.Log(
+                    $"[Prep] {entry.Unit.DisplayName} empower {skill.displayName} (-{cost}) → Prep {entry.Unit.Prep}/{CombatUnit.PrepCap}");
+            }
+        }
+
+        private static void TryChannelPrepAtBeat(
+            int beatIndex,
+            IReadOnlyList<AgendaEntry> entries,
+            IReadOnlyList<EnemyTelegraph> telegraphs)
+        {
+            if (entries == null || entries.Count == 0)
+            {
+                return;
+            }
+
+            if (telegraphs != null && telegraphs.Count > 0)
+            {
+                return;
+            }
+
+            foreach (var entry in entries)
+            {
+                if (entry?.Unit == null || entry.Skill == null)
+                {
+                    continue;
+                }
+
+                if (entry.Skill.slotKind == SkillSlotKind.BasicAttack)
+                {
+                    continue;
+                }
+
+                entry.Unit.GainPrep(1);
+                Debug.Log(
+                    $"[Prep] {entry.Unit.DisplayName} +1 @ beat {beatIndex} ({entry.Skill.displayName}) → {entry.Unit.Prep}/{CombatUnit.PrepCap}");
+            }
         }
 
         private void ResolvePlayerAttacksAtBeat(int beatIndex, IReadOnlyList<AgendaEntry> entries,
@@ -410,7 +495,9 @@ namespace FracturedChorus.Combat.Core
                 Source = entry.Unit,
                 Target = target,
                 Skill = entry.Skill,
-                BeatTiming = timing
+                BeatTiming = timing,
+                IsEmpowered = entry.IsEmpowered,
+                Entry = entry
             };
 
             var command = new SkillActionCommand(entry.Skill);
@@ -418,7 +505,8 @@ namespace FracturedChorus.Combat.Core
             {
                 command.Execute(ctx);
                 Debug.Log(
-                    $"[Beat] {entry.Unit.DisplayName} {entry.Skill.displayName} @ beat {entry.BeatIndex} (prio {entry.Unit.ActionPriority:F0}) → {timing}");
+                    $"[Beat] {entry.Unit.DisplayName} {entry.Skill.displayName} @ beat {entry.BeatIndex} (prio {entry.Unit.ActionPriority:F0}) → {timing}" +
+                    (entry.IsEmpowered ? " [empowered]" : string.Empty));
             }
         }
 

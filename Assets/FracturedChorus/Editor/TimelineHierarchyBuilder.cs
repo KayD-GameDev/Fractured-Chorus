@@ -569,7 +569,8 @@ namespace FracturedChorus.Editor
             scrollContent.offsetMax = Vector2.zero;
 
             var layout = scrollGo.AddComponent<HorizontalLayoutGroup>();
-            layout.spacing = 2f;
+            layout.enabled = false;
+            layout.spacing = 0f;
             layout.childAlignment = TextAnchor.MiddleLeft;
             layout.childControlWidth = false;
             layout.childControlHeight = true;
@@ -615,10 +616,10 @@ namespace FracturedChorus.Editor
 
             var portraitGo = CreateUiObject("Portrait", segGo.transform);
             var portraitRect = portraitGo.GetComponent<RectTransform>();
-            portraitRect.anchorMin = new Vector2(0f, 0.5f);
-            portraitRect.anchorMax = new Vector2(0f, 0.5f);
-            portraitRect.pivot = new Vector2(0f, 0.5f);
-            portraitRect.anchoredPosition = new Vector2(4f, 0f);
+            portraitRect.anchorMin = new Vector2(0.5f, 0.5f);
+            portraitRect.anchorMax = new Vector2(0.5f, 0.5f);
+            portraitRect.pivot = new Vector2(0.5f, 0.5f);
+            portraitRect.anchoredPosition = Vector2.zero;
             portraitRect.sizeDelta = new Vector2(24f, 24f);
             portraitGo.AddComponent<Image>().color = new Color(0.4f, 0.4f, 0.5f, 1f);
 

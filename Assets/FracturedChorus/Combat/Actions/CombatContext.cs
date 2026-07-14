@@ -15,5 +15,7 @@ namespace FracturedChorus.Combat.Actions
         public SkillDefinitionSO Skill { get; set; }
         public BeatTiming BeatTiming { get; set; } = BeatTiming.OnBeat;
         public HarmonyRelation Harmony { get; set; } = HarmonyRelation.Neutral;
+        public bool IsEmpowered { get; set; }
+        public AgendaEntry Entry { get; set; }
     }
 }

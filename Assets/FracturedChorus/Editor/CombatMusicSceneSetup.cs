@@ -19,7 +19,7 @@ namespace FracturedChorus.Editor
         private const string PerfectCounterPath = "Assets/FracturedChorus/Audio/SFX/Combat_PerfectCounter.wav";
         private const string ClashHitPath = "Assets/FracturedChorus/Audio/SFX/Combat_ClashHit.wav";
         private const string PlanningSourceDownload = @"c:\Users\Asus\Downloads\Eternal Spark - BGM Silent.mp3";
-        private const string TransitionSourceDownload = @"c:\Users\Asus\Downloads\Transition Sound.wav";
+        private const string TransitionSourceDownload = @"d:\Project 1\Transition SFX.wav";
         private const string PerfectCounterSourceDownload = @"c:\Users\Asus\Downloads\Perfect sound.wav";
         private const string ClashHitSourceDownload = @"c:\Users\Asus\Downloads\Clash Hit.wav";
 

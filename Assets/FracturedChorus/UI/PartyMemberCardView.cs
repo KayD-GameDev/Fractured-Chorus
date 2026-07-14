@@ -23,6 +23,7 @@ namespace FracturedChorus.UI
         [SerializeField] private Image elementIcon;
 
         private CombatUnit _unit;
+        private PrepPipsView _prepPips;
 
         public CombatUnit BoundUnit => _unit;
 
@@ -71,6 +72,13 @@ namespace FracturedChorus.UI
             EnsureHealthBarVisuals();
             EnsureCircleBadgeSprites();
             ApplyBadgeLayout();
+            EnsurePrepPips();
+        }
+
+        private void EnsurePrepPips()
+        {
+            var root = transform as RectTransform;
+            _prepPips = PrepPipsView.EnsureOn(root);
         }
 
         private void ApplyBadgeLayout()
@@ -108,10 +116,12 @@ namespace FracturedChorus.UI
             ApplyPortrait(preset);
             ApplyElement(unit?.Stats.Element ?? HarmonyElement.Melody, preset?.statBlock);
             RefreshHp();
+            RefreshPrep(animate: false);
 
             if (_unit != null)
             {
                 _unit.OnHpChanged += HandleHpChanged;
+                _unit.OnPrepChanged += HandlePrepChanged;
             }
         }
 
@@ -131,12 +141,18 @@ namespace FracturedChorus.UI
             if (_unit != null)
             {
                 _unit.OnHpChanged -= HandleHpChanged;
+                _unit.OnPrepChanged -= HandlePrepChanged;
             }
         }
 
         private void HandleHpChanged(CombatUnit unit)
         {
             RefreshHp();
+        }
+
+        private void HandlePrepChanged(CombatUnit unit)
+        {
+            RefreshPrep(animate: true);
         }
 
         private void ApplyPortrait(UnitPresetSO preset)
@@ -201,6 +217,16 @@ namespace FracturedChorus.UI
                 var c = avatarImage.color;
                 avatarImage.color = new Color(c.r, c.g, c.b, alpha);
             }
+        }
+
+        private void RefreshPrep(bool animate)
+        {
+            if (_prepPips == null)
+            {
+                EnsurePrepPips();
+            }
+
+            _prepPips?.SetPrep(_unit != null ? _unit.Prep : 0, animate);
         }
 
         private void EnsureHealthBarVisuals()

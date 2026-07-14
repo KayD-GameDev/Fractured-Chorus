@@ -48,7 +48,18 @@ namespace FracturedChorus.Combat.Timeline
             Mathf.RoundToInt(centerBeat - GetActiveCenterBeatOffset(skill));
 
         public static int GetStandingAfter(SkillDefinitionSO skill) =>
-            skill != null ? Mathf.Max(0, skill.standingBeatsAfter) : 0;
+            GetStandingAfter(skill, null);
+
+        public static int GetStandingAfter(SkillDefinitionSO skill, CombatUnit unit)
+        {
+            var s2 = skill != null ? Mathf.Max(0, skill.standingBeatsAfter) : 0;
+            if (unit != null && unit.PendingReduceS2 > 0)
+            {
+                s2 = Mathf.Max(0, s2 - unit.PendingReduceS2);
+            }
+
+            return s2;
+        }
 
         /// <summary>Earliest placement beat (start of S phase) — needs room for S1 standing beats before.</summary>
         public static int GetMinimumPlacementBeat(SkillDefinitionSO skill, int planningHorizonBeat = 0)
@@ -76,7 +87,14 @@ namespace FracturedChorus.Combat.Timeline
         }
 
         /// <summary>Every beat index occupied by this skill when placed at placementBeat.</summary>
-        public static void CollectOccupiedBeats(SkillDefinitionSO skill, int placementBeat, List<int> results)
+        public static void CollectOccupiedBeats(SkillDefinitionSO skill, int placementBeat, List<int> results) =>
+            CollectOccupiedBeats(skill, placementBeat, results, null);
+
+        public static void CollectOccupiedBeats(
+            SkillDefinitionSO skill,
+            int placementBeat,
+            List<int> results,
+            CombatUnit unit)
         {
             results.Clear();
             if (skill == null)
@@ -84,7 +102,7 @@ namespace FracturedChorus.Combat.Timeline
                 return;
             }
 
-            foreach (var info in EnumerateFootprintBeats(skill, placementBeat))
+            foreach (var info in EnumerateFootprintBeats(skill, placementBeat, unit))
             {
                 if (info.BeatIndex >= 0 && info.BeatIndex < TimelineConstants.TotalBeats)
                 {
@@ -93,7 +111,13 @@ namespace FracturedChorus.Combat.Timeline
             }
         }
 
-        public static IEnumerable<FootprintBeatInfo> EnumerateFootprintBeats(SkillDefinitionSO skill, int placementBeat)
+        public static IEnumerable<FootprintBeatInfo> EnumerateFootprintBeats(SkillDefinitionSO skill, int placementBeat) =>
+            EnumerateFootprintBeats(skill, placementBeat, null);
+
+        public static IEnumerable<FootprintBeatInfo> EnumerateFootprintBeats(
+            SkillDefinitionSO skill,
+            int placementBeat,
+            CombatUnit unit)
         {
             if (skill == null)
             {
@@ -102,7 +126,7 @@ namespace FracturedChorus.Combat.Timeline
 
             var s1 = GetStandingBefore(skill);
             var active = GetActiveBeats(skill);
-            var s2 = GetStandingAfter(skill);
+            var s2 = GetStandingAfter(skill, unit);
 
             for (var i = s1; i >= 1; i--)
             {
@@ -166,7 +190,7 @@ namespace FracturedChorus.Combat.Timeline
                 return false;
             }
 
-            CollectOccupiedBeats(skill, placementBeat, _scratchNew);
+            CollectOccupiedBeats(skill, placementBeat, _scratchNew, unit);
             if (_scratchNew.Count == 0)
             {
                 return false;
