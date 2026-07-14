@@ -15,6 +15,118 @@ MonoBehaviour:
   id: opening_investigation_en
   nextScene: CampusHub
   beats:
+  - kind: 3
+    speakerId: 
+    text: LUMINA, 17 AUGUST 20XX
+    expression: 
+    bgId: bg_black
+    bgmId: 
+    sfxId: 
+    bgmPitch: 0
+    duration: 2.2
+    setFlags: []
+    showDateHud: 0
+    hideDateHud: 1
+    dateHudDate: 
+    dateHudPhase: 
+    dateHudFromMeta: 0
+  - kind: 1
+    speakerId: 
+    text: "Under the lights of Astra Arena,\nLUXE holds the city in one chorus."
+    expression: 
+    bgId: luxe_concert
+    bgmId: eternal_spark
+    sfxId: 
+    bgmPitch: 0
+    bgmStartTime: 0
+    duration: 0
+    setFlags: []
+    showDateHud: 0
+    hideDateHud: 0
+    dateHudDate: 
+    dateHudPhase: 
+    dateHudFromMeta: 0
+  - kind: 1
+    speakerId: 
+    text: "The crowd detonates \u2014 lightsticks surge, a thousand voices roar the
+      hook."
+    expression: 
+    bgId: 
+    bgmId: 
+    sfxId: 
+    bgmPitch: 0
+    bgmStartTime: 0
+    duration: 0
+    setFlags: []
+    showDateHud: 0
+    hideDateHud: 0
+    dateHudDate: 
+    dateHudPhase: 
+    dateHudFromMeta: 0
+  - kind: 0
+    speakerId: LUXE
+    text: "Thank you, Lumina!\nWe'll carry this spark to the next stage!"
+    expression: 
+    bgId: 
+    bgmId: 
+    sfxId: 
+    bgmPitch: 0
+    bgmStartTime: 0
+    duration: 0
+    setFlags: []
+    showDateHud: 0
+    hideDateHud: 0
+    dateHudDate: 
+    dateHudPhase: 
+    dateHudFromMeta: 0
+  - kind: 0
+    speakerId: Astra
+    text: "Stay with us. Eternal Spark \u2014 forever!"
+    expression: 
+    bgId: 
+    bgmId: 
+    sfxId: 
+    bgmPitch: 0
+    bgmStartTime: 0
+    duration: 0
+    setFlags: []
+    showDateHud: 0
+    hideDateHud: 0
+    dateHudDate: 
+    dateHudPhase: 
+    dateHudFromMeta: 0
+  - kind: 1
+    speakerId: 
+    text: The broadcast cuts. The street waits.
+    expression: 
+    bgId: 
+    bgmId: 
+    sfxId: 
+    bgmPitch: 0
+    bgmStartTime: 0
+    duration: 0
+    setFlags: []
+    showDateHud: 0
+    hideDateHud: 0
+    dateHudDate: 
+    dateHudPhase: 
+    dateHudFromMeta: 0
+  - kind: 3
+    speakerId: 
+    text: AT NEON CROSSING, LUMINA CITY
+    expression: 
+    bgId: bg_black
+    bgmId: stop
+    sfxId: 
+    bgmPitch: 0
+    bgmStartTime: 0
+    duration: 2
+    setFlags: []
+    showDateHud: 0
+    hideDateHud: 1
+    dateHudDate: 
+    dateHudPhase: 
+    dateHudFromMeta: 0
   - kind: 1
     speakerId: 
     text: 'Late night in Lumina.
@@ -24,8 +136,14 @@ MonoBehaviour:
     bgId: lumina_street_night
     bgmId: 
     sfxId: 
+    bgmPitch: 0
     duration: 0
     setFlags: []
+    showDateHud: 1
+    hideDateHud: 0
+    dateHudDate: 17/08
+    dateHudPhase: Late Night
+    dateHudFromMeta: 0
   - kind: 1
     speakerId: 
     text: "On the giant screens, Prime Unit MVs loop again and again \u2014 no one
@@ -485,16 +603,31 @@ MonoBehaviour:
     sfxId: 
     duration: 1
     setFlags: []
-  - kind: 1
+  - kind: 3
     speakerId: 
-    text: "At the same hour \u2014 across the city.\nThe station. The crowd. Neon
-      still singing."
+    text: AT LUMINA SQUARE
     expression: 
-    bgId: lumina_street_night
+    bgId: bg_black
     bgmId: 
     sfxId: 
+    duration: 2
+    setFlags: []
+    hideDateHud: 1
+  - kind: 1
+    speakerId: 
+    text: "Across the city \u2014 Lumina Square.\nRain sheets the crossing. Neon sings
+      on wet asphalt."
+    expression: 
+    bgId: lumina_square_night
+    bgmId: 
+    sfxId: sfx_footsteps
     duration: 0
     setFlags: []
+    showDateHud: 0
+    hideDateHud: 0
+    dateHudDate: 01/09
+    dateHudPhase: Night
+    dateHudFromMeta: 0
   - kind: 1
     speakerId: 
     text: "A SyncPod on Ren\u2019s ear. Blue LED.\nOne pulse \u2014 then the track
@@ -519,7 +652,7 @@ MonoBehaviour:
   - kind: 0
     speakerId: ren
     text: "\u2026This one again."
-    expression: 
+    expression: annoyed
     bgId: 
     bgmId: 
     sfxId: 
@@ -527,8 +660,7 @@ MonoBehaviour:
     setFlags: []
   - kind: 1
     speakerId: 
-    text: "He doesn\u2019t switch it off. Doesn\u2019t flinch.\nJust tightens his
-      backpack strap and steps into the flow."
+    text: He keeps walking under the rain, letting the song fill him.
     expression: 
     bgId: 
     bgmId: 
@@ -538,7 +670,7 @@ MonoBehaviour:
   - kind: 0
     speakerId: ren
     text: "If it\u2019s number one, you listen. That\u2019s how this city works."
-    expression: 
+    expression: smile
     bgId: 
     bgmId: 
     sfxId: 
@@ -566,10 +698,8 @@ MonoBehaviour:
     setFlags: []
   - kind: 1
     speakerId: 
-    text: 'Bag on his shoulder. Early-enrollment papers for HIMA.
-
-      Light rain
-      still falling.'
+    text: "Bag on his shoulder. Early-enrollment papers for HIMA.\nLight rain still
+      falling."
     expression: 
     bgId: 
     bgmId: 

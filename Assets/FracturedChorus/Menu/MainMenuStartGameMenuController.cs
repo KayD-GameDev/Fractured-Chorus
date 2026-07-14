@@ -179,6 +179,11 @@ namespace FracturedChorus.Menu
 
         private void OnOptionClicked(int index)
         {
+            if (!_enabled)
+            {
+                return;
+            }
+
             _selectedIndex = index;
             RefreshHighlight();
             ActivateSelected(playConfirmSfx: false);
@@ -186,7 +191,7 @@ namespace FracturedChorus.Menu
 
         private void ActivateSelected(bool playConfirmSfx)
         {
-            if (_selectedIndex < 0 || _selectedIndex >= options.Length)
+            if (!_enabled || _selectedIndex < 0 || _selectedIndex >= options.Length)
             {
                 return;
             }
@@ -212,8 +217,16 @@ namespace FracturedChorus.Menu
             switch (action)
             {
                 case MenuAction.NewGame:
-                    SetStatus("Starting new run…");
-                    screenController?.BeginNewGame();
+                    if (screenController == null)
+                    {
+                        return;
+                    }
+
+                    screenController.PlayButtonPressSfx();
+                    if (screenController.BeginNewGame())
+                    {
+                        SetStatus("Starting new run…");
+                    }
                     break;
                 case MenuAction.LoadGame:
                     SetStatus("No save data found.");

@@ -36,6 +36,7 @@ namespace FracturedChorus.UI
         [SerializeField] private string guardStateName;
         [SerializeField] private string beCounteredStateName;
         [SerializeField] private string idleStateName;
+        [SerializeField] [Range(0f, 1f)] private float hitRetriggerNormalizedTime = 0.35f;
         [Tooltip("Keep sprite/color/Transform scale authored in the scene.")]
         [SerializeField] private bool preserveSceneVisuals = true;
         [Tooltip("Keep BoxCollider2D size/offset authored in the scene — used as click + drag area.")]
@@ -64,7 +65,9 @@ namespace FracturedChorus.UI
             return null;
         }
 
-        public void PlayCounterAnimation()
+        public void PlayCounterAnimation() => PlayCounterRestart();
+
+        public void PlayCounterRestart()
         {
             ResolveAnimatorReference();
             var clip = ResolveCounterClip(out var stateName);
@@ -73,19 +76,42 @@ namespace FracturedChorus.UI
                 clip = ResolveGuardClip(out stateName);
             }
 
-            PlayCombatAnimation(clip, stateName);
+            PlayCombatAnimation(clip, stateName, 0f, scheduleIdle: true);
         }
 
-        public void PlayBeCounteredAnimation()
+        public void PlayCounterHitRetrigger()
+        {
+            ResolveAnimatorReference();
+            var clip = ResolveCounterClip(out var stateName);
+            if (clip == null)
+            {
+                clip = ResolveGuardClip(out stateName);
+            }
+
+            PlayCombatAnimation(clip, stateName, hitRetriggerNormalizedTime, scheduleIdle: true);
+        }
+
+        public void PlayCounterBurst() => PlayCounterRestart();
+
+        public void PlayBeCounteredAnimation() => PlayBeCounteredRestart();
+
+        public void PlayBeCounteredRestart()
         {
             ResolveAnimatorReference();
             var clip = ResolveBeCounteredClip(out var stateName);
-            PlayCombatAnimation(clip, stateName);
+            PlayCombatAnimation(clip, stateName, 0f, scheduleIdle: true);
+        }
+
+        public void PlayBeCounteredHitRetrigger()
+        {
+            ResolveAnimatorReference();
+            var clip = ResolveBeCounteredClip(out var stateName);
+            PlayCombatAnimation(clip, stateName, hitRetriggerNormalizedTime, scheduleIdle: true);
         }
 
         private Coroutine _combatAnimRoutine;
 
-        private void PlayCombatAnimation(AnimationClip clip, string stateName)
+        private void PlayCombatAnimation(AnimationClip clip, string stateName, float normalizedTime, bool scheduleIdle)
         {
             if (animator == null || clip == null || string.IsNullOrEmpty(stateName))
             {
@@ -95,10 +121,18 @@ namespace FracturedChorus.UI
             if (_combatAnimRoutine != null)
             {
                 StopCoroutine(_combatAnimRoutine);
+                _combatAnimRoutine = null;
             }
 
-            animator.Play(stateName, 0, 0f);
-            _combatAnimRoutine = StartCoroutine(ReturnToIdleAfter(clip.length));
+            var t = Mathf.Clamp01(normalizedTime);
+            animator.Play(stateName, 0, t);
+            if (!scheduleIdle)
+            {
+                return;
+            }
+
+            var remaining = clip.length * (1f - t);
+            _combatAnimRoutine = StartCoroutine(ReturnToIdleAfter(remaining));
         }
 
         private IEnumerator ReturnToIdleAfter(float seconds)
@@ -173,7 +207,7 @@ namespace FracturedChorus.UI
                 clip = ResolveClipByKeyword(null, "Attack", out stateName);
             }
 
-            PlayCombatAnimation(clip, stateName);
+            PlayCombatAnimation(clip, stateName, 0f, scheduleIdle: true);
         }
 
         private AnimationClip ResolveClipByKeyword(string preferredName, string keyword, out string stateName)

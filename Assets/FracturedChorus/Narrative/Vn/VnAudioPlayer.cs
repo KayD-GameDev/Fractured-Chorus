@@ -49,7 +49,7 @@ namespace FracturedChorus.Narrative.Vn
             }
         }
 
-        public void PlayBgm(string cueId, bool loop = true, float pitch = 1f)
+        public void PlayBgm(string cueId, bool loop = true, float pitch = 1f, float startTime = 0f)
         {
             if (string.IsNullOrWhiteSpace(cueId))
             {
@@ -69,7 +69,8 @@ namespace FracturedChorus.Narrative.Vn
             }
 
             var targetPitch = pitch > 0.01f ? pitch : 1f;
-            if (bgmSource.clip == clip && bgmSource.isPlaying)
+            var seek = startTime > 0.01f ? Mathf.Clamp(startTime, 0f, Mathf.Max(0f, clip.length - 0.05f)) : 0f;
+            if (bgmSource.clip == clip && bgmSource.isPlaying && seek <= 0.01f)
             {
                 bgmSource.pitch = targetPitch;
                 return;
@@ -79,6 +80,7 @@ namespace FracturedChorus.Narrative.Vn
             bgmSource.loop = loop;
             bgmSource.volume = bgmVolume;
             bgmSource.pitch = targetPitch;
+            bgmSource.time = seek;
             bgmSource.Play();
         }
 

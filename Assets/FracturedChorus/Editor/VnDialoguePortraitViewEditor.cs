@@ -23,9 +23,14 @@ namespace FracturedChorus.Editor
             EditorGUILayout.Space(8);
             EditorGUILayout.LabelField("Portrait Layout Tools", EditorStyles.boldLabel);
             EditorGUILayout.HelpBox(
-                "1) Bấm Preview để hiện bust mẫu trên Scene.\n" +
-                "2) Chọn DialoguePortrait_Left / _Right → kéo Pos Y / Width / Height.\n" +
-                "3) Bấm Capture Layout để lưu vị trí vào component (dùng khi Play).",
+                "Portrait layout:\n" +
+                "1) Preview bust mẫu.\n" +
+                "2) Chọn DialoguePortrait_Left / _Right → kéo Pos / Size.\n" +
+                "3) Save Scene — Play giữ đúng RectTransform trên scene.\n" +
+                "Capture Layout = ghi Pos/Size vào field Inspector (backup / Apply Saved).\n\n" +
+                "Dialogue box / Nameplate / Date HUD:\n" +
+                "Chỉnh Text/Rect trên Scene → Save. Không chạy Heal nếu muốn giữ tay chỉnh.\n" +
+                "VnRuntimeController → VN Layout Tools để chọn target nhanh.",
                 MessageType.Info);
 
             EditorGUILayout.BeginHorizontal();
@@ -69,12 +74,17 @@ namespace FracturedChorus.Editor
             if (GUILayout.Button("Apply Saved Layout To Slots"))
             {
                 Undo.RecordObject(view, "Apply Portrait Layout");
-                view.RefreshEditorPreviewIfNeeded();
-                var so = new SerializedObject(view);
-                so.Update();
-                view.ApplyEditorPreview(
-                    so.FindProperty("previewLeftSpeaker").objectReferenceValue as VnSpeakerDefinitionSO,
-                    so.FindProperty("previewRightSpeaker").objectReferenceValue as VnSpeakerDefinitionSO);
+                if (view.LeftRoot != null)
+                {
+                    Undo.RecordObject(view.LeftRoot, "Apply Portrait Layout");
+                }
+
+                if (view.RightRoot != null)
+                {
+                    Undo.RecordObject(view.RightRoot, "Apply Portrait Layout");
+                }
+
+                view.ApplySavedLayoutToSlots();
                 EditorUtility.SetDirty(view);
                 MarkSceneDirty();
             }
@@ -115,7 +125,7 @@ namespace FracturedChorus.Editor
         public static void ShowOpeningPortraitPreview()
         {
             var scene = EditorSceneManager.OpenScene(OpeningScenePath, OpenSceneMode.Single);
-            var view = Object.FindFirstObjectByType<VnDialoguePortraitView>(FindObjectsInactive.Include);
+            var view = Object.FindAnyObjectByType<VnDialoguePortraitView>(FindObjectsInactive.Include);
             if (view == null)
             {
                 EditorUtility.DisplayDialog(
@@ -136,7 +146,7 @@ namespace FracturedChorus.Editor
             EditorGUIUtility.PingObject(Selection.activeGameObject);
             Debug.Log(
                 "[Fractured Chorus] Portrait preview ON (Mei Lin trái, Ryo phải). " +
-                "Kéo RectTransform trên Scene, rồi Capture Layout trên Inspector.");
+                "Kéo RectTransform trên Scene, Save Scene, rồi Play.");
         }
     }
 }

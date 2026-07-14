@@ -1,0 +1,17 @@
+---
+description: Character art must use CHARACTER_LOCK.md; create lock for new characters only once.
+globs:
+  - Assets/FracturedChorus/Art/Characters/**
+  - Assets/FracturedChorus/Art/UI/Narrative/Portraits/**
+alwaysApply: false
+---
+
+# Character Art Lock
+
+Khi tạo / sửa sprite, bust, portrait, hoặc BG có nhân vật trong Fractured Chorus:
+
+1. Đọc `Assets/FracturedChorus/Art/Characters/<Name>/CHARACTER_LOCK.md` nếu đã có — **bám lock**, không tạo file lock thứ hai.
+2. Nhân vật **mới** → tạo đúng một `CHARACTER_LOCK.md` trong folder nhân vật (xem template `Art/Characters/README_CHARACTER_LOCK.md`).
+3. Expression distress của Haruto (`pain`, `agony`, `desperate`, `fear`) dùng SyncPod **đỏ** (Resonance Dive). `neutral` / `startled` dùng SyncPod **xanh** trừ khi lock nói khác.
+4. Bust không được crop chạm mép trái/phải; canvas chuẩn 1024×1536, PNG alpha sạch.
+5. Sau khi gen, ghi đè đúng path trong lock; giữ `.meta` GUID nếu file đã có.

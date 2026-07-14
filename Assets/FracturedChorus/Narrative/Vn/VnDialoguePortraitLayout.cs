@@ -27,8 +27,11 @@ namespace FracturedChorus.Narrative.Vn
 
     public static class VnBgIds
     {
+        public const string Black = "bg_black";
+        public const string LuxeConcert = "luxe_concert";
         public const string LuminaStreetNight = "lumina_street_night";
         public const string LuminaAlleyNight = "lumina_alley_night";
         public const string LuminaAlleyHarutoBody = "lumina_alley_haruto_body";
+        public const string LuminaSquareNight = "lumina_square_night";
     }
 }
