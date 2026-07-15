@@ -83,6 +83,8 @@ Dàn trận (kéo unit vào ô) — [Deploy] hiện ngay, chưa có nhạc
 - Kéo marker skill → **xóa ngay** khi bắt đầu kéo (dots footprint biến mất cùng lúc) + refund AV.
 - **Skill radial (W/A/D):** chỉ hiện phím + tên skill — **không** hiện cost AV trên nút.
 - **Bỏ Cycle header** trên timeline (`Cycle remaining/budget` per phase) — budget skill giữ theo round segment, không reset khi scan qua phase divider.
+- **Hex floor (ô vị trí):** chỉ hiện hex **Player** lúc `AllowPlayerReposition` (Deploy / dàn trận). Hex **Enemy** luôn ẩn. Sau Deploy (`LockPlayerReposition`) ẩn cả hai — `BoardDragController.SetSlotFloorsVisible` / `GridCellMarker.SetFloorVisible`.
+- **Nút Deploy / Execute:** `CombatExecuteOverlayUIView` dùng `Image.alphaHitTestMinimumThreshold = 0.1` — chỉ pixel opaque của sprite nhận click (texture Read/Write bật trên `combat_btn_deploy_v1` / `combat_btn_execute_v1`).
 
 ---
 
@@ -465,6 +467,7 @@ EN vẫn scale reduction qua `EnduranceFactor`.
 
 | Ngày | Nội dung |
 |------|----------|
+| 2026-07-15 | Ẩn hex floor Enemy luôn; Player floor chỉ lúc Deploy; nút Deploy/Execute click theo alpha sprite (`alphaHitTestMinimumThreshold`) |
 | 2026-07-06 | Combat UX: enemy target BaseAv **cao nhất**; bỏ sort player theo AV; pre-deploy scroll trước Deploy; drag-remove skill ngay OnBeginDrag; Portrait tier màu (Grunt đỏ, Elite 70/30, Boss full); segment handoff `continueFromHold` |
 | 2026-07-03 | Fix: intro-pause `PlanningPauseLocalBeat=0.5`; footprint refresh lúc pause; nhãn Deploy/Continue ép runtime |
 | 2026-07-03 | Fix: pause kiểm tra TRƯỚC `FireScanBeat` → dừng ngay trước beat 1 (beat 1 chưa fire, trước cả beat player sắp set); footprint refresh ngay lúc `EnterPlanningPause` để điểm tròn hiện đúng khi Continue xuất hiện |

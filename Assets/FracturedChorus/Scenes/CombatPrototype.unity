@@ -10033,8 +10033,8 @@ MonoBehaviour:
   buttonImage: {fileID: 2120607405}
   buttonRect: {fileID: 2120607404}
   combatController: {fileID: 707156459}
-  deploySprite: {fileID: 0}
-  executeSprite: {fileID: 0}
+  deploySprite: {fileID: 21300000, guid: d3c9e2f023c36f401e0f9a8b7c6d5e43, type: 3}
+  executeSprite: {fileID: 21300000, guid: e4daf30134d470512f1a0b9c8d7e6f54, type: 3}
   hideLabelWhenUsingSprites: 1
   buttonSize: {x: 360, y: 140}
   buttonAnchoredPosition: {x: 0, y: 0}
@@ -10090,7 +10090,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.32941177}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -10098,7 +10098,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_Sprite: {fileID: 0}
-  m_Type: 0
+  m_Type: 1
   m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4

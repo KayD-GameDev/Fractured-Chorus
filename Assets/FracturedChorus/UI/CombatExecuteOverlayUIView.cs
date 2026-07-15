@@ -117,6 +117,7 @@ namespace FracturedChorus.UI
                 buttonImage.color = Color.white;
                 buttonImage.type = Image.Type.Simple;
                 buttonImage.preserveAspect = true;
+                ApplyAlphaHitTest(buttonImage, sprite);
                 if (hideLabelWhenUsingSprites && labelText != null)
                 {
                     labelText.enabled = false;
@@ -159,6 +160,28 @@ namespace FracturedChorus.UI
             }
 
             return Sprite.Create(tex, new Rect(0f, 0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100f);
+        }
+
+        /// <summary>
+        /// Restrict clicks to opaque sprite pixels. Only set when texture is readable —
+        /// otherwise Unity logs an error and ignores the threshold.
+        /// </summary>
+        private static void ApplyAlphaHitTest(Image image, Sprite sprite)
+        {
+            if (image == null)
+            {
+                return;
+            }
+
+            var tex = sprite != null ? sprite.texture : null;
+            if (tex != null && tex.isReadable)
+            {
+                image.alphaHitTestMinimumThreshold = 0.1f;
+                return;
+            }
+
+            // Keep full-rect raycast until import settings reimport with Read/Write.
+            image.alphaHitTestMinimumThreshold = 0f;
         }
 
         private Button ResolveExecuteButton()

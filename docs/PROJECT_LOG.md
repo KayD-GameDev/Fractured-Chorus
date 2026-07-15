@@ -9,6 +9,18 @@ Newest first.
 
 ---
 
+## 2026-07-15 — Combat UX: ẩn hex Enemy + alpha hit-test Deploy/Execute
+
+**Focus:** code (Unity) · docs
+
+**Done**
+- **Hex floor:** Enemy luôn ẩn; Player chỉ hiện lúc Deploy reposition; sau Deploy ẩn cả hai (`ApplySlotFloorVisibilityForCurrentPhase`).
+- **Nút Deploy/Execute:** `alphaHitTestMinimumThreshold = 0.1` — click chỉ trên vùng opaque của sprite; bật Read/Write trên `combat_btn_deploy_v1` / `combat_btn_execute_v1`.
+
+**Refs:** `CombatController.cs`, `CombatExecuteOverlayUIView.cs`, `BoardDragController.cs`, `GridCellMarker.cs`
+
+---
+
 ## 2026-07-05 — Combat: skill UI scene-first, 2-phase round, footprint overlap
 
 **Focus:** code (Unity) · editor · docs · verify
