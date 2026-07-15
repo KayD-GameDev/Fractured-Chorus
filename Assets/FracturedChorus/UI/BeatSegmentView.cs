@@ -199,6 +199,24 @@ namespace FracturedChorus.UI
             }
         }
 
+        public void ClearEnemyVisualOnly()
+        {
+            WireReferences();
+            if (portrait != null)
+            {
+                portrait.sprite = _defaultPortraitSprite;
+                portrait.color = new Color(0.2f, 0.2f, 0.24f, 0.1f);
+                ApplyPortraitLayout(22f);
+            }
+
+            if (actionLabel != null)
+            {
+                actionLabel.text = string.Empty;
+            }
+
+            ApplyBeatFrame(hasTelegraph: false, isWindup: false);
+        }
+
         public void SetEmpty()
         {
             WireReferences();

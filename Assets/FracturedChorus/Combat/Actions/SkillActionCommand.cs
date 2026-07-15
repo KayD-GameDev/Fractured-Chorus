@@ -70,6 +70,7 @@ namespace FracturedChorus.Combat.Actions
                     ApplyReduceS2(ctx);
                     break;
                 case SkillEffectKind.DelayBossNote:
+                    ApplyDelayBossNote(ctx);
                     break;
                 case SkillEffectKind.Damage:
                 case SkillEffectKind.CycleShift:
@@ -130,6 +131,33 @@ namespace FracturedChorus.Combat.Actions
                 (ctx.IsEmpowered ? " (empowered)" : string.Empty));
         }
 
+        private void ApplyDelayBossNote(CombatContext ctx)
+        {
+            if (ctx.Entry != null && ctx.Entry.EffectPayloadApplied)
+            {
+                return;
+            }
+
+            if (ctx.Timeline == null || ctx.Entry == null)
+            {
+                return;
+            }
+
+            var delay = Mathf.Max(1, ctx.Skill.ResolveEffectValue(ctx.IsEmpowered));
+            var sEnd = ctx.Entry.BeatIndex + SkillFootprintUtil.GetActiveBeats(ctx.Skill) - 1;
+            var phase = TimelineConstants.GetPhaseIndex(ctx.Entry.BeatIndex);
+            TimelineConstants.GetPhaseBeatRange(phase, out var startBeat, out var count);
+            var moved = ctx.Timeline.DelayImpactTelegraphsAfterBeat(sEnd, startBeat + count, delay);
+            if (ctx.Entry != null)
+            {
+                ctx.Entry.EffectPayloadApplied = true;
+            }
+
+            Debug.Log(
+                $"[SkillAction] {ctx.Source.DisplayName} DelayBossNote +{delay} after S@{sEnd} → {moved.Count} notes" +
+                (ctx.IsEmpowered ? " (empowered)" : string.Empty));
+        }
+
         private void ApplyReduceS2(CombatContext ctx)
         {
             if (ctx.Entry != null && ctx.Entry.EffectPayloadApplied)
@@ -144,13 +172,13 @@ namespace FracturedChorus.Combat.Actions
                 {
                     if (ally != null && ally.IsAlive)
                     {
-                        ally.PendingReduceS2 = Mathf.Max(ally.PendingReduceS2, amount);
+                        ally.SetPendingReduceS2(Mathf.Max(ally.PendingReduceS2, amount));
                     }
                 }
             }
             else if (ctx.Target != null)
             {
-                ctx.Target.PendingReduceS2 = Mathf.Max(ctx.Target.PendingReduceS2, amount);
+                ctx.Target.SetPendingReduceS2(Mathf.Max(ctx.Target.PendingReduceS2, amount));
             }
 
             if (ctx.IsEmpowered && ctx.Skill.empowerGiftPrepToTarget && ctx.Target != null)

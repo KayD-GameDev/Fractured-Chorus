@@ -24,6 +24,7 @@ namespace FracturedChorus.UI
 
         private CombatUnit _unit;
         private PrepPipsView _prepPips;
+        private Image _reduceS2BuffIcon;
 
         public CombatUnit BoundUnit => _unit;
 
@@ -73,12 +74,125 @@ namespace FracturedChorus.UI
             EnsureCircleBadgeSprites();
             ApplyBadgeLayout();
             EnsurePrepPips();
+            EnsureReduceS2BuffIcon();
         }
 
         private void EnsurePrepPips()
         {
             var root = transform as RectTransform;
             _prepPips = PrepPipsView.EnsureOn(root);
+        }
+
+        private void EnsureReduceS2BuffIcon()
+        {
+            DestroyLegacyReduceS2TextBadge();
+            DestroyMisplacedBuffIcon();
+
+            var cardRt = transform as RectTransform;
+            if (cardRt == null)
+            {
+                return;
+            }
+
+            var existing = cardRt.Find("BuffReduceS2")?.GetComponent<Image>();
+            if (existing != null)
+            {
+                _reduceS2BuffIcon = existing;
+                PlaceBuffAboveHealthBar(_reduceS2BuffIcon.rectTransform);
+                ApplyReduceS2BuffVisual(_reduceS2BuffIcon);
+                return;
+            }
+
+            var go = new GameObject("BuffReduceS2", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            var rt = go.GetComponent<RectTransform>();
+            rt.SetParent(cardRt, false);
+            PlaceBuffAboveHealthBar(rt);
+            _reduceS2BuffIcon = go.GetComponent<Image>();
+            _reduceS2BuffIcon.raycastTarget = false;
+            _reduceS2BuffIcon.preserveAspect = true;
+            ApplyReduceS2BuffVisual(_reduceS2BuffIcon);
+            go.SetActive(false);
+        }
+
+        private static void PlaceBuffAboveHealthBar(RectTransform rt)
+        {
+            if (rt == null)
+            {
+                return;
+            }
+
+            rt.anchorMin = new Vector2(0f, 0f);
+            rt.anchorMax = new Vector2(0f, 0f);
+            rt.pivot = new Vector2(0f, 0f);
+            rt.anchoredPosition = new Vector2(4f, 26f);
+            rt.sizeDelta = new Vector2(28f, 28f);
+            rt.SetAsLastSibling();
+        }
+
+        private void DestroyMisplacedBuffIcon()
+        {
+            var healthRt = healthBarBg != null
+                ? healthBarBg.rectTransform
+                : transform.Find("HealthBarBg") as RectTransform;
+            var underHealth = healthRt != null ? healthRt.Find("BuffReduceS2") : null;
+            if (underHealth != null)
+            {
+                DestroyUiObject(underHealth.gameObject);
+            }
+
+            var avatarRt = avatarImage != null
+                ? avatarImage.rectTransform
+                : transform.Find("Avatar") as RectTransform;
+            var underAvatar = avatarRt != null ? avatarRt.Find("BuffReduceS2") : null;
+            if (underAvatar != null)
+            {
+                DestroyUiObject(underAvatar.gameObject);
+            }
+        }
+
+        private void DestroyLegacyReduceS2TextBadge()
+        {
+            var legacy = transform.Find("ReduceS2Badge");
+            if (legacy != null)
+            {
+                DestroyUiObject(legacy.gameObject);
+            }
+        }
+
+        private static void DestroyUiObject(GameObject go)
+        {
+            if (go == null)
+            {
+                return;
+            }
+
+            if (Application.isPlaying)
+            {
+                Object.Destroy(go);
+            }
+            else
+            {
+                Object.DestroyImmediate(go);
+            }
+        }
+
+        private static void ApplyReduceS2BuffVisual(Image image)
+        {
+            if (image == null)
+            {
+                return;
+            }
+
+            var sprite = Resources.Load<Sprite>("UI/Combat/Buffs/buff_reduce_s2_v1");
+            if (sprite != null)
+            {
+                image.sprite = sprite;
+                image.color = Color.white;
+                return;
+            }
+
+            image.sprite = UiCircleSpriteUtil.Circle;
+            image.color = new Color(1f, 0.78f, 0.28f, 0.95f);
         }
 
         private void ApplyBadgeLayout()
@@ -117,11 +231,13 @@ namespace FracturedChorus.UI
             ApplyElement(unit?.Stats.Element ?? HarmonyElement.Melody, preset?.statBlock);
             RefreshHp();
             RefreshPrep(animate: false);
+            RefreshReduceS2BuffIcon();
 
             if (_unit != null)
             {
                 _unit.OnHpChanged += HandleHpChanged;
                 _unit.OnPrepChanged += HandlePrepChanged;
+                _unit.OnPendingReduceS2Changed += HandlePendingReduceS2Changed;
             }
         }
 
@@ -142,6 +258,7 @@ namespace FracturedChorus.UI
             {
                 _unit.OnHpChanged -= HandleHpChanged;
                 _unit.OnPrepChanged -= HandlePrepChanged;
+                _unit.OnPendingReduceS2Changed -= HandlePendingReduceS2Changed;
             }
         }
 
@@ -153,6 +270,11 @@ namespace FracturedChorus.UI
         private void HandlePrepChanged(CombatUnit unit)
         {
             RefreshPrep(animate: true);
+        }
+
+        private void HandlePendingReduceS2Changed(CombatUnit unit)
+        {
+            RefreshReduceS2BuffIcon();
         }
 
         private void ApplyPortrait(UnitPresetSO preset)
@@ -227,6 +349,27 @@ namespace FracturedChorus.UI
             }
 
             _prepPips?.SetPrep(_unit != null ? _unit.Prep : 0, animate);
+        }
+
+        private void RefreshReduceS2BuffIcon()
+        {
+            if (_reduceS2BuffIcon == null)
+            {
+                EnsureReduceS2BuffIcon();
+            }
+
+            if (_reduceS2BuffIcon == null)
+            {
+                return;
+            }
+
+            var show = _unit != null && _unit.PendingReduceS2 > 0;
+            _reduceS2BuffIcon.gameObject.SetActive(show);
+            if (show)
+            {
+                PlaceBuffAboveHealthBar(_reduceS2BuffIcon.rectTransform);
+                ApplyReduceS2BuffVisual(_reduceS2BuffIcon);
+            }
         }
 
         private void EnsureHealthBarVisuals()

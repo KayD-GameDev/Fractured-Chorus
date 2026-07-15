@@ -170,9 +170,16 @@ namespace FracturedChorus.Combat.Core
             }
 
             PhaseAv.RecordSpend(cost);
-            if (unit.PendingReduceS2 > 0)
+            var entry = Timeline.FindPlayerEntry(unit, beatIndex);
+            if (entry != null)
             {
-                unit.PendingReduceS2 = 0;
+                entry.StandingAfterOverride = SkillFootprintUtil.GetStandingAfter(skill, unit);
+                if (unit.PendingReduceS2 > 0)
+                {
+                    unit.SetPendingReduceS2(0);
+                }
+
+                ApplyPlanningUtilityEffects(entry);
             }
 
             Debug.Log($"[Combat] {unit.DisplayName} → {skill.displayName} @ beat {beatIndex}");
@@ -192,6 +199,8 @@ namespace FracturedChorus.Combat.Core
                 return false;
             }
 
+            RevertPlanningUtilityEffects(entry);
+
             if (!Timeline.TryRemovePlayerAction(unit, beatIndex))
             {
                 return false;
@@ -199,6 +208,107 @@ namespace FracturedChorus.Combat.Core
 
             PhaseAv.RecordRefund(entry.Skill.GetAvCost());
             return true;
+        }
+
+        private void ApplyPlanningUtilityEffects(AgendaEntry entry)
+        {
+            if (entry?.Skill == null || entry.Unit == null || Timeline == null)
+            {
+                return;
+            }
+
+            var skill = entry.Skill;
+            var empowerPreview = skill.usesPrepEmpower
+                && entry.Unit.Prep >= Mathf.Max(1, skill.prepEmpowerThreshold);
+
+            if (skill.effectKind == SkillEffectKind.DelayBossNote)
+            {
+                var delay = Mathf.Max(1, skill.ResolveEffectValue(empowerPreview));
+                var sEnd = entry.BeatIndex + SkillFootprintUtil.GetActiveBeats(skill) - 1;
+                var phase = TimelineConstants.GetPhaseIndex(entry.BeatIndex);
+                TimelineConstants.GetPhaseBeatRange(phase, out var startBeat, out var count);
+                var phaseEndExclusive = startBeat + count;
+                var moves = Timeline.DelayImpactTelegraphsAfterBeat(sEnd, phaseEndExclusive, delay);
+                entry.PlanningDelayMoves.Clear();
+                entry.PlanningDelayMoves.AddRange(moves);
+                entry.PlanningDelayAmount = delay;
+                entry.PlanningEffectApplied = true;
+                entry.EffectPayloadApplied = true;
+                Debug.Log(
+                    $"[Planning] {entry.Unit.DisplayName} Delay notes after S@{sEnd} +{delay} → {moves.Count} notes" +
+                    (empowerPreview ? " (empower preview)" : string.Empty));
+                return;
+            }
+
+            if (skill.effectKind != SkillEffectKind.ReduceS2)
+            {
+                return;
+            }
+
+            var amount = Mathf.Max(1, skill.ResolveEffectValue(false));
+            entry.PlanningReduceTargets.Clear();
+            entry.PlanningReduceAmount = amount;
+
+            if (empowerPreview && skill.empowerPartyReduceS2)
+            {
+                foreach (var ally in Grid.GetAllies(entry.Unit.Side))
+                {
+                    if (ally == null || !ally.IsAlive)
+                    {
+                        continue;
+                    }
+
+                    ally.SetPendingReduceS2(Mathf.Max(ally.PendingReduceS2, amount));
+                    entry.PlanningReduceTargets.Add(ally);
+                }
+            }
+            else
+            {
+                var target = Grid.GetAllies(entry.Unit.Side)
+                    .FirstOrDefault(u => u != null && u.IsAlive && u != entry.Unit)
+                    ?? Grid.GetAllies(entry.Unit.Side).FirstOrDefault(u => u != null && u.IsAlive);
+                if (target != null)
+                {
+                    target.SetPendingReduceS2(Mathf.Max(target.PendingReduceS2, amount));
+                    entry.PlanningReduceTarget = target;
+                    entry.PlanningReduceTargets.Add(target);
+                }
+            }
+
+            entry.PlanningEffectApplied = true;
+            entry.EffectPayloadApplied = true;
+            Debug.Log(
+                $"[Planning] {entry.Unit.DisplayName} ReduceS2 -{amount} → {entry.PlanningReduceTargets.Count} ally" +
+                (empowerPreview ? " (empower preview)" : string.Empty));
+        }
+
+        private void RevertPlanningUtilityEffects(AgendaEntry entry)
+        {
+            if (entry == null || Timeline == null)
+            {
+                return;
+            }
+
+            if (entry.PlanningDelayMoves.Count > 0)
+            {
+                Timeline.RevertTelegraphMoves(entry.PlanningDelayMoves);
+                entry.PlanningDelayMoves.Clear();
+                entry.PlanningDelayAmount = 0;
+            }
+
+            foreach (var ally in entry.PlanningReduceTargets)
+            {
+                if (ally != null && ally.PendingReduceS2 > 0)
+                {
+                    ally.SetPendingReduceS2(0);
+                }
+            }
+
+            entry.PlanningReduceTargets.Clear();
+            entry.PlanningReduceTarget = null;
+            entry.PlanningReduceAmount = 0;
+            entry.PlanningEffectApplied = false;
+            entry.EffectPayloadApplied = false;
         }
 
         public void EndRoundSegment()

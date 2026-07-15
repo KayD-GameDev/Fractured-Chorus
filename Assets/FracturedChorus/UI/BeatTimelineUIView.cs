@@ -78,6 +78,8 @@ namespace FracturedChorus.UI
         private float _localBeat;
         private int _lastFiredBeat = -1;
         private bool _isPlaybackActive;
+        private bool _suppressTelegraphRefresh;
+        private Coroutine _delaySlideRoutine;
         private bool _planningPauseArmed;
         private bool _pausedForPlanning;
         private int _lastHighlightedSlotIndex = -1;
@@ -366,6 +368,13 @@ namespace FracturedChorus.UI
                 counterPresentation = presentation;
             }
 
+            if (_timeline != null)
+            {
+                _timeline.OnTelegraphsChanged -= HandleTelegraphsChanged;
+                _timeline.OnTelegraphMoved -= HandleTelegraphMoved;
+                _timeline.OnTelegraphsDelayedBatch -= HandleTelegraphsDelayedBatch;
+            }
+
             _timeline = timeline;
             _session = session;
             _onPlanningPause = onPlanningPause;
@@ -373,6 +382,12 @@ namespace FracturedChorus.UI
             if (_timeline != null)
             {
                 _timeline.PlanningHorizonBeat = TimelineConstants.IntroExecuteStartBeatIndex;
+                _timeline.OnTelegraphsChanged -= HandleTelegraphsChanged;
+                _timeline.OnTelegraphsChanged += HandleTelegraphsChanged;
+                _timeline.OnTelegraphMoved -= HandleTelegraphMoved;
+                _timeline.OnTelegraphMoved += HandleTelegraphMoved;
+                _timeline.OnTelegraphsDelayedBatch -= HandleTelegraphsDelayedBatch;
+                _timeline.OnTelegraphsDelayedBatch += HandleTelegraphsDelayedBatch;
             }
 
             WireReferences();
@@ -393,6 +408,187 @@ namespace FracturedChorus.UI
             RefreshPhaseHeader(0);
             RefreshPhaseAvLabel();
             counterPresentation?.ResetPresentation();
+        }
+
+        private void HandleTelegraphsChanged()
+        {
+            if (_suppressTelegraphRefresh)
+            {
+                return;
+            }
+
+            RefreshTelegraphsAndSlots();
+        }
+
+        private void HandleTelegraphMoved(int fromBeat, int toBeat, int delayBeats)
+        {
+        }
+
+        private void HandleTelegraphsDelayedBatch(IReadOnlyList<TelegraphBeatMove> moves)
+        {
+            if (moves == null || moves.Count == 0)
+            {
+                return;
+            }
+
+            if (_delaySlideRoutine != null)
+            {
+                StopCoroutine(_delaySlideRoutine);
+            }
+
+            _suppressTelegraphRefresh = true;
+            _delaySlideRoutine = StartCoroutine(NoteDelaySlideRoutine(moves));
+        }
+
+        public void ShowNoteDelayFeedback(int fromBeat, int toBeat, int delayBeats)
+        {
+            HandleTelegraphsDelayedBatch(new[]
+            {
+                new TelegraphBeatMove(null, fromBeat, toBeat)
+            });
+        }
+
+        private IEnumerator NoteDelaySlideRoutine(IReadOnlyList<TelegraphBeatMove> moves)
+        {
+            EnsureResolveFeedbackUi();
+            var overlays = new List<(RectTransform rt, Image img, Vector2 from, Vector2 to)>();
+            if (_resolveChipLayer != null && _slots != null && _slotOffsetPx != null)
+            {
+                foreach (var move in moves)
+                {
+                    if (move.FromBeat < 0 || move.ToBeat < 0
+                        || move.FromBeat >= TotalBeats || move.ToBeat >= TotalBeats)
+                    {
+                        continue;
+                    }
+
+                    var fromPos = GetBeatNoteLocalPos(move.FromBeat);
+                    var toPos = GetBeatNoteLocalPos(move.ToBeat);
+                    var go = new GameObject("DelaySlideNote", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                    var rt = go.GetComponent<RectTransform>();
+                    rt.SetParent(_resolveChipLayer, false);
+                    var noteSize = noteVisuals != null ? noteVisuals.NoteDisplaySize : 40f;
+                    rt.sizeDelta = new Vector2(noteSize, noteSize);
+                    rt.anchorMin = new Vector2(0.5f, 0.5f);
+                    rt.anchorMax = new Vector2(0.5f, 0.5f);
+                    rt.pivot = new Vector2(0.5f, 0.5f);
+                    rt.anchoredPosition = fromPos;
+
+                    var img = go.GetComponent<Image>();
+                    img.raycastTarget = false;
+                    var tier = move.Telegraph != null ? move.Telegraph.NoteTier : BossNoteTier.Red;
+                    var sprite = noteVisuals != null ? noteVisuals.NoteForTier(tier) : null;
+                    if (sprite != null)
+                    {
+                        img.sprite = sprite;
+                        img.color = Color.white;
+                        img.preserveAspect = true;
+                    }
+                    else
+                    {
+                        img.sprite = UiCircleSpriteUtil.Circle;
+                        img.color = new Color(0.45f, 0.95f, 1f, 0.9f);
+                    }
+
+                    var badgeGo = new GameObject("DelayBadge", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+                    var badgeRt = badgeGo.GetComponent<RectTransform>();
+                    badgeRt.SetParent(rt, false);
+                    badgeRt.anchorMin = new Vector2(0.5f, 1f);
+                    badgeRt.anchorMax = new Vector2(0.5f, 1f);
+                    badgeRt.pivot = new Vector2(0.5f, 0f);
+                    badgeRt.anchoredPosition = new Vector2(0f, 2f);
+                    badgeRt.sizeDelta = new Vector2(40f, 18f);
+                    var badge = badgeGo.GetComponent<Text>();
+                    badge.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf")
+                        ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+                    badge.fontSize = 14;
+                    badge.alignment = TextAnchor.MiddleCenter;
+                    badge.color = new Color(0.45f, 0.95f, 1f, 1f);
+                    badge.raycastTarget = false;
+                    badge.text = $"+{Mathf.Max(1, move.ToBeat - move.FromBeat)}";
+
+                    overlays.Add((rt, img, fromPos, toPos));
+                }
+            }
+
+            // Hide destination slots' note portraits during slide to avoid double-draw / pop.
+            if (_slots != null)
+            {
+                foreach (var move in moves)
+                {
+                    if (move.ToBeat >= 0 && move.ToBeat < _slots.Length)
+                    {
+                        _slots[move.ToBeat]?.ClearEnemyVisualOnly();
+                    }
+
+                    if (move.FromBeat >= 0 && move.FromBeat < _slots.Length)
+                    {
+                        _slots[move.FromBeat]?.ClearEnemyVisualOnly();
+                    }
+                }
+            }
+
+            const float duration = 0.35f;
+            var t = 0f;
+            while (t < duration)
+            {
+                t += Time.unscaledDeltaTime;
+                var u = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t / duration));
+                foreach (var o in overlays)
+                {
+                    if (o.rt != null)
+                    {
+                        o.rt.anchoredPosition = Vector2.Lerp(o.from, o.to, u);
+                    }
+                }
+
+                yield return null;
+            }
+
+            foreach (var o in overlays)
+            {
+                if (o.rt != null)
+                {
+                    Destroy(o.rt.gameObject);
+                }
+            }
+
+            _suppressTelegraphRefresh = false;
+            _delaySlideRoutine = null;
+            RefreshTelegraphsAndSlots();
+        }
+
+        private Vector2 GetBeatNoteLocalPos(int beatIndex)
+        {
+            if (_resolveChipLayer == null || _slots == null
+                || beatIndex < 0 || beatIndex >= _slots.Length || _slots[beatIndex] == null)
+            {
+                return Vector2.zero;
+            }
+
+            var slotRt = _slots[beatIndex].transform as RectTransform;
+            if (slotRt == null)
+            {
+                return Vector2.zero;
+            }
+
+            var world = slotRt.TransformPoint(new Vector3(slotRt.rect.center.x, slotRt.rect.yMin + slotRt.rect.height * noteBandNormalizedY, 0f));
+            return _resolveChipLayer.InverseTransformPoint(world);
+        }
+
+        private float GetBeatCenterLocalX(int beatIndex)
+        {
+            return GetBeatNoteLocalPos(beatIndex).x;
+        }
+
+        private float GetNoteBandLocalY()
+        {
+            return GetBeatNoteLocalPos(Mathf.Clamp(_autoPlayBeat, 0, TotalBeats - 1)).y;
+        }
+
+        private IEnumerator NoteDelayFeedbackRoutine(int fromBeat, int toBeat, int delayBeats)
+        {
+            yield break;
         }
 
         public void SetCounterPresentation(CounterPresentationDriver presentation)
@@ -674,6 +870,28 @@ namespace FracturedChorus.UI
             if (_laneMarkers.TryGetValue((unit, beatIndex), out var marker) && marker != null)
             {
                 marker.SetRelocateVisualHidden(true);
+            }
+        }
+
+        public void SoftHideFootprintsForRelocate(CombatUnit unit)
+        {
+            if (unit == null)
+            {
+                return;
+            }
+
+            foreach (var kvp in _footprintDots)
+            {
+                if (kvp.Key.unit != unit || kvp.Value == null)
+                {
+                    continue;
+                }
+
+                var c = kvp.Value.color;
+                kvp.Value.color = new Color(c.r, c.g, c.b, 0f);
+                kvp.Value.raycastTarget = false;
+                var handle = kvp.Value.GetComponent<TimelineLaneSkillDragHandle>();
+                handle?.SetInteractionEnabled(false);
             }
         }
 
@@ -2110,7 +2328,7 @@ namespace FracturedChorus.UI
             var placement = entry.BeatIndex;
             var unitColor = entry.Unit.PlaceholderColor;
 
-            foreach (var info in SkillFootprintUtil.EnumerateFootprintBeats(skill, placement, entry.Unit))
+            foreach (var info in SkillFootprintUtil.EnumerateFootprintBeats(skill, placement, null, entry))
             {
                 if (info.BeatIndex < 0 || info.BeatIndex >= TotalBeats)
                 {

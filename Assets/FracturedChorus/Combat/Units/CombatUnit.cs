@@ -21,7 +21,7 @@ namespace FracturedChorus.Combat.Units
         public int CurrentDelay { get; set; }
         public int Prep { get; private set; }
         public int Shield { get; private set; }
-        public int PendingReduceS2 { get; set; }
+        public int PendingReduceS2 { get; private set; }
 
         /// <summary>Thứ tự đặt lên lưới — dùng sắp xếp thẻ party khi cùng cột/hàng.</summary>
         public int PartyBarOrder { get; internal set; }
@@ -37,6 +37,7 @@ namespace FracturedChorus.Combat.Units
 
         public event Action<CombatUnit> OnHpChanged;
         public event Action<CombatUnit> OnPrepChanged;
+        public event Action<CombatUnit> OnPendingReduceS2Changed;
         public event Action<CombatUnit> OnDied;
 
         public CombatUnit(UnitPresetSO preset, GridSide side)
@@ -165,6 +166,18 @@ namespace FracturedChorus.Combat.Units
 
             Prep = 0;
             OnPrepChanged?.Invoke(this);
+        }
+
+        public void SetPendingReduceS2(int amount)
+        {
+            var next = Mathf.Max(0, amount);
+            if (next == PendingReduceS2)
+            {
+                return;
+            }
+
+            PendingReduceS2 = next;
+            OnPendingReduceS2Changed?.Invoke(this);
         }
 
         public float GetOrderScore(int skillSpeedMod = 0)
