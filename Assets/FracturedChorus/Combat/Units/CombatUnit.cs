@@ -15,8 +15,13 @@ namespace FracturedChorus.Combat.Units
         public UnitStats Stats { get; }
         public SkillDefinitionSO[] Skills { get; }
         public Color PlaceholderColor { get; }
+        public const int PrepCap = 3;
+
         public int CurrentHp { get; private set; }
         public int CurrentDelay { get; set; }
+        public int Prep { get; private set; }
+        public int Shield { get; private set; }
+        public int PendingReduceS2 { get; private set; }
 
         /// <summary>Thứ tự đặt lên lưới — dùng sắp xếp thẻ party khi cùng cột/hàng.</summary>
         public int PartyBarOrder { get; internal set; }
@@ -31,6 +36,8 @@ namespace FracturedChorus.Combat.Units
         public bool IsAlive => CurrentHp > 0;
 
         public event Action<CombatUnit> OnHpChanged;
+        public event Action<CombatUnit> OnPrepChanged;
+        public event Action<CombatUnit> OnPendingReduceS2Changed;
         public event Action<CombatUnit> OnDied;
 
         public CombatUnit(UnitPresetSO preset, GridSide side)
@@ -59,7 +66,21 @@ namespace FracturedChorus.Combat.Units
                 return;
             }
 
-            CurrentHp = Mathf.Max(0, CurrentHp - Mathf.RoundToInt(amount));
+            var remaining = Mathf.Max(0, Mathf.RoundToInt(amount));
+            if (Shield > 0 && remaining > 0)
+            {
+                var absorbed = Mathf.Min(Shield, remaining);
+                Shield -= absorbed;
+                remaining -= absorbed;
+            }
+
+            if (remaining <= 0)
+            {
+                OnHpChanged?.Invoke(this);
+                return;
+            }
+
+            CurrentHp = Mathf.Max(0, CurrentHp - remaining);
             OnHpChanged?.Invoke(this);
 
             if (!IsAlive)
@@ -70,13 +91,93 @@ namespace FracturedChorus.Combat.Units
 
         public void Heal(float amount)
         {
+            Heal(amount, convertOverhealToShield: false, overhealShieldCap: 0);
+        }
+
+        public int Heal(float amount, bool convertOverhealToShield, int overhealShieldCap)
+        {
             if (!IsAlive)
+            {
+                return 0;
+            }
+
+            var heal = Mathf.Max(0, Mathf.RoundToInt(amount));
+            var room = Mathf.Max(0, Stats.MaxHp - CurrentHp);
+            var applied = Mathf.Min(room, heal);
+            CurrentHp += applied;
+            OnHpChanged?.Invoke(this);
+
+            var overheal = heal - applied;
+            if (convertOverhealToShield && overheal > 0 && overhealShieldCap > 0)
+            {
+                AddShield(Mathf.Min(overheal, overhealShieldCap));
+            }
+
+            return applied;
+        }
+
+        public void AddShield(int amount)
+        {
+            if (!IsAlive || amount <= 0)
             {
                 return;
             }
 
-            CurrentHp = Mathf.Min(Stats.MaxHp, CurrentHp + Mathf.RoundToInt(amount));
+            Shield += amount;
             OnHpChanged?.Invoke(this);
+        }
+
+        public int GainPrep(int amount = 1)
+        {
+            if (amount <= 0)
+            {
+                return Prep;
+            }
+
+            var next = Mathf.Min(PrepCap, Prep + amount);
+            if (next == Prep)
+            {
+                return Prep;
+            }
+
+            Prep = next;
+            OnPrepChanged?.Invoke(this);
+            return Prep;
+        }
+
+        public bool TrySpendPrep(int amount)
+        {
+            if (amount <= 0 || Prep < amount)
+            {
+                return false;
+            }
+
+            Prep -= amount;
+            OnPrepChanged?.Invoke(this);
+            return true;
+        }
+
+        public void ResetPrep()
+        {
+            if (Prep == 0)
+            {
+                return;
+            }
+
+            Prep = 0;
+            OnPrepChanged?.Invoke(this);
+        }
+
+        public void SetPendingReduceS2(int amount)
+        {
+            var next = Mathf.Max(0, amount);
+            if (next == PendingReduceS2)
+            {
+                return;
+            }
+
+            PendingReduceS2 = next;
+            OnPendingReduceS2Changed?.Invoke(this);
         }
 
         public float GetOrderScore(int skillSpeedMod = 0)

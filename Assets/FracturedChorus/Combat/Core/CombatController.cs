@@ -376,7 +376,7 @@ namespace FracturedChorus.Combat.Core
             }
 
             timelineView?.PrepareLaneMarkerRelocate(unit, beatIndex);
-            timelineView?.RefreshLaneMarkers();
+            timelineView?.SoftHideFootprintsForRelocate(unit);
             return true;
         }
 
@@ -405,11 +405,16 @@ namespace FracturedChorus.Combat.Core
                 return;
             }
 
+            var unit = _relocateUnit;
+            var skill = _relocateSkill;
+            var fromBeat = _relocateFromBeat;
+
             timelineView?.HideDropGhost();
+            timelineView?.ClearLaneMarkerRelocatePrepare();
 
             if (timelineView != null && timelineView.IsScreenPointInViewport(screenPos)
-                && timelineView.TryGetPlacementBeatAtScreenPoint(screenPos, _relocateSkill, out var beat)
-                && _session.TryAssignPlayerAction(_relocateUnit, _relocateSkill, beat))
+                && timelineView.TryGetPlacementBeatAtScreenPoint(screenPos, skill, out var beat)
+                && _session.TryAssignPlayerAction(unit, skill, beat))
             {
                 ClearRelocateState();
                 timelineView.RefreshBeat(beat);
@@ -419,7 +424,7 @@ namespace FracturedChorus.Combat.Core
 
             if (timelineView != null && timelineView.IsScreenPointInViewport(screenPos))
             {
-                _session.TryAssignPlayerAction(_relocateUnit, _relocateSkill, _relocateFromBeat);
+                _session.TryAssignPlayerAction(unit, skill, fromBeat);
                 ClearRelocateState();
                 timelineView.RefreshLaneMarkers();
                 return;

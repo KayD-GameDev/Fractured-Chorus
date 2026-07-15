@@ -1,4 +1,5 @@
 using FracturedChorus.Combat.Grid;
+using FracturedChorus.Combat.Presentation;
 using FracturedChorus.Combat.Timeline;
 using FracturedChorus.Data;
 using UnityEngine;
@@ -23,8 +24,23 @@ namespace FracturedChorus.UI
         private float _targetIntensity;
         private Color _glowBaseColor = Color.white;
         private Color _backgroundBaseColor = Color.white;
+        private TimelineNoteVisualCatalog _noteVisuals;
+        private Sprite _defaultPortraitSprite;
+        private bool _capturedDefaultPortrait;
+        private float _noteBandNormalizedY = 0.72f;
+        private Image _beatFrameVisual;
 
         public int DisplayBeatIndex => beatIndex;
+
+        public void SetNoteVisualCatalog(TimelineNoteVisualCatalog catalog)
+        {
+            _noteVisuals = catalog;
+        }
+
+        public void SetNoteBandNormalizedY(float normalizedYFromBottom)
+        {
+            _noteBandNormalizedY = Mathf.Clamp01(normalizedYFromBottom);
+        }
 
         public void SetDisplayBeatIndex(int index)
         {
@@ -44,6 +60,12 @@ namespace FracturedChorus.UI
                 _rect = transform as RectTransform;
             }
 
+            var staleMask = GetComponent<RectMask2D>();
+            if (staleMask != null)
+            {
+                Destroy(staleMask);
+            }
+
             if (background == null)
             {
                 background = GetComponent<Image>();
@@ -59,6 +81,12 @@ namespace FracturedChorus.UI
                 portrait = transform.Find("Portrait")?.GetComponent<Image>();
             }
 
+            if (portrait != null && !_capturedDefaultPortrait)
+            {
+                _defaultPortraitSprite = portrait.sprite;
+                _capturedDefaultPortrait = true;
+            }
+
             if (actionLabel == null)
             {
                 actionLabel = transform.Find("ActionLabel")?.GetComponent<Text>();
@@ -71,9 +99,10 @@ namespace FracturedChorus.UI
 
             if (_rect != null)
             {
-                _rect.pivot = new Vector2(0.5f, 0f);
+                _rect.localScale = Vector3.one;
             }
 
+            ResetScanHighlight();
             UpdatePhaseDivider();
             CaptureLayoutBaseline();
         }
@@ -135,14 +164,23 @@ namespace FracturedChorus.UI
 
             _rect.localScale = Vector3.one * Mathf.Lerp(1f, scanScaleBoost, intensity);
 
-            if (glow != null)
+            if (glow != null && glow.enabled)
             {
                 var peakAlpha = Mathf.Max(_glowBaseColor.a, 0.55f);
                 var glowAlpha = Mathf.Lerp(_glowBaseColor.a, peakAlpha, intensity);
                 glow.color = new Color(_glowBaseColor.r, _glowBaseColor.g, _glowBaseColor.b, glowAlpha);
             }
 
-            if (background != null)
+            if (_beatFrameVisual != null && _beatFrameVisual.enabled)
+            {
+                var c = _backgroundBaseColor;
+                _beatFrameVisual.color = new Color(
+                    Mathf.Min(1f, c.r + 0.1f * intensity),
+                    Mathf.Min(1f, c.g + 0.1f * intensity),
+                    Mathf.Min(1f, c.b + 0.1f * intensity),
+                    c.a);
+            }
+            else if (background != null)
             {
                 var c = _backgroundBaseColor;
                 background.color = new Color(
@@ -161,24 +199,41 @@ namespace FracturedChorus.UI
             }
         }
 
+        public void ClearEnemyVisualOnly()
+        {
+            WireReferences();
+            if (portrait != null)
+            {
+                portrait.sprite = _defaultPortraitSprite;
+                portrait.color = new Color(0.2f, 0.2f, 0.24f, 0.1f);
+                ApplyPortraitLayout(22f);
+            }
+
+            if (actionLabel != null)
+            {
+                actionLabel.text = string.Empty;
+            }
+
+            ApplyBeatFrame(hasTelegraph: false, isWindup: false);
+        }
+
         public void SetEmpty()
         {
             WireReferences();
-            if (background != null)
-            {
-                background.color = new Color(0.12f, 0.12f, 0.18f, 0.45f);
-                _backgroundBaseColor = background.color;
-            }
+            ApplyBeatFrame(hasTelegraph: false, isWindup: false);
 
             if (glow != null)
             {
+                glow.enabled = true;
                 glow.color = new Color(1f, 1f, 1f, 0.05f);
                 _glowBaseColor = glow.color;
             }
 
             if (portrait != null)
             {
-                portrait.color = new Color(0.3f, 0.3f, 0.35f, 0.5f);
+                portrait.sprite = _defaultPortraitSprite;
+                portrait.color = new Color(0.2f, 0.2f, 0.24f, 0.1f);
+                ApplyPortraitLayout(22f);
             }
 
             if (actionLabel != null)
@@ -230,13 +285,7 @@ namespace FracturedChorus.UI
             }
 
             var isWindup = telegraph.IsWindupOnly;
-            if (background != null)
-            {
-                background.color = isWindup
-                    ? new Color(0.35f, 0.14f, 0.14f, 0.75f)
-                    : new Color(0.12f, 0.12f, 0.18f, 0.85f);
-                _backgroundBaseColor = background.color;
-            }
+            ApplyBeatFrame(hasTelegraph: true, isWindup: isWindup);
 
             if (glow != null)
             {
@@ -252,16 +301,13 @@ namespace FracturedChorus.UI
                 portrait.gameObject.SetActive(true);
                 if (isWindup)
                 {
+                    portrait.sprite = _defaultPortraitSprite;
                     portrait.color = new Color(0.85f, 0.2f, 0.2f, 0.75f);
+                    ApplyPortraitLayout(22f);
                 }
                 else
                 {
-                    portrait.color = GetNotePortraitColor(telegraph.NoteTier);
-                }
-
-                if (portrait.rectTransform != null)
-                {
-                    portrait.rectTransform.sizeDelta = new Vector2(22f, 22f);
+                    ApplyImpactNotePortrait(telegraph.NoteTier);
                 }
             }
 
@@ -282,14 +328,174 @@ namespace FracturedChorus.UI
             }
         }
 
-        private static Color GetNotePortraitColor(BossNoteTier tier)
+        private void ApplyBeatFrame(bool hasTelegraph, bool isWindup)
         {
-            return tier switch
+            if (!hasTelegraph)
             {
-                BossNoteTier.Purple => new Color(0.55f, 0.2f, 0.75f, 1f),
-                BossNoteTier.Blue => new Color(0.25f, 0.85f, 0.35f, 1f),
-                _ => new Color(0.85f, 0.2f, 0.2f, 1f)
-            };
+                if (_beatFrameVisual != null)
+                {
+                    _beatFrameVisual.enabled = false;
+                }
+
+                if (background != null)
+                {
+                    background.sprite = null;
+                    background.type = Image.Type.Simple;
+                    background.color = new Color(0.1f, 0.11f, 0.16f, 0.22f);
+                    background.raycastTarget = true;
+                    background.enabled = true;
+                    _backgroundBaseColor = background.color;
+                }
+
+                return;
+            }
+
+            EnsureBeatFrameVisual();
+
+            if (background != null)
+            {
+                background.sprite = null;
+                background.type = Image.Type.Simple;
+                background.color = new Color(0.1f, 0.1f, 0.14f, 0.28f);
+                background.raycastTarget = true;
+            }
+
+            var sprite = _noteVisuals?.BeatFrame(true, isWindup);
+            if (sprite != null && _beatFrameVisual != null)
+            {
+                StretchInset(_beatFrameVisual.rectTransform, 1.5f);
+                _beatFrameVisual.enabled = true;
+                _beatFrameVisual.sprite = sprite;
+                _beatFrameVisual.type = Image.Type.Simple;
+                _beatFrameVisual.preserveAspect = false;
+                _beatFrameVisual.fillCenter = true;
+                _beatFrameVisual.raycastTarget = false;
+                _beatFrameVisual.color = new Color(1f, 1f, 1f, 0.55f);
+                _backgroundBaseColor = _beatFrameVisual.color;
+
+                if (glow != null)
+                {
+                    glow.enabled = false;
+                }
+
+                return;
+            }
+
+            if (_beatFrameVisual != null)
+            {
+                _beatFrameVisual.enabled = false;
+            }
+
+            if (glow != null)
+            {
+                glow.enabled = true;
+            }
+
+            if (background != null)
+            {
+                background.color = isWindup
+                    ? new Color(0.35f, 0.14f, 0.14f, 0.75f)
+                    : new Color(0.12f, 0.12f, 0.18f, 0.85f);
+                _backgroundBaseColor = background.color;
+            }
+        }
+
+        private void EnsureBeatFrameVisual()
+        {
+            var staleMask = GetComponent<RectMask2D>();
+            if (staleMask != null)
+            {
+                Destroy(staleMask);
+            }
+
+            if (_beatFrameVisual == null)
+            {
+                var existing = transform.Find("BeatFrame")?.GetComponent<Image>();
+                if (existing != null)
+                {
+                    _beatFrameVisual = existing;
+                }
+                else
+                {
+                    var go = new GameObject("BeatFrame", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                    var rt = go.GetComponent<RectTransform>();
+                    rt.SetParent(transform, false);
+                    _beatFrameVisual = go.GetComponent<Image>();
+                    _beatFrameVisual.raycastTarget = false;
+                }
+            }
+
+            StretchInset(_beatFrameVisual.rectTransform, 1.5f);
+            if (background != null)
+            {
+                background.transform.SetAsFirstSibling();
+                _beatFrameVisual.transform.SetSiblingIndex(1);
+            }
+            else
+            {
+                _beatFrameVisual.transform.SetAsFirstSibling();
+            }
+        }
+
+        private static void StretchInset(RectTransform rt, float insetPx)
+        {
+            if (rt == null)
+            {
+                return;
+            }
+
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.anchoredPosition = Vector2.zero;
+            rt.sizeDelta = Vector2.zero;
+            rt.offsetMin = new Vector2(insetPx, insetPx);
+            rt.offsetMax = new Vector2(-insetPx, -insetPx);
+            rt.localScale = Vector3.one;
+        }
+
+        private void ApplyImpactNotePortrait(BossNoteTier tier)
+        {
+            var sprite = _noteVisuals?.NoteForTier(tier);
+            var baseSize = _noteVisuals != null ? _noteVisuals.NoteDisplaySize : 40f;
+            var scale = _noteVisuals != null ? _noteVisuals.NoteSizeScaleForTier(tier) : 1f;
+            var size = baseSize * scale;
+
+            var noteAlpha = 0.78f;
+            if (_noteVisuals != null && _noteVisuals.NoteAlpha > 0.01f)
+            {
+                noteAlpha = Mathf.Clamp01(_noteVisuals.NoteAlpha);
+            }
+            if (sprite != null)
+            {
+                portrait.sprite = sprite;
+                portrait.color = new Color(1f, 1f, 1f, noteAlpha);
+                portrait.preserveAspect = true;
+            }
+            else
+            {
+                portrait.sprite = _defaultPortraitSprite;
+                var tint = BossNoteTierColors.ForTier(tier);
+                portrait.color = new Color(tint.r, tint.g, tint.b, noteAlpha);
+            }
+
+            ApplyPortraitLayout(size);
+        }
+
+        private void ApplyPortraitLayout(float size)
+        {
+            if (portrait?.rectTransform == null)
+            {
+                return;
+            }
+
+            var rt = portrait.rectTransform;
+            var y = _noteBandNormalizedY;
+            rt.anchorMin = new Vector2(0.5f, y);
+            rt.anchorMax = new Vector2(0.5f, y);
+            rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.anchoredPosition = Vector2.zero;
+            rt.sizeDelta = new Vector2(size, size);
         }
 
         private static string GetNoteLabel(BossNoteTier tier)

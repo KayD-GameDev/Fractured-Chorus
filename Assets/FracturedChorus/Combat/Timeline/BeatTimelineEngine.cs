@@ -50,6 +50,8 @@ namespace FracturedChorus.Combat.Timeline
         public event Action<int> OnScanAdvanced;
         public event Action OnAgendaCleared;
         public event Action OnTelegraphsChanged;
+        public event Action<int, int, int> OnTelegraphMoved;
+        public event Action<IReadOnlyList<TelegraphBeatMove>> OnTelegraphsDelayedBatch;
 
         public void SetPhase(CombatPhase phase)
         {
@@ -121,6 +123,174 @@ namespace FracturedChorus.Combat.Timeline
         public EnemyTelegraph GetImpactTelegraphAtBeat(int beatIndex)
         {
             return _telegraphs.FirstOrDefault(t => t.BeatIndex == beatIndex && !t.IsWindupOnly);
+        }
+
+        public int DelayImpactTelegraphsOnBeats(IEnumerable<int> activeBeats, int delayBeats)
+        {
+            if (activeBeats == null || delayBeats <= 0)
+            {
+                return 0;
+            }
+
+            var beatSet = new HashSet<int>(activeBeats);
+            var toMove = _telegraphs
+                .Where(t => t != null && !t.IsWindupOnly && beatSet.Contains(t.BeatIndex))
+                .OrderByDescending(t => t.BeatIndex)
+                .ToList();
+            if (toMove.Count == 0)
+            {
+                return 0;
+            }
+
+            var moves = new List<TelegraphBeatMove>(toMove.Count);
+            foreach (var telegraph in toMove)
+            {
+                var from = telegraph.BeatIndex;
+                var to = Mathf.Min(BeatCount - 1, from + delayBeats);
+                if (to == from)
+                {
+                    continue;
+                }
+
+                telegraph.BeatIndex = to;
+                moves.Add(new TelegraphBeatMove(telegraph, from, to));
+                OnTelegraphMoved?.Invoke(from, to, delayBeats);
+            }
+
+            if (moves.Count > 0)
+            {
+                OnTelegraphsDelayedBatch?.Invoke(moves);
+                OnTelegraphsChanged?.Invoke();
+            }
+
+            return moves.Count;
+        }
+
+        public IReadOnlyList<TelegraphBeatMove> DelayAllImpactTelegraphsInBeatRange(
+            int startBeat,
+            int beatCount,
+            int delayBeats)
+        {
+            if (delayBeats <= 0 || beatCount <= 0)
+            {
+                return Array.Empty<TelegraphBeatMove>();
+            }
+
+            var endBeat = startBeat + beatCount;
+            return DelayImpactTelegraphsInRange(startBeat, endBeat, delayBeats, afterBeatExclusive: startBeat - 1);
+        }
+
+        /// <summary>
+        /// Delay impact notes with BeatIndex &gt; afterBeat and BeatIndex &lt; phaseEndExclusive.
+        /// Notes on/under Anchor S (≤ afterBeat) stay put.
+        /// </summary>
+        public IReadOnlyList<TelegraphBeatMove> DelayImpactTelegraphsAfterBeat(
+            int afterBeat,
+            int phaseEndExclusive,
+            int delayBeats)
+        {
+            if (delayBeats <= 0)
+            {
+                return Array.Empty<TelegraphBeatMove>();
+            }
+
+            return DelayImpactTelegraphsInRange(afterBeat + 1, phaseEndExclusive, delayBeats, afterBeat);
+        }
+
+        private IReadOnlyList<TelegraphBeatMove> DelayImpactTelegraphsInRange(
+            int rangeStartInclusive,
+            int rangeEndExclusive,
+            int delayBeats,
+            int afterBeatExclusive)
+        {
+            var toMove = _telegraphs
+                .Where(t => t != null
+                    && !t.IsWindupOnly
+                    && t.BeatIndex > afterBeatExclusive
+                    && t.BeatIndex >= rangeStartInclusive
+                    && t.BeatIndex < rangeEndExclusive)
+                .OrderByDescending(t => t.BeatIndex)
+                .ToList();
+            if (toMove.Count == 0)
+            {
+                return Array.Empty<TelegraphBeatMove>();
+            }
+
+            var moves = new List<TelegraphBeatMove>(toMove.Count);
+            foreach (var telegraph in toMove)
+            {
+                var from = telegraph.BeatIndex;
+                var to = Mathf.Min(BeatCount - 1, from + delayBeats);
+                if (to == from)
+                {
+                    continue;
+                }
+
+                telegraph.BeatIndex = to;
+                moves.Add(new TelegraphBeatMove(telegraph, from, to));
+            }
+
+            if (moves.Count > 0)
+            {
+                OnTelegraphsDelayedBatch?.Invoke(moves);
+                OnTelegraphsChanged?.Invoke();
+            }
+
+            return moves;
+        }
+
+        public void RevertTelegraphMoves(IReadOnlyList<TelegraphBeatMove> moves)
+        {
+            if (moves == null || moves.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var move in moves)
+            {
+                if (move.Telegraph == null || !_telegraphs.Contains(move.Telegraph))
+                {
+                    continue;
+                }
+
+                move.Telegraph.BeatIndex = move.FromBeat;
+            }
+
+            OnTelegraphsChanged?.Invoke();
+        }
+
+        private int ResolveDelayDestination(EnemyTelegraph self, int fromBeat, int delayBeats)
+        {
+            var dest = Mathf.Min(BeatCount - 1, fromBeat + delayBeats);
+            while (dest < BeatCount - 1 && IsImpactOccupied(dest, self))
+            {
+                dest++;
+            }
+
+            if (IsImpactOccupied(dest, self))
+            {
+                return fromBeat;
+            }
+
+            return dest;
+        }
+
+        private bool IsImpactOccupied(int beatIndex, EnemyTelegraph self)
+        {
+            foreach (var t in _telegraphs)
+            {
+                if (t == null || t == self || t.IsWindupOnly)
+                {
+                    continue;
+                }
+
+                if (t.BeatIndex == beatIndex)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public bool TryAssignAction(CombatUnit unit, SkillDefinitionSO skill, int beatIndex)

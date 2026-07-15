@@ -172,6 +172,61 @@ namespace FracturedChorus.Editor
             EditorGUILayout.PropertyField(prop);
             var view = prop.objectReferenceValue as BeatTimelineUIView;
             DrawPingRow(view != null ? view.gameObject : null, "Select BeatTimelineUI");
+
+            if (view != null)
+            {
+                var so = new SerializedObject(view);
+                so.Update();
+                var catalog = so.FindProperty("noteVisuals");
+                if (catalog != null)
+                {
+                    EditorGUILayout.LabelField("Note visuals", EditorStyles.boldLabel);
+                    EditorGUILayout.PropertyField(catalog.FindPropertyRelative("NoteRed"));
+                    EditorGUILayout.PropertyField(catalog.FindPropertyRelative("NoteBlue"));
+                    EditorGUILayout.PropertyField(catalog.FindPropertyRelative("NotePurple"));
+                    EditorGUILayout.PropertyField(catalog.FindPropertyRelative("DropGhostValid"));
+                    EditorGUILayout.PropertyField(catalog.FindPropertyRelative("DropGhostInvalid"));
+                    EditorGUILayout.PropertyField(catalog.FindPropertyRelative("CoverPerfect"));
+                    EditorGUILayout.PropertyField(catalog.FindPropertyRelative("CoverMiss"));
+                    EditorGUILayout.PropertyField(catalog.FindPropertyRelative("BeatFrameEmpty"));
+                    EditorGUILayout.PropertyField(catalog.FindPropertyRelative("BeatFrameImpact"));
+                    EditorGUILayout.PropertyField(catalog.FindPropertyRelative("BeatFrameWindup"));
+                    EditorGUILayout.PropertyField(catalog.FindPropertyRelative("NoteDisplaySize"));
+                    EditorGUILayout.PropertyField(catalog.FindPropertyRelative("NoteAlpha"));
+                    EditorGUILayout.PropertyField(catalog.FindPropertyRelative("NoteRedSizeScale"));
+                    EditorGUILayout.PropertyField(catalog.FindPropertyRelative("NoteBlueSizeScale"));
+                    EditorGUILayout.PropertyField(catalog.FindPropertyRelative("NotePurpleSizeScale"));
+                    EditorGUILayout.PropertyField(catalog.FindPropertyRelative("GhostDisplaySize"));
+                    EditorGUILayout.PropertyField(catalog.FindPropertyRelative("CoverDisplaySize"));
+                }
+
+                EditorGUILayout.Space(4f);
+                EditorGUILayout.LabelField("Band layout (Approach A)", EditorStyles.boldLabel);
+                EditorGUILayout.PropertyField(so.FindProperty("noteBandNormalizedY"), new GUIContent("Note / Boss Band Y"));
+                EditorGUILayout.PropertyField(so.FindProperty("laneBandMinNormalizedY"), new GUIContent("Lane Band Min Y"));
+                EditorGUILayout.PropertyField(so.FindProperty("laneBandMaxNormalizedY"), new GUIContent("Lane Band Max Y"));
+                EditorGUILayout.PropertyField(so.FindProperty("bossTrackFrameHeight"), new GUIContent("Boss Track Height"));
+                EditorGUILayout.PropertyField(so.FindProperty("bossTrackFrameFill"), new GUIContent("Boss Track Fill"));
+                EditorGUILayout.PropertyField(so.FindProperty("bossTrackFrameBorderTop"), new GUIContent("Boss Border Top (Holo)"));
+                EditorGUILayout.PropertyField(so.FindProperty("bossTrackFrameBorderBottom"), new GUIContent("Boss Border Bottom (Holo)"));
+                EditorGUILayout.PropertyField(so.FindProperty("bossTrackFrameBorderThickness"), new GUIContent("Boss Track Border Thickness"));
+                EditorGUILayout.PropertyField(so.FindProperty("timelineStaffBackground"), new GUIContent("Staff Background"));
+                EditorGUILayout.PropertyField(so.FindProperty("timelineStaffBackgroundAlpha"), new GUIContent("Staff BG Alpha"));
+
+                if (so.ApplyModifiedProperties())
+                {
+                    EditorUtility.SetDirty(view);
+                }
+
+                EditorGUILayout.HelpBox(
+                    "Staff BG = thanh nhạc hologram dưới beat (Viewport). Boss notes trong BossTrackFrame; party = lane dưới.",
+                    MessageType.Info);
+            }
+            else
+            {
+                EditorGUILayout.HelpBox("Chưa gán BeatTimelineUI.", MessageType.Warning);
+            }
+
             EditorGUI.indentLevel--;
             serializedObject.ApplyModifiedProperties();
         }
