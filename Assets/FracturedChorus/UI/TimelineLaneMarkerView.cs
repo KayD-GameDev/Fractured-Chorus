@@ -180,8 +180,13 @@ namespace FracturedChorus.UI
                 return;
             }
 
+            var canRelocate = timeline != null && timeline.CanRelocateLaneMarker();
             _dragHandle.Configure(timeline, unit, placementBeat);
-            _dragHandle.SetInteractionEnabled(true);
+            _dragHandle.SetInteractionEnabled(canRelocate);
+            if (_hitTarget != null)
+            {
+                _hitTarget.raycastTarget = canRelocate;
+            }
         }
 
         private void EnsureHitTarget()
@@ -274,6 +279,13 @@ namespace FracturedChorus.UI
             {
                 _label.enabled = !hidden;
             }
+
+            if (_hitTarget != null)
+            {
+                _hitTarget.raycastTarget = !hidden;
+            }
+
+            _dragHandle?.SetInteractionEnabled(!hidden);
         }
 
         public void SetGhost(bool ghost)

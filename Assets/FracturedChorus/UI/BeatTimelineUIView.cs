@@ -40,6 +40,20 @@ namespace FracturedChorus.UI
         [SerializeField] private CombatMusicController musicController;
         [SerializeField] private CombatSfxController combatSfxController;
         [SerializeField] private CounterPresentationDriver counterPresentation;
+        [SerializeField] private TimelineNoteVisualCatalog noteVisuals = new TimelineNoteVisualCatalog();
+        [Tooltip("Boss note Y trong beat (0=đáy, 1=đỉnh). Band trên, tách khỏi party lanes.")]
+        [SerializeField] [Range(0.55f, 0.92f)] private float noteBandNormalizedY = 0.78f;
+        [Tooltip("Party lane band — mép dưới (normalized từ đáy viewport).")]
+        [SerializeField] [Range(0.05f, 0.45f)] private float laneBandMinNormalizedY = 0.12f;
+        [Tooltip("Party lane band — mép trên (normalized từ đáy viewport). Phải < noteBand.")]
+        [SerializeField] [Range(0.25f, 0.6f)] private float laneBandMaxNormalizedY = 0.42f;
+        [SerializeField] private float bossTrackFrameHeight = 56f;
+        [SerializeField] private Color bossTrackFrameFill = new Color(0.22f, 0.05f, 0.07f, 0.88f);
+        [SerializeField] private Color bossTrackFrameBorderTop = new Color(0.45f, 0.98f, 1f, 0.95f);
+        [SerializeField] private Color bossTrackFrameBorderBottom = new Color(0.85f, 0.45f, 1f, 0.9f);
+        [SerializeField] private float bossTrackFrameBorderThickness = 2f;
+        [SerializeField] private Sprite timelineStaffBackground;
+        [SerializeField] [Range(0.15f, 1f)] private float timelineStaffBackgroundAlpha = 1f;
         [Tooltip("Keep Header / outer BeatTimeline frame position. Internal layout (TrackLine, ScrollContent, ScanBar) still auto-layouts.")]
         [SerializeField] private bool preserveSceneLayout = true;
 
@@ -64,6 +78,8 @@ namespace FracturedChorus.UI
         private float _localBeat;
         private int _lastFiredBeat = -1;
         private bool _isPlaybackActive;
+        private bool _suppressTelegraphRefresh;
+        private Coroutine _delaySlideRoutine;
         private bool _planningPauseArmed;
         private bool _pausedForPlanning;
         private int _lastHighlightedSlotIndex = -1;
@@ -86,6 +102,8 @@ namespace FracturedChorus.UI
         private RectTransform _laneLinesLayer;
         private RectTransform _laneMarkersLayer;
         private RectTransform _footprintLayer;
+        private RectTransform _bossTrackFrame;
+        private Image _staffBackground;
         private readonly List<CombatUnit> _laneUnits = new();
         private readonly Dictionary<CombatUnit, int> _laneIndex = new();
         private readonly List<TimelineLaneAvatarSlotView> _laneAvatarSlots = new();
@@ -106,8 +124,9 @@ namespace FracturedChorus.UI
         private readonly List<Image> _blockBarrierViews = new();
         private BlockBarrierTracker _blockBarriers;
         private readonly List<Image> _dropPreviewDots = new();
+        private readonly List<Image> _dropCoverOverlays = new();
 
-        private static readonly Color StandingDotColor = new Color(0.55f, 0.55f, 0.6f, 0.85f);
+        private static readonly Color StandingDotColor = new Color(0.5f, 0.5f, 0.55f, 0.4f);
 
         // Intro-pause sau Deploy: snap cuối beat 0 vào ScanBar (anchor-based, không dùng localBeat threshold).
         private const float PhaseDividerVisualOffsetPx = 2f;
@@ -173,6 +192,7 @@ namespace FracturedChorus.UI
 
             EnsureTrackLine();
             EnsureViewportMask();
+            EnsureStaffBackground();
 
             if (confirmButton == null)
             {
@@ -209,6 +229,26 @@ namespace FracturedChorus.UI
             }
 
             EnsureCombatSfx();
+            EnsureNoteVisuals();
+        }
+
+        public TimelineNoteVisualCatalog NoteVisuals
+        {
+            get
+            {
+                EnsureNoteVisuals();
+                return noteVisuals;
+            }
+        }
+
+        private void EnsureNoteVisuals()
+        {
+            if (noteVisuals == null)
+            {
+                noteVisuals = new TimelineNoteVisualCatalog();
+            }
+
+            noteVisuals.EnsureDefaultsLoaded();
         }
 
         private void ConfigureAvLabelLayout()
@@ -259,6 +299,56 @@ namespace FracturedChorus.UI
             }
         }
 
+        private void EnsureStaffBackground()
+        {
+            if (viewport == null)
+            {
+                return;
+            }
+
+            if (timelineStaffBackground == null)
+            {
+                timelineStaffBackground = Resources.Load<Sprite>("UI/Combat/Timeline/timeline_staff_holo_bg_v1");
+            }
+
+            if (_staffBackground == null)
+            {
+                var existing = viewport.Find("StaffBackground")?.GetComponent<Image>();
+                if (existing != null)
+                {
+                    _staffBackground = existing;
+                }
+                else
+                {
+                    var go = new GameObject("StaffBackground", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                    var rect = go.GetComponent<RectTransform>();
+                    rect.SetParent(viewport, false);
+                    rect.anchorMin = Vector2.zero;
+                    rect.anchorMax = Vector2.one;
+                    rect.offsetMin = Vector2.zero;
+                    rect.offsetMax = Vector2.zero;
+                    _staffBackground = go.GetComponent<Image>();
+                    _staffBackground.raycastTarget = false;
+                    _staffBackground.type = Image.Type.Simple;
+                    _staffBackground.preserveAspect = false;
+                }
+            }
+
+            _staffBackground.transform.SetAsFirstSibling();
+            if (timelineStaffBackground != null)
+            {
+                _staffBackground.sprite = timelineStaffBackground;
+                _staffBackground.color = new Color(1f, 1f, 1f, timelineStaffBackgroundAlpha);
+                _staffBackground.enabled = true;
+            }
+            else
+            {
+                _staffBackground.enabled = false;
+            }
+
+            OrderViewportLayers();
+        }
+
         public void Bind(BeatTimelineEngine timeline, CombatSession session,
             CombatMusicController music = null, Action onPlanningPause = null, Action onRoundSegmentComplete = null,
             CombatSfxController combatSfx = null, CounterPresentationDriver presentation = null)
@@ -278,6 +368,13 @@ namespace FracturedChorus.UI
                 counterPresentation = presentation;
             }
 
+            if (_timeline != null)
+            {
+                _timeline.OnTelegraphsChanged -= HandleTelegraphsChanged;
+                _timeline.OnTelegraphMoved -= HandleTelegraphMoved;
+                _timeline.OnTelegraphsDelayedBatch -= HandleTelegraphsDelayedBatch;
+            }
+
             _timeline = timeline;
             _session = session;
             _onPlanningPause = onPlanningPause;
@@ -285,6 +382,12 @@ namespace FracturedChorus.UI
             if (_timeline != null)
             {
                 _timeline.PlanningHorizonBeat = TimelineConstants.IntroExecuteStartBeatIndex;
+                _timeline.OnTelegraphsChanged -= HandleTelegraphsChanged;
+                _timeline.OnTelegraphsChanged += HandleTelegraphsChanged;
+                _timeline.OnTelegraphMoved -= HandleTelegraphMoved;
+                _timeline.OnTelegraphMoved += HandleTelegraphMoved;
+                _timeline.OnTelegraphsDelayedBatch -= HandleTelegraphsDelayedBatch;
+                _timeline.OnTelegraphsDelayedBatch += HandleTelegraphsDelayedBatch;
             }
 
             WireReferences();
@@ -305,6 +408,187 @@ namespace FracturedChorus.UI
             RefreshPhaseHeader(0);
             RefreshPhaseAvLabel();
             counterPresentation?.ResetPresentation();
+        }
+
+        private void HandleTelegraphsChanged()
+        {
+            if (_suppressTelegraphRefresh)
+            {
+                return;
+            }
+
+            RefreshTelegraphsAndSlots();
+        }
+
+        private void HandleTelegraphMoved(int fromBeat, int toBeat, int delayBeats)
+        {
+        }
+
+        private void HandleTelegraphsDelayedBatch(IReadOnlyList<TelegraphBeatMove> moves)
+        {
+            if (moves == null || moves.Count == 0)
+            {
+                return;
+            }
+
+            if (_delaySlideRoutine != null)
+            {
+                StopCoroutine(_delaySlideRoutine);
+            }
+
+            _suppressTelegraphRefresh = true;
+            _delaySlideRoutine = StartCoroutine(NoteDelaySlideRoutine(moves));
+        }
+
+        public void ShowNoteDelayFeedback(int fromBeat, int toBeat, int delayBeats)
+        {
+            HandleTelegraphsDelayedBatch(new[]
+            {
+                new TelegraphBeatMove(null, fromBeat, toBeat)
+            });
+        }
+
+        private IEnumerator NoteDelaySlideRoutine(IReadOnlyList<TelegraphBeatMove> moves)
+        {
+            EnsureResolveFeedbackUi();
+            var overlays = new List<(RectTransform rt, Image img, Vector2 from, Vector2 to)>();
+            if (_resolveChipLayer != null && _slots != null && _slotOffsetPx != null)
+            {
+                foreach (var move in moves)
+                {
+                    if (move.FromBeat < 0 || move.ToBeat < 0
+                        || move.FromBeat >= TotalBeats || move.ToBeat >= TotalBeats)
+                    {
+                        continue;
+                    }
+
+                    var fromPos = GetBeatNoteLocalPos(move.FromBeat);
+                    var toPos = GetBeatNoteLocalPos(move.ToBeat);
+                    var go = new GameObject("DelaySlideNote", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                    var rt = go.GetComponent<RectTransform>();
+                    rt.SetParent(_resolveChipLayer, false);
+                    var noteSize = noteVisuals != null ? noteVisuals.NoteDisplaySize : 40f;
+                    rt.sizeDelta = new Vector2(noteSize, noteSize);
+                    rt.anchorMin = new Vector2(0.5f, 0.5f);
+                    rt.anchorMax = new Vector2(0.5f, 0.5f);
+                    rt.pivot = new Vector2(0.5f, 0.5f);
+                    rt.anchoredPosition = fromPos;
+
+                    var img = go.GetComponent<Image>();
+                    img.raycastTarget = false;
+                    var tier = move.Telegraph != null ? move.Telegraph.NoteTier : BossNoteTier.Red;
+                    var sprite = noteVisuals != null ? noteVisuals.NoteForTier(tier) : null;
+                    if (sprite != null)
+                    {
+                        img.sprite = sprite;
+                        img.color = Color.white;
+                        img.preserveAspect = true;
+                    }
+                    else
+                    {
+                        img.sprite = UiCircleSpriteUtil.Circle;
+                        img.color = new Color(0.45f, 0.95f, 1f, 0.9f);
+                    }
+
+                    var badgeGo = new GameObject("DelayBadge", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+                    var badgeRt = badgeGo.GetComponent<RectTransform>();
+                    badgeRt.SetParent(rt, false);
+                    badgeRt.anchorMin = new Vector2(0.5f, 1f);
+                    badgeRt.anchorMax = new Vector2(0.5f, 1f);
+                    badgeRt.pivot = new Vector2(0.5f, 0f);
+                    badgeRt.anchoredPosition = new Vector2(0f, 2f);
+                    badgeRt.sizeDelta = new Vector2(40f, 18f);
+                    var badge = badgeGo.GetComponent<Text>();
+                    badge.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf")
+                        ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+                    badge.fontSize = 14;
+                    badge.alignment = TextAnchor.MiddleCenter;
+                    badge.color = new Color(0.45f, 0.95f, 1f, 1f);
+                    badge.raycastTarget = false;
+                    badge.text = $"+{Mathf.Max(1, move.ToBeat - move.FromBeat)}";
+
+                    overlays.Add((rt, img, fromPos, toPos));
+                }
+            }
+
+            // Hide destination slots' note portraits during slide to avoid double-draw / pop.
+            if (_slots != null)
+            {
+                foreach (var move in moves)
+                {
+                    if (move.ToBeat >= 0 && move.ToBeat < _slots.Length)
+                    {
+                        _slots[move.ToBeat]?.ClearEnemyVisualOnly();
+                    }
+
+                    if (move.FromBeat >= 0 && move.FromBeat < _slots.Length)
+                    {
+                        _slots[move.FromBeat]?.ClearEnemyVisualOnly();
+                    }
+                }
+            }
+
+            const float duration = 0.35f;
+            var t = 0f;
+            while (t < duration)
+            {
+                t += Time.unscaledDeltaTime;
+                var u = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t / duration));
+                foreach (var o in overlays)
+                {
+                    if (o.rt != null)
+                    {
+                        o.rt.anchoredPosition = Vector2.Lerp(o.from, o.to, u);
+                    }
+                }
+
+                yield return null;
+            }
+
+            foreach (var o in overlays)
+            {
+                if (o.rt != null)
+                {
+                    Destroy(o.rt.gameObject);
+                }
+            }
+
+            _suppressTelegraphRefresh = false;
+            _delaySlideRoutine = null;
+            RefreshTelegraphsAndSlots();
+        }
+
+        private Vector2 GetBeatNoteLocalPos(int beatIndex)
+        {
+            if (_resolveChipLayer == null || _slots == null
+                || beatIndex < 0 || beatIndex >= _slots.Length || _slots[beatIndex] == null)
+            {
+                return Vector2.zero;
+            }
+
+            var slotRt = _slots[beatIndex].transform as RectTransform;
+            if (slotRt == null)
+            {
+                return Vector2.zero;
+            }
+
+            var world = slotRt.TransformPoint(new Vector3(slotRt.rect.center.x, slotRt.rect.yMin + slotRt.rect.height * noteBandNormalizedY, 0f));
+            return _resolveChipLayer.InverseTransformPoint(world);
+        }
+
+        private float GetBeatCenterLocalX(int beatIndex)
+        {
+            return GetBeatNoteLocalPos(beatIndex).x;
+        }
+
+        private float GetNoteBandLocalY()
+        {
+            return GetBeatNoteLocalPos(Mathf.Clamp(_autoPlayBeat, 0, TotalBeats - 1)).y;
+        }
+
+        private IEnumerator NoteDelayFeedbackRoutine(int fromBeat, int toBeat, int delayBeats)
+        {
+            yield break;
         }
 
         public void SetCounterPresentation(CounterPresentationDriver presentation)
@@ -363,20 +647,98 @@ namespace FracturedChorus.UI
             }
 
             var scanLocal = (Vector2)_resolveChipLayer.InverseTransformPoint(scanBar.position);
+            var halfW = CounterNoteResolveChipView.DisplaySize.x * 0.5f;
+            var minCenterX = GetHeaderRightEdgeInResolveLayer() + halfW + 12f;
+            scanLocal.x = Mathf.Max(scanLocal.x, minCenterX);
             return scanLocal + offset;
         }
 
-        private void BringResolveFeedbackToFront()
+        private float GetHeaderRightEdgeInResolveLayer()
         {
-            if (_resolveChipLayer != null)
+            if (_resolveChipLayer == null)
             {
-                _resolveChipLayer.SetAsLastSibling();
+                return 0f;
             }
 
-            if (_multiBanner != null && _multiBanner.transform.parent == viewport)
+            var header = transform.Find("Header") as RectTransform;
+            if (header == null)
+            {
+                return 0f;
+            }
+
+            var worldRight = header.TransformPoint(new Vector3(header.rect.xMax, 0f, 0f));
+            return _resolveChipLayer.InverseTransformPoint(worldRight).x;
+        }
+
+        private const int ResolveOverlaySortOrder = 400;
+
+        private void BringResolveFeedbackToFront()
+        {
+            if (_resolveChipLayer == null)
+            {
+                return;
+            }
+
+            ConfigureResolveOverlayCanvas();
+
+            var root = GetResolveOverlayRoot();
+            if (root != null && _resolveChipLayer.parent != root)
+            {
+                _resolveChipLayer.SetParent(root, false);
+                StretchFullRect(_resolveChipLayer);
+            }
+
+            _resolveChipLayer.SetAsLastSibling();
+
+            if (_multiBanner != null && _multiBanner.transform.parent == _resolveChipLayer)
             {
                 _multiBanner.transform.SetAsLastSibling();
             }
+        }
+
+        private RectTransform GetResolveOverlayRoot()
+        {
+            var canvas = GetComponentInParent<Canvas>();
+            if (canvas == null)
+            {
+                return transform as RectTransform;
+            }
+
+            var root = canvas.rootCanvas != null ? canvas.rootCanvas.transform as RectTransform : null;
+            return root != null ? root : canvas.transform as RectTransform;
+        }
+
+        private void ConfigureResolveOverlayCanvas()
+        {
+            if (_resolveChipLayer == null)
+            {
+                return;
+            }
+
+            var overlay = _resolveChipLayer.GetComponent<Canvas>();
+            if (overlay == null)
+            {
+                overlay = _resolveChipLayer.gameObject.AddComponent<Canvas>();
+            }
+
+            overlay.overrideSorting = true;
+            overlay.sortingOrder = ResolveOverlaySortOrder;
+            overlay.additionalShaderChannels = AdditionalCanvasShaderChannels.None;
+        }
+
+        private static void StretchFullRect(RectTransform rect)
+        {
+            if (rect == null)
+            {
+                return;
+            }
+
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+            rect.localScale = Vector3.one;
         }
 
         private void EnsureResolveFeedbackUi()
@@ -386,14 +748,19 @@ namespace FracturedChorus.UI
                 WireReferences();
             }
 
-            if (viewport == null)
+            var host = transform as RectTransform;
+            if (host == null)
             {
                 return;
             }
 
+            var root = GetResolveOverlayRoot();
+
             if (_resolveChipLayer == null)
             {
-                var existing = viewport.Find("ResolveChipLayer") as RectTransform;
+                var existing = host.Find("ResolveChipLayer") as RectTransform
+                    ?? (viewport != null ? viewport.Find("ResolveChipLayer") as RectTransform : null)
+                    ?? (root != null ? root.Find("ResolveChipLayer") as RectTransform : null);
                 if (existing != null)
                 {
                     _resolveChipLayer = existing;
@@ -402,22 +769,21 @@ namespace FracturedChorus.UI
                 {
                     var go = new GameObject("ResolveChipLayer", typeof(RectTransform));
                     _resolveChipLayer = go.GetComponent<RectTransform>();
-                    _resolveChipLayer.SetParent(viewport, false);
-                    _resolveChipLayer.anchorMin = Vector2.zero;
-                    _resolveChipLayer.anchorMax = Vector2.one;
-                    _resolveChipLayer.pivot = new Vector2(0.5f, 0.5f);
-                    _resolveChipLayer.offsetMin = Vector2.zero;
-                    _resolveChipLayer.offsetMax = Vector2.zero;
                 }
             }
 
+            var parent = root != null ? root : host;
+            if (_resolveChipLayer.parent != parent)
+            {
+                _resolveChipLayer.SetParent(parent, false);
+            }
+
+            StretchFullRect(_resolveChipLayer);
             BringResolveFeedbackToFront();
 
             if (_multiBanner == null)
             {
-                var existingBanner = _resolveChipLayer != null
-                    ? _resolveChipLayer.Find("MultiBanner")
-                    : null;
+                var existingBanner = _resolveChipLayer.Find("MultiBanner");
                 if (existingBanner == null && viewport != null)
                 {
                     existingBanner = viewport.Find("MultiBanner");
@@ -426,16 +792,22 @@ namespace FracturedChorus.UI
                 if (existingBanner != null)
                 {
                     _multiBanner = existingBanner.GetComponent<CounterMultiBannerView>();
+                    if (_multiBanner != null && existingBanner.parent != _resolveChipLayer)
+                    {
+                        existingBanner.SetParent(_resolveChipLayer, false);
+                    }
                 }
 
                 if (_multiBanner == null)
                 {
-                    var parent = _resolveChipLayer != null ? _resolveChipLayer : viewport;
-                    _multiBanner = CounterMultiBannerView.Create(parent);
+                    _multiBanner = CounterMultiBannerView.Create(_resolveChipLayer);
                     var bannerRect = _multiBanner.transform as RectTransform;
-                    if (bannerRect != null && scanBar != null && _resolveChipLayer != null)
+                    if (bannerRect != null && scanBar != null)
                     {
                         var scanLocal = (Vector2)_resolveChipLayer.InverseTransformPoint(scanBar.position);
+                        var halfW = CounterNoteResolveChipView.DisplaySize.x * 0.5f;
+                        var minCenterX = GetHeaderRightEdgeInResolveLayer() + halfW + 12f;
+                        scanLocal.x = Mathf.Max(scanLocal.x, minCenterX);
                         bannerRect.anchorMin = new Vector2(0.5f, 0.5f);
                         bannerRect.anchorMax = new Vector2(0.5f, 0.5f);
                         bannerRect.pivot = new Vector2(0.5f, 0f);
@@ -498,6 +870,28 @@ namespace FracturedChorus.UI
             if (_laneMarkers.TryGetValue((unit, beatIndex), out var marker) && marker != null)
             {
                 marker.SetRelocateVisualHidden(true);
+            }
+        }
+
+        public void SoftHideFootprintsForRelocate(CombatUnit unit)
+        {
+            if (unit == null)
+            {
+                return;
+            }
+
+            foreach (var kvp in _footprintDots)
+            {
+                if (kvp.Key.unit != unit || kvp.Value == null)
+                {
+                    continue;
+                }
+
+                var c = kvp.Value.color;
+                kvp.Value.color = new Color(c.r, c.g, c.b, 0f);
+                kvp.Value.raycastTarget = false;
+                var handle = kvp.Value.GetComponent<TimelineLaneSkillDragHandle>();
+                handle?.SetInteractionEnabled(false);
             }
         }
 
@@ -1377,9 +1771,64 @@ namespace FracturedChorus.UI
 
             _footprintLayer.SetAsLastSibling();
             _laneMarkersLayer.SetAsLastSibling();
+            OrderViewportLayers();
             BringResolveFeedbackToFront();
             _footprintLayer.sizeDelta = new Vector2(_contentWidthPx, 0f);
             _laneMarkersLayer.sizeDelta = new Vector2(_contentWidthPx, 0f);
+        }
+
+        private void OrderViewportLayers()
+        {
+            if (viewport == null)
+            {
+                return;
+            }
+
+            if (_staffBackground != null)
+            {
+                _staffBackground.transform.SetAsFirstSibling();
+            }
+
+            if (_bossTrackFrame != null)
+            {
+                _bossTrackFrame.SetSiblingIndex(_staffBackground != null ? 1 : 0);
+            }
+
+            if (slotsRow != null)
+            {
+                var idx = 0;
+                if (_staffBackground != null)
+                {
+                    idx++;
+                }
+
+                if (_bossTrackFrame != null)
+                {
+                    idx++;
+                }
+
+                slotsRow.SetSiblingIndex(idx);
+            }
+
+            if (_laneLinesLayer != null)
+            {
+                _laneLinesLayer.SetAsLastSibling();
+            }
+
+            if (_footprintLayer != null)
+            {
+                _footprintLayer.SetAsLastSibling();
+            }
+
+            if (_laneMarkersLayer != null)
+            {
+                _laneMarkersLayer.SetAsLastSibling();
+            }
+
+            if (scanBar != null)
+            {
+                scanBar.SetAsLastSibling();
+            }
         }
 
         private void BuildLanes()
@@ -1428,10 +1877,14 @@ namespace FracturedChorus.UI
                 lineRect.anchorMin = new Vector2(0f, 0f);
                 lineRect.anchorMax = new Vector2(1f, 0f);
                 lineRect.pivot = new Vector2(0.5f, 0.5f);
-                lineRect.sizeDelta = new Vector2(0f, 2f);
+                lineRect.sizeDelta = new Vector2(0f, 5f);
                 var lineImage = lineGo.AddComponent<Image>();
                 var tint = unit.PlaceholderColor;
-                lineImage.color = new Color(tint.r, tint.g, tint.b, 0.35f);
+                lineImage.color = new Color(
+                    Mathf.Min(1f, tint.r * 1.15f + 0.08f),
+                    Mathf.Min(1f, tint.g * 1.15f + 0.08f),
+                    Mathf.Min(1f, tint.b * 1.15f + 0.08f),
+                    0.92f);
                 lineImage.raycastTarget = false;
 
                 var labelGo = new GameObject("Label", typeof(RectTransform));
@@ -1456,7 +1909,140 @@ namespace FracturedChorus.UI
             }
 
             LayoutLanes();
+            EnsureBossTrackFrame();
             EnsureLaneAvatarColumn();
+        }
+
+        private void EnsureBossTrackFrame()
+        {
+            if (viewport == null)
+            {
+                WireReferences();
+            }
+
+            if (viewport == null)
+            {
+                return;
+            }
+
+            DestroyLegacyBossLaneLine();
+
+            if (_bossTrackFrame == null)
+            {
+                var existing = viewport.Find("BossTrackFrame") as RectTransform;
+                if (existing != null)
+                {
+                    _bossTrackFrame = existing;
+                }
+                else
+                {
+                    var root = new GameObject("BossTrackFrame", typeof(RectTransform));
+                    _bossTrackFrame = root.GetComponent<RectTransform>();
+                    _bossTrackFrame.SetParent(viewport, false);
+                    _bossTrackFrame.anchorMin = new Vector2(0f, 0f);
+                    _bossTrackFrame.anchorMax = new Vector2(0f, 0f);
+                    _bossTrackFrame.pivot = new Vector2(0f, 0.5f);
+
+                    CreateBossTrackChild("Fill", _bossTrackFrame, stretch: true);
+                    CreateBossTrackChild("BorderTop", _bossTrackFrame, stretch: false);
+                    CreateBossTrackChild("BorderBottom", _bossTrackFrame, stretch: false);
+                }
+            }
+
+            LayoutBossTrackFrame();
+
+            OrderViewportLayers();
+        }
+
+        private void DestroyLegacyBossLaneLine()
+        {
+            if (_laneLinesLayer != null)
+            {
+                var legacy = _laneLinesLayer.Find("BossLane");
+                if (legacy != null)
+                {
+                    Destroy(legacy.gameObject);
+                }
+            }
+        }
+
+        private static Image CreateBossTrackChild(string name, RectTransform parent, bool stretch)
+        {
+            var go = new GameObject(name, typeof(RectTransform));
+            var rect = go.GetComponent<RectTransform>();
+            rect.SetParent(parent, false);
+            if (stretch)
+            {
+                rect.anchorMin = Vector2.zero;
+                rect.anchorMax = Vector2.one;
+                rect.offsetMin = Vector2.zero;
+                rect.offsetMax = Vector2.zero;
+            }
+            else
+            {
+                rect.anchorMin = new Vector2(0f, 0.5f);
+                rect.anchorMax = new Vector2(1f, 0.5f);
+                rect.pivot = new Vector2(0.5f, 0.5f);
+                rect.sizeDelta = new Vector2(0f, 2f);
+            }
+
+            var img = go.AddComponent<Image>();
+            img.raycastTarget = false;
+            return img;
+        }
+
+        private void LayoutBossTrackFrame()
+        {
+            if (_bossTrackFrame == null || viewport == null)
+            {
+                return;
+            }
+
+            var height = Mathf.Max(24f, bossTrackFrameHeight);
+            var width = Mathf.Max(_contentWidthPx, viewport.rect.width);
+            var scrollX = slotsRow != null ? slotsRow.anchoredPosition.x : 0f;
+            var noteY = GetNoteCoverYFromBottom(viewport.rect.height);
+
+            _bossTrackFrame.sizeDelta = new Vector2(width, height);
+            _bossTrackFrame.anchoredPosition = new Vector2(scrollX, noteY);
+
+            var fill = _bossTrackFrame.Find("Fill")?.GetComponent<Image>();
+            if (fill != null)
+            {
+                fill.color = bossTrackFrameFill;
+            }
+
+            var borderH = Mathf.Max(1f, bossTrackFrameBorderThickness);
+            var half = height * 0.5f - borderH * 0.5f;
+
+            LayoutBossTrackBorder(_bossTrackFrame.Find("BorderTop") as RectTransform, half, borderH);
+            LayoutBossTrackBorder(_bossTrackFrame.Find("BorderBottom") as RectTransform, -half, borderH);
+
+            var topImg = _bossTrackFrame.Find("BorderTop")?.GetComponent<Image>();
+            var botImg = _bossTrackFrame.Find("BorderBottom")?.GetComponent<Image>();
+            if (topImg != null)
+            {
+                topImg.color = bossTrackFrameBorderTop;
+            }
+
+            if (botImg != null)
+            {
+                botImg.color = bossTrackFrameBorderBottom;
+            }
+        }
+
+        private static void LayoutBossTrackBorder(RectTransform border, float y, float thickness)
+        {
+            if (border == null)
+            {
+                return;
+            }
+
+            border.anchorMin = new Vector2(0f, 0.5f);
+            border.anchorMax = new Vector2(1f, 0.5f);
+            border.pivot = new Vector2(0.5f, 0.5f);
+            border.anchoredPosition = new Vector2(0f, y);
+            border.sizeDelta = new Vector2(0f, thickness);
         }
 
         private void EnsureLanesUpToDate()
@@ -1512,6 +2098,8 @@ namespace FracturedChorus.UI
 
                 _laneLines[i].anchoredPosition = new Vector2(0f, GetLaneYFromBottom(i, height));
             }
+
+            LayoutBossTrackFrame();
         }
 
         private void EnsureLaneAvatarColumn()
@@ -1573,14 +2161,25 @@ namespace FracturedChorus.UI
         private float GetLaneYFromBottom(int laneIndex, float height)
         {
             var count = _laneUnits.Count;
+            var minY = height * Mathf.Min(laneBandMinNormalizedY, laneBandMaxNormalizedY);
+            var maxY = height * Mathf.Max(laneBandMinNormalizedY, laneBandMaxNormalizedY);
+
             if (count <= 0)
             {
-                return height * 0.5f;
+                return (minY + maxY) * 0.5f;
             }
 
-            // Lane 0 ở TRÊN cùng, cách đều theo chiều cao viewport.
-            return height * (count - laneIndex) / (count + 1);
+            if (count == 1)
+            {
+                return (minY + maxY) * 0.5f;
+            }
+
+            var t = (float)laneIndex / (count - 1);
+            return Mathf.Lerp(maxY, minY, t);
         }
+
+        private float GetNoteCoverYFromBottom(float viewportHeight) =>
+            viewportHeight * noteBandNormalizedY;
 
         private float ContentXForBeat(int beat)
         {
@@ -1660,6 +2259,7 @@ namespace FracturedChorus.UI
         {
             EnsureLaneLayers();
             EnsureLanesUpToDate();
+            EnsureBossTrackFrame();
 
             if (_laneMarkersLayer == null || _timeline == null || viewport == null)
             {
@@ -1728,7 +2328,7 @@ namespace FracturedChorus.UI
             var placement = entry.BeatIndex;
             var unitColor = entry.Unit.PlaceholderColor;
 
-            foreach (var info in SkillFootprintUtil.EnumerateFootprintBeats(skill, placement))
+            foreach (var info in SkillFootprintUtil.EnumerateFootprintBeats(skill, placement, null, entry))
             {
                 if (info.BeatIndex < 0 || info.BeatIndex >= TotalBeats)
                 {
@@ -2028,6 +2628,11 @@ namespace FracturedChorus.UI
                 _footprintLayer.anchoredPosition = new Vector2(x, 0f);
             }
 
+            if (_bossTrackFrame != null)
+            {
+                LayoutBossTrackFrame();
+            }
+
             SyncBlockBarrierScroll();
         }
 
@@ -2109,6 +2714,12 @@ namespace FracturedChorus.UI
             var unitColor = unit.PlaceholderColor;
             var previewAlpha = valid ? 0.55f : 0.35f;
             var centerX = ContentXForActiveCenter(skill, beat);
+            var catalog = NoteVisuals;
+            var ghostSprite = catalog.DropGhost(valid);
+            var ghostSize = catalog.GhostDisplaySize;
+            var coverSprite = catalog.Cover(valid);
+            var coverSize = catalog.CoverDisplaySize;
+            var noteCoverY = GetNoteCoverYFromBottom(viewport.rect.height);
 
             if (_dropGhost == null)
             {
@@ -2125,7 +2736,7 @@ namespace FracturedChorus.UI
                 _dropGhost.SetInvalidPreview(true);
             }
 
-            foreach (var info in SkillFootprintUtil.EnumerateFootprintBeats(skill, beat))
+            foreach (var info in SkillFootprintUtil.EnumerateFootprintBeats(skill, beat, unit))
             {
                 if (info.BeatIndex < 0 || info.BeatIndex >= TotalBeats)
                 {
@@ -2134,10 +2745,25 @@ namespace FracturedChorus.UI
 
                 if (info.Role == FootprintBeatRole.Active)
                 {
-                    var color = valid
-                        ? new Color(unitColor.r, unitColor.g, unitColor.b, previewAlpha)
-                        : new Color(1f, 0.25f, 0.2f, previewAlpha);
-                    AddDropPreviewDot(info.BeatIndex, laneY, color, activeFootprintDotSize);
+                    if (ghostSprite != null)
+                    {
+                        AddDropPreviewSprite(info.BeatIndex, laneY, ghostSprite, ghostSize);
+                    }
+                    else
+                    {
+                        var color = valid
+                            ? new Color(unitColor.r, unitColor.g, unitColor.b, previewAlpha)
+                            : new Color(1f, 0.25f, 0.2f, previewAlpha);
+                        AddDropPreviewDot(info.BeatIndex, laneY, color, activeFootprintDotSize);
+                    }
+
+                    if (_timeline != null
+                        && coverSprite != null
+                        && _timeline.GetImpactTelegraphAtBeat(info.BeatIndex) != null)
+                    {
+                        AddDropCoverOverlay(info.BeatIndex, noteCoverY, coverSprite, coverSize);
+                    }
+
                     continue;
                 }
 
@@ -2146,6 +2772,44 @@ namespace FracturedChorus.UI
                     : new Color(1f, 0.25f, 0.2f, previewAlpha);
                 AddDropPreviewDot(info.BeatIndex, laneY, standingColor, footprintDotSize);
             }
+        }
+
+        private void AddDropPreviewSprite(int beat, float laneY, Sprite sprite, float size)
+        {
+            var dot = CreateFootprintDot(size);
+            dot.sprite = sprite;
+            dot.color = Color.white;
+            dot.preserveAspect = true;
+            dot.rectTransform.anchoredPosition = new Vector2(ContentXForBeat(beat), laneY);
+            dot.gameObject.SetActive(true);
+            _dropPreviewDots.Add(dot);
+        }
+
+        private void AddDropCoverOverlay(int beat, float noteY, Sprite sprite, float size)
+        {
+            EnsureLaneLayers();
+            if (_footprintLayer == null)
+            {
+                return;
+            }
+
+            var go = new GameObject("DropCover", typeof(RectTransform));
+            var rect = go.GetComponent<RectTransform>();
+            rect.SetParent(_footprintLayer, false);
+            rect.anchorMin = new Vector2(0f, 0f);
+            rect.anchorMax = new Vector2(0f, 0f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.sizeDelta = new Vector2(size, size);
+            rect.anchoredPosition = new Vector2(ContentXForBeat(beat), noteY);
+            rect.SetAsLastSibling();
+
+            var img = go.AddComponent<Image>();
+            img.sprite = sprite;
+            img.color = Color.white;
+            img.preserveAspect = true;
+            img.raycastTarget = false;
+            img.type = Image.Type.Simple;
+            _dropCoverOverlays.Add(img);
         }
 
         private void AddDropPreviewDot(int beat, float laneY, Color color, float size)
@@ -2179,6 +2843,16 @@ namespace FracturedChorus.UI
             }
 
             _dropPreviewDots.Clear();
+
+            foreach (var cover in _dropCoverOverlays)
+            {
+                if (cover != null)
+                {
+                    Destroy(cover.gameObject);
+                }
+            }
+
+            _dropCoverOverlays.Clear();
         }
 
         private Camera GetUiCameraForTimeline()
@@ -2310,29 +2984,28 @@ namespace FracturedChorus.UI
 
         private float GetTemplateSlotWidth()
         {
+            const float fallback = 52f;
+            var maxSane = Mathf.Max(fallback * 4f, minSlotWidth * 4f);
+
             if (segmentTemplate != null)
             {
                 var layoutElement = segmentTemplate.GetComponent<LayoutElement>();
                 if (layoutElement != null && layoutElement.preferredWidth > 0f)
                 {
-                    return layoutElement.preferredWidth;
+                    return Mathf.Clamp(layoutElement.preferredWidth, minSlotWidth, maxSane);
                 }
 
                 if (segmentTemplate.TryGetComponent<RectTransform>(out var rect))
                 {
-                    if (rect.sizeDelta.x > 0f)
+                    var stretchX = Mathf.Abs(rect.anchorMax.x - rect.anchorMin.x) > 0.01f;
+                    if (!stretchX && rect.sizeDelta.x > 0f)
                     {
-                        return rect.sizeDelta.x;
-                    }
-
-                    if (rect.rect.width > 0f)
-                    {
-                        return rect.rect.width;
+                        return Mathf.Clamp(rect.sizeDelta.x, minSlotWidth, maxSane);
                     }
                 }
             }
 
-            return slotWidth;
+            return slotWidth > 0f ? Mathf.Clamp(slotWidth, minSlotWidth, maxSane) : fallback;
         }
 
         /// <summary>Editor menu / scene sync — rebuild beat slots and widths for current viewport.</summary>
@@ -2375,6 +3048,8 @@ namespace FracturedChorus.UI
                 _slotOffsetPx = new float[TotalBeats + 1];
             }
 
+            DisableSlotsRowLayoutGroup();
+
             var cumulative = 0f;
             for (var i = 0; i < TotalBeats; i++)
             {
@@ -2382,16 +3057,14 @@ namespace FracturedChorus.UI
                 var w = Mathf.Max(minSlotWidth, span * _pixelsPerSecond);
                 _slotWidths[i] = w;
                 _slotOffsetPx[i] = cumulative;
-                ApplyWidth(_slots[i], w);
+                ApplySlotRect(_slots[i], w, cumulative);
                 cumulative += w;
             }
 
             _slotOffsetPx[TotalBeats] = cumulative;
             _contentWidthPx = cumulative;
 
-            EnsureLayoutGroup();
             slotsRow.sizeDelta = new Vector2(cumulative, 0f);
-            LayoutRebuilder.ForceRebuildLayoutImmediate(slotsRow);
 
             _lastViewportWidth = viewport.rect.width;
 
@@ -2403,25 +3076,39 @@ namespace FracturedChorus.UI
             }
         }
 
-        private void ApplyWidth(BeatSegmentView slot, float width)
+        private void ApplySlotRect(BeatSegmentView slot, float width, float xOffset)
         {
             if (slot == null)
             {
                 return;
             }
 
+            width = Mathf.Max(minSlotWidth, width);
+
             var layoutElement = slot.GetComponent<LayoutElement>();
-            if (layoutElement == null)
+            if (layoutElement != null)
             {
-                layoutElement = slot.gameObject.AddComponent<LayoutElement>();
+                layoutElement.ignoreLayout = true;
+                layoutElement.minWidth = -1f;
+                layoutElement.preferredWidth = -1f;
+                layoutElement.flexibleWidth = -1f;
             }
 
-            layoutElement.preferredWidth = width;
-            layoutElement.minWidth = width;
-            layoutElement.flexibleWidth = 0f;
+            var rt = slot.transform as RectTransform;
+            if (rt == null)
+            {
+                return;
+            }
+
+            rt.localScale = Vector3.one;
+            rt.anchorMin = new Vector2(0f, 0f);
+            rt.anchorMax = new Vector2(0f, 1f);
+            rt.pivot = new Vector2(0f, 0.5f);
+            rt.anchoredPosition = new Vector2(xOffset, 0f);
+            rt.sizeDelta = new Vector2(width, 0f);
         }
 
-        private void EnsureLayoutGroup()
+        private void DisableSlotsRowLayoutGroup()
         {
             if (slotsRow == null)
             {
@@ -2429,30 +3116,38 @@ namespace FracturedChorus.UI
             }
 
             var layout = slotsRow.GetComponent<HorizontalLayoutGroup>();
-            if (layout == null)
+            if (layout != null)
             {
-                layout = slotsRow.gameObject.AddComponent<HorizontalLayoutGroup>();
+                layout.enabled = false;
             }
 
-            layout.spacing = 0f;
-            layout.padding = new RectOffset(0, 0, 0, 0);
-            layout.childAlignment = TextAnchor.MiddleLeft;
-            layout.childControlWidth = true;
-            layout.childControlHeight = true;
-            layout.childForceExpandWidth = false;
-            layout.childForceExpandHeight = true;
+            var fitter = slotsRow.GetComponent<ContentSizeFitter>();
+            if (fitter != null)
+            {
+                fitter.enabled = false;
+            }
         }
 
         private void BuildAllSlots()
         {
             CleanupExtraBeatChildren();
             AlignSlotsRowInViewport();
-            EnsureLayoutGroup();
+            DisableSlotsRowLayoutGroup();
+
+            if (slotWidth <= 0f)
+            {
+                slotWidth = GetTemplateSlotWidth();
+            }
+
+            var templateWidth = slotWidth > 0f ? slotWidth : 52f;
 
             _slots = new BeatSegmentView[TotalBeats];
             _slots[0] = segmentTemplate;
             segmentTemplate.SetDisplayBeatIndex(0);
             segmentTemplate.WireReferences();
+            segmentTemplate.SetNoteVisualCatalog(NoteVisuals);
+            segmentTemplate.SetNoteBandNormalizedY(noteBandNormalizedY);
+            ApplySlotRect(segmentTemplate, templateWidth, 0f);
 
             for (var i = 1; i < TotalBeats; i++)
             {
@@ -2462,6 +3157,9 @@ namespace FracturedChorus.UI
                 var clone = cloneGo.GetComponent<BeatSegmentView>();
                 clone.SetDisplayBeatIndex(i);
                 clone.WireReferences();
+                clone.SetNoteVisualCatalog(NoteVisuals);
+                clone.SetNoteBandNormalizedY(noteBandNormalizedY);
+                ApplySlotRect(clone, templateWidth, i * templateWidth);
                 _slots[i] = clone;
             }
 
@@ -2675,7 +3373,22 @@ namespace FracturedChorus.UI
                 PopulateSlot(_slots[i], i);
             }
 
+            ReapplySlotRectsFromCache();
             RefreshLaneMarkers();
+        }
+
+        private void ReapplySlotRectsFromCache()
+        {
+            if (_slots == null || _slotWidths == null || _slotOffsetPx == null)
+            {
+                return;
+            }
+
+            var count = Mathf.Min(_slots.Length, _slotWidths.Length);
+            for (var i = 0; i < count; i++)
+            {
+                ApplySlotRect(_slots[i], _slotWidths[i], _slotOffsetPx[i]);
+            }
         }
 
         private void PopulateSlot(BeatSegmentView slot, int globalBeat)
@@ -2706,6 +3419,8 @@ namespace FracturedChorus.UI
                 }
             }
 
+            slot.SetNoteVisualCatalog(NoteVisuals);
+            slot.SetNoteBandNormalizedY(noteBandNormalizedY);
             var telegraph = _timeline.GetTelegraphAtBeat(globalBeat);
             slot.SetSlot(playerEntry, telegraph);
             slot.CaptureLayoutBaseline();

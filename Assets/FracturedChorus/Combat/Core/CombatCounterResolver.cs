@@ -46,15 +46,58 @@ namespace FracturedChorus.Combat.Core
                     continue;
                 }
 
-                if (!GetActiveBeatIndices(entry).Contains(beatIndex))
-                {
-                    continue;
-                }
-
-                count++;
+                count += GetCounterHitContribution(entry, beatIndex, timeline);
             }
 
             return count;
+        }
+
+        public static int GetCounterHitContribution(
+            AgendaEntry entry,
+            int beatIndex,
+            BeatTimelineEngine timeline)
+        {
+            if (entry?.Skill == null || !GetActiveBeatIndices(entry).Contains(beatIndex))
+            {
+                return 0;
+            }
+
+            var hits = 1;
+            if (!entry.IsEmpowered || entry.Skill.empowerExtraHits <= 0 || timeline == null)
+            {
+                return hits;
+            }
+
+            var firstNoteBeat = FindFirstActiveImpactBeat(entry, timeline);
+            if (firstNoteBeat == beatIndex)
+            {
+                hits += entry.Skill.empowerExtraHits;
+            }
+
+            return hits;
+        }
+
+        public static bool ActiveWindowHasImpactNote(AgendaEntry entry, BeatTimelineEngine timeline)
+        {
+            return FindFirstActiveImpactBeat(entry, timeline) >= 0;
+        }
+
+        public static int FindFirstActiveImpactBeat(AgendaEntry entry, BeatTimelineEngine timeline)
+        {
+            if (entry?.Skill == null || timeline == null)
+            {
+                return -1;
+            }
+
+            foreach (var activeBeat in GetActiveBeatIndices(entry))
+            {
+                if (timeline.GetImpactTelegraphsAtBeat(activeBeat).Count > 0)
+                {
+                    return activeBeat;
+                }
+            }
+
+            return -1;
         }
 
         public static bool HasCounterOnBeat(BeatTimelineEngine timeline, int beatIndex) =>

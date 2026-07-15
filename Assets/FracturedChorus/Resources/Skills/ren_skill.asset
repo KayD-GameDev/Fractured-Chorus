@@ -27,3 +27,19 @@ MonoBehaviour:
   standingBeatsBefore: 2
   activeBeats: 2
   standingBeatsAfter: 2
+  effectKind: 0
+  effectValue: 0
+  grantsCycleShift: 0
+  usesPrepEmpower: 1
+  prepEmpowerThreshold: 1
+  prepEmpowerCost: 1
+  empowerEffectValue: 0
+  empowerDamageMultiplier: 1.15
+  empowerExtraHits: 1
+  empowerForceHarmony: 0
+  empowerKeepDelayTier: 0
+  empowerOverhealToShield: 0
+  empowerOverhealShieldCap: 30
+  empowerPartyReduceS2: 0
+  empowerGiftPrepToTarget: 0
+  empowerGuardChargeOnPerfect: 0

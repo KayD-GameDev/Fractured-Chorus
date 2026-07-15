@@ -22,7 +22,9 @@ namespace FracturedChorus.UI
         [SerializeField] private Sprite executeSprite;
         [SerializeField] private bool hideLabelWhenUsingSprites = true;
 
-        [Header("Layout — chỉnh size tại đây")]
+        [Header("Layout")]
+        [Tooltip("Bật chỉ khi muốn code ép size/pos từ Button Size / Anchored Position. Mặc định tắt = tôn trọng RectTransform trên scene.")]
+        [SerializeField] private bool applyScriptedLayout;
         [SerializeField] private Vector2 buttonSize = new Vector2(360f, 140f);
         [SerializeField] private Vector2 buttonAnchoredPosition = Vector2.zero;
 
@@ -62,12 +64,23 @@ namespace FracturedChorus.UI
             }
 
             EnsureSpritesLoaded();
-            ApplyLayout();
+            if (applyScriptedLayout)
+            {
+                ApplyLayout();
+            }
         }
 
         public void SetLabel(string text)
         {
-            WireReferences();
+            if (executeButton == null || buttonImage == null)
+            {
+                WireReferences();
+            }
+            else
+            {
+                EnsureSpritesLoaded();
+            }
+
             _currentLabel = text;
             ApplyVisualForLabel(text);
         }
@@ -241,14 +254,6 @@ namespace FracturedChorus.UI
             {
                 buttonSize.y = 1f;
             }
-
-            if (!isActiveAndEnabled && !Application.isPlaying)
-            {
-                ApplyLayout();
-                return;
-            }
-
-            ApplyLayout();
         }
 
         public void Bind(Action onExecuteClicked)
@@ -280,7 +285,11 @@ namespace FracturedChorus.UI
 
         public void SetVisible(bool visible)
         {
-            WireReferences();
+            if (executeButton == null)
+            {
+                WireReferences();
+            }
+
             if (executeButton != null)
             {
                 executeButton.gameObject.SetActive(visible);

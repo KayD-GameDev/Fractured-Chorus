@@ -1,7 +1,27 @@
 # Skill Kit — 3 skill / nhân vật
 
-> **Trạng thái:** Design + data lock · footprint S1-S-S2 trên timeline  
-> **Code:** `SkillDefinitionSO` · `Resources/Skills/*` · `UnitPreset_*`
+> **Trạng thái:** Setup → Payoff (Prep) · runtime Phase 1–3  
+> **Spec:** [`docs/superpowers/specs/2026-07-14-skill-kit-setup-payoff-design.md`](../superpowers/specs/2026-07-14-skill-kit-setup-payoff-design.md)  
+> **Code:** `SkillDefinitionSO` · `Resources/Skills/*` · `CombatUnit.Prep` · `CombatSession` channel/empower
+
+---
+
+## Prep — Setup → Payoff
+
+```
+Empty beat ∩ S (Skill/Ult)  →  +1 Prep (cap 3 / unit)
+Note beat ∩ S               →  Counter; Prep không tăng
+Basic                       →  Không đụng Prep
+Empower Skill @ Prep ≥1     →  tiêu 1 · amplify nhẹ
+Empower Ult @ Prep ≥2       →  tiêu 2 · amplify mạnh
+Prep = 0                    →  vẫn cast base
+```
+
+- UI: pip cyan trên **party card** (`PrepPipsView`)
+- Spend lúc **beat S đầu** của placement; channel cùng beat xảy ra **sau** spend
+- **Anchor Delay / Encore ReduceS2** resolve **ngay khi đặt (Planning)** — VFX đọc được trước Execute
+  - Delay: chỉ note **sau cửa S** của Anchor (+N); note nằm trong S giữ nguyên; slide trên timeline
+  - Encore: `PendingReduceS2` trên ally (+ icon buff góc dưới-trái portrait); skill đặt sau snapshot S2 ngắn hơn
 
 ---
 
@@ -17,28 +37,19 @@
 - **Counter hit** = mỗi beat thuộc S active (Perfect vs nốt boss)
 - **Toàn bộ S** phải nằm trong planning window W
 - Cùng row: footprint không overlap
-- **Số beat mỗi pha tùy skill của từng nhân vật** (cột `S1-S-S2` trong bảng kit dưới).
-- **Data code:** `SkillDefinitionSO.standingBeatsBefore` (S1) · `activeBeats` (S) · `standingBeatsAfter` (S2).
-- **UI:** S = chip màu unit · **S1/S2 = nút tròn xám** trên beat.
-
-| Ký hiệu | Ý nghĩa |
-|---------|---------|
-| S1 trung bình | **2 beat** |
-| S1 ngắn | **1 beat** |
-| S2 trung bình | **2 beat** |
-| S2 dài | **3 beat** |
+- **Số beat mỗi pha tùy skill** (cột `S1-S-S2`).
+- **Data:** `standingBeatsBefore` · `activeBeats` · `standingBeatsAfter` · `effectKind` · Prep empower fields.
+- **UI:** S = chip màu unit · **S1/S2 = nút tròn xám** · Encore pending → badge `S2−1` trên party card.
 
 ---
 
 ## Ren — DPS · Cycle Shift · Physical
 
-> **Cycle Shift:** mỗi **Strike** xong → Active element xoay Melody → Rhythm → Harmony. Crosscut / Finale dùng Active @ S1, không xoay. Xem [COMBAT_MECHANICS.md §7](./COMBAT_MECHANICS.md#7-element-triangle--ren-cycle-shift).
-
-| # | Tên | S1-S-S2 | Tier | Effect | Target |
-|---|-----|---------|------|--------|--------|
-| 1 | **Strike** | 1-1-1 | 1 | Damage + **Cycle Shift** | CORE · Mini |
-| 2 | **Crosscut** | 2-2-2 | 2 | Damage · 2 counter hit | CORE · Mini |
-| 3 | **Finale** | 2-3-3 | 3 | Damage burst · 3 counter hit | CORE · Mini |
+| # | Tên | S1-S-S2 | Tier | Base | Empower |
+|---|-----|---------|------|------|---------|
+| 1 | **Strike** | 1-1-1 | 1 | Damage + Cycle Shift | — |
+| 2 | **Crosscut** | 2-2-2 | 2 | Damage · 2 counter hit | ≥1: +1 hit @ beat note đầu trong S; empty S → ×1.15 dmg |
+| 3 | **Finale** | 2-3-3 | 3 | Damage burst · 3 counter hit | ≥2: Force Harmony hits |
 
 **Asset:** `ren_basic` · `ren_skill` · `ren_ult`
 
@@ -54,17 +65,17 @@
 | Crosscut / beat | Harmony | **~35** | **~15** |
 | Finale / beat | Harmony | **~46** | **~20** |
 
-*Coda Harmony ×1.5 vs CORE ≈ **~39** Pulse · Charlotte Rhythm ≈ **~18** Ram.*
-
 ---
 
 ## Charlotte — Tank · Rhythm · Physical
 
-| # | Tên | S1-S-S2 | Tier | Effect | Target |
-|---|-----|---------|------|--------|--------|
-| 1 | **Ram** | 1-1-1 | 1 | Damage | CORE · Mini |
-| 2 | **Anchor** | 2-2-2 | 2 | **DelayBossNote +2** (CORE only) | CORE telegraph |
-| 3 | **Bulwark** | 2-2-3 | 2 | **Shield 65** + counter dmg | CORE · Mini |
+| # | Tên | S1-S-S2 | Tier | Base | Empower |
+|---|-----|---------|------|------|---------|
+| 1 | **Ram** | 1-1-1 | 1 | Damage | — |
+| 2 | **Anchor** | 2-2-2 | 2 | **DelayBossNote +2** — chỉ note **sau S**; note trong S không đẩy | ≥1: Delay **+3** · giữ tier |
+| 3 | **Bulwark** | 2-2-3 | 2 | **Shield 65** + counter dmg | ≥2: Shield **100** · GuardCharge stub |
+
+**Asset:** `tank_basic` · `tank_skill` · `tank_ult`
 
 | Skill | vs CORE | vs MICRO/EYE |
 |-------|---------|--------------|
@@ -72,17 +83,17 @@
 | Anchor | — | — |
 | Bulwark / beat | **~20** | **~13** |
 
-**Asset:** `tank_basic` · `tank_skill` · `tank_ult`
-
 ---
 
 ## Coda — Support · Harmony · Magical
 
-| # | Tên | S1-S-S2 | Tier | Effect | Target |
-|---|-----|---------|------|--------|--------|
-| 1 | **Pulse** | 1-1-1 | 1 | Damage (Ma) | CORE · Mini |
-| 2 | **Mend** | 2-1-2 | 2 | **Heal** 25 + Ma×0.5 | Ally |
-| 3 | **Encore** | 1-1-1 | 2 | **ReduceS2 −1** | Ally |
+| # | Tên | S1-S-S2 | Tier | Base | Empower |
+|---|-----|---------|------|------|---------|
+| 1 | **Pulse** | 1-1-1 | 1 | Damage (Ma) | — |
+| 2 | **Mend** | 2-1-2 | 2 | Heal 25 + Ma×0.5 | ≥1: +15 · overheal→Shield cap 30 |
+| 3 | **Encore** | 1-1-1 | 2 | **ReduceS2 −1** (ally skill kế) | ≥2: party S2−1 + gift 1 Prep ally |
+
+**Asset:** `mage_basic` · `mage_skill` · `mage_ult`
 
 | Skill | vs CORE | vs MICRO/EYE |
 |-------|---------|--------------|
@@ -90,23 +101,18 @@
 | Mend | — (~50 HP heal) | — |
 | Encore | — | — |
 
-**Asset:** `mage_basic` · `mage_skill` · `mage_ult`
-
 ---
 
 ## Effect kinds (`SkillEffectKind`)
 
 | Kind | Mô tả |
 |------|-------|
-| `Damage` | Counter + **CoreFinal** vs CORE |
-| `MiniDamage` | Counter Perfect vs MICRO/EYE note → **MiniDmg** pool |
-| `Heal` | `effectValue + Ma×0.5` |
-| `Shield` | `effectValue` HP buffer (Bulwark: 65) |
-| `ReduceS2` | Giảm S2 skill placement kế tiếp |
-| `DelayBossNote` | Đẩy telegraph **CORE** +N beat |
-| `CycleShift` | Ren Strike: xoay Active element (§7 mechanics) |
-| `PurgeResonance` | Counter Micro: −1 boss `Resonance` stack |
-| `PurgeDissonance` | Counter Eye: −1 party `Dissonance` stack |
+| `Damage` | Counter + dmg vs enemy |
+| `Heal` | `effectValue + Ma×0.5` (+ empower) |
+| `Shield` | `effectValue` / empower value HP buffer |
+| `ReduceS2` | `PendingReduceS2` → footprint S2 ngắn hơn 1 lần đặt kế |
+| `DelayBossNote` | Đẩy impact telegraph trong cửa S +N beat (D1) |
+| `CycleShift` | Flag Strike (runtime VFX còn mở) |
 
 ---
 
@@ -124,35 +130,39 @@
 
 ---
 
-## Ví dụ timeline — Ren Crosscut 2-2-2 @ beat 8
+## Ví dụ — Ren Crosscut 2-2-2 @ beat 8
 
 | Beat | 8 | 9 | 10 | 11 | 12 | 13 |
 |------|---|---|----|----|----|----|
 | Phase | S1 | S1 | **S** | **S** | S2 | S2 |
 | Counter | — | — | hit | hit | — | — |
 
-Đặt @ beat 8 → footprint chiếm 8–13 (6 beat). Boss nốt @ beat 9–10 có thể bị counter 2 lần nếu timing Perfect.
+Empty cả 2 S → +2 Prep. Có note @ 10–11 → counter, Prep không tăng. Prep≥1 lúc vào S → empower (+1 hit @ beat note đầu).
 
 ---
 
-## Chưa làm (runtime P0)
+## Runtime checklist
 
-- [x] UI hiển thị S1/S2 (nút tròn xám) + S (chip/tròn màu) trên lane — `BeatTimelineUIView.RefreshFootprintDots`
-- [x] Field footprint S1-S-S2 trong `SkillDefinitionSO`
-- [x] Set số beat S1-S-S2 + tên skill đúng bảng kit cho asset (`Resources/Skills/*`)
-- [ ] Enforce footprint chiếm slot (không cho chồng skill lên beat standing) + anti-spam
-- [ ] Counter degrade boss note HP (Tím/Xanh/Đỏ) — **CORE only**
-- [ ] Note tag CORE / MICRO / EYE trên row 4
-- [ ] Ren Active element + Cycle Shift animation
-- [ ] Mini pressure resolve (`Resonance` / `Dissonance`)
-- [ ] Pick ally target cho Mend / Encore (hiện auto first ally)
+- [x] UI S1/S2 + S trên lane
+- [x] Footprint fields + asset S1-S-S2 / tên skill
+- [x] Prep channel / cap / pips
+- [x] Empower spend + Crosscut/Finale/Bulwark/Mend/Encore amplify
+- [x] Shield absorb
+- [x] DelayBossNote D1 + badge `+N` trên timeline
+- [x] ReduceS2 pending + footprint preview + badge `S2−1`
+- [ ] Enforce footprint overlap (đã có `SkillFootprintUtil.CanPlace` — verify anti-spam standing)
+- [ ] Counter degrade Tím/Xanh/Đỏ CORE
+- [ ] Note tag CORE / MICRO / EYE
+- [ ] Ren Cycle Shift animation
+- [ ] Mini pressure Resonance / Dissonance
+- [ ] Pick ally target Mend / Encore (hiện auto first ally)
+- [ ] Bulwark GuardCharge thật (đang stub)
 
 ## Changelog
 
 | Ngày | Nội dung |
 |------|----------|
-| 2026-07-05 | Audit project: scene sync (beat map, Deploy label, null unitViews, orphan UI); fix overlay binding; callback wiring; docs + verify script |
-| 2026-07-03 | Fix: intro-pause `PlanningPauseLocalBeat=0.5`; footprint refresh lúc pause; nhãn Deploy/Continue ép runtime |
-| 2026-07-03 | Đổi tên asset skill đúng kit + set footprint S1-S-S2 · UI hiện tên thật (`SkillUiNames`) |
-| 2026-07-03 | Làm rõ 3 pha Standing 1 / Using / Standing 2 (chống spam) · field footprint `SkillDefinitionSO` · UI nút xám S1/S2 |
-| 2026-06-30 | Cycle Shift · CoreFinal vs MiniDmg · dmg table · effect kinds mới |
+| 2026-07-15 | Prep Setup→Payoff · empower tables · Delay D1 · ReduceS2 UI · sync spec |
+| 2026-07-05 | Audit project: scene sync; fix overlay binding |
+| 2026-07-03 | Footprint S1-S-S2 · tên skill · UI nút xám |
+| 2026-06-30 | Cycle Shift · CoreFinal vs MiniDmg · effect kinds |

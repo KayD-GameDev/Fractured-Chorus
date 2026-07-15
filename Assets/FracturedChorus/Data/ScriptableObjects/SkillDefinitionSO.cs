@@ -19,6 +19,16 @@ namespace FracturedChorus.Data
         Guard
     }
 
+    public enum SkillEffectKind
+    {
+        Damage = 0,
+        Heal = 1,
+        Shield = 2,
+        DelayBossNote = 3,
+        ReduceS2 = 4,
+        CycleShift = 5
+    }
+
     [CreateAssetMenu(fileName = "Skill", menuName = "Fractured Chorus/Skill Definition")]
     public class SkillDefinitionSO : ScriptableObject
     {
@@ -44,7 +54,26 @@ namespace FracturedChorus.Data
         [Tooltip("Standing Phase 2 (recovery): beats idle AFTER the attack before planning again.")]
         [Min(0)] public int standingBeatsAfter = 1;
 
-        /// <summary>Tổng số beat skill chiếm trên timeline: S1 + S + S2.</summary>
+        [Header("Effect")]
+        public SkillEffectKind effectKind = SkillEffectKind.Damage;
+        public int effectValue;
+        public bool grantsCycleShift;
+
+        [Header("Prep empower")]
+        public bool usesPrepEmpower;
+        public int prepEmpowerThreshold = 1;
+        public int prepEmpowerCost = 1;
+        public int empowerEffectValue;
+        public float empowerDamageMultiplier = 1f;
+        public int empowerExtraHits;
+        public bool empowerForceHarmony;
+        public bool empowerKeepDelayTier;
+        public bool empowerOverhealToShield;
+        public int empowerOverhealShieldCap = 30;
+        public bool empowerPartyReduceS2;
+        public bool empowerGiftPrepToTarget;
+        public bool empowerGuardChargeOnPerfect;
+
         public int TotalFootprintBeats => standingBeatsBefore + Mathf.Max(1, activeBeats) + standingBeatsAfter;
 
         public int GetAvCost()
@@ -54,5 +83,20 @@ namespace FracturedChorus.Data
 
         public bool IsGuard => slotKind == SkillSlotKind.Guard || glowType == ActionGlowType.Guard;
         public bool IsAttack => !IsGuard && glowType != ActionGlowType.Support;
+
+        public int ResolveEffectValue(bool empowered)
+        {
+            if (empowered && empowerEffectValue > 0)
+            {
+                return empowerEffectValue;
+            }
+
+            if (effectValue > 0)
+            {
+                return effectValue;
+            }
+
+            return baseDamage;
+        }
     }
 }
