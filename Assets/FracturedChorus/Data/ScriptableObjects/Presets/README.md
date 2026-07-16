@@ -26,6 +26,8 @@ Nhiều **Unit Preset** có thể trỏ cùng một **Stat Block**.
 | **Skill Definition** | `Resources/Skills/*.asset` |
 | **Encounter** | `Create → Fractured Chorus → Encounter Definition` |
 
+Player kit = **3 skill** / unit (`basic` · `skill` · `ult`). **Không** còn `*_guard.asset` — block = **Space** (`BlockBarrierTracker`); đòn quái không đỡ → target **BaseAv cao nhất** party (`CombatTargetPicker`).
+
 ## Damage formula (doc)
 
 - Random tier 1: 0.80–1.05 · tier 2: 0.90–1.10 · tier 3: 1.10–1.50

@@ -60,10 +60,11 @@ Dàn trận (kéo unit vào ô) — [Deploy] hiện ngay, chưa có nhạc
 
 ### Block (Space — thanh chắn)
 
-- **Không** kéo skill Guard lên timeline; kit player còn 3 skill (Basic / Skill / Ult).
+- **Không** còn skill Guard trên kit / asset (`*_guard` đã xóa). Kit player = **3 skill** (Basic / Skill / Ult) trên radial W/A/D.
 - Trong lúc scan: **Space (edge)** đặt **thanh chắn** snap **integer beat** (1 beat = tối đa 1 barrier).
 - Timing barrier vs beat đòn quái `E`: **OnBeat** (cùng ô) giảm 68% dmg · **Early** (E−1) 25% · **Late** (E+1) 10% · khác 0%.
 - Chỉ giảm dmg khi: không có counter trên beat `E`, có standing footprint chạm `E`, và phase chưa vượt **7** block hiệu lực.
+- **Không đỡ / block không hợp lệ:** đòn quái đánh **1** nhân vật — ưu tiên standing overlap @ `E` có **BaseAv cao nhất**; không có standing → **BaseAv cao nhất** toàn party còn sống (nhận dmg thay cho đội).
 
 ### Counter player
 
@@ -83,8 +84,8 @@ Dàn trận (kéo unit vào ô) — [Deploy] hiện ngay, chưa có nhạc
 - Kéo marker skill → **xóa ngay** khi bắt đầu kéo (dots footprint biến mất cùng lúc) + refund AV.
 - **Skill radial (W/A/D):** chỉ hiện phím + tên skill — **không** hiện cost AV trên nút.
 - **Bỏ Cycle header** trên timeline (`Cycle remaining/budget` per phase) — budget skill giữ theo round segment, không reset khi scan qua phase divider.
-- **Hex floor (ô vị trí):** chỉ hiện hex **Player** lúc `AllowPlayerReposition` (Deploy / dàn trận). Hex **Enemy** luôn ẩn. Sau Deploy (`LockPlayerReposition`) ẩn cả hai — `BoardDragController.SetSlotFloorsVisible` / `GridCellMarker.SetFloorVisible`.
-- **Nút Deploy / Execute:** `CombatExecuteOverlayUIView` dùng `Image.alphaHitTestMinimumThreshold = 0.1` — chỉ pixel opaque của sprite nhận click (texture Read/Write bật trên `combat_btn_deploy_v1` / `combat_btn_execute_v1`).
+- **Hex floor (ô vị trí):** chỉ hiện hex **Player** lúc `AllowPlayerReposition` (Deploy / dàn trận). Hex **Enemy** luôn ẩn. Sau Deploy (`LockPlayerReposition`) ẩn cả hai — `CombatController.ApplySlotFloorVisibilityForCurrentPhase` → `BoardDragController.SetSlotFloorsVisible` / `GridCellMarker.SetFloorVisible`.
+- **Nút Deploy / Execute:** `CombatExecuteOverlayUIView.ApplyAlphaHitTest` — `alphaHitTestMinimumThreshold = 0.1` **chỉ khi** `texture.isReadable` (tránh Console error); nếu chưa Readable thì tạm full-rect. Sprites `combat_btn_deploy_v1` / `combat_btn_execute_v1` cần Read/Write + Uncompressed — menu **Fractured Chorus → Ensure Combat Button Sprites Readable** (`CombatButtonSpriteImportSettings`).
 
 ---
 
@@ -467,6 +468,8 @@ EN vẫn scale reduction qua `EnduranceFactor`.
 
 | Ngày | Nội dung |
 |------|----------|
+| 2026-07-16 | Xóa `*_guard` khỏi preset Ren/Tank/Mage; block = Space; target dmg = BaseAv cao nhất |
+| 2026-07-16 | Fix alpha hit-test: guard `isReadable`; editor ép Read/Write + Uncompressed cho button sprites; docs sync |
 | 2026-07-15 | Ẩn hex floor Enemy luôn; Player floor chỉ lúc Deploy; nút Deploy/Execute click theo alpha sprite (`alphaHitTestMinimumThreshold`) |
 | 2026-07-06 | Combat UX: enemy target BaseAv **cao nhất**; bỏ sort player theo AV; pre-deploy scroll trước Deploy; drag-remove skill ngay OnBeginDrag; Portrait tier màu (Grunt đỏ, Elite 70/30, Boss full); segment handoff `continueFromHold` |
 | 2026-07-03 | Fix: intro-pause `PlanningPauseLocalBeat=0.5`; footprint refresh lúc pause; nhãn Deploy/Continue ép runtime |

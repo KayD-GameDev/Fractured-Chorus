@@ -46,6 +46,12 @@ World = local ô + offset các cha ⇒ khớp bảng WORLD ở trên.
 | Row 0 | (2.18, 1.73) | (3.95, 1.73) | (5.71, 1.73) |
 | Row 1 | (1.48, 0.38) | (3.25, 0.38) | (5.01, 0.38) |
 
+## Visibility hex floor (runtime)
+
+- **Player:** hex hiện lúc Deploy (`AllowPlayerReposition`); ẩn sau Deploy.
+- **Enemy:** hex **luôn ẩn** (không dùng cho dàn trận).
+- API: `CombatController.ApplySlotFloorVisibilityForCurrentPhase` → `GridCellMarker.SetFloorVisible` (tắt child `Hexagon Flat Top`, giữ collider/transform).
+
 ## Quy tắc chống trôi toạ độ
 1. Sửa layout **chỉ trong scene** hoặc qua hằng số `HexBoardLayout` — cả hai đang khớp nhau.
 2. `CombatPrototypeBootstrap` khi Play **không** reposition ô (tôn trọng scene).

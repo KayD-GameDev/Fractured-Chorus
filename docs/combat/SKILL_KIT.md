@@ -162,6 +162,7 @@ Empty cả 2 S → +2 Prep. Có note @ 10–11 → counter, Prep không tăng. P
 
 | Ngày | Nội dung |
 |------|----------|
+| 2026-07-16 | Xóa skill Guard khỏi kit asset (`ren/tank/mage_guard`); block = Space |
 | 2026-07-15 | Prep Setup→Payoff · empower tables · Delay D1 · ReduceS2 UI · sync spec |
 | 2026-07-05 | Audit project: scene sync; fix overlay binding |
 | 2026-07-03 | Footprint S1-S-S2 · tên skill · UI nút xám |
