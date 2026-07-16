@@ -49,20 +49,7 @@ namespace FracturedChorus.UI
                 _background = gameObject.AddComponent<Image>();
             }
 
-            _icon = transform.Find("Icon")?.GetComponent<Image>();
-            if (_icon == null)
-            {
-                var iconGo = new GameObject("Icon", typeof(RectTransform));
-                var iconRect = iconGo.GetComponent<RectTransform>();
-                iconRect.SetParent(_rect, false);
-                iconRect.anchorMin = new Vector2(0.1f, 0.1f);
-                iconRect.anchorMax = new Vector2(0.9f, 0.9f);
-                iconRect.offsetMin = Vector2.zero;
-                iconRect.offsetMax = Vector2.zero;
-                _icon = iconGo.AddComponent<Image>();
-                _icon.raycastTarget = false;
-                _icon.preserveAspect = true;
-            }
+            _icon = EnsureCircularIconImage();
 
             _label = transform.Find("Label")?.GetComponent<Text>();
             if (_label == null)
@@ -168,12 +155,28 @@ namespace FracturedChorus.UI
 
         private void ApplySkillPresentation(SkillDefinitionSO skill, string keyHint)
         {
+            EnsureCircularIconImage();
             var hasIcon = skill != null && skill.icon != null;
 
             if (_icon != null)
             {
-                _icon.sprite = hasIcon ? skill.icon : null;
-                _icon.enabled = hasIcon;
+                if (hasIcon)
+                {
+                    _icon.sprite = skill.icon;
+                    _icon.enabled = true;
+                    _icon.color = Color.white;
+                }
+                else
+                {
+                    // Keep authored/migrated sprite if skill.icon failed to resolve.
+                    _icon.enabled = _icon.sprite != null;
+                }
+            }
+
+            var iconRoot = transform.Find("Icon");
+            if (iconRoot != null)
+            {
+                iconRoot.gameObject.SetActive(skill != null && (_icon != null && _icon.enabled));
             }
 
             if (_label == null)
@@ -181,7 +184,7 @@ namespace FracturedChorus.UI
                 return;
             }
 
-            if (hasIcon)
+            if (_icon != null && _icon.enabled && _icon.sprite != null)
             {
                 _label.fontSize = LabelFontSize;
                 _label.alignment = TextAnchor.UpperRight;
@@ -237,6 +240,88 @@ namespace FracturedChorus.UI
                 ring.sprite = UiCircleSpriteUtil.Circle;
                 ring.type = Image.Type.Simple;
             }
+
+            EnsureCircularIconImage();
+        }
+
+        /// <summary>
+        /// Icon clipped to a circle: Icon (Mask + circle) / Art (skill sprite).
+        /// </summary>
+        private Image EnsureCircularIconImage()
+        {
+            if (_rect == null)
+            {
+                _rect = transform as RectTransform;
+            }
+
+            var maskRoot = transform.Find("Icon") as RectTransform;
+            if (maskRoot == null)
+            {
+                var maskGo = new GameObject("Icon", typeof(RectTransform));
+                maskRoot = maskGo.GetComponent<RectTransform>();
+                maskRoot.SetParent(_rect, false);
+            }
+
+            maskRoot.anchorMin = new Vector2(0.08f, 0.08f);
+            maskRoot.anchorMax = new Vector2(0.92f, 0.92f);
+            maskRoot.offsetMin = Vector2.zero;
+            maskRoot.offsetMax = Vector2.zero;
+            maskRoot.pivot = new Vector2(0.5f, 0.5f);
+
+            var maskGraphic = maskRoot.GetComponent<Image>();
+            if (maskGraphic == null)
+            {
+                maskGraphic = maskRoot.gameObject.AddComponent<Image>();
+            }
+
+            var artRoot = maskRoot.Find("Art") as RectTransform;
+            Image artImage = artRoot != null ? artRoot.GetComponent<Image>() : null;
+
+            // Migrate legacy: skill sprite lived on Icon Image itself (before Art child existed).
+            Sprite legacySprite = null;
+            if (artRoot == null && maskGraphic.sprite != null)
+            {
+                legacySprite = maskGraphic.sprite;
+            }
+
+            maskGraphic.sprite = UiCircleSpriteUtil.Circle;
+            maskGraphic.type = Image.Type.Simple;
+            maskGraphic.color = Color.white;
+            maskGraphic.raycastTarget = false;
+
+            var mask = maskRoot.GetComponent<Mask>();
+            if (mask == null)
+            {
+                mask = maskRoot.gameObject.AddComponent<Mask>();
+            }
+
+            mask.showMaskGraphic = false;
+
+            if (artRoot == null)
+            {
+                var artGo = new GameObject("Art", typeof(RectTransform));
+                artRoot = artGo.GetComponent<RectTransform>();
+                artRoot.SetParent(maskRoot, false);
+                artRoot.anchorMin = Vector2.zero;
+                artRoot.anchorMax = Vector2.one;
+                artRoot.offsetMin = Vector2.zero;
+                artRoot.offsetMax = Vector2.zero;
+                artImage = artGo.AddComponent<Image>();
+                if (legacySprite != null && legacySprite != UiCircleSpriteUtil.Circle)
+                {
+                    artImage.sprite = legacySprite;
+                }
+            }
+
+            if (artImage == null)
+            {
+                artImage = artRoot.gameObject.AddComponent<Image>();
+            }
+
+            artImage.preserveAspect = true;
+            artImage.raycastTarget = false;
+            _icon = artImage;
+            return _icon;
         }
 
         private void ApplyLabelStyle()
