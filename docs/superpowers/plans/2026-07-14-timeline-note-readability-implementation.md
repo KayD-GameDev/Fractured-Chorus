@@ -96,9 +96,11 @@ namespace FracturedChorus.Combat.Presentation
 5. Nếu catalog/sprite null → fallback tint màu cũ (`GetNotePortraitColor`) để không vỡ scene chưa assign.
 
 **Acceptance Phase 1:**
-- [ ] Compile
-- [ ] Play CombatPrototype: Red/Blue/Purple impact notes hiện đúng sprite; windup không đổi thành số 1/2/3
-- [ ] Scene chưa gán sprite vẫn chạy (fallback tint)
+- [x] Compile
+- [x] Play CombatPrototype: Red/Blue/Purple impact notes hiện đúng sprite; windup không đổi thành số 1/2/3
+- [x] Scene chưa gán sprite vẫn chạy (fallback tint)
+
+*(Runtime done 2026-07-14/16. Sprites load từ `Resources/UI/Combat/Timeline/`.)*
 
 **Commit (khi user yêu cầu):** `Add timeline note tier sprites via visual catalog.`
 
@@ -134,12 +136,12 @@ namespace FracturedChorus.Combat.Presentation
 - **Fallback:** center of beat column in enemy telegraph band (document which constant used).
 
 **Acceptance Phase 2:**
-- [ ] Drag skill valid → Active = ghost valid
-- [ ] Drag invalid → Active = ghost invalid
-- [ ] Active đè impact note + valid → cover Perfect; + invalid → cover Miss
-- [ ] Windup-only dưới Active → **không** cover Perfect/Miss
-- [ ] Thả / hide → overlays biến mất
-- [ ] Perfect resolve chip + MULTI vẫn như #1
+- [x] Drag skill valid → Active = ghost valid
+- [x] Drag invalid → Active = ghost invalid
+- [x] Active đè impact note + valid → cover Perfect; + invalid → cover Miss
+- [x] Windup-only dưới Active → **không** cover Perfect/Miss
+- [x] Thả / hide → overlays biến mất
+- [x] Perfect resolve chip + MULTI vẫn như #1
 
 **Commit (khi user yêu cầu):** `Show drop ghosts and drag cover overlays on timeline notes.`
 
@@ -162,11 +164,11 @@ namespace FracturedChorus.Combat.Presentation
 - Process in place under `Art/UI/Combat/Timeline/**` (border-only flood-fill; preserve letter faces)
 
 **Acceptance Phase 3:**
-- [ ] Edit Preview chọn/ping đủ 7 sprite + size
-- [ ] PNG không còn checkerboard bake rõ trên nền transparent trong Game view
-- [ ] Checklist success criteria trong design spec §6 đều pass
+- [x] Edit Preview chọn/ping đủ 7 sprite + size
+- [ ] PNG không còn checkerboard bake rõ trên nền transparent trong Game view *(playtest residual)*
+- [x] Checklist success criteria trong design spec §6 đều pass *(runtime)*
 
-**Commit (khi user yêu cầu):** `Expose timeline note visuals in Edit Preview and clean sprite alpha.`
+**Closed 2026-07-16 (runtime).** Residual: alpha polish nếu còn bake. Sprites: `Resources/UI/Combat/Timeline/` + source `Art/UI/Combat/Timeline/`.
 
 ---
 

@@ -275,6 +275,18 @@ namespace FracturedChorus.Combat.Core
                 }
             }
 
+            if (empowerPreview && skill.empowerGiftPrepToTarget)
+            {
+                var giftTarget = entry.PlanningReduceTarget
+                    ?? entry.PlanningReduceTargets.FirstOrDefault(u => u != null && u != entry.Unit)
+                    ?? entry.PlanningReduceTargets.FirstOrDefault();
+                if (giftTarget != null)
+                {
+                    giftTarget.GainPrep(1);
+                    entry.PlanningReduceTarget ??= giftTarget;
+                }
+            }
+
             entry.PlanningEffectApplied = true;
             entry.EffectPayloadApplied = true;
             Debug.Log(

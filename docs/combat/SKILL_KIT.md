@@ -21,7 +21,8 @@ Prep = 0                    →  vẫn cast base
 - Spend lúc **beat S đầu** của placement; channel cùng beat xảy ra **sau** spend
 - **Anchor Delay / Encore ReduceS2** resolve **ngay khi đặt (Planning)** — VFX đọc được trước Execute
   - Delay: chỉ note **sau cửa S** của Anchor (+N); note nằm trong S giữ nguyên; slide trên timeline
-  - Encore: `PendingReduceS2` trên ally (+ icon buff góc dưới-trái portrait); skill đặt sau snapshot S2 ngắn hơn
+  - Encore: `PendingReduceS2` trên ally + **icon buff** (`Resources/UI/Combat/Buffs/buff_reduce_s2_v1`) góc dưới-trái card (trên HP bar); skill đặt sau snapshot S2 ngắn hơn
+  - Empower Encore: party ReduceS2 + **gift +1 Prep** ally (planning)
 
 ---
 
@@ -39,7 +40,7 @@ Prep = 0                    →  vẫn cast base
 - Cùng row: footprint không overlap
 - **Số beat mỗi pha tùy skill** (cột `S1-S-S2`).
 - **Data:** `standingBeatsBefore` · `activeBeats` · `standingBeatsAfter` · `effectKind` · Prep empower fields.
-- **UI:** S = chip màu unit · **S1/S2 = nút tròn xám** · Encore pending → badge `S2−1` trên party card.
+- **UI:** S = chip màu unit · **S1/S2 = nút tròn xám** · Encore pending → **buff icon** trên party card (không text badge).
 
 ---
 
@@ -148,8 +149,9 @@ Empty cả 2 S → +2 Prep. Có note @ 10–11 → counter, Prep không tăng. P
 - [x] Prep channel / cap / pips
 - [x] Empower spend + Crosscut/Finale/Bulwark/Mend/Encore amplify
 - [x] Shield absorb
-- [x] DelayBossNote D1 + badge `+N` trên timeline
-- [x] ReduceS2 pending + footprint preview + badge `S2−1`
+- [x] DelayBossNote D1 + slide VFX trên timeline
+- [x] ReduceS2 pending + footprint preview + buff icon
+- [x] Runtime sprites dưới `Resources/UI/Combat/**` (không Prefabs — `Resources.Load`)
 - [ ] Enforce footprint overlap (đã có `SkillFootprintUtil.CanPlace` — verify anti-spam standing)
 - [ ] Counter degrade Tím/Xanh/Đỏ CORE
 - [ ] Note tag CORE / MICRO / EYE
@@ -162,6 +164,7 @@ Empty cả 2 S → +2 Prep. Có note @ 10–11 → counter, Prep không tăng. P
 
 | Ngày | Nội dung |
 |------|----------|
+| 2026-07-16 | Restore `Resources/UI` sau merge (Prefabs rename làm vỡ Load); Encore gift Prep @ planning; docs handoff |
 | 2026-07-16 | Xóa skill Guard khỏi kit asset (`ren/tank/mage_guard`); block = Space |
 | 2026-07-15 | Prep Setup→Payoff · empower tables · Delay D1 · ReduceS2 UI · sync spec |
 | 2026-07-05 | Audit project: scene sync; fix overlay binding |
