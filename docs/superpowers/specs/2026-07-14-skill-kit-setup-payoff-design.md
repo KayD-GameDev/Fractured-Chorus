@@ -1,6 +1,7 @@
 # Skill Kit Redesign — Setup → Payoff (Prep Channel)
 
-> **Status:** Design approved (2026-07-14)  
+> **Status:** Implemented — runtime SoT supersedes where noted (2026-07-16)  
+> **SoT:** [`docs/combat/SKILL_KIT.md`](../../combat/SKILL_KIT.md) · [`docs/combat/COMBAT_MECHANICS.md`](../../combat/COMBAT_MECHANICS.md)  
 > **Scope:** Approach 1+ — graft Prep onto existing kit; light Skill/Ult effect rewrite; Basic unchanged  
 > **Spine:** Setup → Payoff · Channel Prep on empty Active (S) beats  
 > **Out of scope:** Basic rewrite · CORE/MICRO/EYE tag UI · W formula change · AI spawn floor · intro-pause beat 6 · full empty-beat skill catalog (#4 beyond Prep)  
@@ -35,7 +36,7 @@
 | Economy | **E1** Cap **3** / unit; Skill empower @ **≥1** (spend 1); Ult @ **≥2** (spend 2) |
 | Ownership | Prep **per unit** (not shared party pool) |
 | Delivery | **1+** Keep skill names + footprints as spine; light effect rewrite + Prep layer |
-| Anchor target | **D1** Delay every **CORE** note whose impact beat lies in Anchor’s **S** beats |
+| Anchor target | **D1′ (runtime)** Delay notes with impact **after** Anchor’s S window (+N); notes **in** S stay put — see `SKILL_KIT` / `DelayImpactTelegraphsAfterBeat` |
 
 ### Skill vs Ult roles (Farm → Dump)
 
@@ -78,7 +79,7 @@ Cast with Prep = 0     →  base effect only (always legal)
 | # | Name | S1-S-S2 | Base | Empower |
 |---|------|---------|------|---------|
 | 1 | **Ram** | 1-1-1 | Damage | — |
-| 2 | **Anchor** | 2-2-2 | **DelayBossNote +2** on CORE notes with impact in **S** (D1); 0 damage | **≥1:** Delay **+3**; delayed notes **keep tier** (`DelayKeepTier`) |
+| 2 | **Anchor** | 2-2-2 | **DelayBossNote +2** on CORE notes with impact **after** S (D1′); notes in S stay put; 0 damage | **≥1:** Delay **+3**; delayed notes **keep tier** (`DelayKeepTier`) |
 | 3 | **Bulwark** | 2-2-3 | Shield **65** + counter damage per S beat | **≥2:** Shield **100**; **1** Perfect in this S → **Guard charge +1** (if Guard system present; else defer Guard charge to stub flag) |
 
 ### Coda — Support
@@ -93,16 +94,16 @@ Cast with Prep = 0     →  base effect only (always legal)
 
 ## 5. Effect semantics & timeline presentation
 
-### DelayBossNote (Anchor) — D1
+### DelayBossNote (Anchor) — D1′ (runtime)
 
-- On resolve of Anchor’s Active window: every **CORE** telegraph whose **impact beat ∈ Anchor S beats** shifts **+N** beats later (base N=2, empower N=3).
+- On Planning apply: every **CORE** telegraph whose **impact beat is after** Anchor’s S window shifts **+N** beats later (base N=2, empower N=3); notes with impact **in** S stay put (`DelayImpactTelegraphsAfterBeat`).
 - Visual: note slides to new beat cell; short ghost on old cell + optional `+2` / `+3` badge.
 - Empower: tier (hits remaining) unchanged by the delay (`DelayKeepTier`).
 
 ### ReduceS2 (Encore)
 
 - Affects the **next skill placement** footprint of the buffed unit(s): `standingBeatsAfter` reduced by 1 (min 0) for that one placement.
-- Visual: buff pip/chip `S2−1` on ally portrait; drag preview shows one fewer S2 standing dot; clears after that skill is placed/resolved.
+- Visual: buff **icon** on party card (`buff_reduce_s2_v1`); drag preview shows one fewer S2 standing dot; clears after that skill is placed/resolved.
 
 ### Prep UI
 
@@ -118,8 +119,8 @@ Cast with Prep = 0     →  base effect only (always legal)
 |-----------|-----------|----------|
 | S on empty | Footprint + Prep +1 at beat resolve | — |
 | S on note | Counter / Perfect chip (existing) | Note degrade / cancel (existing) |
-| Anchor delay | Anchor footprint | Notes in S slide +N |
-| Encore | `S2−1` chip on ally | — |
+| Anchor delay | Anchor footprint | Notes **after** S slide +N (in-S unchanged) |
+| Encore | Buff icon on party card (`buff_reduce_s2_v1`) | — |
 
 ---
 
@@ -145,8 +146,8 @@ Existing kinds remain: `Damage`, `MiniDamage`, `Heal`, `Shield`, `ReduceS2`, `De
 3. S overlapping note → counter; Prep does not increase.
 4. Prep 0 → Skill/Ult still cast **base**.
 5. Prep ≥1 Skill / ≥2 Ult → empower applied and stacks spent (1 / 2).
-6. Anchor D1: CORE impacts in S shift +2 (+3 empowered); empower keeps tier.
-7. Encore: next ally skill preview has S2 −1; empower = party S2 −1 + gift 1 Prep to target.
+6. Anchor D1′: CORE impacts **after** S shift +2 (+3 empowered); impacts in S stay; empower keeps tier.
+7. Encore: next ally skill preview has S2 −1; buff shown as icon on party card; empower = party S2 −1 + gift 1 Prep to target.
 8. Intro-pause after beat 6 unchanged.
 
 ---
@@ -156,7 +157,7 @@ Existing kinds remain: `Damage`, `MiniDamage`, `Heal`, `Shield`, `ReduceS2`, `De
 1. Extend `SkillDefinitionSO` (or parallel Prep tuning SO) with empower thresholds / spend / effect params — avoid hardcoding per name in UI.
 2. Prep state lives on combat unit runtime (session), not Scene UI alone.
 3. Channel check: at S beat fire, if no boss telegraph impact on that beat (boss row) → +Prep. Party footprints do not block channel.
-4. Wire Delay / ReduceS2 if still doc-only; then layer empower variants.
+4. Delay / ReduceS2 **implemented at Planning** (`ApplyPlanningUtilityEffects`); empower variants shipped — see SoT.
 5. Update `docs/combat/SKILL_KIT.md` to match this spec after implementation lands (or in same PR as data).
 6. Edit Preview / Inspector: expose Prep pips + delay ghost toggles if CombatRoot preview pattern already exists.
 

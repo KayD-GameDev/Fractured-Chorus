@@ -9,6 +9,21 @@ Newest first.
 
 ---
 
+## 2026-07-16 — Docs runtime SoT sync (code = SoT)
+
+**Focus:** docs
+
+**Done**
+- Sync SoT: Delay after-S · intro-pause beat 6 · Guard 68/25/10 · Phase AV legacy gate · enemy zone beat 10 · Encore icon.
+- Specs 07-14: Implemented banner + inline superseded laws (Hybrid Approach 3).
+- Spec: `docs/superpowers/specs/2026-07-16-docs-runtime-sot-sync-design.md`.
+
+**Handoff:** `#4` empty-beat vẫn backlog; không đổi C# trong pass này.
+
+**Refs:** `SKILL_KIT.md`, `COMBAT_MECHANICS.md`, `BOSS_ENCOUNTER_DESIGN.md`, `UNITY_WORKFLOW.md`, specs `2026-07-14-*`
+
+---
+
 ## 2026-07-16 — Restore Resources/UI sau merge main + sync Prep docs
 
 **Focus:** assets · code · docs

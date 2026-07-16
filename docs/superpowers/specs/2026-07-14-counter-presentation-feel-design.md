@@ -1,9 +1,12 @@
 # Counter Presentation Feel — Dense Notes
 
-> **Status:** Design approved (2026-07-14)  
+> **Status:** Implemented — runtime SoT supersedes where noted (2026-07-16)  
+> **SoT:** [`docs/combat/SKILL_KIT.md`](../../combat/SKILL_KIT.md) · [`docs/combat/COMBAT_MECHANICS.md`](../../combat/COMBAT_MECHANICS.md)  
 > **Scope:** Approach 2 — combo body layer + note resolve chip / MULTI  
 > **Out of scope:** Skill kit redesign, empty-beat buffs, timeline info density overhaul, hard AI spawn floor  
 > **Related:** `docs/combat/COMBAT_MECHANICS.md` · `UnitView` · `BeatTimelineUIView` · Eternal Spark beat map
+
+**Runtime (2026-07-16):** Shipped. Treat unchecked boxes below as historical checklist; verify against SoT + Play Mode residual only.
 
 ---
 

@@ -62,22 +62,22 @@ Nếu chưa có asset: `CombatPrototypeBootstrap` tạo **demo encounter runtime
 
 ---
 
-## Combat prototype spec (vertical slice — cập nhật 2026-07-05)
+## Combat prototype spec (vertical slice — cập nhật 2026-07-16)
 
 | Hạng mục | Giá trị |
 |----------|---------|
 | Player grid | **2×3** honeycomb (2 hàng × 3 cột), **max 4** units |
 | Enemy grid | **2×3** mirror, **max 6** units |
 | Timeline | **619 beats** sync `EternalSpark_CadenceRemix` (`MusicBeatMapSO` + CSV) |
-| **Planning flow** | (1) **Deploy** — kéo formation / swap ally; (2) nhạc chạy → **intro-pause** @ localBeat 0.5; (3) đặt skill → **Continue** hoặc auto-resume |
-| UI MVP | Carousel timeline + character lanes + skill panel + Deploy/Continue overlay + party/enemy status bar |
+| **Planning flow** | (1) **Deploy** — formation / swap; (2) nhạc → **intro-pause** after beat **6**; (3) đặt skill → bấm **Execute** (không tự resume) |
+| UI MVP | Carousel timeline + lanes + skill panel + Deploy/**Execute** overlay + party/enemy status bar |
 | Skill footprint | S1/S/S2 trên lane (`SkillDefinitionSO` + `RefreshFootprintDots`) |
-| Enemy attacks | Telegraph từ beat **3** (`EnemyFirstAttackBeat = 2`) |
+| Enemy attacks | Segment 0 min impact ≥ beat **10** (`IntroEnemySpawnZoneStartBeat`); later phases use phase buffer |
 | Stats | `UnitStatBlockSO` → `UnitStats`; `DamageCalculator` (Harmony, crit) |
 | Scene-first UI | `RectSizeUtil` — card/badge/panel đọc size từ Hierarchy; fallback khi chưa authored |
 | Input | `Physics2DRaycaster` + `BoardDragController`; `UnitFeetAnchor` |
 
-Log chi tiết: [`docs/PROJECT_LOG.md`](../../PROJECT_LOG.md) (entries 2026-07-01 … 2026-07-05).
+Log chi tiết: [`docs/PROJECT_LOG.md`](../../PROJECT_LOG.md) (entries 2026-07-01 … 2026-07-16).
 
 ### Combat flow (prototype hiện tại)
 
@@ -88,11 +88,11 @@ Planning (dàn trận): kéo unit / swap ally trên grid
     ↓
 Bấm Deploy → LockPlayerReposition → nhạc + timeline scan
     ↓
-Intro-pause @ localBeat 0.5 (beat 0 đã kêu, trước beat 1) → nút Continue
+Intro-pause after beat 6 → nút Execute
     ↓
 Đặt skill lên lane (kéo radial hoặc W/A/D) — footprint S1·S·S2 hiện trên lane
     ↓
-Auto-resume khi cả đội đã xếp skill · hoặc bấm Continue
+Bấm Execute (không tự resume) → ResumePlayback
     ↓
 Timeline + nhạc chạy tiếp → resolve @ scan beat → Victory/Defeat
 ```
@@ -163,7 +163,7 @@ CombatCanvas/PartyStatusBarUI     ← PartyStatusBarUIView (preserveSceneLayout)
 |----|------------------------|
 | UC-03 Position Unit | Grid placement + **pre-Deploy drag** (`BoardDragController`) |
 | UC-04 Execute Skill | Deploy → intro-pause → skill assign → scan resolve |
-| FR-02 Beat Timeline | 619-beat music sync + lanes + Deploy/Continue gate |
+| FR-02 Beat Timeline | 619-beat music sync + lanes + Deploy/Execute gate |
 | FR-07 Damage | `UnitStatBlockSO` + `DamageCalculator` (Harmony, crit) |
 | FR-03 Dual Grid | Honeycomb **2×3** + front-column targeting |
 

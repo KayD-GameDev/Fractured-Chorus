@@ -112,7 +112,7 @@ Prep = 0                    →  vẫn cast base
 | `Heal` | `effectValue + Ma×0.5` (+ empower) |
 | `Shield` | `effectValue` / empower value HP buffer |
 | `ReduceS2` | `PendingReduceS2` → footprint S2 ngắn hơn 1 lần đặt kế |
-| `DelayBossNote` | Đẩy impact telegraph trong cửa S +N beat (D1) |
+| `DelayBossNote` | Đẩy impact telegraph **sau cửa S** của skill +N beat (note trong S giữ nguyên) |
 | `CycleShift` | Flag Strike (runtime VFX còn mở) |
 
 ---
@@ -164,6 +164,7 @@ Empty cả 2 S → +2 Prep. Có note @ 10–11 → counter, Prep không tăng. P
 
 | Ngày | Nội dung |
 |------|----------|
+| 2026-07-16 | Sync DelayBossNote kind = after S (runtime SoT) |
 | 2026-07-16 | Restore `Resources/UI` sau merge (Prefabs rename làm vỡ Load); Encore gift Prep @ planning; docs handoff |
 | 2026-07-16 | Xóa skill Guard khỏi kit asset (`ren/tank/mage_guard`); block = Space |
 | 2026-07-15 | Prep Setup→Payoff · empower tables · Delay D1 · ReduceS2 UI · sync spec |
