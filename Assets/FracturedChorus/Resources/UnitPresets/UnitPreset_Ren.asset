@@ -30,7 +30,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: d290998a860c53d4794580a0ecd18147, type: 2}
   - {fileID: 11400000, guid: fe16fe2211245d64da32c504d6ca02a3, type: 2}
   - {fileID: 11400000, guid: 176f90a046cefbd478cd7fa62b23b107, type: 2}
-  - {fileID: 11400000, guid: fcbb0489821738d46a5d3fd3f651abba, type: 2}
   placeholderColor: {r: 0.9, g: 0.35, b: 0.45, a: 1}
   battleSprite: {fileID: 7369638930748108147, guid: 9a437a3dfde73224686f2d2a81ee930e, type: 3}
   portraitSprite: {fileID: -3871321260492947868, guid: 9be542aaf8bb9d54a945c84d6e15c628, type: 3}

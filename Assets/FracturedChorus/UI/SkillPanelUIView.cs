@@ -354,11 +354,26 @@ namespace FracturedChorus.UI
                 var iconGo = new GameObject("Icon", typeof(RectTransform));
                 var iconRect = iconGo.GetComponent<RectTransform>();
                 iconRect.SetParent(rect, false);
-                iconRect.anchorMin = new Vector2(0.1f, 0.1f);
-                iconRect.anchorMax = new Vector2(0.9f, 0.9f);
+                iconRect.anchorMin = new Vector2(0.08f, 0.08f);
+                iconRect.anchorMax = new Vector2(0.92f, 0.92f);
                 iconRect.offsetMin = Vector2.zero;
                 iconRect.offsetMax = Vector2.zero;
-                _dragGhostIcon = iconGo.AddComponent<Image>();
+                var maskGraphic = iconGo.AddComponent<Image>();
+                maskGraphic.sprite = UiCircleSpriteUtil.Circle;
+                maskGraphic.type = Image.Type.Simple;
+                maskGraphic.color = Color.white;
+                maskGraphic.raycastTarget = false;
+                var mask = iconGo.AddComponent<Mask>();
+                mask.showMaskGraphic = false;
+
+                var artGo = new GameObject("Art", typeof(RectTransform));
+                var artRect = artGo.GetComponent<RectTransform>();
+                artRect.SetParent(iconRect, false);
+                artRect.anchorMin = Vector2.zero;
+                artRect.anchorMax = Vector2.one;
+                artRect.offsetMin = Vector2.zero;
+                artRect.offsetMax = Vector2.zero;
+                _dragGhostIcon = artGo.AddComponent<Image>();
                 _dragGhostIcon.raycastTarget = false;
                 _dragGhostIcon.preserveAspect = true;
 
@@ -382,7 +397,9 @@ namespace FracturedChorus.UI
 
             if (_dragGhostIcon == null)
             {
-                _dragGhostIcon = _dragGhost.transform.Find("Icon")?.GetComponent<Image>();
+                var iconRoot = _dragGhost.transform.Find("Icon");
+                _dragGhostIcon = iconRoot?.Find("Art")?.GetComponent<Image>()
+                    ?? iconRoot?.GetComponent<Image>();
             }
 
             if (_dragGhostLabel == null)

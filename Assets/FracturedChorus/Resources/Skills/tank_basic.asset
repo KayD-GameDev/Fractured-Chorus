@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0b5af890d5136be45963d7a087535053, type: 3}
   m_Name: tank_basic
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.SkillDefinitionSO
-  skillId: tank_basic
-  icon: {fileID: 21300000, guid: a08fd57982ff4834a18f5faec38622af, type: 3}
+  skillId: Charlott_basic
   displayName: Ram
-  description: 'Damage'
+  icon: {fileID: 8712927547302482697, guid: 59196dc1d28948547a3c82f348757c6d, type: 3}
+  description: Damage
   slotKind: 0
   avCost: 0
   delay: 2
@@ -24,6 +24,9 @@ MonoBehaviour:
   targetType: 0
   glowType: 0
   baseDamage: 0
+  standingBeatsBefore: 1
+  activeBeats: 1
+  standingBeatsAfter: 1
   effectKind: 0
   effectValue: 0
   grantsCycleShift: 0

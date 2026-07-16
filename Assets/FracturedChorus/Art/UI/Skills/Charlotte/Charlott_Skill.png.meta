@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 1afd2c2ab6196b041ab52e6505cf06c9
+guid: b0a8d36b9d6bfe24cb92aa0cec8dd8e9
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -5044756390526733005
-    second: LCB_Sinner_Ishmael_Moving_Sprite 1_0
+      213: -5753427032079542060
+    second: Slide_Ishmael_Icon_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -48,7 +48,7 @@ TextureImporter:
   compressionQuality: 50
   spriteMode: 2
   spriteExtrude: 1
-  spriteMeshType: 1
+  spriteMeshType: 0
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 100
@@ -139,23 +139,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: LCB_Sinner_Ishmael_Moving_Sprite 1_0
+      name: Slide_Ishmael_Icon_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 68
-        width: 906
-        height: 833
+        y: 0
+        width: 256
+        height: 256
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 335b5448acc6df9b0800000000000000
-      internalID: -5044756390526733005
+      spriteID: 4d8d4c7e898b720b0800000000000000
+      internalID: -5753427032079542060
       vertices: []
       indices: 
       edges: []
@@ -174,7 +174,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      LCB_Sinner_Ishmael_Moving_Sprite 1_0: -5044756390526733005
+      Slide_Ishmael_Icon_0: -5753427032079542060
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

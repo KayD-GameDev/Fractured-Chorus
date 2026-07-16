@@ -158,6 +158,7 @@ namespace FracturedChorus.Combat.Core
             timelineView?.RefreshAll();
 
             UpdateExecuteOverlayVisibility(_session?.Phase ?? CombatPhase.Planning);
+            ApplySlotFloorVisibilityForCurrentPhase();
         }
 
 
@@ -258,7 +259,7 @@ namespace FracturedChorus.Combat.Core
 
             _boardDrag?.CancelActiveDrag();
 
-            _boardDrag?.SetSlotFloorsVisible(false, GridSide.Player);
+            _boardDrag?.SetSlotFloorsVisible(false);
 
             skillPanelView?.Hide();
 
@@ -677,7 +678,7 @@ namespace FracturedChorus.Combat.Core
 
                 skillPanelView?.Hide();
 
-                _boardDrag?.SetSlotFloorsVisible(true, GridSide.Player);
+                ApplySlotFloorVisibilityForCurrentPhase();
 
             }
 
@@ -736,6 +737,27 @@ namespace FracturedChorus.Combat.Core
             timelineView?.StopTimelinePlayback();
 
             executeOverlay?.SetVisible(false);
+
+        }
+
+
+
+        /// <summary>
+        /// Player hex floors only during Deploy reposition; enemy floors stay hidden.
+        /// </summary>
+        private void ApplySlotFloorVisibilityForCurrentPhase()
+
+        {
+
+            var showPlayerFloors = _session != null
+
+                && _session.Phase == CombatPhase.Planning
+
+                && _session.AllowPlayerReposition;
+
+            _boardDrag?.SetSlotFloorsVisible(false, GridSide.Enemy);
+
+            _boardDrag?.SetSlotFloorsVisible(showPlayerFloors, GridSide.Player);
 
         }
 

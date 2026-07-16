@@ -433,17 +433,44 @@ namespace FracturedChorus.Editor
 
         private static void EnsureRadialSlotIcon(Transform slotTransform)
         {
-            var iconTransform = slotTransform.Find("Icon");
+            var iconTransform = slotTransform.Find("Icon") as RectTransform;
             if (iconTransform == null)
             {
                 var iconGo = CreateUiObject("Icon", slotTransform);
-                iconTransform = iconGo.transform;
-                var iconRect = iconGo.GetComponent<RectTransform>();
-                StretchWithPadding(iconRect, 0.1f, 0.1f, 0.9f, 0.9f);
-                var iconImg = iconGo.AddComponent<Image>();
-                iconImg.raycastTarget = false;
-                iconImg.preserveAspect = true;
-                iconImg.enabled = false;
+                iconTransform = iconGo.GetComponent<RectTransform>();
+            }
+
+            StretchWithPadding(iconTransform, 0.08f, 0.08f, 0.92f, 0.92f);
+
+            var maskGraphic = iconTransform.GetComponent<Image>();
+            if (maskGraphic == null)
+            {
+                maskGraphic = iconTransform.gameObject.AddComponent<Image>();
+            }
+
+            maskGraphic.sprite = UiCircleSpriteUtil.Circle;
+            maskGraphic.type = Image.Type.Simple;
+            maskGraphic.color = Color.white;
+            maskGraphic.raycastTarget = false;
+
+            var mask = iconTransform.GetComponent<Mask>();
+            if (mask == null)
+            {
+                mask = iconTransform.gameObject.AddComponent<Mask>();
+            }
+
+            mask.showMaskGraphic = false;
+
+            var artTransform = iconTransform.Find("Art") as RectTransform;
+            if (artTransform == null)
+            {
+                var artGo = CreateUiObject("Art", iconTransform);
+                artTransform = artGo.GetComponent<RectTransform>();
+                StretchWithPadding(artTransform, 0f, 0f, 1f, 1f);
+                var artImg = artGo.AddComponent<Image>();
+                artImg.raycastTarget = false;
+                artImg.preserveAspect = true;
+                artImg.enabled = false;
             }
         }
 

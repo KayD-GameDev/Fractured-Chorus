@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: tank_skill
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.SkillDefinitionSO
   skillId: tank_skill
-  icon: {fileID: 21300000, guid: 48d655ef99c54f81a5e574e5ec61b96b, type: 3}
   displayName: Anchor
-  description: 'DelayBossNote +2 (CORE only)'
+  icon: {fileID: -5753427032079542060, guid: b0a8d36b9d6bfe24cb92aa0cec8dd8e9, type: 3}
+  description: DelayBossNote +2 (CORE only)
   slotKind: 1
   avCost: 25
   delay: 3

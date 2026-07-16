@@ -9,6 +9,44 @@ Newest first.
 
 ---
 
+## 2026-07-16 — Xóa skill Guard khỏi kit nhân vật
+
+**Focus:** data (Unity) · docs
+
+**Done**
+- Gỡ `*_guard` khỏi `UnitPreset_Ren` / `Tank` / `Mage` — mỗi unit còn **3 skill** (Basic / Skill / Ult).
+- Xóa asset `ren_guard` · `tank_guard` · `mage_guard`.
+- Guard gameplay = **Space** barrier (`BlockBarrierTracker`); không đỡ → 1 target **BaseAv cao nhất** (`CombatTargetPicker.PickEnemyAttackTargetForBeat`).
+
+**Refs:** `Resources/UnitPresets/UnitPreset_*.asset`, `CombatTargetPicker.cs`, `BlockBarrierTracker.cs`
+
+---
+
+## 2026-07-16 — Docs + fix alpha hit-test Deploy/Execute (Readable import)
+
+**Focus:** code (Unity) · editor · docs
+
+**Done**
+- **Fix Console:** chỉ set `alphaHitTestMinimumThreshold` khi `texture.isReadable` (tránh lỗi Unity khi sprite chưa Readable).
+- **Import:** `combat_btn_deploy_v1` / `combat_btn_execute_v1` — Read/Write + Uncompressed; editor `CombatButtonSpriteImportSettings` (auto on load + menu **Fractured Chorus → Ensure Combat Button Sprites Readable**).
+- **Docs sync:** Unity `COMBAT_MECHANICS` / `PROJECT_LOG` + mirror `PROJECT_STATUS` / `UNITY_WORKFLOW`.
+
+**Refs:** `CombatExecuteOverlayUIView.cs`, `CombatButtonSpriteImportSettings.cs`
+
+---
+
+## 2026-07-15 — Combat UX: ẩn hex Enemy + alpha hit-test Deploy/Execute
+
+**Focus:** code (Unity) · docs
+
+**Done**
+- **Hex floor:** Enemy luôn ẩn; Player chỉ hiện lúc Deploy reposition; sau Deploy ẩn cả hai (`ApplySlotFloorVisibilityForCurrentPhase`).
+- **Nút Deploy/Execute:** `alphaHitTestMinimumThreshold = 0.1` — click chỉ trên vùng opaque của sprite; bật Read/Write trên `combat_btn_deploy_v1` / `combat_btn_execute_v1`.
+
+**Refs:** `CombatController.cs`, `CombatExecuteOverlayUIView.cs`, `BoardDragController.cs`, `GridCellMarker.cs`
+
+---
+
 ## 2026-07-05 — Combat: skill UI scene-first, 2-phase round, footprint overlap
 
 **Focus:** code (Unity) · editor · docs · verify
