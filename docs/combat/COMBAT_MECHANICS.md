@@ -356,7 +356,19 @@ EN vẫn scale reduction qua `EnduranceFactor`.
 
 ## 11. Kit skill (3 skill / nhân vật)
 
-> Chi tiết dmg số: [SKILL_KIT.md](./SKILL_KIT.md)
+> Chi tiết dmg số + Prep laws: [SKILL_KIT.md](./SKILL_KIT.md)
+
+### Prep — Setup → Payoff (runtime)
+
+```
+Empty S (Skill/Ult) → +1 Prep / beat (cap 3)
+S ∩ note            → Counter; không farm Prep
+Basic               → không đụng Prep
+Empower Skill @ ≥1 / Ult @ ≥2 → tiêu Prep; Prep 0 vẫn cast base
+```
+
+- Anchor Delay / Encore ReduceS2 apply **lúc đặt (Planning)** — xem `CombatSession.ApplyPlanningUtilityEffects`.
+- UI: `PrepPipsView` · Encore buff icon · note sprites qua `TimelineNoteVisualCatalog` (`Resources/UI/Combat/**`).
 
 ### Ren — DPS · Cycle Shift
 
@@ -453,7 +465,13 @@ EN vẫn scale reduction qua `EnduranceFactor`.
 | Block barriers (Space) | ✅ MVP | `BlockBarrierTracker`, `BlockInputController` |
 | Counter targeting | ✅ MVP | `CombatCounterResolver` |
 | Boss note tiers Tím/Xanh/Đỏ | ✅ MVP | `BossNoteTier`, `BossTelegraphPlanner`, Knight 3/phase |
-| Portrait tier color on beat slot | ✅ MVP | `BeatSegmentView.GetNotePortraitColor` |
+| Portrait tier color on beat slot | ✅ MVP | Fallback tint; sprites ưu tiên catalog |
+| Note tier / ghost / cover sprites | ✅ MVP | `TimelineNoteVisualCatalog` ← `Resources/UI/Combat/Timeline/` |
+| Prep channel + pips + empower | ✅ MVP | `CombatUnit.Prep`, `PrepPipsView`, `TryResolveEmpowerAtBeat` |
+| Shield absorb | ✅ MVP | `CombatUnit.Shield` · Bulwark / Mend overheal |
+| DelayBossNote @ Planning | ✅ MVP | `DelayImpactTelegraphsAfterBeat` · slide VFX |
+| ReduceS2 + buff icon | ✅ MVP | `PendingReduceS2` · `PartyMemberCardView` BuffReduceS2 |
+| Counter presentation feel | ✅ MVP | `CounterPresentationDriver` · Perfect chip · MULTI |
 | Elite note roll 70/30 | ✅ MVP | `BossTelegraphPlanner.RollEliteNoteTier` |
 | Pre-deploy intro scroll | (removed) | Intro on Deploy; anchor end beat 0 at ScanBar |
 | Segment handoff no jump | ✅ MVP | `continueFromHold`, `RefreshTelegraphsAndSlots` |
@@ -461,6 +479,7 @@ EN vẫn scale reduction qua `EnduranceFactor`.
 | Bỏ PhaseAvTracker cycle UI | ✅ MVP | Ẩn `AvLabel`; bỏ `SyncToTimelinePhase` |
 | `Resonance` / `Dissonance` stacks | 🔲 P1 | N/A |
 | Async per-char planning | 🔲 P1 | Batch planning |
+| Empty-beat skill catalog (#4) | 🔲 backlog | Beyond Prep channel |
 
 ---
 
@@ -468,6 +487,7 @@ EN vẫn scale reduction qua `EnduranceFactor`.
 
 | Ngày | Nội dung |
 |------|----------|
+| 2026-07-16 | Map Prep/Shield/Delay/Encore/note catalog/counter feel; restore `Resources/UI` load path |
 | 2026-07-16 | Xóa `*_guard` khỏi preset Ren/Tank/Mage; block = Space; target dmg = BaseAv cao nhất |
 | 2026-07-16 | Fix alpha hit-test: guard `isReadable`; editor ép Read/Write + Uncompressed cho button sprites; docs sync |
 | 2026-07-15 | Ẩn hex floor Enemy luôn; Player floor chỉ lúc Deploy; nút Deploy/Execute click theo alpha sprite (`alphaHitTestMinimumThreshold`) |

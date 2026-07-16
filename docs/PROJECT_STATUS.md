@@ -1,8 +1,7 @@
 # Fractured Chorus — Trạng thái dự án
 
-**Cập nhật:** 2026-07-05 (Combat: skill UI scene-first, 2-phase round, footprint overlap)  
-**Repo mirror:** `C:\Users\admin\Projects\fractured-chorus` (docs + scripts)  
-**Unity:** `F:\Unity_Project\Fractured Chorus` · scenes `CombatPrototype.unity` · `RunMapPrototype.unity`  
+**Cập nhật:** 2026-07-16 (merge restore: Resources/UI + Prep Setup→Payoff Phase 1–3)  
+**Unity scenes:** `CombatPrototype.unity` · `RunMapPrototype.unity` · hub/VN scenes  
 **Log:** [`PROJECT_LOG.md`](PROJECT_LOG.md) · [`LOGGING.md`](LOGGING.md)
 
 ---
@@ -17,43 +16,40 @@
 | P1-4 | Story flow draw.io | Khoa | 🟡 | [`diagrams/Fractured-Chorus-Story-Flow.drawio`](diagrams/Fractured-Chorus-Story-Flow.drawio) |
 | P1-5 | OOAD → Notion wiki | Khoa | 🟡 | [`FINAL_DELIVERABLES_LINKS.md`](design/FINAL_DELIVERABLES_LINKS.md) |
 | P1-6 | Notion work log | Khoa | ✅ Setup | [Notion Work Log](https://app.notion.com/p/37441bb3f2a281768901eb58a16bc252) |
-| — | **Combat prototype (Unity)** | Khoa | 🟡 MVP | 2-phase round + footprint overlap (2026-07-05) |
-| — | **GitHub repo + PR workflow** | Team | 🟡 | Unity trên GitHub; docs mirror `fractured-chorus` |
+| — | **Combat prototype (Unity)** | Khoa | 🟡 MVP+ | Prep Setup→Payoff + note visuals + counter feel (2026-07-16) |
+| — | **GitHub repo + PR workflow** | Team | 🟡 | Unity trên GitHub |
 
 🔲 Chưa · 🟡 Đang · ✅ Xong cho scope hiện tại
 
 ---
 
-## Unity combat prototype (local — 2026-07-05)
+## Unity combat prototype (2026-07-16)
 
 | Module | Trạng thái |
 |--------|------------|
 | Dual Grid **2×3** honeycomb, party max **4**, enemy max **6** | ✅ |
 | **Deploy** → **Execute** (intro-pause lần đầu) | ✅ |
-| Intro-pause @ beat 0.5 (chỉ Deploy đầu) | ✅ |
 | Pre-Deploy **drag formation** + swap ally | ✅ |
-| Skill assign: **kéo → timeline**; W/A/D highlight | ✅ |
-| **Footprint overlap** + drag preview | ✅ |
-| **Round 2 timeline phase** → Execute lại | ✅ |
-| Skill panel **Hierarchy-first** (Radial + 3 slots) | ✅ |
-| Quái **2 pha** S1 + S telegraph | ✅ |
-| Bỏ slow-mo · center token | ✅ |
-| Timeline **619 beat** sync nhạc (`MusicBeatMapSO` + CSV wired scene) | ✅ |
-| Character **lanes** + `TimelineLaneMarkerView` | ✅ |
-| Skill **footprint** S1/S/S2 (xám · màu · xám) trên lane | ✅ |
-| Enemy telegraph từ **beat 3** (`EnemyFirstAttackBeat = 2`) | ✅ |
-| **Scene-first UI sizing** (`RectSizeUtil`, card/badge/panel) | ✅ |
-| Party + enemy status bar (Hierarchy-first) | ✅ |
-| Guard = giữ **Spacebar** trọn beat đỏ | ✅ |
-| Phase AV budget (150/100) — **design bỏ**, code còn stub | 🟡 legacy |
+| Skill assign: **kéo → timeline**; footprint S1/S/S2 | ✅ |
+| **Prep Setup→Payoff** Phase 1–3 (channel / empower / Delay / ReduceS2) | ✅ |
+| Prep pips trên party card (`PrepPipsView`) | ✅ |
+| Shield absorb · Bulwark / Mend overheal | ✅ |
+| Anchor Delay + Encore ReduceS2 **lúc Planning** + buff icon | ✅ |
+| Timeline note sprites + drop ghost + cover (`TimelineNoteVisualCatalog`) | ✅ |
+| Counter presentation (`CounterPresentationDriver` / Perfect chip / MULTI) | ✅ |
+| Runtime UI load path `Resources/UI/**` (không đặt dưới Prefabs) | ✅ restored |
+| Guard = **Spacebar** barrier (không skill Guard trên kit) | ✅ |
 | Boss 3-target / note degrade / Cycle Shift / mini pressure | 🔲 P0 design |
+| Empty-beat skill catalog (**#4** beyond Prep) | 🔲 out of scope kit plan |
+| Ally pick Mend / Encore · GuardCharge thật · Cycle Shift VFX | 🔲 backlog |
 | Run map → Combat (boss node) | 🟡 MVP |
 
-**Combat flow hiện tại:** xem [`combat/COMBAT_MECHANICS.md`](combat/COMBAT_MECHANICS.md) §1.
+**Combat flow:** [`combat/COMBAT_MECHANICS.md`](combat/COMBAT_MECHANICS.md) §1 · **Kit:** [`combat/SKILL_KIT.md`](combat/SKILL_KIT.md)
 
-**Play-ready:** **Apply All Play-Ready Updates** + **Setup Skill Panel in Hierarchy** · verify: `python scripts/verify_combat_scene_sync.py`.
-
-Chi tiết kỹ thuật: [`setup/UNITY_WORKFLOW.md`](setup/UNITY_WORKFLOW.md) · log: [`PROJECT_LOG.md`](PROJECT_LOG.md).
+**Plans (superpowers):**
+- [`2026-07-14-skill-kit-setup-payoff-implementation.md`](superpowers/plans/2026-07-14-skill-kit-setup-payoff-implementation.md) — Phase 1–3 **done**
+- [`2026-07-14-timeline-note-readability-implementation.md`](superpowers/plans/2026-07-14-timeline-note-readability-implementation.md) — runtime **done** (playtest residual OK)
+- [`2026-07-14-counter-presentation-feel-implementation.md`](superpowers/plans/2026-07-14-counter-presentation-feel-implementation.md) — runtime **done** (playtest residual OK)
 
 ---
 
@@ -66,14 +62,12 @@ Chi tiết kỹ thuật: [`setup/UNITY_WORKFLOW.md`](setup/UNITY_WORKFLOW.md) ·
 | Boss node → `CombatPrototype` (`RunMapSceneLoader`) | ✅ |
 | Battle / Elite → combat | 🔲 |
 
-Doc: [`setup/RUNMAP_SCENE_SETUP.md`](setup/RUNMAP_SCENE_SETUP.md)
-
 ---
 
-## Việc tiếp theo (ưu tiên)
+## Việc tiếp theo (ưu tiên cho main)
 
-1. **Playtest** intro-pause: Deploy → nhạc → pause @ beat 0.5 → đặt skill → Continue / auto-resume.
-2. Enforce footprint overlap + boss note degrade (P0 design → code).
-3. Boss 3-target telegraph (CORE / MICRO / EYE).
-4. Push docs mirror `fractured-chorus` lên GitHub; sync `LINKS.md`.
-5. **Thiên:** tiếp tab Story → Done Linear P1-1.
+1. **Playtest** sau restore Resources: note sprites · Deploy/Execute · Encore buff icon · Prep pips.
+2. P0 boss: CORE / MICRO / EYE tags · note degrade.
+3. Empty-beat catalog (**#4**) — chỉ khi khóa design sau Prep.
+4. Ally pick Mend/Encore · Bulwark GuardCharge · Ren Cycle Shift VFX.
+5. **Thiên:** Story P1-1.

@@ -9,6 +9,22 @@ Newest first.
 
 ---
 
+## 2026-07-16 — Restore Resources/UI sau merge main + sync Prep docs
+
+**Focus:** assets · code · docs
+
+**Done**
+- **Regression merge `main`→`branch2`:** `Resources/UI/**` bị rename sang `Prefabs/UI/**` → mọi `Resources.Load("UI/...")` null (buff Encore, note tier, Deploy/Execute, Perfect, Calendar/StatusMenu).
+- **Restore:** checkout lại `Resources/UI` từ pre-merge; xóa bản rename dưới `Prefabs/UI/{Combat,Calendar,StatusMenu}`; giữ `Prefabs/UI/badge Icon/`.
+- **Encore gift Prep:** planning `empowerGiftPrepToTarget` gọi `GainPrep(1)` (trước đó bị skip vì `EffectPayloadApplied`).
+- **Docs:** `PROJECT_STATUS` / `SKILL_KIT` / `COMBAT_MECHANICS` / skill-kit + note + counter plans — Phase 1–3 marked done; #4 empty-beat vẫn mở.
+
+**Handoff main:** runtime Prep Setup→Payoff + note readability + counter feel **đã có**; tiếp P0 CORE tags / empty-beat #4 / ally pick.
+
+**Refs:** `Resources/UI/Combat/**`, `CombatSession.ApplyPlanningUtilityEffects`, `TimelineNoteVisualCatalog`, `PartyMemberCardView`
+
+---
+
 ## 2026-07-16 — Xóa skill Guard khỏi kit nhân vật
 
 **Focus:** data (Unity) · docs

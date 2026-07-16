@@ -13,9 +13,9 @@
 - Prep **không** khóa cast — chỉ amplify khi đủ ngưỡng
 - Channel: +1 Prep / beat **S** khi **không** có boss telegraph impact @ beat đó
 - Cap **3** / unit; Skill spend **1** @ ≥1; Ult spend **2** @ ≥2
-- Delay / ReduceS2 hiện **doc-only** — implement base rồi mới empower
+- Delay / ReduceS2: **implemented** (Planning-time; Delay = notes **after** Anchor S — khớp `SKILL_KIT.md`)
 - Không comment thừa; mỗi phase có acceptance trước khi sang phase sau
-- Đồng bộ `docs/combat/SKILL_KIT.md` khi data/runtime ổn (cuối Phase 3)
+- Đồng bộ `docs/combat/SKILL_KIT.md` khi data/runtime ổn (cuối Phase 3) — **done 2026-07-16**
 
 ### Hook hiện tại
 
@@ -302,7 +302,9 @@ Có thể gộp A+B nếu anh muốn 1 PR economy+amplify trước utility timel
 
 ## 6. Done when
 
-- [ ] Phase 1 acceptance  
-- [ ] Phase 2 acceptance  
-- [ ] Phase 3 acceptance  
-- [ ] Spec file vẫn là source of truth; `SKILL_KIT.md` synced  
+- [x] Phase 1 acceptance  
+- [x] Phase 2 acceptance  
+- [x] Phase 3 acceptance  
+- [x] Spec file vẫn là source of truth; `SKILL_KIT.md` synced  
+
+**Closed 2026-07-16.** Residual / next: empty-beat catalog (#4), ally pick, GuardCharge thật, Cycle Shift VFX. Runtime UI sprites phải nằm dưới `Resources/UI/**` (không Prefabs).

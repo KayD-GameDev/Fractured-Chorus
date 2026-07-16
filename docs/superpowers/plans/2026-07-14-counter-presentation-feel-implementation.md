@@ -137,8 +137,10 @@ namespace FracturedChorus.Combat.Presentation
 **Idle rule:** Chỉ `ReturnToIdleAfter` khi mode = Restart/Burst; HitRetrigger reschedule idle = `clip.length * (1 - hitRetriggerNormalizedTime)` nhưng nếu API được gọi lại trước đó thì stop coroutine (đã có pattern `_combatAnimRoutine`).
 
 **Acceptance Phase 1:**
-- [ ] Project compiles
-- [ ] Manual: gọi Restart 2 lần cách 0.4s → 2 full plays; gọi HitRetrigger liên tục → không thấy Idle xen kẽ
+- [x] Project compiles
+- [x] Manual: gọi Restart 2 lần cách 0.4s → 2 full plays; gọi HitRetrigger liên tục → không thấy Idle xen kẽ
+
+*(Runtime done 2026-07-14/16 — `CounterPresentationPolicy` / `UnitView` retrigger APIs.)*
 
 **Commit:** `Add counter presentation policy and UnitView retrigger APIs.`
 
@@ -205,10 +207,12 @@ else
 Awake: `GetComponent` / `AddComponent<CounterPresentationDriver>()`, assign sfx + timeline refs, pass into `timelineView` bind path.
 
 **Acceptance Phase 2:**
-- [ ] Play CombatPrototype: Perfect vẫn cancel telegraph như cũ
-- [ ] Gap rộng: full Counter restart
-- [ ] Gap hẹp (early song dens): không Idle giật; SFX vẫn nghe
-- [ ] Intro-pause beat 6 + Deploy/Execute OK
+- [x] Play CombatPrototype: Perfect vẫn cancel telegraph như cũ
+- [x] Gap rộng: full Counter restart
+- [x] Gap hẹp (early song dens): không Idle giật; SFX vẫn nghe
+- [x] Intro-pause beat 6 + Deploy/Execute OK
+
+*(Closed 2026-07-16 runtime. Phase 3 chip/MULTI shipped in follow-up commits — playtest residual OK.)*
 
 **Commit:** `Wire CounterPresentationDriver into Perfect counter path.`
 
@@ -256,6 +260,8 @@ Dense check: Eternal Spark early beats (gaps ~0.15–0.30s) sau Deploy → Execu
 
 **Commit:** `Add note resolve chips and MULTI banner for dense counters.`
 
+**Closed 2026-07-16 (runtime).** Chip/MULTI shipped; Perfect sprite load từ `Resources/UI/Combat/combat_perfect_popup_v1`.
+
 ---
 
 ## File map (summary)
@@ -287,6 +293,6 @@ Dense check: Eternal Spark early beats (gaps ~0.15–0.30s) sau Deploy → Execu
 
 ## Handoff
 
-Sau khi plan này OK: implement theo Phase 1 → 2 → 3, commit từng phase.
+**Implemented.** Tiếp: playtest dense gaps; không regress intro-pause / Deploy/Execute.
 
 **Không** làm song song skill kit / empty-beat / UI intel trong cùng PR.
