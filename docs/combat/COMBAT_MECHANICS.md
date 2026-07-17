@@ -1,6 +1,7 @@
 # Combat Mechanics — Planning / Execute Loop
 
-> **Trạng thái:** Design lock (2026-06-30) · thay thế cơ chế Phase AV + cycle cũ  
+> **Trạng thái:** Runtime SoT sync (2026-07-16) · kit Prep Setup→Payoff · Phase AV legacy retained in code  
+> **Kit detail:** [SKILL_KIT.md](./SKILL_KIT.md)  
 > **Tham chiếu:** Caligula Effect 2 · nhạc Eternal Spark (Cadence Remix)  
 > **Illustrations:** `docs/combat/illustrations/`
 
@@ -10,8 +11,8 @@
 
 ```
 Dàn trận (kéo unit vào ô) — [Deploy] hiện ngay, chưa có nhạc
-  → bấm Deploy → nhạc + timeline sync chạy hết beat 0 → intro-pause
-  → [Execute] hiện → gán skill lên lane
+  → bấm Deploy → nhạc + timeline sync → intro-pause sau beat 6
+  → [Execute] hiện → gán skill lên lane (planning từ beat 7)
   → bấm Execute → chạy 2 phase rồi dừng tại vạch trắng
   → [Execute] block kế — divider giữ tại scan bar, không nhảy timeline
   → lặp đến hết trận
@@ -20,19 +21,21 @@ Dàn trận (kéo unit vào ô) — [Deploy] hiện ngay, chưa có nhạc
 | Giai đoạn | Timeline | Nhạc |
 |-----------|----------|------|
 | **Dàn trận** | Pause tại beat 0 | Chưa phát |
-| **Deploy → intro-pause** | Sync nhạc, qua beat 0, dừng | Phát → pause tại chỗ |
-| **Execute (skill planning)** | Pause | Pause tại chỗ |
+| **Deploy → intro-pause** | Sync nhạc, pause @ beat **6** | Phát → pause tại chỗ |
+| **Execute (skill planning)** | Pause · horizon từ beat **7** | Pause tại chỗ |
 | **Execute (chạy segment)** | Chạy sync beat | Phát tiếp |
 
-- **Bỏ:** Phase AV budget chung party · cycle cố định · skill Guard trên kit
+- **Bỏ:** cycle cố định · skill Guard trên kit
+- **Phase AV:** *legacy retained* — `PhaseAvTracker` vẫn gate budget **150 / 100** khi gán skill; UI `AvLabel` có thể ẩn
 - **Giữ:** Nút **Deploy** (dàn trận) → **Execute** (sau intro-pause và mỗi round segment). Nhãn do `CombatController` ép runtime.
 
 ### Intro-pause (sau Deploy — gán skill)
 
 - Vào scene: **Deploy** hiện ngay, player dàn trận, **không** phát nhạc.
 - Bấm **Deploy** → `PlayBossMusic` + timeline sync từ beat 0.
-- **Cuối beat 0** căn vào **ScanBar** (`SnapScrollToAnchor`, `GetBeatEndContentPx`) → viewport thấy đuôi beat 0 + beat kế → pause → **Execute**.
-- Bấm **Execute** → `ResumePlayback` + scan tiếp (liên tục, không reset về beat 0).
+- Pause sau beat index **`IntroPlanningPauseAfterBeatIndex = 6`** → planning horizon / Execute từ beat **7** (`IntroExecuteStartBeatIndex`).
+- Nhãn nút: **Execute** (`CombatController` ép runtime). **Không** auto-resume khi đủ skill.
+- Bấm **Execute** → `ResumePlayback` + scan tiếp.
 
 ### ScanBar anchor (segment / phase)
 
@@ -51,7 +54,7 @@ Dàn trận (kéo unit vào ô) — [Deploy] hiện ngay, chưa có nhạc
 
 ### Luật ra đòn của quái
 
-- Quái **chỉ được đặt telegraph từ beat thứ 3** trở đi — `TimelineConstants.EnemyFirstAttackBeat = 2`.
+- Segment 0 (intro): min impact ≥ **`IntroEnemySpawnZoneStartBeat = 10`** (`GetMinEnemyImpactBeat`). Các phase sau: phase start + buffer (`EnemySpawnBufferBeatsAfterHorizon`).
 - **Mỗi timeline phase (16 beat):** mỗi quái còn sống đặt `telegraphAttacksPerPhase` impact (preset, mặc định 1; Boss/Elite chỉnh trên asset).
 - Plan **một lần** khi Deploy / khi vào planning sau block (`PrepareTelegraphsForCurrentSegment`, `EndRoundSegment` pre-plan) — **không** random lại khi scan qua beat đầu phase.
 - Quái chết → xóa ngay telegraph của unit đó từ phase hiện tại tới hết block (không re-roll đòn quái còn sống).
@@ -323,20 +326,18 @@ MiniDmg    = Raw × 1/(4×√EN_mini) × BeatTiming × 0.85 × CritMult   // kh�
 
 ## 9. Reactive Guard (Space)
 
-**Không còn skill Guard.** Player guard chủ động khi nốt còn sót chạy về impact line.
+**Không còn skill Guard.** Space đặt **barrier 1 beat** (`BlockBarrierTracker`).
 
-| Timing (±1 beat vs nốt) | Giảm dmg |
-|---------------------------|----------|
-| Early / Late | **−15%** |
-| Perfect (±0) | **−50%** |
-| Off-beat | **0%** |
+| Timing vs impact `E` | Giảm dmg (`BlockTiming.GetDamageReduction`) |
+|----------------------|---------------------------------------------|
+| OnBeat (cùng ô) | **68%** |
+| Early (`E−1`) | **25%** |
+| Late (`E+1`) | **10%** |
+| OffBeat | **0%** |
 
-```
-DmgTaken = BossRaw × (1 − GuardReduction − DissonancePenalty) × EnduranceFactor
-DissonancePenalty = 0.12 × DissonanceStacks   // Eye leak, max 3
-```
+Chỉ giảm dmg khi: không counter trên `E`, có standing footprint chạm `E`, và chưa vượt cap block hiệu lực trong phase (xem §1 Block).
 
-EN vẫn scale reduction qua `EnduranceFactor`.
+**Không đỡ / không hợp lệ:** target theo `CombatTargetPicker` (BaseAv cao nhất trong standing / party).
 
 ---
 
@@ -350,7 +351,8 @@ EN vẫn scale reduction qua `EnduranceFactor`.
 | 4 | **Planning latency** | Công thức §3 |
 | — | UI assist khi kéo skill | Ren: highlight Perfect · Coda: ±1 · Charlotte: presence only |
 
-**Bỏ:** Phase AV · Base AV priority · skill Guard · HB giảm S2 beat
+**Bỏ:** Base AV priority (sort) · skill Guard · HB giảm S2 beat  
+**Giữ (legacy):** Phase AV budget gate khi gán skill (150/100)
 
 ---
 
@@ -487,6 +489,7 @@ Empower Skill @ ≥1 / Ult @ ≥2 → tiêu Prep; Prep 0 vẫn cast base
 
 | Ngày | Nội dung |
 |------|----------|
+| 2026-07-16 | Runtime SoT sync: intro beat 6 · Guard 68/25/10 · Phase AV legacy · enemy zone beat 10 |
 | 2026-07-16 | Map Prep/Shield/Delay/Encore/note catalog/counter feel; restore `Resources/UI` load path |
 | 2026-07-16 | Xóa `*_guard` khỏi preset Ren/Tank/Mage; block = Space; target dmg = BaseAv cao nhất |
 | 2026-07-16 | Fix alpha hit-test: guard `isReadable`; editor ép Read/Write + Uncompressed cho button sprites; docs sync |

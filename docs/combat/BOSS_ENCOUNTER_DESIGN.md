@@ -185,21 +185,23 @@ Dmg skill theo target: [SKILL_KIT.md](./SKILL_KIT.md)
 
 ### Reactive Guard (Space)
 
-Không còn skill Guard. Xem [COMBAT_MECHANICS.md §9](./COMBAT_MECHANICS.md#9-reactive-guard-space).
+Không còn skill Guard. Space đặt **barrier 1 beat**. SoT: [COMBAT_MECHANICS.md §1 Block / §9](./COMBAT_MECHANICS.md#9-reactive-guard-space).
 
 
-| Timing (±1 beat) | Giảm dmg |
-| ---------------- | -------- |
-| Early / Late     | −15%     |
-| Perfect          | −50%     |
-| Off-beat         | 0%       |
+| Timing vs impact `E` | Giảm dmg (`BlockTiming.GetDamageReduction`) |
+| -------------------- | ------------------------------------------- |
+| OnBeat (cùng ô)      | **68%**                                     |
+| Early (`E−1`)        | **25%**                                     |
+| Late (`E+1`)         | **10%**                                     |
+| OffBeat              | **0%**                                      |
 
 
 ---
 
 ## 5–12. Cơ chế gameplay
 
-> **Deprecated (2026-06-30):** Cycle, Phase AV, Guard skill, telegraph 2-beat/cycle.  
+> **Deprecated (2026-06-30):** Cycle, Guard skill, telegraph 2-beat/cycle.  
+> **Phase AV:** deprecated as UX cycle — **budget gate may still exist in code** (*legacy retained*; xem [COMBAT_MECHANICS.md](./COMBAT_MECHANICS.md)).  
 > **Thay bằng:** [COMBAT_MECHANICS.md](./COMBAT_MECHANICS.md) — Planning/Execute, boss notes, HB roles, kit 3 skill.
 
 ### Kit skill (tóm tắt — 3 skill / nhân vật)
@@ -223,7 +225,7 @@ Chi tiết effect: [SKILL_KIT.md](./SKILL_KIT.md)
 | STR / Ma            | strength + ma + strengthType                   |
 | HP từ STR/Ma        | maxHp nhập tay                                 |
 | Boss Pulse          | BossStatBlockSO.pulse + color weights          |
-| 3 skill, no Guard   | Kit 4 skill cũ                                 |
+| 3 skill, no Guard   | Kit 3 skill / nhân vật · Space barrier (`BlockBarrierTracker`) |
 
 
 

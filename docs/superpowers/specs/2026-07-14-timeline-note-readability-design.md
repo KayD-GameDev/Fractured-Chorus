@@ -1,11 +1,14 @@
 # Timeline Note Readability — Note Tier + Drag Cover
 
-> **Status:** Design approved (2026-07-14)  
+> **Status:** Implemented — runtime SoT supersedes where noted (2026-07-16)  
+> **SoT:** [`docs/combat/SKILL_KIT.md`](../../combat/SKILL_KIT.md) · [`docs/combat/COMBAT_MECHANICS.md`](../../combat/COMBAT_MECHANICS.md)  
 > **Scope:** Approach A — wire kept sprites only (note tier + drop ghost + drag cover)  
 > **Approach:** Timeline visual catalog (serialized refs) + `BeatSegmentView` / `ShowDropGhost` consumers  
 > **Out of scope:** Footprint standing redesign, W window, empty-beat incentives, CORE/MICRO/EYE, resolve Perfect-chip / MULTI changes  
 > **Related:** `docs/combat/COMBAT_MECHANICS.md` · `BeatSegmentView` · `BeatTimelineUIView.ShowDropGhost` · `BossNoteTier`  
 > **Art:** `Assets/FracturedChorus/Art/UI/Combat/Timeline/`
+
+**Runtime (2026-07-16):** Shipped. Treat unchecked boxes below as historical checklist; verify against SoT + Play Mode residual only.
 
 ---
 

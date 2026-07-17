@@ -39,6 +39,7 @@
 | Counter presentation (`CounterPresentationDriver` / Perfect chip / MULTI) | ✅ |
 | Runtime UI load path `Resources/UI/**` (không đặt dưới Prefabs) | ✅ restored |
 | Guard = **Spacebar** barrier (không skill Guard trên kit) | ✅ |
+| Phase AV budget (150/100) — **legacy retained** (vẫn gate assign; UI có thể ẩn) | 🟡 legacy |
 | Boss 3-target / note degrade / Cycle Shift / mini pressure | 🔲 P0 design |
 | Empty-beat skill catalog (**#4** beyond Prep) | 🔲 out of scope kit plan |
 | Ally pick Mend / Encore · GuardCharge thật · Cycle Shift VFX | 🔲 backlog |
