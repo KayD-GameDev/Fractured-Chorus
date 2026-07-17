@@ -13,7 +13,9 @@ namespace FracturedChorus.Editor
         private static readonly string[] ButtonSpritePaths =
         {
             "Assets/FracturedChorus/Resources/UI/Combat/combat_btn_deploy_v1.png",
-            "Assets/FracturedChorus/Resources/UI/Combat/combat_btn_execute_v1.png"
+            "Assets/FracturedChorus/Resources/UI/Combat/combat_btn_execute_v1.png",
+            "Assets/FracturedChorus/Resources/UI/Combat/combat_btn_cover_v1.png",
+            "Assets/FracturedChorus/Art/UI/Combat/Cover/combat_btn_cover_hologram_v1.png"
         };
 
         [InitializeOnLoadMethod]

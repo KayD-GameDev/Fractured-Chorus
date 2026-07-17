@@ -92,6 +92,13 @@ namespace FracturedChorus.Combat.Cover
             OnChanged?.Invoke();
         }
 
+        public void DebugSetGauge(int value)
+        {
+            Gauge = Mathf.Clamp(value, 0, CoverConstants.GaugeCap);
+            OnChanged?.Invoke();
+            Debug.Log($"[Cover] DebugSetGauge → {Gauge}/{CoverConstants.GaugeCap}");
+        }
+
         public BeatTiming RemapPlayerTiming(BeatTiming timing)
         {
             if (!IsActive)

@@ -37,8 +37,11 @@ Scan / Execute after activate         →  12 beat window: party dmg ×1.25
 
 - UI: `CoverHudView` trên party bar · `CoverRuntime` trên `CombatSession`
 - Audio: `EternalSpark_RenCover.mp3` overlay từ **1:36.5** khi cửa mở; duck boss (không đụng beat sync)
+- UI btn: scene `CoverHud` / `CoverButton` — edit RectTransform + `CoverHudView.buttonSprite` (menu **Fractured Chorus → Setup Cover HUD**) · Resources fallback `combat_btn_cover_v1`
 - Tách Prep (per-unit amplify); Cover = party burst (Muse-style)
 - Gate nút: `AllowCoverActivate` (Deploy reposition / planning pause / giữa segment) — không bấm lúc scan
+- Playtest start: Inspector bootstrap `startCoverGauge` / `startPrepAll` (không chỉnh trên màn hình)
+- Cover energy UI: `CoverEnergyGauge` — khung + 10 nấc hologram (fill dưới→trên); art `Resources/UI/Combat/Cover/`
 
 ---
 
