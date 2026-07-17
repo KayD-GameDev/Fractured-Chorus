@@ -7,14 +7,37 @@ namespace FracturedChorus.UI
 {
     public class CoverHudView : MonoBehaviour
     {
-        private const string ButtonSpritePath = "UI/Combat/combat_btn_cover_v1";
+        private const string DefaultButtonSpriteResourcePath = "UI/Combat/combat_btn_cover_v1";
+
+        [Header("Scene edit — kéo RectTransform / gán sprite tại đây")]
+        [SerializeField] private bool preserveSceneLayout = true;
+        [SerializeField] private Sprite buttonSprite;
+        [SerializeField] private bool hideLabelWhenSpriteAssigned = true;
+        [SerializeField] private float disabledSpriteAlpha = 0.45f;
+
+        [Header("Wired children (auto nếu trống)")]
+        [SerializeField] private RectTransform rootRect;
+        [SerializeField] private Button coverButton;
+        [SerializeField] private Image coverButtonImage;
+        [SerializeField] private Text coverButtonLabel;
+        [SerializeField] private CoverEnergyGaugeView energyGauge;
+        [SerializeField] private Text statusLabel;
+
+        [Header("Defaults khi tạo mới (preserveSceneLayout = off mới ghi đè)")]
+        [SerializeField] private Vector2 defaultAnchoredPosition = new Vector2(-16f, -16f);
+        [SerializeField] private Vector2 defaultSizeDelta = new Vector2(240f, 220f);
 
         private CombatSession _session;
-        private Image _fill;
-        private Text _gaugeLabel;
-        private Text _statusLabel;
-        private Button _button;
-        private Text _buttonLabel;
+
+        public Button CoverButton => coverButton;
+        public Image CoverButtonImage => coverButtonImage;
+        public Sprite ButtonSprite => buttonSprite;
+        public CoverEnergyGaugeView EnergyGauge => energyGauge;
+
+        private void Awake()
+        {
+            EnsureBuilt();
+        }
 
         public static CoverHudView EnsureOn(RectTransform parent)
         {
@@ -31,19 +54,24 @@ namespace FracturedChorus.UI
 
             if (existing != null)
             {
-                existing.ApplyScreenCornerLayout(parent);
+                existing.AttachToParentIfNeeded(parent);
                 existing.EnsureBuilt();
+                existing.ApplyButtonVisual();
                 return existing;
             }
 
             var go = new GameObject("CoverHud", typeof(RectTransform));
             var view = go.AddComponent<CoverHudView>();
-            view.ApplyScreenCornerLayout(parent);
+            view.preserveSceneLayout = false;
+            view.AttachToParentIfNeeded(parent);
+            view.ApplyDefaultRootLayout();
             view.EnsureBuilt();
+            view.preserveSceneLayout = true;
+            view.ApplyButtonVisual();
             return view;
         }
 
-        private void ApplyScreenCornerLayout(RectTransform canvasParent)
+        private void AttachToParentIfNeeded(RectTransform canvasParent)
         {
             var rt = transform as RectTransform;
             if (rt == null || canvasParent == null)
@@ -56,130 +84,253 @@ namespace FracturedChorus.UI
                 rt.SetParent(canvasParent, false);
             }
 
-            rt.anchorMin = new Vector2(1f, 1f);
-            rt.anchorMax = new Vector2(1f, 1f);
-            rt.pivot = new Vector2(1f, 1f);
-            rt.anchoredPosition = new Vector2(-16f, -16f);
-            rt.sizeDelta = new Vector2(148f, 52f);
             rt.SetAsLastSibling();
+            rootRect = rt;
         }
 
-        public void EnsureBuilt()
+        private void ApplyDefaultRootLayout()
         {
-            var root = transform as RectTransform;
-            if (root == null)
+            var rt = transform as RectTransform;
+            if (rt == null)
             {
                 return;
             }
 
-            if (_fill == null)
-            {
-                var barGo = root.Find("GaugeBar");
-                if (barGo == null)
-                {
-                    barGo = new GameObject("GaugeBar", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image))
-                        .transform;
-                    barGo.SetParent(root, false);
-                    var barRt = barGo.GetComponent<RectTransform>();
-                    barRt.anchorMin = new Vector2(0f, 0.55f);
-                    barRt.anchorMax = new Vector2(1f, 1f);
-                    barRt.offsetMin = Vector2.zero;
-                    barRt.offsetMax = Vector2.zero;
-                    var bg = barGo.GetComponent<Image>();
-                    bg.color = new Color(0.15f, 0.16f, 0.2f, 0.85f);
-                    bg.raycastTarget = false;
-                }
+            rt.anchorMin = new Vector2(1f, 1f);
+            rt.anchorMax = new Vector2(1f, 1f);
+            rt.pivot = new Vector2(1f, 1f);
+            rt.anchoredPosition = defaultAnchoredPosition;
+            rt.sizeDelta = defaultSizeDelta;
+        }
 
-                var fillT = barGo.Find("Fill");
-                if (fillT == null)
-                {
-                    var fillGo = new GameObject("Fill", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-                    fillT = fillGo.transform;
-                    fillT.SetParent(barGo, false);
-                    var fillRt = fillGo.GetComponent<RectTransform>();
-                    fillRt.anchorMin = Vector2.zero;
-                    fillRt.anchorMax = Vector2.one;
-                    fillRt.offsetMin = new Vector2(2f, 2f);
-                    fillRt.offsetMax = new Vector2(-2f, -2f);
-                    _fill = fillGo.GetComponent<Image>();
-                    _fill.sprite = UiCircleSpriteUtil.Circle;
-                    _fill.type = Image.Type.Filled;
-                    _fill.fillMethod = Image.FillMethod.Horizontal;
-                    _fill.color = new Color(0.95f, 0.75f, 0.35f, 1f);
-                    _fill.raycastTarget = false;
-                }
-                else
-                {
-                    _fill = fillT.GetComponent<Image>();
-                }
+        public void EnsureBuilt()
+        {
+            rootRect = transform as RectTransform;
+            if (rootRect == null)
+            {
+                return;
             }
 
-            if (_gaugeLabel == null)
+            if (!preserveSceneLayout)
             {
-                _gaugeLabel = EnsureText(root, "GaugeLabel", new Vector2(0f, 0.55f), new Vector2(1f, 1f), 12);
+                ApplyDefaultRootLayout();
             }
 
-            if (_statusLabel == null)
+            WireOrCreateButton();
+            WireOrCreateEnergyGauge();
+            WireOrCreateStatusLabel();
+            DestroyLegacyChrome();
+            ResolveSerializedRefs();
+            ApplyButtonVisual();
+        }
+
+        private void DestroyLegacyChrome()
+        {
+            if (rootRect == null)
             {
-                _statusLabel = EnsureText(root, "StatusLabel", new Vector2(0f, 0.35f), new Vector2(1f, 0.55f), 11);
+                return;
             }
 
-            if (_button == null)
+            DestroyChildIfPresent(rootRect, "GaugeBar");
+            DestroyChildIfPresent(rootRect, "GaugeLabel");
+            DestroyChildIfPresent(rootRect, "EnergyLabel");
+            if (coverButton != null)
             {
-                var btnT = root.Find("CoverButton");
-                if (btnT == null)
+                DestroyChildIfPresent(coverButton.transform, "EnergyLabel");
+            }
+        }
+
+        private static void DestroyChildIfPresent(Transform parent, string childName)
+        {
+            var child = parent.Find(childName);
+            if (child == null)
+            {
+                return;
+            }
+
+            if (Application.isPlaying)
+            {
+                Object.Destroy(child.gameObject);
+            }
+            else
+            {
+                Object.DestroyImmediate(child.gameObject);
+            }
+        }
+
+        private void WireOrCreateStatusLabel()
+        {
+            if (statusLabel != null)
+            {
+                return;
+            }
+
+            statusLabel = EnsureText(rootRect, "StatusLabel", new Vector2(0f, 0.86f), new Vector2(1f, 1f), 11);
+        }
+
+        private void WireOrCreateButton()
+        {
+            var btnT = rootRect.Find("CoverButton");
+            if (btnT == null)
+            {
+                var btnGo = new GameObject("CoverButton", typeof(RectTransform), typeof(CanvasRenderer),
+                    typeof(Image), typeof(Button));
+                btnT = btnGo.transform;
+                btnT.SetParent(rootRect, false);
+                var btnRt = btnGo.GetComponent<RectTransform>();
+                btnRt.anchorMin = new Vector2(0f, 0f);
+                btnRt.anchorMax = new Vector2(0.68f, 1f);
+                btnRt.offsetMin = Vector2.zero;
+                btnRt.offsetMax = Vector2.zero;
+                coverButton = btnGo.GetComponent<Button>();
+                coverButtonImage = btnGo.GetComponent<Image>();
+            }
+            else
+            {
+                if (coverButton == null)
                 {
-                    var btnGo = new GameObject("CoverButton", typeof(RectTransform), typeof(CanvasRenderer),
-                        typeof(Image), typeof(Button));
-                    btnT = btnGo.transform;
-                    btnT.SetParent(root, false);
-                    var btnRt = btnGo.GetComponent<RectTransform>();
-                    btnRt.anchorMin = new Vector2(0f, 0f);
-                    btnRt.anchorMax = new Vector2(1f, 0.35f);
-                    btnRt.offsetMin = Vector2.zero;
-                    btnRt.offsetMax = Vector2.zero;
-                    var img = btnGo.GetComponent<Image>();
-                    try
+                    coverButton = btnT.GetComponent<Button>();
+                }
+
+                if (coverButtonImage == null)
+                {
+                    coverButtonImage = btnT.GetComponent<Image>();
+                }
+
+                if (!preserveSceneLayout)
+                {
+                    var btnRt = btnT as RectTransform;
+                    if (btnRt != null)
                     {
-                        var sprite = Resources.Load<Sprite>(ButtonSpritePath);
-                        if (sprite != null)
-                        {
-                            img.sprite = sprite;
-                            img.type = Image.Type.Sliced;
-                        }
-                        else
-                        {
-                            img.color = new Color(0.35f, 0.4f, 0.55f, 0.95f);
-                        }
+                        btnRt.anchorMin = new Vector2(0f, 0f);
+                        btnRt.anchorMax = new Vector2(0.68f, 1f);
+                        btnRt.offsetMin = Vector2.zero;
+                        btnRt.offsetMax = Vector2.zero;
                     }
-                    catch (System.Exception e)
-                    {
-                        Debug.LogError("[CoverHud] Failed to load cover button sprite: " + e);
-                        img.color = new Color(0.35f, 0.4f, 0.55f, 0.95f);
-                    }
-
-                    _button = btnGo.GetComponent<Button>();
                 }
-                else
-                {
-                    _button = btnT.GetComponent<Button>();
-                }
+            }
 
-                if (_button != null)
-                {
-                    _button.onClick.RemoveListener(OnCoverClicked);
-                    _button.onClick.AddListener(OnCoverClicked);
-                }
+            if (coverButton != null)
+            {
+                coverButton.onClick.RemoveListener(OnCoverClicked);
+                coverButton.onClick.AddListener(OnCoverClicked);
+            }
 
-                _buttonLabel = EnsureText(btnT as RectTransform, "Label", Vector2.zero, Vector2.one, 14);
-                if (_buttonLabel != null)
+            if (coverButtonLabel == null)
+            {
+                coverButtonLabel = EnsureText(btnT as RectTransform, "Label", Vector2.zero, Vector2.one, 14);
+                if (coverButtonLabel != null)
                 {
-                    _buttonLabel.text = "COVER";
-                    _buttonLabel.alignment = TextAnchor.MiddleCenter;
-                    _buttonLabel.fontStyle = FontStyle.Bold;
+                    coverButtonLabel.fontStyle = FontStyle.Bold;
+                    coverButtonLabel.alignment = TextAnchor.MiddleCenter;
                 }
             }
         }
+
+        private void WireOrCreateEnergyGauge()
+        {
+            if (energyGauge == null)
+            {
+                energyGauge = transform.Find("CoverEnergyGauge")?.GetComponent<CoverEnergyGaugeView>();
+            }
+
+            if (energyGauge == null)
+            {
+                energyGauge = CoverEnergyGaugeView.EnsureOn(rootRect);
+            }
+
+            energyGauge?.EnsureBuilt();
+        }
+
+        private void ResolveSerializedRefs()
+        {
+            if (coverButton == null)
+            {
+                coverButton = transform.Find("CoverButton")?.GetComponent<Button>();
+            }
+
+            if (coverButtonImage == null && coverButton != null)
+            {
+                coverButtonImage = coverButton.GetComponent<Image>();
+            }
+
+            if (energyGauge == null)
+            {
+                energyGauge = transform.Find("CoverEnergyGauge")?.GetComponent<CoverEnergyGaugeView>();
+            }
+
+            if (statusLabel == null)
+            {
+                statusLabel = transform.Find("StatusLabel")?.GetComponent<Text>();
+            }
+
+            if (coverButtonLabel == null)
+            {
+                coverButtonLabel = transform.Find("CoverButton/Label")?.GetComponent<Text>();
+            }
+        }
+
+        public void ApplyButtonVisual()
+        {
+            ResolveSerializedRefs();
+            if (coverButtonImage == null)
+            {
+                return;
+            }
+
+            var sprite = buttonSprite;
+            if (sprite == null)
+            {
+                try
+                {
+                    sprite = Resources.Load<Sprite>(DefaultButtonSpriteResourcePath);
+                    if (sprite != null && buttonSprite == null)
+                    {
+                        buttonSprite = sprite;
+                    }
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogError("[CoverHud] Failed to load default cover sprite: " + e);
+                }
+            }
+
+            if (sprite != null)
+            {
+                coverButtonImage.sprite = sprite;
+                coverButtonImage.type = Image.Type.Simple;
+                coverButtonImage.preserveAspect = true;
+                coverButtonImage.color = Color.white;
+                if (hideLabelWhenSpriteAssigned && coverButtonLabel != null)
+                {
+                    coverButtonLabel.text = string.Empty;
+                }
+            }
+            else
+            {
+                coverButtonImage.sprite = null;
+                coverButtonImage.color = new Color(0.35f, 0.4f, 0.55f, 0.95f);
+                if (coverButtonLabel != null)
+                {
+                    coverButtonLabel.text = "COVER";
+                    coverButtonLabel.alignment = TextAnchor.MiddleCenter;
+                    coverButtonLabel.fontStyle = FontStyle.Bold;
+                }
+            }
+        }
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            if (Application.isPlaying)
+            {
+                return;
+            }
+
+            ResolveSerializedRefs();
+            ApplyButtonVisual();
+        }
+#endif
 
         public void Bind(CombatSession session)
         {
@@ -248,61 +399,58 @@ namespace FracturedChorus.UI
         public void Refresh()
         {
             EnsureBuilt();
+            ApplyButtonVisual();
             if (_session?.Cover == null)
             {
                 return;
             }
 
             var cover = _session.Cover;
-            var ratio = CoverConstants.GaugeCap <= 0
-                ? 0f
-                : cover.Gauge / (float)CoverConstants.GaugeCap;
-            if (_fill != null)
-            {
-                _fill.fillAmount = Mathf.Clamp01(ratio);
-            }
+            energyGauge?.SetGauge(cover.Gauge);
 
-            if (_gaugeLabel != null)
-            {
-                _gaugeLabel.text = $"COVER {cover.Gauge}/{CoverConstants.GaugeCap}";
-                _gaugeLabel.alignment = TextAnchor.MiddleCenter;
-            }
-
-            if (_statusLabel != null)
+            if (statusLabel != null)
             {
                 if (cover.IsActive)
                 {
-                    _statusLabel.text = $"ACTIVE {cover.ActiveBeatsRemaining}";
+                    statusLabel.text = $"ACTIVE {cover.ActiveBeatsRemaining}";
                 }
                 else if (cover.IsPending)
                 {
-                    _statusLabel.text = "PENDING";
+                    statusLabel.text = "PENDING";
                 }
                 else
                 {
-                    _statusLabel.text = string.Empty;
+                    statusLabel.text = string.Empty;
                 }
 
-                _statusLabel.alignment = TextAnchor.MiddleCenter;
+                statusLabel.alignment = TextAnchor.MiddleCenter;
             }
 
-            if (_button != null)
+            if (coverButton != null)
             {
                 var canPress = _session.AllowCoverActivate &&
                                cover.CanActivate(IsRenAlive(_session));
-                _button.interactable = canPress;
-                var cg = _button.GetComponent<CanvasGroup>();
+                coverButton.interactable = canPress;
+                var cg = coverButton.GetComponent<CanvasGroup>();
                 if (cg == null)
                 {
-                    cg = _button.gameObject.AddComponent<CanvasGroup>();
+                    cg = coverButton.gameObject.AddComponent<CanvasGroup>();
                 }
 
                 cg.blocksRaycasts = true;
                 cg.interactable = canPress;
-                if (_buttonLabel != null)
+                if (coverButtonImage != null && coverButtonImage.sprite != null)
                 {
-                    _buttonLabel.color = canPress ? Color.white : new Color(1f, 1f, 1f, 0.45f);
+                    var c = coverButtonImage.color;
+                    c.a = canPress ? 1f : disabledSpriteAlpha;
+                    coverButtonImage.color = c;
                 }
+                else if (coverButtonLabel != null)
+                {
+                    coverButtonLabel.color = canPress ? Color.white : new Color(1f, 1f, 1f, disabledSpriteAlpha);
+                }
+
+                energyGauge?.SetInteractableVisual(canPress);
             }
         }
 

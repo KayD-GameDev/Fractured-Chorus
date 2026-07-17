@@ -1,11 +1,13 @@
 using FracturedChorus.Audio;
 using FracturedChorus.Combat.Core;
+using FracturedChorus.Combat.Cover;
 using FracturedChorus.Combat.Grid;
 using FracturedChorus.Combat.Presentation;
 using FracturedChorus.Combat.Timeline;
 using FracturedChorus.Combat.Units;
 using FracturedChorus.Data;
 using FracturedChorus.UI;
+using UnityEngine.Serialization;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -34,6 +36,14 @@ namespace FracturedChorus.Combat.Bootstrap
 
         [Header("Grid layout")]
         [SerializeField] private float sideGap = HexBoardLayout.DefaultSideGap;
+
+        [Header("Playtest start resources (Inspector only)")]
+        [FormerlySerializedAs("applyDebugResourcesOnStart")]
+        [SerializeField] private bool applyStartResourcesOnPlay = true;
+        [FormerlySerializedAs("debugCoverGaugeOnStart")]
+        [SerializeField] [Range(0, 10)] private int startCoverGauge = 8;
+        [FormerlySerializedAs("debugPrepAllOnStart")]
+        [SerializeField] [Range(0, 3)] private int startPrepAll = 3;
 
         private CombatSession _session;
         private DualGrid _grid;
@@ -93,6 +103,7 @@ namespace FracturedChorus.Combat.Bootstrap
             RefreshPartyStatusBar();
             EnsureEnemyStatusBar();
             EnsureCoverHud();
+            ApplyPlaytestStartResources();
 
             if (skillPanelView != null && !skillPanelView.gameObject.activeSelf)
             {
@@ -135,6 +146,36 @@ namespace FracturedChorus.Combat.Bootstrap
             catch (System.Exception e)
             {
                 Debug.LogError("[Bootstrap] Failed to setup CoverHud: " + e);
+            }
+        }
+
+        private void ApplyPlaytestStartResources()
+        {
+            try
+            {
+                if (!applyStartResourcesOnPlay || _session == null)
+                {
+                    _coverHud?.Refresh();
+                    return;
+                }
+
+                _session.Cover?.DebugSetGauge(startCoverGauge);
+                if (_session.Grid != null)
+                {
+                    var prep = Mathf.Clamp(startPrepAll, 0, CombatUnit.PrepCap);
+                    foreach (var unit in _session.Grid.PlayerUnits)
+                    {
+                        unit?.SetPrepAbsolute(prep);
+                    }
+
+                    Debug.Log($"[Playtest] Start Cover={startCoverGauge}/{CoverConstants.GaugeCap} PrepAll={prep}");
+                }
+
+                _coverHud?.Refresh();
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError("[Bootstrap] Failed to apply playtest start resources: " + e);
             }
         }
 

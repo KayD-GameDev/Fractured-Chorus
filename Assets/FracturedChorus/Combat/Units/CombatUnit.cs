@@ -168,6 +168,18 @@ namespace FracturedChorus.Combat.Units
             OnPrepChanged?.Invoke(this);
         }
 
+        public void SetPrepAbsolute(int value)
+        {
+            var next = Mathf.Clamp(value, 0, PrepCap);
+            if (next == Prep)
+            {
+                return;
+            }
+
+            Prep = next;
+            OnPrepChanged?.Invoke(this);
+        }
+
         public void SetPendingReduceS2(int amount)
         {
             var next = Mathf.Max(0, amount);
