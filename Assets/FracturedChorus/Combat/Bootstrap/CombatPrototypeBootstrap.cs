@@ -40,6 +40,7 @@ namespace FracturedChorus.Combat.Bootstrap
         private BeatTimelineEngine _timeline;
         private Dictionary<GridPosition, Transform> _cellByPosition;
         private BoardDragController _boardDrag;
+        private CoverHudView _coverHud;
 
         private void Awake()
         {
@@ -91,11 +92,70 @@ namespace FracturedChorus.Combat.Bootstrap
 
             RefreshPartyStatusBar();
             EnsureEnemyStatusBar();
+            EnsureCoverHud();
 
             if (skillPanelView != null && !skillPanelView.gameObject.activeSelf)
             {
                 skillPanelView.Hide();
             }
+        }
+
+        private void EnsureCoverHud()
+        {
+            try
+            {
+                if (_coverHud == null)
+                {
+                    _coverHud = FindAnyObjectByType<CoverHudView>();
+                }
+
+                var canvasRt = ResolveCombatCanvasRoot();
+                if (_coverHud == null && canvasRt != null)
+                {
+                    _coverHud = CoverHudView.EnsureOn(canvasRt);
+                }
+                else if (_coverHud != null && canvasRt != null)
+                {
+                    CoverHudView.EnsureOn(canvasRt);
+                }
+
+                if (_coverHud != null && partyStatusBarView != null)
+                {
+                    var orphan = partyStatusBarView.transform.Find("CoverHud");
+                    if (orphan != null && orphan.GetComponent<CoverHudView>() != null &&
+                        orphan.gameObject != _coverHud.gameObject)
+                    {
+                        Destroy(orphan.gameObject);
+                    }
+                }
+
+                _coverHud?.Bind(_session);
+                _coverHud?.Refresh();
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError("[Bootstrap] Failed to setup CoverHud: " + e);
+            }
+        }
+
+        private RectTransform ResolveCombatCanvasRoot()
+        {
+            if (partyStatusBarView != null)
+            {
+                var parent = partyStatusBarView.transform.parent as RectTransform;
+                if (parent != null)
+                {
+                    return parent;
+                }
+            }
+
+            if (timelineView != null)
+            {
+                return timelineView.transform.parent as RectTransform;
+            }
+
+            var canvas = FindAnyObjectByType<Canvas>();
+            return canvas != null ? canvas.transform as RectTransform : null;
         }
 
         private void EnsureEnemyStatusBar()

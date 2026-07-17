@@ -3,8 +3,8 @@ using FracturedChorus.Data;
 namespace FracturedChorus.Combat.Units
 {
     /// <summary>
-    /// Base AV = thứ tự ưu tiên hành động trên cùng beat (thấp hơn → đi trước).
-    /// Chi phí skill chỉ trừ vào Phase AV (party budget), không trừ Base AV.
+    /// Base AV = action order on the same beat (lower → acts first) and enemy damage target pick
+    /// (higher BaseAv preferred). Does not gate skill placement — place freely if S1/S/S2 do not overlap.
     /// </summary>
     public static class AvResourceSystem
     {

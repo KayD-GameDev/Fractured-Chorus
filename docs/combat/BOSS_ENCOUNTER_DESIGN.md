@@ -201,7 +201,7 @@ Không còn skill Guard. Space đặt **barrier 1 beat**. SoT: [COMBAT_MECHANICS
 ## 5–12. Cơ chế gameplay
 
 > **Deprecated (2026-06-30):** Cycle, Guard skill, telegraph 2-beat/cycle.  
-> **Phase AV:** deprecated as UX cycle — **budget gate may still exist in code** (*legacy retained*; xem [COMBAT_MECHANICS.md](./COMBAT_MECHANICS.md)).  
+> **Phase AV budget:** removed — assign tự do (footprint only). **BaseAv** vẫn dùng cho speed/order + target dmg (xem [COMBAT_MECHANICS.md](./COMBAT_MECHANICS.md)).  
 > **Thay bằng:** [COMBAT_MECHANICS.md](./COMBAT_MECHANICS.md) — Planning/Execute, boss notes, HB roles, kit 3 skill.
 
 ### Kit skill (tóm tắt — 3 skill / nhân vật)

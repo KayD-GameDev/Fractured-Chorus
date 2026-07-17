@@ -59,6 +59,7 @@ namespace FracturedChorus.Combat.Core
         private CombatUnit _relocateUnit;
         private SkillDefinitionSO _relocateSkill;
         private int _relocateFromBeat = -1;
+        private bool _coverMusicLatch;
 
 
 
@@ -115,6 +116,9 @@ namespace FracturedChorus.Combat.Core
             _session.OnUnitHpChanged += HandleUnitHpChanged;
 
             _session.OnEncounterEnded += HandleEncounterEnded;
+
+            _session.Cover.OnChanged += HandleCoverChanged;
+            _coverMusicLatch = false;
 
 
 
@@ -253,6 +257,8 @@ namespace FracturedChorus.Combat.Core
 
             _awaitingExecute = false;
 
+            SetCoverActivateAllowed(false);
+
             _session.LockPlayerReposition();
 
             _session.PrepareTelegraphsForCurrentSegment();
@@ -291,6 +297,10 @@ namespace FracturedChorus.Combat.Core
             _awaitingExecute = false;
 
             _planningPaused = false;
+
+            SetCoverActivateAllowed(false);
+
+            _session.Cover.BeginWindowIfPending();
 
             skillPanelView?.Hide();
 
@@ -515,11 +525,15 @@ namespace FracturedChorus.Combat.Core
 
             _awaitingExecute = true;
 
+            SetCoverActivateAllowed(true);
+
             _session.EndRoundSegment();
 
             timelineView?.HoldAtRoundEnd();
 
             timelineView?.RefreshTelegraphsAndSlots();
+
+            RefreshCoverHud();
 
             if (TimelineConstants.GetSegmentStartBeat(_session.RoundSegmentIndex) >= TimelineConstants.TotalBeats)
             {
@@ -539,6 +553,8 @@ namespace FracturedChorus.Combat.Core
         {
 
             _planningPaused = true;
+
+            SetCoverActivateAllowed(true);
 
             executeOverlay?.Bind(ResumeFromPlanningPause);
 
@@ -566,9 +582,47 @@ namespace FracturedChorus.Combat.Core
 
             _planningPaused = false;
 
+            SetCoverActivateAllowed(false);
+
+            _session?.Cover.BeginWindowIfPending();
+
             executeOverlay?.SetVisible(false);
 
             timelineView?.ResumeRoundPlayback();
+
+        }
+
+
+
+        private void SetCoverActivateAllowed(bool allowed)
+
+        {
+
+            if (_session == null)
+
+            {
+
+                return;
+
+            }
+
+
+
+            _session.AllowCoverActivate = allowed;
+
+            RefreshCoverHud();
+
+        }
+
+
+
+        private static void RefreshCoverHud()
+
+        {
+
+            var hud = Object.FindAnyObjectByType<CoverHudView>();
+
+            hud?.Refresh();
 
         }
 
@@ -589,16 +643,6 @@ namespace FracturedChorus.Combat.Core
 
 
             if (unit == null || skill == null)
-
-            {
-
-                return false;
-
-            }
-
-
-
-            if (!_session.PhaseAv.CanAfford(skill.GetAvCost()))
 
             {
 
@@ -732,11 +776,77 @@ namespace FracturedChorus.Combat.Core
 
             _awaitingExecute = false;
 
+            StopCoverMusicIfNeeded();
+
             skillPanelView?.Hide();
 
             timelineView?.StopTimelinePlayback();
 
             executeOverlay?.SetVisible(false);
+
+        }
+
+
+
+        private void HandleCoverChanged()
+
+        {
+
+            if (_session == null)
+
+            {
+
+                return;
+
+            }
+
+
+
+            var active = _session.Cover.IsActive;
+
+            if (active && !_coverMusicLatch)
+
+            {
+
+                _coverMusicLatch = true;
+
+                _musicController?.PlayRenCoverMusic();
+
+                return;
+
+            }
+
+
+
+            if (!active && _coverMusicLatch)
+
+            {
+
+                StopCoverMusicIfNeeded();
+
+            }
+
+        }
+
+
+
+        private void StopCoverMusicIfNeeded()
+
+        {
+
+            if (!_coverMusicLatch && !(_musicController?.IsCoverMusicActive ?? false))
+
+            {
+
+                return;
+
+            }
+
+
+
+            _coverMusicLatch = false;
+
+            _musicController?.StopRenCoverMusic();
 
         }
 

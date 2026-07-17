@@ -1,6 +1,6 @@
 # Fractured Chorus — Trạng thái dự án
 
-**Cập nhật:** 2026-07-16 (merge restore: Resources/UI + Prep Setup→Payoff Phase 1–3)  
+**Cập nhật:** 2026-07-17 (Cover Phase 4 · bỏ Phase AV budget gate)  
 **Unity scenes:** `CombatPrototype.unity` · `RunMapPrototype.unity` · hub/VN scenes  
 **Log:** [`PROJECT_LOG.md`](PROJECT_LOG.md) · [`LOGGING.md`](LOGGING.md)
 
@@ -39,9 +39,11 @@
 | Counter presentation (`CounterPresentationDriver` / Perfect chip / MULTI) | ✅ |
 | Runtime UI load path `Resources/UI/**` (không đặt dưới Prefabs) | ✅ restored |
 | Guard = **Spacebar** barrier (không skill Guard trên kit) | ✅ |
-| Phase AV budget (150/100) — **legacy retained** (vẫn gate assign; UI có thể ẩn) | 🟡 legacy |
+| BaseAv = speed/order + dmg target (không gate số skill) | ✅ |
+| Phase AV budget 150/100 | ❌ removed 2026-07-17 |
 | Boss 3-target / note degrade / Cycle Shift / mini pressure | 🔲 P0 design |
-| Empty-beat skill catalog (**#4** beyond Prep) | 🔲 out of scope kit plan |
+| **Cover gauge** (empty S → party gauge · Planning COVER · 12 beat ×1.25) | ✅ |
+| Empty-beat catalog (**#4**) | ✅ Cover gauge (không dedicated buff skills) |
 | Ally pick Mend / Encore · GuardCharge thật · Cycle Shift VFX | 🔲 backlog |
 | Run map → Combat (boss node) | 🟡 MVP |
 
@@ -51,6 +53,7 @@
 - [`2026-07-14-skill-kit-setup-payoff-implementation.md`](superpowers/plans/2026-07-14-skill-kit-setup-payoff-implementation.md) — Phase 1–3 **done**
 - [`2026-07-14-timeline-note-readability-implementation.md`](superpowers/plans/2026-07-14-timeline-note-readability-implementation.md) — runtime **done** (playtest residual OK)
 - [`2026-07-14-counter-presentation-feel-implementation.md`](superpowers/plans/2026-07-14-counter-presentation-feel-implementation.md) — runtime **done** (playtest residual OK)
+- [`2026-07-16-cover-gauge-empty-beat-implementation.md`](superpowers/plans/2026-07-16-cover-gauge-empty-beat-implementation.md) — Phase 4 runtime **landed** (Play Mode verify)
 
 ---
 
@@ -67,8 +70,7 @@
 
 ## Việc tiếp theo (ưu tiên cho main)
 
-1. **Playtest** sau restore Resources: note sprites · Deploy/Execute · Encore buff icon · Prep pips.
+1. **Playtest Cover:** farm 8 empty S → COVER → 12 beat ×1.25; Prep/intro-pause không regress.
 2. P0 boss: CORE / MICRO / EYE tags · note degrade.
-3. Empty-beat catalog (**#4**) — chỉ khi khóa design sau Prep.
-4. Ally pick Mend/Encore · Bulwark GuardCharge · Ren Cycle Shift VFX.
-5. **Thiên:** Story P1-1.
+3. Ally pick Mend/Encore · Bulwark GuardCharge · Ren Cycle Shift VFX.
+4. **Thiên:** Story P1-1.

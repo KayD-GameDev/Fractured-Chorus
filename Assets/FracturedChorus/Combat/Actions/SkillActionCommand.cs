@@ -260,6 +260,12 @@ namespace FracturedChorus.Combat.Actions
                 finalDamage *= ctx.Skill.empowerDamageMultiplier;
             }
 
+            if (ctx.CoverOutgoingMultiplier > 0f &&
+                !Mathf.Approximately(ctx.CoverOutgoingMultiplier, 1f))
+            {
+                finalDamage *= ctx.CoverOutgoingMultiplier;
+            }
+
             target.TakeDamage(finalDamage);
             Debug.Log($"[SkillAction] {ctx.Source.DisplayName} -> {target.DisplayName} | " +
                       $"rand={result.SkillRandomRoll:F2}×str={ctx.Source.Stats.Strength:F0} " +
