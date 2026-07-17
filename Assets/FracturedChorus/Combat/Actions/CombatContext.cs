@@ -17,5 +17,6 @@ namespace FracturedChorus.Combat.Actions
         public HarmonyRelation Harmony { get; set; } = HarmonyRelation.Neutral;
         public bool IsEmpowered { get; set; }
         public AgendaEntry Entry { get; set; }
+        public float CoverOutgoingMultiplier { get; set; } = 1f;
     }
 }

@@ -1,6 +1,6 @@
 # Combat Mechanics — Planning / Execute Loop
 
-> **Trạng thái:** Runtime SoT sync (2026-07-16) · kit Prep Setup→Payoff · Phase AV legacy retained in code  
+> **Trạng thái:** Runtime SoT sync (2026-07-17) · kit Prep + Cover · Phase AV budget **removed** (BaseAv = speed/target only)  
 > **Kit detail:** [SKILL_KIT.md](./SKILL_KIT.md)  
 > **Tham chiếu:** Caligula Effect 2 · nhạc Eternal Spark (Cadence Remix)  
 > **Illustrations:** `docs/combat/illustrations/`
@@ -26,7 +26,7 @@ Dàn trận (kéo unit vào ô) — [Deploy] hiện ngay, chưa có nhạc
 | **Execute (chạy segment)** | Chạy sync beat | Phát tiếp |
 
 - **Bỏ:** cycle cố định · skill Guard trên kit
-- **Phase AV:** *legacy retained* — `PhaseAvTracker` vẫn gate budget **150 / 100** khi gán skill; UI `AvLabel` có thể ẩn
+- **AV (BaseAv):** chỉ **thứ tự hành động** (thấp → đi trước trên cùng beat) + **chọn target nhận dmg** (BaseAv cao nhất). **Không** giới hạn số skill đặt — chỉ cấm trùng footprint S1/S/S2 cùng unit
 - **Giữ:** Nút **Deploy** (dàn trận) → **Execute** (sau intro-pause và mỗi round segment). Nhãn do `CombatController` ép runtime.
 
 ### Intro-pause (sau Deploy — gán skill)
@@ -85,9 +85,9 @@ Dàn trận (kéo unit vào ô) — [Deploy] hiện ngay, chưa có nhạc
 ### Planning UX
 
 - Gán hết skill **không** auto-resume — bắt buộc bấm **Execute**.
-- Kéo marker skill → **xóa ngay** khi bắt đầu kéo (dots footprint biến mất cùng lúc) + refund AV.
-- **Skill radial (W/A/D):** chỉ hiện phím + tên skill — **không** hiện cost AV trên nút.
-- **Bỏ Cycle header** trên timeline (`Cycle remaining/budget` per phase) — budget skill giữ theo round segment, không reset khi scan qua phase divider.
+- Kéo marker skill → **xóa ngay** khi bắt đầu kéo (dots footprint biến mất cùng lúc).
+- **Skill radial (W/A/D):** chỉ hiện phím + tên skill — không cost AV (placement không tốn AV).
+- Đặt skill: bao nhiêu cũng được miễn **không overlap S1/S/S2** trên cùng unit (`SkillFootprintUtil.CanPlace`).
 - **Hex floor (ô vị trí):** chỉ hiện hex **Player** lúc `AllowPlayerReposition` (Deploy / dàn trận). Hex **Enemy** luôn ẩn. Sau Deploy (`LockPlayerReposition`) ẩn cả hai — `CombatController.ApplySlotFloorVisibilityForCurrentPhase` → `BoardDragController.SetSlotFloorsVisible` / `GridCellMarker.SetFloorVisible`.
 - **Nút Deploy / Execute:** `CombatExecuteOverlayUIView.ApplyAlphaHitTest` — `alphaHitTestMinimumThreshold = 0.1` **chỉ khi** `texture.isReadable` (tránh Console error); nếu chưa Readable thì tạm full-rect. Sprites `combat_btn_deploy_v1` / `combat_btn_execute_v1` cần Read/Write + Uncompressed — menu **Fractured Chorus → Ensure Combat Button Sprites Readable** (`CombatButtonSpriteImportSettings`).
 
@@ -365,7 +365,7 @@ Chỉ giảm dmg khi: không counter trên `E`, có standing footprint chạm `E
 | — | UI assist khi kéo skill | Ren: highlight Perfect · Coda: ±1 · Charlotte: presence only |
 
 **Bỏ:** Base AV priority (sort) · skill Guard · HB giảm S2 beat  
-**Giữ (legacy):** Phase AV budget gate khi gán skill (150/100)
+**AV:** BaseAv = speed/order + enemy target pick — **không** gate số skill
 
 ---
 
@@ -384,6 +384,17 @@ Empower Skill @ ≥1 / Ult @ ≥2 → tiêu Prep; Prep 0 vẫn cast base
 
 - Anchor Delay / Encore ReduceS2 apply **lúc đặt (Planning)** — xem `CombatSession.ApplyPlanningUtilityEffects`.
 - UI: `PrepPipsView` · Encore buff icon · note sprites qua `TimelineNoteVisualCatalog` (`Resources/UI/Combat/**`).
+
+### Cover — Empty Beat Gauge (runtime)
+
+```
+Empty S (Skill/Ult) → +1 Cover gauge (cap 10, party)  [cùng điều kiện channel Prep]
+Planning stop · ≥8 · Ren alive → COVER (−8)
+Window 12 beat → party outgoing dmg ×1.25; Early/Late → OnBeat (player + Guard)
+```
+
+- Code: `CoverRuntime` · `CoverHudView` · gate `AllowCoverActivate`
+- Chi tiết: [SKILL_KIT.md](./SKILL_KIT.md) · spec `2026-07-16-cover-gauge-empty-beat-design.md`
 
 ### Ren — DPS · Cycle Shift
 
@@ -491,10 +502,11 @@ Empower Skill @ ≥1 / Ult @ ≥2 → tiêu Prep; Prep 0 vẫn cast base
 | Pre-deploy intro scroll | (removed) | Intro on Deploy; anchor end beat 0 at ScanBar |
 | Segment handoff no jump | ✅ MVP | `continueFromHold`, `RefreshTelegraphsAndSlots` |
 | Enemy target highest BaseAv | ✅ MVP | `PickHighestBaseAvAlive` |
+| Bỏ Phase AV budget gate (assign tự do) | ✅ | 2026-07-17; BaseAv giữ cho order/target |
 | Bỏ PhaseAvTracker cycle UI | ✅ MVP | Ẩn `AvLabel`; bỏ `SyncToTimelinePhase` |
 | `Resonance` / `Dissonance` stacks | 🔲 P1 | N/A |
 | Async per-char planning | 🔲 P1 | Batch planning |
-| Empty-beat skill catalog (#4) | 🔲 backlog | Beyond Prep channel |
+| Cover gauge / empty-beat (#4) | ✅ | `CoverRuntime` · Planning COVER · 12 beat ×1.25 |
 
 ---
 
@@ -502,6 +514,7 @@ Empower Skill @ ≥1 / Ult @ ≥2 → tiêu Prep; Prep 0 vẫn cast base
 
 | Ngày | Nội dung |
 |------|----------|
+| 2026-07-17 | Bỏ Phase AV budget gate; assign = footprint only; BaseAv = order + dmg target |
 | 2026-07-16 | Runtime SoT sync: intro beat 6 · Guard 68/25/10 · Phase AV legacy · enemy zone beat 10 |
 | 2026-07-16 | Map Prep/Shield/Delay/Encore/note catalog/counter feel; restore `Resources/UI` load path |
 | 2026-07-16 | Xóa `*_guard` khỏi preset Ren/Tank/Mage; block = Space; target dmg = BaseAv cao nhất |

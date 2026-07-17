@@ -1,8 +1,8 @@
 # Skill Kit — 3 skill / nhân vật
 
-> **Trạng thái:** Setup → Payoff (Prep) · runtime Phase 1–3  
-> **Spec:** [`docs/superpowers/specs/2026-07-14-skill-kit-setup-payoff-design.md`](../superpowers/specs/2026-07-14-skill-kit-setup-payoff-design.md)  
-> **Code:** `SkillDefinitionSO` · `Resources/Skills/*` · `CombatUnit.Prep` · `CombatSession` channel/empower
+> **Trạng thái:** Setup → Payoff (Prep) · Cover gauge Phase 4  
+> **Spec:** Prep [`2026-07-14-skill-kit-setup-payoff-design.md`](../superpowers/specs/2026-07-14-skill-kit-setup-payoff-design.md) · Cover [`2026-07-16-cover-gauge-empty-beat-design.md`](../superpowers/specs/2026-07-16-cover-gauge-empty-beat-design.md)  
+> **Code:** `SkillDefinitionSO` · `CombatUnit.Prep` · `CoverRuntime` · `CoverHudView`
 
 ---
 
@@ -23,6 +23,25 @@ Prep = 0                    →  vẫn cast base
   - Delay: chỉ note **sau cửa S** của Anchor (+N); note nằm trong S giữ nguyên; slide trên timeline
   - Encore: `PendingReduceS2` trên ally + **icon buff** (`Resources/UI/Combat/Buffs/buff_reduce_s2_v1`) góc dưới-trái card (trên HP bar); skill đặt sau snapshot S2 ngắn hơn
   - Empower Encore: party ReduceS2 + **gift +1 Prep** ally (planning)
+
+## Cover — Empty Beat Gauge (Ren)
+
+```
+Empty beat ∩ S (Skill/Ult, any ally)  →  +1 Cover gauge (cap 10, party)
+Note beat ∩ S                         →  no Cover charge
+Basic                                 →  no Cover charge
+Planning stop · gauge ≥ 8 · Ren alive →  COVER button (−8, pending)
+Scan / Execute after activate         →  12 beat window: party dmg ×1.25
+                                        Early/Late → OnBeat (dmg + Guard)
+```
+
+- UI: `CoverHudView` trên party bar · `CoverRuntime` trên `CombatSession`
+- Audio: `EternalSpark_RenCover.mp3` overlay từ **1:36.5** khi cửa mở; duck boss (không đụng beat sync)
+- UI btn: scene `CoverHud` / `CoverButton` — edit RectTransform + `CoverHudView.buttonSprite` (menu **Fractured Chorus → Setup Cover HUD**) · Resources fallback `combat_btn_cover_v1`
+- Tách Prep (per-unit amplify); Cover = party burst (Muse-style)
+- Gate nút: `AllowCoverActivate` (Deploy reposition / planning pause / giữa segment) — không bấm lúc scan
+- Playtest start: Inspector bootstrap `startCoverGauge` / `startPrepAll` (không chỉnh trên màn hình)
+- Cover energy UI: `CoverEnergyGauge` — khung + 10 nấc hologram (fill dưới→trên); art `Resources/UI/Combat/Cover/`
 
 ---
 
@@ -152,6 +171,7 @@ Empty cả 2 S → +2 Prep. Có note @ 10–11 → counter, Prep không tăng. P
 - [x] DelayBossNote D1 + slide VFX trên timeline
 - [x] ReduceS2 pending + footprint preview + buff icon
 - [x] Runtime sprites dưới `Resources/UI/Combat/**` (không Prefabs — `Resources.Load`)
+- [x] Cover gauge + HUD + 12-beat window (Phase 4)
 - [ ] Enforce footprint overlap (đã có `SkillFootprintUtil.CanPlace` — verify anti-spam standing)
 - [ ] Counter degrade Tím/Xanh/Đỏ CORE
 - [ ] Note tag CORE / MICRO / EYE
@@ -164,6 +184,7 @@ Empty cả 2 S → +2 Prep. Có note @ 10–11 → counter, Prep không tăng. P
 
 | Ngày | Nội dung |
 |------|----------|
+| 2026-07-17 | Cover gauge Phase 4: empty S → party gauge · Planning COVER · 12 beat ×1.25 + W1′ |
 | 2026-07-16 | Sync DelayBossNote kind = after S (runtime SoT) |
 | 2026-07-16 | Restore `Resources/UI` sau merge (Prefabs rename làm vỡ Load); Encore gift Prep @ planning; docs handoff |
 | 2026-07-16 | Xóa skill Guard khỏi kit asset (`ren/tank/mage_guard`); block = Space |

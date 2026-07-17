@@ -27,6 +27,13 @@ namespace FracturedChorus.Audio
         [SerializeField] private AudioClip planningTransitionClip;
         [SerializeField] private float planningTransitionVolume = 1f;
 
+        [Header("Ren Cover")]
+        [SerializeField] private AudioSource coverSource;
+        [SerializeField] private AudioClip coverClip;
+        [SerializeField] private float coverStartSec = 96.5f;
+        [SerializeField] private float coverVolume = 1f;
+        [SerializeField] private float coverBossDuckVolume = 0.2f;
+
         private float _totalMusicalBeat;
         private int _loopCount;
         private bool _inLoopBody;
@@ -36,8 +43,11 @@ namespace FracturedChorus.Audio
         private float _playbackSpeedMultiplier = 1f;
         private bool _planningMusicActive;
         private float _planningResumeTimeSec = -1f;
+        private bool _coverMusicActive;
+        private float _bossVolumeBeforeCover = 1f;
 
         public MusicBeatMapSO BeatMap => beatMap;
+        public bool IsCoverMusicActive => _coverMusicActive;
         public float TotalMusicalBeat => _totalMusicalBeat;
         public float PlaybackSpeedMultiplier => _playbackSpeedMultiplier;
         public float BeatDuration => 60f / bpm;
@@ -173,6 +183,74 @@ namespace FracturedChorus.Audio
             }
 
             StopPlanningMusic();
+            StopRenCoverMusic();
+        }
+
+        /// <summary>Overlay Ren Cover từ coverStartSec (1:36.5); duck boss, không đụng beat sync.</summary>
+        public void PlayRenCoverMusic()
+        {
+            if (coverClip == null)
+            {
+                TryAssignDefaultClip();
+            }
+
+            if (coverClip == null)
+            {
+                Debug.LogWarning("[CombatMusic] No Ren cover clip assigned.");
+                return;
+            }
+
+            EnsureCoverSource();
+            StopPlanningMusic();
+
+            if (!_coverMusicActive && source != null)
+            {
+                _bossVolumeBeforeCover = source.volume;
+                source.volume = Mathf.Clamp01(coverBossDuckVolume);
+            }
+
+            try
+            {
+                coverSource.clip = coverClip;
+                coverSource.loop = false;
+                coverSource.volume = coverVolume;
+                coverSource.spatialBlend = 0f;
+                var start = Mathf.Clamp(coverStartSec, 0f, Mathf.Max(0f, coverClip.length - 0.01f));
+                coverSource.Play();
+                if (coverSource.isPlaying)
+                {
+                    coverSource.time = start;
+                }
+
+                _coverMusicActive = true;
+                Debug.Log(
+                    $"[CombatMusic] Ren Cover '{coverClip.name}' from {start:F1}s (len {coverClip.length:F1}s).");
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError("[CombatMusic] Failed to play Ren Cover: " + e);
+                StopRenCoverMusic();
+            }
+        }
+
+        public void StopRenCoverMusic()
+        {
+            if (!_coverMusicActive && (coverSource == null || !coverSource.isPlaying))
+            {
+                _coverMusicActive = false;
+                return;
+            }
+
+            _coverMusicActive = false;
+            if (coverSource != null && coverSource.isPlaying)
+            {
+                coverSource.Stop();
+            }
+
+            if (source != null)
+            {
+                source.volume = _bossVolumeBeforeCover > 0f ? _bossVolumeBeforeCover : 1f;
+            }
         }
 
         /// <summary>Đang phát nhưng bị tạm dừng (giữ nguyên vị trí bài) — dùng cho intro-pause planning.</summary>
@@ -359,6 +437,23 @@ namespace FracturedChorus.Audio
             transitionSource.priority = 0;
         }
 
+        private void EnsureCoverSource()
+        {
+            if (coverSource != null)
+            {
+                return;
+            }
+
+            var go = new GameObject("RenCoverBGM");
+            go.transform.SetParent(transform, false);
+            coverSource = go.AddComponent<AudioSource>();
+            coverSource.playOnAwake = false;
+            coverSource.loop = false;
+            coverSource.spatialBlend = 0f;
+            coverSource.bypassReverbZones = true;
+            coverSource.priority = 16;
+        }
+
         /// <summary>TODO: one-shot transition sting when entering the next 2-phase block (asset TBD).</summary>
         public void PlaySegmentTransitionMusic(int segmentIndex)
         {
@@ -488,6 +583,12 @@ namespace FracturedChorus.Audio
             {
                 planningTransitionClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>(
                     "Assets/FracturedChorus/Audio/SFX/Combat_PlanningTransition.wav");
+            }
+
+            if (coverClip == null)
+            {
+                coverClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>(
+                    "Assets/FracturedChorus/Audio/Music/EternalSpark_RenCover.mp3");
             }
 #endif
         }
