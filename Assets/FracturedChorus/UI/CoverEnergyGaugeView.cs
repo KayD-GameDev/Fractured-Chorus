@@ -37,10 +37,89 @@ namespace FracturedChorus.UI
                 return existing;
             }
 
-            Debug.LogWarning(
-                "[CoverEnergyGauge] Missing CoverEnergyGauge in scene. " +
-                "Create via Hierarchy / Fractured Chorus menu — runtime will not auto-spawn layout.");
-            return null;
+            // Fallback when scene lost CoverEnergyGauge (e.g. merge kept local timeline polish).
+            // Prefer Hierarchy authoring via Fractured Chorus → Setup Cover HUD.
+            var go = new GameObject("CoverEnergyGauge", typeof(RectTransform));
+            var rt = go.GetComponent<RectTransform>();
+            rt.SetParent(parent, false);
+            rt.anchorMin = new Vector2(1f, 0f);
+            rt.anchorMax = new Vector2(1f, 1f);
+            rt.pivot = new Vector2(0f, 0.5f);
+            rt.anchoredPosition = new Vector2(8f, 0f);
+            rt.sizeDelta = new Vector2(72f, 0f);
+
+            var view = go.AddComponent<CoverEnergyGaugeView>();
+            view.preserveSceneLayout = true;
+            view.BuildRuntimeFallbackHierarchy();
+            view.EnsureBuilt();
+            return view;
+        }
+
+        /// <summary>Minimal Frame + Pips when scene object was not authored.</summary>
+        private void BuildRuntimeFallbackHierarchy()
+        {
+            ResolveSprites();
+
+            if (transform.Find("Frame") == null)
+            {
+                var frameGo = new GameObject("Frame", typeof(RectTransform));
+                var frameRt = frameGo.GetComponent<RectTransform>();
+                frameRt.SetParent(transform, false);
+                frameRt.anchorMin = Vector2.zero;
+                frameRt.anchorMax = Vector2.one;
+                frameRt.offsetMin = Vector2.zero;
+                frameRt.offsetMax = Vector2.zero;
+                var img = frameGo.AddComponent<Image>();
+                img.raycastTarget = false;
+                img.preserveAspect = true;
+                if (frameSprite != null)
+                {
+                    img.sprite = frameSprite;
+                    img.color = Color.white;
+                }
+                else
+                {
+                    img.color = new Color(0.15f, 0.18f, 0.24f, 0.85f);
+                }
+
+                frameImage = img;
+            }
+
+            if (transform.Find("Pips") == null)
+            {
+                var pipsGo = new GameObject("Pips", typeof(RectTransform));
+                pipsRoot = pipsGo.GetComponent<RectTransform>();
+                pipsRoot.SetParent(transform, false);
+                pipsRoot.anchorMin = Vector2.zero;
+                pipsRoot.anchorMax = Vector2.one;
+                pipsRoot.offsetMin = new Vector2(8f, 8f);
+                pipsRoot.offsetMax = new Vector2(-8f, -8f);
+
+                const float pipSize = 10f;
+                const float gap = 4f;
+                var total = CoverConstants.GaugeCap * pipSize + (CoverConstants.GaugeCap - 1) * gap;
+                var startY = total * 0.5f - pipSize * 0.5f;
+                for (var i = 0; i < CoverConstants.GaugeCap; i++)
+                {
+                    var pipGo = new GameObject($"Pip_{i}", typeof(RectTransform));
+                    var pipRt = pipGo.GetComponent<RectTransform>();
+                    pipRt.SetParent(pipsRoot, false);
+                    pipRt.anchorMin = new Vector2(0.5f, 0.5f);
+                    pipRt.anchorMax = new Vector2(0.5f, 0.5f);
+                    pipRt.pivot = new Vector2(0.5f, 0.5f);
+                    pipRt.sizeDelta = new Vector2(pipSize, pipSize);
+                    pipRt.anchoredPosition = new Vector2(0f, startY - i * (pipSize + gap));
+                    var pipImg = pipGo.AddComponent<Image>();
+                    pipImg.raycastTarget = false;
+                    pipImg.preserveAspect = true;
+                    if (pipSprite != null)
+                    {
+                        pipImg.sprite = pipSprite;
+                    }
+
+                    pipImg.color = pipOffColor;
+                }
+            }
         }
 
         public void EnsureBuilt()
