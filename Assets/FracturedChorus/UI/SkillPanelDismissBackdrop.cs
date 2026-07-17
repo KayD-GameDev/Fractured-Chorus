@@ -18,12 +18,24 @@ namespace FracturedChorus.UI
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            if (panel != null && panel.ShouldIgnoreOutsideDismiss)
+            if (panel == null)
             {
                 return;
             }
 
-            panel?.Hide();
+            // W/A/D (or armed) drop: backdrop sits above the timeline, so lane clicks
+            // hit here first — treat as place attempt instead of dismissing the panel.
+            if (panel.TryConsumeArmedSkillDrop(eventData.position))
+            {
+                return;
+            }
+
+            if (panel.ShouldIgnoreOutsideDismiss)
+            {
+                return;
+            }
+
+            panel.Hide();
         }
     }
 }

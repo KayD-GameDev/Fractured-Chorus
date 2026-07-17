@@ -1,3 +1,4 @@
+using FracturedChorus.Combat.Core;
 using FracturedChorus.Combat.Grid;
 using FracturedChorus.Combat.Presentation;
 using FracturedChorus.Combat.Timeline;
@@ -13,6 +14,8 @@ namespace FracturedChorus.UI
         [SerializeField] private Image background;
         [SerializeField] private Image glow;
         [SerializeField] private Image portrait;
+        [SerializeField] private Image beatFrame;
+        [SerializeField] private Image noteTier;
         [SerializeField] private Text actionLabel;
         [SerializeField] private Image phaseDividerLine;
         [SerializeField] private float scanScaleBoost = 1.14f;
@@ -29,6 +32,7 @@ namespace FracturedChorus.UI
         private bool _capturedDefaultPortrait;
         private float _noteBandNormalizedY = 0.72f;
         private Image _beatFrameVisual;
+        private Image _noteTierVisual;
 
         public int DisplayBeatIndex => beatIndex;
 
@@ -81,10 +85,27 @@ namespace FracturedChorus.UI
                 portrait = transform.Find("Portrait")?.GetComponent<Image>();
             }
 
-            if (portrait != null && !_capturedDefaultPortrait)
+            if (noteTier == null)
             {
-                _defaultPortraitSprite = portrait.sprite;
+                noteTier = transform.Find("NoteTier")?.GetComponent<Image>();
+            }
+
+            _noteTierVisual = noteTier != null ? noteTier : portrait;
+
+            if (_noteTierVisual != null && !_capturedDefaultPortrait)
+            {
+                _defaultPortraitSprite = _noteTierVisual.sprite;
                 _capturedDefaultPortrait = true;
+            }
+
+            if (beatFrame == null)
+            {
+                beatFrame = transform.Find("BeatFrame")?.GetComponent<Image>();
+            }
+
+            if (beatFrame != null)
+            {
+                _beatFrameVisual = beatFrame;
             }
 
             if (actionLabel == null)
@@ -202,10 +223,11 @@ namespace FracturedChorus.UI
         public void ClearEnemyVisualOnly()
         {
             WireReferences();
-            if (portrait != null)
+            var note = NoteImage;
+            if (note != null)
             {
-                portrait.sprite = _defaultPortraitSprite;
-                portrait.color = new Color(0.2f, 0.2f, 0.24f, 0.1f);
+                note.sprite = _defaultPortraitSprite;
+                note.color = new Color(0.2f, 0.2f, 0.24f, 0.1f);
                 ApplyPortraitLayout(22f);
             }
 
@@ -229,10 +251,11 @@ namespace FracturedChorus.UI
                 _glowBaseColor = glow.color;
             }
 
-            if (portrait != null)
+            var note = NoteImage;
+            if (note != null)
             {
-                portrait.sprite = _defaultPortraitSprite;
-                portrait.color = new Color(0.2f, 0.2f, 0.24f, 0.1f);
+                note.sprite = _defaultPortraitSprite;
+                note.color = new Color(0.2f, 0.2f, 0.24f, 0.1f);
                 ApplyPortraitLayout(22f);
             }
 
@@ -256,10 +279,19 @@ namespace FracturedChorus.UI
                 Skill = entry.Skill,
                 BeatIndex = entry.BeatIndex,
                 IsWindupOnly = false
-            });
+            }, remainingHits: -1);
         }
 
         public void SetSlot(AgendaEntry playerEntry, EnemyTelegraph enemyTelegraph)
+        {
+            SetSlot(playerEntry, enemyTelegraph, remainingHits: -1);
+        }
+
+        /// <param name="remainingHits">
+        /// Hits left to cancel (−1 = use telegraph.HitsRequired / NoteTier as-authored).
+        /// 0 shows cover-perfect icon.
+        /// </param>
+        public void SetSlot(AgendaEntry playerEntry, EnemyTelegraph enemyTelegraph, int remainingHits)
         {
             WireReferences();
 
@@ -271,10 +303,12 @@ namespace FracturedChorus.UI
                 return;
             }
 
-            SetTelegraphSlot(enemyTelegraph);
+            SetTelegraphSlot(enemyTelegraph, remainingHits);
         }
 
-        private void SetTelegraphSlot(EnemyTelegraph telegraph)
+        private Image NoteImage => _noteTierVisual != null ? _noteTierVisual : portrait;
+
+        private void SetTelegraphSlot(EnemyTelegraph telegraph, int remainingHits)
         {
             WireReferences();
             var skill = telegraph.Skill;
@@ -296,18 +330,22 @@ namespace FracturedChorus.UI
                 _glowBaseColor = glow.color;
             }
 
-            if (portrait != null)
+            var note = NoteImage;
+            if (note != null)
             {
-                portrait.gameObject.SetActive(true);
+                note.gameObject.SetActive(true);
                 if (isWindup)
                 {
-                    portrait.sprite = _defaultPortraitSprite;
-                    portrait.color = new Color(0.85f, 0.2f, 0.2f, 0.75f);
+                    note.sprite = _defaultPortraitSprite;
+                    note.color = new Color(0.85f, 0.2f, 0.2f, 0.75f);
                     ApplyPortraitLayout(22f);
                 }
                 else
                 {
-                    ApplyImpactNotePortrait(telegraph.NoteTier);
+                    var hits = remainingHits >= 0
+                        ? remainingHits
+                        : (telegraph.HitsRequired > 0 ? telegraph.HitsRequired : (int)telegraph.NoteTier);
+                    ApplyImpactNoteVisual(hits);
                 }
             }
 
@@ -317,13 +355,23 @@ namespace FracturedChorus.UI
                 {
                     actionLabel.text = "◆ ↑";
                 }
-                else if (telegraph.HitsRequired > 1)
-                {
-                    actionLabel.text = $"◆ {GetNoteLabel(telegraph.NoteTier)} · {telegraph.HitsRequired}";
-                }
                 else
                 {
-                    actionLabel.text = $"◆ {skill.displayName.ToUpperInvariant()}";
+                    var hits = remainingHits >= 0
+                        ? remainingHits
+                        : (telegraph.HitsRequired > 0 ? telegraph.HitsRequired : (int)telegraph.NoteTier);
+                    if (hits <= 0)
+                    {
+                        actionLabel.text = "◆ PERFECT";
+                    }
+                    else if (CombatCounterResolver.TryGetDisplayTier(hits, out var displayTier) && hits > 1)
+                    {
+                        actionLabel.text = $"◆ {GetNoteLabel(displayTier)} · {hits}";
+                    }
+                    else
+                    {
+                        actionLabel.text = $"◆ {skill.displayName.ToUpperInvariant()}";
+                    }
                 }
             }
         }
@@ -410,18 +458,27 @@ namespace FracturedChorus.UI
 
             if (_beatFrameVisual == null)
             {
-                var existing = transform.Find("BeatFrame")?.GetComponent<Image>();
-                if (existing != null)
+                if (beatFrame != null)
                 {
-                    _beatFrameVisual = existing;
+                    _beatFrameVisual = beatFrame;
                 }
                 else
                 {
-                    var go = new GameObject("BeatFrame", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-                    var rt = go.GetComponent<RectTransform>();
-                    rt.SetParent(transform, false);
-                    _beatFrameVisual = go.GetComponent<Image>();
-                    _beatFrameVisual.raycastTarget = false;
+                    var existing = transform.Find("BeatFrame")?.GetComponent<Image>();
+                    if (existing != null)
+                    {
+                        _beatFrameVisual = existing;
+                        beatFrame = existing;
+                    }
+                    else
+                    {
+                        var go = new GameObject("BeatFrame", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                        var rt = go.GetComponent<RectTransform>();
+                        rt.SetParent(transform, false);
+                        _beatFrameVisual = go.GetComponent<Image>();
+                        _beatFrameVisual.raycastTarget = false;
+                        beatFrame = _beatFrameVisual;
+                    }
                 }
             }
 
@@ -454,8 +511,56 @@ namespace FracturedChorus.UI
             rt.localScale = Vector3.one;
         }
 
+        private void ApplyImpactNoteVisual(int remainingHits)
+        {
+            var note = NoteImage;
+            if (note == null)
+            {
+                return;
+            }
+
+            var noteAlpha = 0.78f;
+            if (_noteVisuals != null && _noteVisuals.NoteAlpha > 0.01f)
+            {
+                noteAlpha = Mathf.Clamp01(_noteVisuals.NoteAlpha);
+            }
+
+            if (remainingHits <= 0)
+            {
+                var cover = _noteVisuals?.CoverPerfect;
+                var coverSize = _noteVisuals != null ? _noteVisuals.CoverDisplaySize : 48f;
+                if (cover != null)
+                {
+                    note.sprite = cover;
+                    note.color = new Color(1f, 1f, 1f, noteAlpha);
+                    note.preserveAspect = true;
+                }
+                else
+                {
+                    note.sprite = _defaultPortraitSprite;
+                    note.color = new Color(0.95f, 0.85f, 0.35f, noteAlpha);
+                }
+
+                ApplyPortraitLayout(coverSize);
+                return;
+            }
+
+            if (!CombatCounterResolver.TryGetDisplayTier(remainingHits, out var tier))
+            {
+                tier = BossNoteTier.Red;
+            }
+
+            ApplyImpactNotePortrait(tier);
+        }
+
         private void ApplyImpactNotePortrait(BossNoteTier tier)
         {
+            var note = NoteImage;
+            if (note == null)
+            {
+                return;
+            }
+
             var sprite = _noteVisuals?.NoteForTier(tier);
             var baseSize = _noteVisuals != null ? _noteVisuals.NoteDisplaySize : 40f;
             var scale = _noteVisuals != null ? _noteVisuals.NoteSizeScaleForTier(tier) : 1f;
@@ -468,15 +573,15 @@ namespace FracturedChorus.UI
             }
             if (sprite != null)
             {
-                portrait.sprite = sprite;
-                portrait.color = new Color(1f, 1f, 1f, noteAlpha);
-                portrait.preserveAspect = true;
+                note.sprite = sprite;
+                note.color = new Color(1f, 1f, 1f, noteAlpha);
+                note.preserveAspect = true;
             }
             else
             {
-                portrait.sprite = _defaultPortraitSprite;
+                note.sprite = _defaultPortraitSprite;
                 var tint = BossNoteTierColors.ForTier(tier);
-                portrait.color = new Color(tint.r, tint.g, tint.b, noteAlpha);
+                note.color = new Color(tint.r, tint.g, tint.b, noteAlpha);
             }
 
             ApplyPortraitLayout(size);
@@ -484,12 +589,13 @@ namespace FracturedChorus.UI
 
         private void ApplyPortraitLayout(float size)
         {
-            if (portrait?.rectTransform == null)
+            var note = NoteImage;
+            if (note?.rectTransform == null)
             {
                 return;
             }
 
-            var rt = portrait.rectTransform;
+            var rt = note.rectTransform;
             var y = _noteBandNormalizedY;
             rt.anchorMin = new Vector2(0.5f, y);
             rt.anchorMax = new Vector2(0.5f, y);

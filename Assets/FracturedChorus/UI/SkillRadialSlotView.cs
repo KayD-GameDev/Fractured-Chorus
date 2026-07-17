@@ -72,6 +72,7 @@ namespace FracturedChorus.UI
 
             ApplyCircleStyle();
             ApplyLabelStyle();
+            EnsureFrameVisual();
 
             var button = GetComponent<Button>();
             if (button == null)
@@ -113,6 +114,23 @@ namespace FracturedChorus.UI
             _rect.pivot = new Vector2(0.5f, 0.5f);
             _rect.sizeDelta = new Vector2(size, size);
             _rect.anchoredPosition = anchoredPos;
+
+            if (transform.Find("Frame") == null)
+            {
+                var frame = new GameObject("Frame", typeof(RectTransform));
+                var frameRect = frame.GetComponent<RectTransform>();
+                frameRect.SetParent(_rect, false);
+                frameRect.SetAsFirstSibling();
+                frameRect.anchorMin = Vector2.zero;
+                frameRect.anchorMax = Vector2.one;
+                frameRect.offsetMin = new Vector2(-6f, -6f);
+                frameRect.offsetMax = new Vector2(6f, 6f);
+                var frameImage = frame.AddComponent<Image>();
+                frameImage.sprite = UiCircleSpriteUtil.Circle;
+                frameImage.type = Image.Type.Simple;
+                frameImage.color = new Color(0.92f, 0.78f, 0.42f, 0.95f);
+                frameImage.raycastTarget = false;
+            }
 
             if (transform.Find("Ring") == null)
             {
@@ -226,6 +244,47 @@ namespace FracturedChorus.UI
             _onSelect?.Invoke();
         }
 
+        private void EnsureFrameVisual()
+        {
+            if (_rect == null)
+            {
+                _rect = transform as RectTransform;
+            }
+
+            if (_rect == null)
+            {
+                return;
+            }
+
+            var frameTransform = transform.Find("Frame") as RectTransform;
+            if (frameTransform == null)
+            {
+                var frame = new GameObject("Frame", typeof(RectTransform));
+                frameTransform = frame.GetComponent<RectTransform>();
+                frameTransform.SetParent(_rect, false);
+            }
+
+            frameTransform.SetAsFirstSibling();
+            frameTransform.anchorMin = Vector2.zero;
+            frameTransform.anchorMax = Vector2.one;
+            frameTransform.pivot = new Vector2(0.5f, 0.5f);
+            frameTransform.anchoredPosition = Vector2.zero;
+            frameTransform.sizeDelta = Vector2.zero;
+            frameTransform.offsetMin = new Vector2(-6f, -6f);
+            frameTransform.offsetMax = new Vector2(6f, 6f);
+
+            var frameImage = frameTransform.GetComponent<Image>();
+            if (frameImage == null)
+            {
+                frameImage = frameTransform.gameObject.AddComponent<Image>();
+            }
+
+            frameImage.sprite = UiCircleSpriteUtil.Circle;
+            frameImage.type = Image.Type.Simple;
+            frameImage.color = new Color(0.92f, 0.78f, 0.42f, 0.95f);
+            frameImage.raycastTarget = false;
+        }
+
         private void ApplyCircleStyle()
         {
             if (_background != null && _background.sprite == null)
@@ -239,6 +298,13 @@ namespace FracturedChorus.UI
             {
                 ring.sprite = UiCircleSpriteUtil.Circle;
                 ring.type = Image.Type.Simple;
+            }
+
+            var frame = transform.Find("Frame")?.GetComponent<Image>();
+            if (frame != null && frame.sprite == null)
+            {
+                frame.sprite = UiCircleSpriteUtil.Circle;
+                frame.type = Image.Type.Simple;
             }
 
             EnsureCircularIconImage();

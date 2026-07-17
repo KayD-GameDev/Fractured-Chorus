@@ -420,6 +420,8 @@ namespace FracturedChorus.Editor
                 ring.type = Image.Type.Simple;
             }
 
+            EnsureSkillSlotFrame(slotTransform);
+
             var label = slotTransform.Find("Label")?.GetComponent<Text>();
             if (label != null)
             {
@@ -429,6 +431,44 @@ namespace FracturedChorus.Editor
             }
 
             EnsureRadialSlotIcon(slotTransform);
+        }
+
+        private static void EnsureSkillSlotFrame(Transform slotTransform)
+        {
+            if (slotTransform == null)
+            {
+                return;
+            }
+
+            var frameTransform = slotTransform.Find("Frame") as RectTransform;
+            if (frameTransform == null)
+            {
+                var frameGo = CreateUiObject("Frame", slotTransform);
+                frameTransform = frameGo.GetComponent<RectTransform>();
+                Undo.RegisterCreatedObjectUndo(frameGo, "Add Skill Slot Frame");
+            }
+
+            frameTransform.SetAsFirstSibling();
+            StretchWithPadding(frameTransform, 0f, 0f, 1f, 1f);
+            frameTransform.offsetMin = new Vector2(-6f, -6f);
+            frameTransform.offsetMax = new Vector2(6f, 6f);
+
+            var frameImg = frameTransform.GetComponent<Image>();
+            if (frameImg == null)
+            {
+                frameImg = frameTransform.gameObject.AddComponent<Image>();
+            }
+
+            frameImg.sprite = UiCircleSpriteUtil.Circle;
+            frameImg.type = Image.Type.Simple;
+            frameImg.color = new Color(0.92f, 0.78f, 0.42f, 0.95f);
+            frameImg.raycastTarget = false;
+
+            var ring = slotTransform.Find("Ring");
+            if (ring != null)
+            {
+                ring.SetSiblingIndex(1);
+            }
         }
 
         private static void EnsureRadialSlotIcon(Transform slotTransform)
@@ -494,6 +534,8 @@ namespace FracturedChorus.Editor
             ringImg.type = Image.Type.Simple;
             ringImg.color = new Color(0.75f, 0.8f, 0.95f, 1f);
             ringImg.raycastTarget = false;
+
+            EnsureSkillSlotFrame(slotGo.transform);
 
             var bg = slotGo.AddComponent<Image>();
             bg.sprite = UiCircleSpriteUtil.Circle;
@@ -637,10 +679,33 @@ namespace FracturedChorus.Editor
             segGo.AddComponent<LayoutElement>().preferredWidth = SlotWidth;
             segGo.AddComponent<Image>().color = new Color(0.12f, 0.12f, 0.18f, 0.85f);
 
+            var beatFrameGo = CreateUiObject("BeatFrame", segGo.transform);
+            StretchWithPadding(beatFrameGo.GetComponent<RectTransform>(), 0f, 0f, 1f, 1f);
+            var beatFrameRect = beatFrameGo.GetComponent<RectTransform>();
+            beatFrameRect.offsetMin = new Vector2(1.5f, 1.5f);
+            beatFrameRect.offsetMax = new Vector2(-1.5f, -1.5f);
+            var beatFrameImg = beatFrameGo.AddComponent<Image>();
+            beatFrameImg.color = new Color(1f, 1f, 1f, 0.55f);
+            beatFrameImg.raycastTarget = false;
+            beatFrameImg.enabled = false;
+
             var glowGo = CreateUiObject("Glow", segGo.transform);
             StretchWithPadding(glowGo.GetComponent<RectTransform>(), 0.05f, 0.1f, 0.95f, 0.9f);
             glowGo.AddComponent<Image>().color = new Color(1f, 0.2f, 0.2f, 0.15f);
 
+            var noteTierGo = CreateUiObject("NoteTier", segGo.transform);
+            var noteTierRect = noteTierGo.GetComponent<RectTransform>();
+            noteTierRect.anchorMin = new Vector2(0.5f, 0.72f);
+            noteTierRect.anchorMax = new Vector2(0.5f, 0.72f);
+            noteTierRect.pivot = new Vector2(0.5f, 0.5f);
+            noteTierRect.anchoredPosition = Vector2.zero;
+            noteTierRect.sizeDelta = new Vector2(40f, 40f);
+            var noteTierImg = noteTierGo.AddComponent<Image>();
+            noteTierImg.color = new Color(0.4f, 0.4f, 0.5f, 1f);
+            noteTierImg.raycastTarget = false;
+            noteTierImg.preserveAspect = true;
+
+            // Legacy Portrait alias — kept for older WireReferences paths / scene patches.
             var portraitGo = CreateUiObject("Portrait", segGo.transform);
             var portraitRect = portraitGo.GetComponent<RectTransform>();
             portraitRect.anchorMin = new Vector2(0.5f, 0.5f);
@@ -648,7 +713,10 @@ namespace FracturedChorus.Editor
             portraitRect.pivot = new Vector2(0.5f, 0.5f);
             portraitRect.anchoredPosition = Vector2.zero;
             portraitRect.sizeDelta = new Vector2(24f, 24f);
-            portraitGo.AddComponent<Image>().color = new Color(0.4f, 0.4f, 0.5f, 1f);
+            var portraitImg = portraitGo.AddComponent<Image>();
+            portraitImg.color = new Color(0.4f, 0.4f, 0.5f, 0.15f);
+            portraitImg.raycastTarget = false;
+            portraitGo.SetActive(false);
 
             var labelGo = CreateUiObject("ActionLabel", segGo.transform);
             var labelRect = labelGo.GetComponent<RectTransform>();
@@ -673,8 +741,98 @@ namespace FracturedChorus.Editor
 
             var segment = segGo.AddComponent<BeatSegmentView>();
             segment.SetDisplayBeatIndex(index);
+            SetField(segment, "beatFrame", beatFrameImg);
+            SetField(segment, "noteTier", noteTierImg);
+            SetField(segment, "portrait", noteTierImg);
             segment.WireReferences();
             return segment;
+        }
+
+        /// <summary>Ensure BeatFrame + NoteTier exist on the timeline segment template (scene-first tuning).</summary>
+        public static void EnsureBeatTemplateVisuals(BeatTimelineUIView timeline)
+        {
+            if (timeline == null)
+            {
+                return;
+            }
+
+            var templateField = typeof(BeatTimelineUIView).GetField("segmentTemplate",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic
+                | System.Reflection.BindingFlags.Public);
+            var template = templateField?.GetValue(timeline) as BeatSegmentView;
+            if (template == null)
+            {
+                return;
+            }
+
+            EnsureBeatSegmentAuthoredVisuals(template);
+        }
+
+        private static void EnsureBeatSegmentAuthoredVisuals(BeatSegmentView segment)
+        {
+            if (segment == null)
+            {
+                return;
+            }
+
+            var root = segment.transform;
+
+            var beatFrame = root.Find("BeatFrame")?.GetComponent<Image>();
+            if (beatFrame == null)
+            {
+                var go = CreateUiObject("BeatFrame", root);
+                Undo.RegisterCreatedObjectUndo(go, "Add BeatFrame");
+                var rt = go.GetComponent<RectTransform>();
+                StretchWithPadding(rt, 0f, 0f, 1f, 1f);
+                rt.offsetMin = new Vector2(1.5f, 1.5f);
+                rt.offsetMax = new Vector2(-1.5f, -1.5f);
+                beatFrame = go.AddComponent<Image>();
+                beatFrame.raycastTarget = false;
+                beatFrame.enabled = false;
+                beatFrame.color = new Color(1f, 1f, 1f, 0.55f);
+                go.transform.SetSiblingIndex(1);
+            }
+
+            var noteTier = root.Find("NoteTier")?.GetComponent<Image>();
+            if (noteTier == null)
+            {
+                var portrait = root.Find("Portrait");
+                if (portrait != null)
+                {
+                    Undo.RecordObject(portrait.gameObject, "Rename Portrait to NoteTier");
+                    portrait.name = "NoteTier";
+                    noteTier = portrait.GetComponent<Image>();
+                }
+                else
+                {
+                    var go = CreateUiObject("NoteTier", root);
+                    Undo.RegisterCreatedObjectUndo(go, "Add NoteTier");
+                    var rt = go.GetComponent<RectTransform>();
+                    rt.anchorMin = new Vector2(0.5f, 0.72f);
+                    rt.anchorMax = new Vector2(0.5f, 0.72f);
+                    rt.pivot = new Vector2(0.5f, 0.5f);
+                    rt.sizeDelta = new Vector2(40f, 40f);
+                    noteTier = go.AddComponent<Image>();
+                    noteTier.raycastTarget = false;
+                    noteTier.preserveAspect = true;
+                }
+            }
+
+            if (noteTier != null)
+            {
+                noteTier.raycastTarget = false;
+                noteTier.preserveAspect = true;
+            }
+
+            SetField(segment, "beatFrame", beatFrame);
+            SetField(segment, "noteTier", noteTier);
+            if (noteTier != null)
+            {
+                SetField(segment, "portrait", noteTier);
+            }
+
+            segment.WireReferences();
+            EditorUtility.SetDirty(segment);
         }
 
         private static void CreatePhaseDivider(Transform parent)

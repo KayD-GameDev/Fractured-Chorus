@@ -320,6 +320,7 @@ namespace FracturedChorus.UI
         {
             DestroyDragGhost();
             _draggingSkill = null;
+            _keyboardDragActive = false;
             _onSkillDragEnd?.Invoke();
 
             var consumed = _onSkillDroppedAtScreen?.Invoke(_currentUnit, skill, screenPos) ?? false;
@@ -330,6 +331,24 @@ namespace FracturedChorus.UI
 
             return consumed;
         }
+
+        /// <summary>
+        /// Click outside the radial while a skill is armed (W/A/D ghost) — attempt drop at screen point.
+        /// Returns true when the armed skill was consumed (placed or cancelled from armed state).
+        /// </summary>
+        public bool TryConsumeArmedSkillDrop(Vector2 screenPos)
+        {
+            if (!_keyboardDragActive || _draggingSkill == null)
+            {
+                return false;
+            }
+
+            var skill = _draggingSkill;
+            EndSkillDrag(skill, screenPos);
+            return true;
+        }
+
+        public bool IsSkillArmed => _keyboardDragActive && _draggingSkill != null;
 
         private void EnsureDragGhost(SkillDefinitionSO skill)
         {
@@ -512,7 +531,11 @@ namespace FracturedChorus.UI
 
             if (WasMouseButtonReleasedThisFrame())
             {
-                EndSkillDrag(_draggingSkill, GetMouseScreenPosition());
+                if (_draggingSkill != null)
+                {
+                    EndSkillDrag(_draggingSkill, GetMouseScreenPosition());
+                }
+
                 _keyboardDragActive = false;
             }
         }
@@ -769,11 +792,20 @@ namespace FracturedChorus.UI
                 _enableBackdropRoutine = null;
             }
 
+            // If a skill is still armed, clear ghost without treating as a successful place.
+            if (_draggingSkill != null || _keyboardDragActive)
+            {
+                DestroyDragGhost();
+                _draggingSkill = null;
+                _keyboardDragActive = false;
+                _onSkillDragEnd?.Invoke();
+            }
+            else
+            {
+                DestroyDragGhost();
+            }
+
             HideDismissBackdrop();
-            DestroyDragGhost();
-            _draggingSkill = null;
-            _keyboardDragActive = false;
-            _onSkillDragEnd?.Invoke();
 
             if (panelRect != null && panelRect.gameObject.activeSelf)
             {

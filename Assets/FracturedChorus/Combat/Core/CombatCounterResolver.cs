@@ -4,6 +4,7 @@ using FracturedChorus.Combat.Grid;
 using FracturedChorus.Combat.Timeline;
 using FracturedChorus.Combat.Units;
 using FracturedChorus.Data;
+using UnityEngine;
 
 namespace FracturedChorus.Combat.Core
 {
@@ -181,8 +182,69 @@ namespace FracturedChorus.Combat.Core
                 return false;
             }
 
+            return GetRemainingHits(telegraph, timeline) <= 0;
+        }
+
+        /// <summary>Hits still needed to cancel — spawn HitsRequired minus current Active counters on that beat.</summary>
+        public static int GetRemainingHits(EnemyTelegraph telegraph, BeatTimelineEngine timeline)
+        {
+            if (telegraph == null)
+            {
+                return 0;
+            }
+
             var required = telegraph.HitsRequired > 0 ? telegraph.HitsRequired : 1;
-            return CountCountersAtBeat(timeline, telegraph.BeatIndex) >= required;
+            if (timeline == null)
+            {
+                return required;
+            }
+
+            return Mathf.Max(0, required - CountCountersAtBeat(timeline, telegraph.BeatIndex));
+        }
+
+        /// <summary>Preview remaining hits if <paramref name="pendingSkill"/> Active window covers the telegraph beat.</summary>
+        public static int GetRemainingHitsAfterPending(
+            EnemyTelegraph telegraph,
+            BeatTimelineEngine timeline,
+            SkillDefinitionSO pendingSkill,
+            int pendingPlacementBeat,
+            CombatUnit pendingUnit)
+        {
+            var remaining = GetRemainingHits(telegraph, timeline);
+            if (telegraph == null || pendingSkill == null || remaining <= 0)
+            {
+                return remaining;
+            }
+
+            foreach (var info in SkillFootprintUtil.EnumerateFootprintBeats(pendingSkill, pendingPlacementBeat, pendingUnit))
+            {
+                if (info.Role == FootprintBeatRole.Active && info.BeatIndex == telegraph.BeatIndex)
+                {
+                    return Mathf.Max(0, remaining - 1);
+                }
+            }
+
+            return remaining;
+        }
+
+        /// <summary>
+        /// Visual tier from remaining hits: 3→Purple, 2→Blue, 1→Red, 0→fully covered (no tier).
+        /// </summary>
+        public static bool TryGetDisplayTier(int remainingHits, out BossNoteTier tier)
+        {
+            if (remainingHits <= 0)
+            {
+                tier = BossNoteTier.Red;
+                return false;
+            }
+
+            tier = remainingHits switch
+            {
+                1 => BossNoteTier.Red,
+                2 => BossNoteTier.Blue,
+                _ => BossNoteTier.Purple
+            };
+            return true;
         }
 
         public static CombatUnit ResolvePlayerCounterTarget(AgendaEntry entry, BeatTimelineEngine timeline)

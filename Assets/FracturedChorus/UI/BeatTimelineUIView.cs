@@ -2717,7 +2717,6 @@ namespace FracturedChorus.UI
             var catalog = NoteVisuals;
             var ghostSprite = catalog.DropGhost(valid);
             var ghostSize = catalog.GhostDisplaySize;
-            var coverSprite = catalog.Cover(valid);
             var coverSize = catalog.CoverDisplaySize;
             var noteCoverY = GetNoteCoverYFromBottom(viewport.rect.height);
 
@@ -2758,10 +2757,24 @@ namespace FracturedChorus.UI
                     }
 
                     if (_timeline != null
-                        && coverSprite != null
-                        && _timeline.GetImpactTelegraphAtBeat(info.BeatIndex) != null)
+                        && _timeline.GetImpactTelegraphAtBeat(info.BeatIndex) is { } telegraph)
                     {
-                        AddDropCoverOverlay(info.BeatIndex, noteCoverY, coverSprite, coverSize);
+                        var remainingAfter = CombatCounterResolver.GetRemainingHitsAfterPending(
+                            telegraph, _timeline, skill, beat, unit);
+                        Sprite coverSprite = null;
+                        if (remainingAfter <= 0)
+                        {
+                            coverSprite = valid ? catalog.CoverPerfect : catalog.CoverMiss;
+                        }
+                        else if (CombatCounterResolver.TryGetDisplayTier(remainingAfter, out var previewTier))
+                        {
+                            coverSprite = catalog.NoteForTier(previewTier);
+                        }
+
+                        if (coverSprite != null)
+                        {
+                            AddDropCoverOverlay(info.BeatIndex, noteCoverY, coverSprite, coverSize);
+                        }
                     }
 
                     continue;
@@ -3421,8 +3434,15 @@ namespace FracturedChorus.UI
 
             slot.SetNoteVisualCatalog(NoteVisuals);
             slot.SetNoteBandNormalizedY(noteBandNormalizedY);
-            var telegraph = _timeline.GetTelegraphAtBeat(globalBeat);
-            slot.SetSlot(playerEntry, telegraph);
+            var telegraph = _timeline.GetImpactTelegraphAtBeat(globalBeat)
+                ?? _timeline.GetTelegraphAtBeat(globalBeat);
+            var remainingHits = -1;
+            if (telegraph != null && !telegraph.IsWindupOnly)
+            {
+                remainingHits = CombatCounterResolver.GetRemainingHits(telegraph, _timeline);
+            }
+
+            slot.SetSlot(playerEntry, telegraph, remainingHits);
             slot.CaptureLayoutBaseline();
         }
 

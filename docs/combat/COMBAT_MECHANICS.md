@@ -73,7 +73,8 @@ Dàn trận (kéo unit vào ô) — [Deploy] hiện ngay, chưa có nhạc
 
 - Active beat (S) trùng beat telegraph quái → counter **đúng quái đó** (không pick cột trước).
 - Boss note **Tím/Xanh/Đỏ** (`HitsRequired` 3/2/1): đủ skill counter active cùng beat → **hủy đòn** (không dmg).
-- **Portrait** trên beat slot hiển thị màu tier: Grunt luôn **Đỏ**; Elite **70% Đỏ / 30% Xanh**; Boss roll đủ 3 màu theo phase.
+- **Planning visual:** mỗi counter Active giảm 1 hit hiển thị (Tím→Xanh→Đỏ→`cover_perfect`); resolve vẫn so `CountCountersAtBeat >= HitsRequired`.
+- **Portrait / NoteTier** trên beat slot hiển thị theo hits còn lại. Spawn: Grunt luôn **Đỏ**; Elite **70% Đỏ / 30% Xanh**; Boss roll đủ 3 màu theo phase.
 
 ### Resolve đòn quái
 
@@ -112,7 +113,11 @@ Timeline giữ **một hàng cột beat duy nhất**. Trên đó overlay **N dò
 
 1. **Kéo-thả:** kéo từ `SkillSlot_{Top,Left,Right}` → preview footprint S1/S/S2 trên lane → thả → `TryAssignPlayerAction` (chặn overlap qua `SkillFootprintUtil`).
 2. **Click:** highlight ô radial.
-3. **W / A / D:** gắn skill ô tương ứng vào chuột (ghost bám con trỏ); có thể **đổi W/A/D** khi đang kéo → thả lên lane để gán.
+3. **W / A / D:** gắn skill ô tương ứng vào chuột (ghost bám con trỏ); có thể **đổi W/A/D** khi đang kéo → **click / thả** lên lane timeline để gán.
+
+**Backdrop:** `SkillPanelDismissBackdrop` phủ canvas phía trên timeline. Khi skill đang armed (W/A/D), click backdrop = **cố đặt skill** tại vị trí chuột (`TryConsumeArmedSkillDrop`), không đóng panel trước. Chỉ dismiss khi không armed.
+
+**Skill slot Frame:** mỗi ô radial có child `Frame` (vành vàng) + `Ring` — chỉnh size/color trong Hierarchy.
 
 **Skill panel Hierarchy:** `SkillPanelUI` tròn (220×220, `UiCircleSpriteUtil.Circle`) + `Radial/SkillSlot_*` tròn, label **20px đen** — scene-first (`Setup Skill Panel in Hierarchy`).
 
@@ -194,12 +199,14 @@ Latency = max(0, 2 − ⌊HB / 85⌋)
 ### Degrade
 
 ```
-Tím(3) ──1 hit──► Xanh(2) ──1 hit──► Đỏ(1) ──1 hit──► CANCELLED
+Tím(3) ──1 hit──► Xanh(2) ──1 hit──► Đỏ(1) ──1 hit──► COVER PERFECT (cancelled @ resolve)
 ```
 
 - Mỗi **frame S active** trên beat = **1 counter hit** lên nốt tại beat đó (Perfect timing)
 - Triệt tiêu nốt Tím @ 1 beat → cần **3 hit cùng beat** (3 row chồng hoặc nhiều lượt plan)
 - S dài 3 beat (9–10–11) = 1 hit / beat cho nốt **trên từng beat**, không gom 3 hit vào 1 beat
+- **Planning UI:** sau mỗi lần đặt skill counter, portrait/`NoteTier` đổi sprite theo **hits còn lại** (3→2→1); đủ hit → hiện `cover_perfect_v1` ngay trên ô beat (`CombatCounterResolver.GetRemainingHits`). `HitsRequired` spawn **không** mutate — chỉ tính remaining = required − counters.
+- **Drag preview:** Active ∩ impact → overlay tier kế hoặc Perfect (không còn luôn hiện Perfect chỉ vì drop hợp lệ).
 
 ### Spawn
 
@@ -207,6 +214,12 @@ Tím(3) ──1 hit──► Xanh(2) ──1 hit──► Đỏ(1) ──1 hit�
 - Khoảng cách tối thiểu giữa đợt: **3–4 beat** (tunable)
 - Không theo cycle — pattern có trọng số theo boss phase
 - Chỉ áp dụng cho nốt **CORE** (Thân). Nốt **MICRO** / **EYE** spawn theo lịch riêng (§6)
+
+### Beat template (scene)
+
+- `BeatFrame` + `NoteTier` nằm trên segment template (`Beat_0` / `segmentTemplate`) — chỉnh RectTransform trong Hierarchy; Play clone ra các beat khác.
+- Menu **Apply All Play-Ready Updates** gọi `EnsureBeatTemplateVisuals`.
+- Legacy `Portrait` vẫn được WireReferences fallback nếu chưa có `NoteTier`.
 
 ---
 

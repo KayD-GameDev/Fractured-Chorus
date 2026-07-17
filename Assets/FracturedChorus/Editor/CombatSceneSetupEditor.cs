@@ -119,6 +119,7 @@ namespace FracturedChorus.Editor
             foreach (var timeline in Object.FindObjectsByType<BeatTimelineUIView>(FindObjectsInactive.Include))
             {
                 timeline.WireReferences();
+                TimelineHierarchyBuilder.EnsureBeatTemplateVisuals(timeline);
                 timeline.ForceRefitViewportSlots();
                 EditorUtility.SetDirty(timeline);
             }
