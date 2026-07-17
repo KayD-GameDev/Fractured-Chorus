@@ -1,6 +1,6 @@
 # Cover Gauge from Empty Beats — Design Spec
 
-> **Status:** Approved — implementation plan ready (2026-07-16)  
+> **Status:** Implemented — runtime landed (2026-07-17); Play Mode verify pending  
 > **Scope:** Phase 4 combat A1 — empty-beat → party Cover gauge → Ren Cover buff window  
 > **Approach:** CoverRuntime service (separate from Prep)  
 > **SoT (after ship):** [`docs/combat/SKILL_KIT.md`](../../combat/SKILL_KIT.md) · [`docs/combat/COMBAT_MECHANICS.md`](../../combat/COMBAT_MECHANICS.md)  

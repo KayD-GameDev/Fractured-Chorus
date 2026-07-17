@@ -3,6 +3,11 @@ using UnityEngine;
 
 namespace FracturedChorus.Combat.Core
 {
+    /// <summary>
+    /// Deprecated placement budget. Skill assign is footprint-only (S1/S/S2 overlap).
+    /// BaseAv on units still drives action order and enemy damage targeting.
+    /// Kept for ResolveTimelinePhaseIndex helpers / UI phase index display.
+    /// </summary>
     public class PhaseAvTracker
     {
         public const int Phase1Budget = 150;
@@ -37,25 +42,14 @@ namespace FracturedChorus.Combat.Core
 
         public int Remaining => CurrentBudget - SpentThisPhase;
 
-        public bool CanAfford(int cost)
-        {
-            return cost >= 0 && SpentThisPhase + cost <= CurrentBudget;
-        }
+        public bool CanAfford(int cost) => true;
 
         public void RecordSpend(int cost)
         {
-            if (cost > 0)
-            {
-                SpentThisPhase += cost;
-            }
         }
 
         public void RecordRefund(int cost)
         {
-            if (cost > 0)
-            {
-                SpentThisPhase = Mathf.Max(0, SpentThisPhase - cost);
-            }
         }
     }
 }

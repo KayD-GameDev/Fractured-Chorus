@@ -4,6 +4,7 @@ using System.Linq;
 using FracturedChorus.Combat.Actions;
 using FracturedChorus.Combat.AI;
 using FracturedChorus.Combat.Block;
+using FracturedChorus.Combat.Cover;
 using FracturedChorus.Combat.Damage;
 using FracturedChorus.Combat.Grid;
 using FracturedChorus.Combat.Timeline;
@@ -32,11 +33,15 @@ namespace FracturedChorus.Combat.Core
         private int _lastScanBeat = -1;
         public PhaseAvTracker PhaseAv { get; } = new();
         public BlockBarrierTracker BlockBarriers { get; } = new();
+        public CoverRuntime Cover { get; } = new();
         /// <summary>0 = phases 1–2 (beats 0–31), 1 = phases 3–4, …</summary>
         public int RoundSegmentIndex => _roundSegmentIndex;
 
         /// <summary>True only before Execute — player may drag units onto grid cells.</summary>
         public bool AllowPlayerReposition { get; private set; } = true;
+
+        /// <summary>True while Deploy reposition / planning pause / between-segment planning — Cover button gate.</summary>
+        public bool AllowCoverActivate { get; set; } = true;
 
         public bool IsEncounterOver =>
             Phase == CombatPhase.Victory || Phase == CombatPhase.Defeat;
@@ -158,18 +163,11 @@ namespace FracturedChorus.Combat.Core
                 return false;
             }
 
-            var cost = skill.GetAvCost();
-            if (!PhaseAv.CanAfford(cost))
-            {
-                return false;
-            }
-
             if (!Timeline.TryAssignAction(unit, skill, beatIndex))
             {
                 return false;
             }
 
-            PhaseAv.RecordSpend(cost);
             var entry = Timeline.FindPlayerEntry(unit, beatIndex);
             if (entry != null)
             {
@@ -206,7 +204,6 @@ namespace FracturedChorus.Combat.Core
                 return false;
             }
 
-            PhaseAv.RecordRefund(entry.Skill.GetAvCost());
             return true;
         }
 
@@ -348,8 +345,10 @@ namespace FracturedChorus.Combat.Core
             _lastScanBeat = -1;
             BlockBarriers.Clear();
             AllowPlayerReposition = true;
+            AllowCoverActivate = true;
             Timeline.ResetForPlanning();
             PhaseAv.ResetForPlanning();
+            Cover.Reset();
             Timeline.SetPhase(CombatPhase.Planning);
         }
 
@@ -371,6 +370,7 @@ namespace FracturedChorus.Combat.Core
             }
 
             Timeline.SetPhase(CombatPhase.Executing);
+            Cover.BeginWindowIfPending();
             ResolveAnyRemainingBeats();
 
             if (IsEncounterOver)
@@ -398,6 +398,8 @@ namespace FracturedChorus.Combat.Core
             var telegraphs = Timeline.GetImpactTelegraphsAtBeat(beatIndex);
             var playerEntries = GetPlayerEntriesActiveAtBeat(beatIndex);
 
+            Cover.BeginWindowIfPending();
+
             TryResolveEmpowerAtBeat(beatIndex, playerEntries);
             TryChannelPrepAtBeat(beatIndex, playerEntries, telegraphs);
             ResolvePlayerAttacksAtBeat(beatIndex, playerEntries, telegraphs);
@@ -407,6 +409,7 @@ namespace FracturedChorus.Combat.Core
                 ResolveEnemyTelegraphAtBeat(telegraph, beatIndex);
             }
 
+            Cover.TickBeat();
             TryEndEncounterIfDecided();
         }
 
@@ -478,7 +481,7 @@ namespace FracturedChorus.Combat.Core
             }
         }
 
-        private static void TryChannelPrepAtBeat(
+        private void TryChannelPrepAtBeat(
             int beatIndex,
             IReadOnlyList<AgendaEntry> entries,
             IReadOnlyList<EnemyTelegraph> telegraphs)
@@ -508,6 +511,12 @@ namespace FracturedChorus.Combat.Core
                 entry.Unit.GainPrep(1);
                 Debug.Log(
                     $"[Prep] {entry.Unit.DisplayName} +1 @ beat {beatIndex} ({entry.Skill.displayName}) → {entry.Unit.Prep}/{CombatUnit.PrepCap}");
+
+                if (Cover.TryCharge(1))
+                {
+                    Debug.Log(
+                        $"[Cover] +1 @ beat {beatIndex} ({entry.Skill.displayName}) → {Cover.Gauge}/{CoverConstants.GaugeCap}");
+                }
             }
         }
 
@@ -516,6 +525,7 @@ namespace FracturedChorus.Combat.Core
         {
             var players = entries
                 .Where(e => e.Unit != null && e.Skill != null && !e.Skill.IsGuard)
+                .OrderBy(e => e.Unit.ActionPriority)
                 .ToList();
 
             var enemyBeat = telegraphs.Count > 0 ? telegraphs[0].BeatIndex : beatIndex;
@@ -526,7 +536,8 @@ namespace FracturedChorus.Combat.Core
                     break;
                 }
 
-                var timing = BeatTimingResolver.Resolve(entry.BeatIndex, enemyBeat);
+                var timing = Cover.RemapPlayerTiming(
+                    BeatTimingResolver.Resolve(entry.BeatIndex, enemyBeat));
                 ResolvePlayerAttack(entry, timing);
             }
         }
@@ -563,11 +574,12 @@ namespace FracturedChorus.Combat.Core
             var blockTiming = BlockBarriers.TryGetBlockTiming(beatIndex, Timeline);
             if (blockTiming.HasValue)
             {
-                var reduction = blockTiming.Value.GetDamageReduction();
+                var timing = Cover.RemapGuardTiming(blockTiming.Value);
+                var reduction = timing.GetDamageReduction();
                 var before = finalDamage;
                 finalDamage *= 1f - reduction;
                 Debug.Log(
-                    $"[Block] {blockTiming.Value} @ beat {beatIndex} → dmg {before:F0} → {finalDamage:F0} (-{reduction * 100f:F0}%)");
+                    $"[Block] {timing} @ beat {beatIndex} → dmg {before:F0} → {finalDamage:F0} (-{reduction * 100f:F0}%)");
             }
 
             target.TakeDamage(finalDamage);
@@ -589,6 +601,7 @@ namespace FracturedChorus.Combat.Core
             }
 
             Timeline.SetPhase(outcome);
+            Cover.Reset();
             OnEncounterEnded?.Invoke();
             Debug.Log(outcome == CombatPhase.Victory ? "[Combat] Victory — all enemies defeated!" : "[Combat] Defeat!");
             return true;
@@ -619,7 +632,8 @@ namespace FracturedChorus.Combat.Core
                 Skill = entry.Skill,
                 BeatTiming = timing,
                 IsEmpowered = entry.IsEmpowered,
-                Entry = entry
+                Entry = entry,
+                CoverOutgoingMultiplier = Cover.OutgoingDamageMultiplier
             };
 
             var command = new SkillActionCommand(entry.Skill);

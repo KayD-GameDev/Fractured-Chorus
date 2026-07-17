@@ -22,6 +22,8 @@ namespace FracturedChorus.Editor
         private const string TransitionSourceDownload = @"d:\Project 1\Transition SFX.wav";
         private const string PerfectCounterSourceDownload = @"c:\Users\Asus\Downloads\Perfect sound.wav";
         private const string ClashHitSourceDownload = @"c:\Users\Asus\Downloads\Clash Hit.wav";
+        private const string RenCoverPath = "Assets/FracturedChorus/Audio/Music/EternalSpark_RenCover.mp3";
+        private const string RenCoverSourceDownload = @"d:\Project 1\Eternal Spark - Ren cover.mp3";
 
         [MenuItem("Fractured Chorus/Import Planning Audio From Downloads")]
         public static void ImportPlanningAudioFromDownloads()
@@ -30,8 +32,17 @@ namespace FracturedChorus.Editor
             ImportAudio(TransitionSourceDownload, PlanningTransitionPath);
             ImportAudio(PerfectCounterSourceDownload, PerfectCounterPath);
             ImportAudio(ClashHitSourceDownload, ClashHitPath);
+            ImportIfMissing(RenCoverSourceDownload, RenCoverPath);
             AssetDatabase.Refresh();
-            Debug.Log("[Fractured Chorus] Planning BGM + transition WAV + perfect counter + clash hit WAV imported.");
+            Debug.Log("[Fractured Chorus] Planning BGM + transition WAV + perfect counter + clash hit WAV + Ren Cover imported.");
+        }
+
+        [MenuItem("Fractured Chorus/Import Ren Cover Audio")]
+        public static void ImportRenCoverAudio()
+        {
+            ImportAudio(RenCoverSourceDownload, RenCoverPath);
+            AssetDatabase.Refresh();
+            Debug.Log("[Fractured Chorus] Ren Cover imported → " + RenCoverPath);
         }
 
         private static void ImportIfMissing(string sourcePath, string destAssetPath)
@@ -78,6 +89,7 @@ namespace FracturedChorus.Editor
             var planningTransition = AssetDatabase.LoadAssetAtPath<AudioClip>(PlanningTransitionPath);
             var perfectCounter = AssetDatabase.LoadAssetAtPath<AudioClip>(PerfectCounterPath);
             var clashHit = AssetDatabase.LoadAssetAtPath<AudioClip>(ClashHitPath);
+            var renCover = AssetDatabase.LoadAssetAtPath<AudioClip>(RenCoverPath);
             if (clip == null)
             {
                 Debug.LogError($"[CombatMusic] Missing clip at {ClipPath}. Re-import project.");
@@ -123,9 +135,17 @@ namespace FracturedChorus.Editor
                 so.FindProperty("planningTransitionClip").objectReferenceValue = planningTransition;
             }
 
+            if (renCover != null)
+            {
+                so.FindProperty("coverClip").objectReferenceValue = renCover;
+            }
+
             so.FindProperty("planningStartSec").floatValue = 17f;
             so.FindProperty("planningVolume").floatValue = 0.25f;
             so.FindProperty("planningTransitionVolume").floatValue = 1f;
+            so.FindProperty("coverStartSec").floatValue = 96.5f;
+            so.FindProperty("coverVolume").floatValue = 1f;
+            so.FindProperty("coverBossDuckVolume").floatValue = 0.2f;
 
             var sourceProp = so.FindProperty("source");
             if (sourceProp.objectReferenceValue == null)
@@ -173,7 +193,8 @@ namespace FracturedChorus.Editor
             }
 
             EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
-            Debug.Log("[Fractured Chorus] Combat audio wired (boss + planning + transition + perfect counter + clash hit).");
+            Debug.Log(
+                "[Fractured Chorus] Combat audio wired (boss + planning + transition + perfect + clash + Ren Cover @96.5s).");
         }
     }
 }
