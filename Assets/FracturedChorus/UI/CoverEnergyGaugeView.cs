@@ -224,8 +224,18 @@ namespace FracturedChorus.UI
             var frameT = transform.Find("Frame");
             if (frameT == null)
             {
-                Debug.LogWarning("[CoverEnergyGauge] Frame missing in scene — not creating (preserve hand layout).");
-                return;
+                if (preserveSceneLayout)
+                {
+                    Debug.LogWarning("[CoverEnergyGauge] Frame missing in scene — not creating (preserve hand layout).");
+                    return;
+                }
+
+                BuildRuntimeFallbackHierarchy();
+                frameT = transform.Find("Frame");
+                if (frameT == null)
+                {
+                    return;
+                }
             }
 
             if (frameImage == null)
@@ -258,7 +268,14 @@ namespace FracturedChorus.UI
 
             if (pipsRoot == null)
             {
-                Debug.LogWarning("[CoverEnergyGauge] Pips root missing in scene — not creating.");
+                if (preserveSceneLayout)
+                {
+                    Debug.LogWarning("[CoverEnergyGauge] Pips root missing in scene — not creating.");
+                    return;
+                }
+
+                BuildRuntimeFallbackHierarchy();
+                pipsRoot = transform.Find("Pips") as RectTransform;
             }
         }
 
