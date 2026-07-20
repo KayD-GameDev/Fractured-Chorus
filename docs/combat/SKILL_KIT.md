@@ -136,17 +136,21 @@ Scan / Execute after activate         →  12 beat window: party dmg ×1.25
 
 ---
 
-## Unlock (giữ progression doc)
+## Unlock (SoT — đồng bộ progression)
+
+> Level / XP / soft-cap: [combat-level-xp-progression-design](../superpowers/specs/2026-07-19-combat-level-xp-progression-design.md) · tables [CHARACTER_LEVEL_PROGRESS.md](./CHARACTER_LEVEL_PROGRESS.md)
 
 | Lv | Ren | Charlotte | Coda |
 |----|-----|-----------|------|
 | 1 | Strike | Ram | Pulse |
-| 4 | Crosscut | — | — |
 | 3 | — | Anchor | — |
+| 4 | Crosscut | — | — |
 | 5 | — | — | Mend |
 | 9 | — | Bulwark | — |
 | 10 | Finale | — | — |
 | 11 | — | — | Encore |
+
+Không có skill-point riêng — unlock theo mốc Party Combat Level.
 
 ---
 
