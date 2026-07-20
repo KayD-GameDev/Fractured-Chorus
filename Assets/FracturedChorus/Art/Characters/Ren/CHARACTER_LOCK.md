@@ -13,7 +13,7 @@
 
 ## Face / Hair
 - Messy layered black hair, bangs over forehead
-- Sharp dark eyes (cool gaze)
+- Cool **grey** irises (cool gaze) — not red, not bright blue, not glowing
 - Pale skin
 
 ## Outfit (school / Opening)
@@ -21,7 +21,12 @@
 - White collared shirt
 - Dark blue tie with light-blue waveform graphic near tip
 - Gold musical-note pin on left lapel
-- SyncPod on ear: **blue** normal waveform for standard VN lines (unless a future lock update says otherwise)
+- SyncPod on ear: small circular ear device, **blue** waveform for standard VN / school lines (unless a future lock update says otherwise)
+- **No** over-ear headphones around the neck
+
+## Full body (school / menu)
+- Path: `Art/Characters/Ren/School/ren_hima_uniform_menu_fullbody_v1.png`
+- Must match Face / Outfit lock (grey eyes + SyncPod on ear)
 
 ## Bust framing
 - Prefer 1024×1536 PNG transparent; clean alpha
