@@ -1,7 +1,8 @@
 # Boss Encounter — Stat, Skill & Combat Pacing
 
-> **Trạng thái:** Stat/boss lock · cơ chế runtime bên dưới (đồng bộ với COMBAT_MECHANICS)  
-> **Ngữ cảnh:** Party Lv 15 vs Boss Lv 18 · scene boss đầu · nhạc **Eternal Spark (Cadence Remix)** · **619 beat**  
+> **Trạng thái:** Stat/boss lock · **cơ chế gameplay → xem [COMBAT_MECHANICS.md](./COMBAT_MECHANICS.md)**  
+> **Ngữ cảnh:** Party Lv 15 vs Boss Lv 18 · scene boss đầu · nhạc **Eternal Spark (Cadence Remix)** · **619 beat** (EternalSpark_CadenceRemix_beats.csv + pad t=0 → MusicBeatMapSO.BeatCount)  
+> **Level / XP:** Soft target Lv15 · soft-cap grind · boss grant Lv15→18 — [combat-level-xp-progression-design](../superpowers/specs/2026-07-19-combat-level-xp-progression-design.md) · tables [CHARACTER_LEVEL_PROGRESS.md](./CHARACTER_LEVEL_PROGRESS.md)  
 > **Illustrations:** `docs/combat/illustrations/`  
 > **Code hiện tại:** DamageCalculator · EnemyTelegraph · UnitStatBlockSO · CoverRuntime · CombatCounterResolver
 
@@ -59,7 +60,7 @@ Advantage ×1.5    Disadvantage ×0.5
 | **STR**          | 42                              | 35               | 20             |
 | **Ma**           | 8.8                             | 6.4              | 50             |
 | **HB**           | 167                             | 127              | 147            |
-| **EN**           | 10.8                            | 18.2             | 9.8            |
+| **EN**           | 11.8                            | 19.2             | 10.8           |
 | Element          | Melody (**Active** Cycle Shift) | Rhythm           | Harmony        |
 | Dmg type         | Physical                        | Physical         | Magical        |
 | Base Luck        | 18%                             | 8%               | 16%            |
@@ -70,9 +71,20 @@ Advantage ×1.5    Disadvantage ×0.5
 
 
 Tổng HP party = **447** (optimal build).  
-Công thức Lv1→18 (rút): cap Lv **18** · **17** điểm phân bổ · HB **+5**/điểm · HP như khối §2 bên dưới. Bảng level đầy đủ: `CHARACTER_LEVEL_PROGRESS.md`.
+Công thức Lv1→18 (rút): cap Lv **18** · **17** điểm phân bổ · HB **+5**/điểm · HP như khối §2 bên dưới. Bảng level đầy đủ: [CHARACTER_LEVEL_PROGRESS.md](./CHARACTER_LEVEL_PROGRESS.md).
 
-> **§13 auto Lv15 = 536 HP** (pure growth, no manual). §2 = **optimal manual build** (−17%) — dùng cho boss tune & sim.
+> Optimal spend @ Lv15: Ren/Charlotte **6 STR → 3 HB → 5 EN** · Coda **6 Ma → 3 HB → 5 EN** (14 pts). EN +1 vs bản tune cũ (10.8/18.2/9.8) — HP/DPS không đổi.
+
+### Level entry & boss XP
+
+| Rule | Value |
+|------|-------|
+| Soft target (dungeon F1–F15) | Party **Lv15**, đủ 14 stat pts |
+| Soft-cap | Lv16–18 cày dungeon được nhưng XP ×0.12 (+ overlevel penalty) |
+| Boss F16 first clear | **+12600** Combat XP (= Σ Lv15→18) → kỳ vọng **Lv18** |
+| Hard cap Arc 1 | Lv18 |
+
+Chi tiết curve / node XP: [2026-07-19-combat-level-xp-progression-design.md](../superpowers/specs/2026-07-19-combat-level-xp-progression-design.md)
 
 ### Công thức HP
 
@@ -256,8 +268,10 @@ Chi tiết effect: [SKILL_KIT.md](./SKILL_KIT.md)
 
 ## 13. Level Progression — Stat Allocation & HB Conversion
 
-> **Mục tiêu:** Player bắt đầu yếu (~25-30% stat Lv15), cảm nhận power curve rõ ràng qua mỗi level. Cap arc 1 = Lv18.
-> **Mỗi level = 1 stat point** để cộng vào STR, Ma, EN (+1) hoặc HB (+5).
+> **SoT đầy đủ (XP + soft-cap + bảng từng Lv):** [2026-07-19-combat-level-xp-progression-design.md](../superpowers/specs/2026-07-19-combat-level-xp-progression-design.md) · [CHARACTER_LEVEL_PROGRESS.md](./CHARACTER_LEVEL_PROGRESS.md)
+>
+> **Mục tiêu:** Soft target **Lv15** trước boss · Cap arc 1 = **Lv18** (boss XP dump hoặc grind chậm).
+> **Mỗi level = 1 stat point / nhân vật** → STR, Ma, EN (+1) hoặc HB (+5).
 > **HB quy đổi:** 1 point = +5 HB → tăng beat bar W, giảm planning latency, cải thiện telegraph intel
 
 ### Công thức HP (giữ nguyên)
@@ -293,11 +307,11 @@ Coda:      HP = STR × 2.0 + Ma × 0.35 + 15
 ### HB — tác dụng (cơ chế mới)
 
 
-| Char      | HB Lv15    | Beat bar W | Planning latency |
-| --------- | ---------- | ---------- | ---------------- |
-| Ren       | 152+manual | 9          | 0                |
-| Charlotte | 112+manual | 7          | 0–1              |
-| Coda      | 132+manual | 8          | 0                |
+| Char      | HB Lv15 (optimal) | Beat bar W | Planning latency |
+| --------- | ----------------- | ---------- | ---------------- |
+| Ren       | 167               | 8          | 1                |
+| Charlotte | 127               | 7          | 1                |
+| Coda      | 147               | 8          | 1                |
 
 
 +5 HB ≈ +0–1 W tùy ngưỡng công thức `W = clamp(7 + ⌊(HB − 120) / 26⌋, 7, 10)` (ví dụ Ren HB 167 → W **8**).
@@ -314,41 +328,35 @@ Max manual points per stat: 10
 
 ---
 
-### Ren — DPS · Melody
+### Ren — DPS · Melody (optimal manual)
 
+| Lv  | STR | Ma  | HB    | EN   | HP  | W   |
+| --- | --- | --- | ----- | ---- | --- | --- |
+| 1   | 22  | 6   | 145   | 4    | 74  | 7   |
+| 15  | 42  | 8.8 | 167   | 11.8 | 114 | 8   |
+| 18  | 46  | 9.4 | 173.5 | 13.4 | 122 | 9   |
 
-| Lv  | STR | Ma  | HB    | EN  | HP    | W   |
-| --- | --- | --- | ----- | --- | ----- | --- |
-| 1   | 22  | 6   | 145   | 4   | 74    | 8   |
-| 15  | 37  | 8.8 | 152   | 6.8 | 103.6 | 9   |
-| 18  | 40  | 9.4 | 153.5 | 7.4 | 109.4 | 9   |
+**Optimal:** 6 STR → 3 HB → 5 EN (→15) · +1 EN / +1 STR / +1 HB (→18)
 
-
-**Optimal Lv15 build:** 6 STR → 3 HB → 5 EN
-
-### Charlotte — Tank · Rhythm
-
+### Charlotte — Tank · Rhythm (optimal manual)
 
 | Lv  | STR | Ma  | HB    | EN   | HP  | W   |
 | --- | --- | --- | ----- | ---- | --- | --- |
 | 1   | 15  | 5   | 105   | 10   | 140 | 7   |
-| 15  | 30  | 6.4 | 112   | 14.2 | 230 | 7   |
-| 18  | 33  | 6.7 | 113.5 | 15.1 | 248 | 7   |
+| 15  | 35  | 6.4 | 127   | 19.2 | 260 | 7   |
+| 18  | 39  | 6.7 | 133.5 | 21.1 | 284 | 7   |
 
+**Optimal:** 6 STR → 3 HB → 5 EN (→15) · +1 EN / +1 STR / +1 HB (→18)
 
-**Optimal Lv15 build:** 6 STR → 3 HB → 5 EN
+### Coda — Support · Harmony (optimal manual)
 
-### Coda — Support · Harmony
+| Lv  | STR | Ma  | HB    | EN   | HP | W   |
+| --- | --- | --- | ----- | ---- | -- | --- |
+| 1   | 6   | 30  | 125   | 3    | 38 | 7   |
+| 15  | 20  | 50  | 147   | 10.8 | 73 | 8   |
+| 18  | 23  | 54  | 153.5 | 12.4 | 80 | 8   |
 
-
-| Lv  | STR | Ma  | HB    | EN  | HP   | W   |
-| --- | --- | --- | ----- | --- | ---- | --- |
-| 1   | 6   | 30  | 125   | 3   | 38   | 7   |
-| 15  | 20  | 43  | 132   | 5.8 | 82.4 | 8   |
-| 18  | 23  | 46  | 133.5 | 6.4 | 92   | 8   |
-
-
-**Optimal Lv15 build:** 6 Ma → 3 HB → 5 EN
+**Optimal:** 6 Ma → 3 HB → 5 EN (→15) · +1 EN / +1 Ma / +1 HB (→18)
 
 ---
 
