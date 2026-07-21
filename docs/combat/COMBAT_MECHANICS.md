@@ -371,7 +371,7 @@ Chỉ giảm dmg khi: không counter trên `E`, có standing footprint chạm `E
 
 ## 11. Kit skill (3 skill / nhân vật)
 
-> Chi tiết dmg số + Prep laws: [SKILL_KIT.md](./SKILL_KIT.md)
+> Số dmg chi tiết theo Lv nằm trong bảng từng nhân vật bên dưới. Prep / Cover laws tóm tắt ngay tại đây.
 
 ### Prep — Setup → Payoff (runtime)
 
@@ -394,7 +394,7 @@ Window 12 beat → party outgoing dmg ×1.25; Early/Late → OnBeat (player + Gu
 ```
 
 - Code: `CoverRuntime` · `CoverHudView` · gate `AllowCoverActivate`
-- Chi tiết: [SKILL_KIT.md](./SKILL_KIT.md) · spec `2026-07-16-cover-gauge-empty-beat-design.md`
+- Luật ngắn: farm gauge trên empty S (Skill/Ult) · bấm COVER khi ≥8 và Ren còn sống (−8 gauge) · cửa sổ 12 beat ×1.25 dmg · Early/Late của player bị kéo về OnBeat trong cửa sổ đó.
 
 ### Ren — DPS · Cycle Shift
 
