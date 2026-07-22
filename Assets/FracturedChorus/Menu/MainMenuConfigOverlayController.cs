@@ -1,8 +1,5 @@
 using UnityEngine;
 using UnityEngine.UI;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
@@ -16,6 +13,7 @@ namespace FracturedChorus.Menu
         [SerializeField] private Text infoText;
         [SerializeField] private Slider volumeSlider;
         [SerializeField] private Slider brightnessSlider;
+        [SerializeField] private MainMenuConfigToggleSwitch skipUnreadToggle;
         [SerializeField] private Text difficultyValueText;
         [SerializeField] private Button difficultyPrevButton;
         [SerializeField] private Button difficultyNextButton;
@@ -33,6 +31,8 @@ namespace FracturedChorus.Menu
 
         private void Awake()
         {
+            ResolveSkipUnreadToggle();
+
             if (volumeSlider != null)
             {
                 volumeSlider.onValueChanged.AddListener(value => MainMenuGameSettings.SetMasterVolume(value));
@@ -45,6 +45,11 @@ namespace FracturedChorus.Menu
                     MainMenuGameSettings.SetBackgroundBrightness(value);
                     screenController?.ApplyBackgroundBrightness(value);
                 });
+            }
+
+            if (skipUnreadToggle != null)
+            {
+                skipUnreadToggle.ValueChanged += OnSkipUnreadToggleChanged;
             }
 
             if (difficultyPrevButton != null)
@@ -72,32 +77,30 @@ namespace FracturedChorus.Menu
         public void SetActive(bool active)
         {
             _active = active;
-            if (active)
+            if (!active)
             {
-                RefreshFromSettings();
-                ScheduleSelectRow(0, fromInput: false);
-            }
-        }
-
-        private void ScheduleSelectRow(int index, bool fromInput)
-        {
-#if UNITY_EDITOR
-            if (!Application.isPlaying)
-            {
-                EditorApplication.delayCall += () =>
-                {
-                    if (this == null)
-                    {
-                        return;
-                    }
-
-                    SelectRow(index, fromInput);
-                };
                 return;
             }
-#endif
-            SelectRow(index, fromInput);
+
+            RefreshFromSettings();
+            screenController?.ApplyBackgroundBrightness(MainMenuGameSettings.BackgroundBrightness);
+            SelectRow(0, fromInput: false);
         }
+
+#if UNITY_EDITOR
+        public void SetEditorPreviewActive(bool active)
+        {
+            _active = false;
+            if (!active)
+            {
+                return;
+            }
+
+            RefreshFromSettings();
+            _selectedIndex = 0;
+            RefreshInfoText();
+        }
+#endif
 
         public void RefreshFromSettings()
         {
@@ -109,6 +112,11 @@ namespace FracturedChorus.Menu
             if (brightnessSlider != null)
             {
                 brightnessSlider.SetValueWithoutNotify(MainMenuGameSettings.BackgroundBrightness);
+            }
+
+            if (skipUnreadToggle != null)
+            {
+                skipUnreadToggle.SetValue(MainMenuGameSettings.SkipUnreadText, notify: false);
             }
 
             UpdateDifficultyLabel();
@@ -129,7 +137,11 @@ namespace FracturedChorus.Menu
             {
                 SelectRow(_selectedIndex + 1, fromInput: true);
             }
-            else if (_selectedIndex == 2)
+            else if (_selectedIndex == 2 && WasConfirmPressed())
+            {
+                skipUnreadToggle?.Toggle();
+            }
+            else if (_selectedIndex == 3)
             {
                 if (WasMoveLeftPressed())
                 {
@@ -168,14 +180,54 @@ namespace FracturedChorus.Menu
             RefreshHighlight();
             RefreshInfoText();
 
-            if (fromInput && _selectedIndex == 0 && volumeSlider != null)
+            if (!fromInput)
             {
-                volumeSlider.Select();
+                return;
             }
-            else if (fromInput && _selectedIndex == 1 && brightnessSlider != null)
+
+            switch (_selectedIndex)
             {
-                brightnessSlider.Select();
+                case 0:
+                    volumeSlider?.Select();
+                    break;
+                case 1:
+                    brightnessSlider?.Select();
+                    break;
+                case 2:
+                    break;
             }
+        }
+
+        private void ResolveSkipUnreadToggle()
+        {
+            if (skipUnreadToggle != null)
+            {
+                return;
+            }
+
+            skipUnreadToggle = GetComponentInChildren<MainMenuConfigToggleSwitch>(true);
+        }
+
+        private static bool WasConfirmPressed()
+        {
+#if ENABLE_INPUT_SYSTEM
+            if (Keyboard.current != null &&
+                (Keyboard.current.enterKey.wasPressedThisFrame ||
+                 Keyboard.current.spaceKey.wasPressedThisFrame))
+            {
+                return true;
+            }
+
+            return Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame;
+#else
+            return Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space);
+#endif
+        }
+
+        private void OnSkipUnreadToggleChanged(bool enabled)
+        {
+            MainMenuGameSettings.SetSkipUnreadText(enabled);
+            RefreshInfoText();
         }
 
         private void RefreshHighlight()
@@ -191,13 +243,20 @@ namespace FracturedChorus.Menu
                 return;
             }
 
-            highlightBar.SetParent(row, false);
+            if (highlightBar.parent != row)
+            {
+                highlightBar.SetParent(row, false);
+            }
+
             var barRect = highlightBar;
             barRect.anchorMin = Vector2.zero;
             barRect.anchorMax = Vector2.one;
             barRect.offsetMin = new Vector2(-8f, -3f);
             barRect.offsetMax = new Vector2(8f, 3f);
-            barRect.SetAsFirstSibling();
+            if (barRect.GetSiblingIndex() != 0)
+            {
+                barRect.SetAsFirstSibling();
+            }
         }
 
         private void RefreshInfoText()
@@ -213,9 +272,14 @@ namespace FracturedChorus.Menu
                     infoText.text = "Adjust master volume for menu and game audio.";
                     break;
                 case 1:
-                    infoText.text = "Adjust attract and main menu background brightness.";
+                    infoText.text = "Adjust attract, main menu, and config background brightness.";
                     break;
                 case 2:
+                    infoText.text = MainMenuGameSettings.SkipUnreadText
+                        ? "Allow skipping dialogue you have not read yet."
+                        : "Only skip dialogue you have already read.";
+                    break;
+                case 3:
                     infoText.text = MainMenuGameSettings.GetDifficultyDescription(MainMenuGameSettings.Difficulty);
                     break;
             }

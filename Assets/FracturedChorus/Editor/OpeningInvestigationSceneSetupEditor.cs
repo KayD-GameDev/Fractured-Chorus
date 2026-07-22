@@ -116,6 +116,9 @@ namespace FracturedChorus.Editor
 
             ApplyPortraitLayoutInScene();
 
+            var convenience = VnConvenienceUiSetupEditor.EnsureConvenienceUi(canvas != null ? canvas.transform : null);
+            SetSerializedField(runtime, "convenience", convenience);
+
             var nameplate = GameObject.Find("Nameplate")?.GetComponent<Text>();
             var body = GameObject.Find("DialogueBody")?.GetComponent<Text>();
             var textCard = GameObject.Find("TextCardBody")?.GetComponent<Text>();
@@ -463,6 +466,8 @@ namespace FracturedChorus.Editor
             fadeGroup.alpha = 0f;
             fadeGroup.blocksRaycasts = false;
 
+            var convenience = VnConvenienceUiSetupEditor.EnsureConvenienceUi(canvasGo.transform);
+
             var script = AssetDatabase.LoadAssetAtPath<VnScriptSO>(OpeningInvestigationScriptBuilder.ScriptAssetPath);
             var catalog = AssetDatabase.LoadAssetAtPath<VnSpeakerCatalogSO>(CatalogPath);
 
@@ -484,6 +489,7 @@ namespace FracturedChorus.Editor
             SetSerializedField(runtime, "typingClip", AssetDatabase.LoadAssetAtPath<AudioClip>(TypingPath));
             SetSerializedField(runtime, "beginHubOnEnd", true);
             SetSerializedField(runtime, "playOnStart", true);
+            SetSerializedField(runtime, "convenience", convenience);
             SetSerializedField(audioPlayer, "cueResolver", cueResolver);
             if (typewriter != null)
             {

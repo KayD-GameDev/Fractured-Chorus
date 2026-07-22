@@ -17,7 +17,6 @@ namespace FracturedChorus.Narrative
         [SerializeField] private PrologueVNLayoutConfig layoutConfig;
 
         private Action<string> _onSigned;
-        private bool _nameLocked;
 
         public void Bind(PrologueAudioController audio)
         {
@@ -36,8 +35,9 @@ namespace FracturedChorus.Narrative
 
             ResolveReferences();
             EnsureContractPaperSprite();
-            ApplyLayout();
             StyleFields();
+            EnsureConfirmButtonHover();
+            SyncNameValueRectToInput();
         }
 
         public void Hide()
@@ -68,11 +68,11 @@ namespace FracturedChorus.Narrative
         {
             ResolveReferences();
             EnsureContractPaperSprite();
-            ApplyLayout();
             StyleFields();
+            EnsureConfirmButtonHover();
+            SyncNameValueRectToInput();
 
             _onSigned = onSigned;
-            _nameLocked = false;
 
             if (nameValueText != null)
             {
@@ -103,7 +103,11 @@ namespace FracturedChorus.Narrative
                 confirmButton.interactable = true;
             }
 
-            signaturePad?.Clear();
+            if (signaturePad != null)
+            {
+                signaturePad.Clear();
+                signaturePad.gameObject.SetActive(false);
+            }
 
             if (root != null)
             {
@@ -186,36 +190,16 @@ namespace FracturedChorus.Narrative
 
             entered = entered.Trim();
 
-            if (!_nameLocked)
+            if (nameValueText != null)
             {
-                if (nameValueText != null)
-                {
-                    nameValueText.text = entered;
-                    nameValueText.gameObject.SetActive(true);
-                }
-
-                if (nameInput != null)
-                {
-                    nameInput.gameObject.SetActive(false);
-                }
-
-                _nameLocked = true;
-                if (hintText != null)
-                {
-                    hintText.text = "Sign on the line below, then press Confirm again.";
-                }
-
-                return;
+                nameValueText.text = entered;
+                SyncNameValueRectToInput();
+                nameValueText.gameObject.SetActive(true);
             }
 
-            if (signaturePad != null && !signaturePad.HasStroke)
+            if (nameInput != null)
             {
-                if (hintText != null)
-                {
-                    hintText.text = "Please sign on the line before confirming.";
-                }
-
-                return;
+                nameInput.gameObject.SetActive(false);
             }
 
             Finish(entered);
@@ -225,9 +209,9 @@ namespace FracturedChorus.Narrative
         {
             ResolveReferences();
             EnsureContractPaperSprite();
-            ApplyLayout();
             StyleFields();
-            _nameLocked = false;
+            EnsureConfirmButtonHover();
+            SyncNameValueRectToInput();
 
             if (nameValueText != null)
             {
@@ -249,6 +233,11 @@ namespace FracturedChorus.Narrative
             if (confirmButton != null)
             {
                 confirmButton.gameObject.SetActive(true);
+            }
+
+            if (signaturePad != null)
+            {
+                signaturePad.gameObject.SetActive(false);
             }
 
             if (root != null)
@@ -332,12 +321,6 @@ namespace FracturedChorus.Narrative
                 return;
             }
 
-            var sprite = contractPaper.sprite;
-            if (sprite != null && sprite.rect.width >= 800f)
-            {
-                return;
-            }
-
             var resolved = PrologueContractSpriteUtility.LoadPrimarySprite();
             if (resolved != null)
             {
@@ -388,7 +371,7 @@ namespace FracturedChorus.Narrative
             {
                 nameValueText.alignment = TextAnchor.MiddleLeft;
                 nameValueText.fontSize = 26;
-                nameValueText.color = new Color(0.08f, 0.12f, 0.28f, 1f);
+                nameValueText.color = new Color(0.05f, 0.05f, 0.08f, 1f);
                 nameValueText.raycastTarget = false;
             }
 
@@ -396,8 +379,52 @@ namespace FracturedChorus.Narrative
             {
                 inputText.alignment = TextAnchor.MiddleLeft;
                 inputText.fontSize = 26;
-                inputText.color = new Color(0.08f, 0.12f, 0.28f, 1f);
+                inputText.color = new Color(0.05f, 0.05f, 0.08f, 1f);
             }
+        }
+
+        private void SyncNameValueRectToInput()
+        {
+            if (nameInput == null || nameValueText == null)
+            {
+                return;
+            }
+
+            var source = nameInput.GetComponent<RectTransform>();
+            var target = nameValueText.rectTransform;
+            if (source == null || target == null)
+            {
+                return;
+            }
+
+            target.anchorMin = source.anchorMin;
+            target.anchorMax = source.anchorMax;
+            target.anchoredPosition = source.anchoredPosition;
+            target.sizeDelta = source.sizeDelta;
+            target.pivot = source.pivot;
+        }
+
+        private void EnsureConfirmButtonHover()
+        {
+            if (confirmButton == null)
+            {
+                return;
+            }
+
+            confirmButton.transition = Selectable.Transition.None;
+            var image = confirmButton.GetComponent<Image>();
+            if (image == null)
+            {
+                return;
+            }
+
+            var hoverView = confirmButton.GetComponent<PrologueContractConfirmButtonView>();
+            if (hoverView == null)
+            {
+                hoverView = confirmButton.gameObject.AddComponent<PrologueContractConfirmButtonView>();
+            }
+
+            hoverView.Configure(image);
         }
     }
 }
