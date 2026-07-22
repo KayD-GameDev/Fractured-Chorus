@@ -221,6 +221,15 @@ Runtime UI: rebuild bằng uGUI/UI Toolkit theo zone — **không** dùng PNG mo
 - [ ] Hero art + note prop (hoặc spine/static) tỉ lệ tay ổn
 - [ ] Locked reserved keys không chọn / grey
 
+**Social Stats**
+
+- [ ] Title `SOCIAL STATS` (+ optional JP)
+- [ ] 5-axis radar bind ranks 1–10 từ `SocialStatsState`
+- [ ] Nodes L→R Resonance·Cadence·Pulse·Harmony·Rhythm + Rank + flavor
+- [ ] Ren bust slot bottom-center
+- [ ] Esc Back; open from Status Stats tab
+- [ ] Không dùng mock PNG fullscreen làm production texture
+
 ---
 
 ## 7. Changelog
@@ -230,3 +239,4 @@ Runtime UI: rebuild bằng uGUI/UI Toolkit theo zone — **không** dùng PNG mo
 | 2026-07-19 | Lock Status + Echo Keys mocks; bar max 300 hidden; Hb; Esc/V/Q/E; Echo list 5+scroll |
 | 2026-07-19 | Echo Keys art: Hampton proportion — note-hand ≈ face; other hand in pocket |
 | 2026-07-19 | Add Social Stats mock (Metaphor radial · FC cyan tone · Ren head) |
+| 2026-07-23 | Social Stats Screen C implementation plan shipped (radar overlay) |

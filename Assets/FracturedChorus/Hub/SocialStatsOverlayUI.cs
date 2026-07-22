@@ -21,15 +21,15 @@ namespace FracturedChorus.Hub
 
         private static readonly Color Cyan = new Color(0f, 0.831f, 1f, 1f);
         private static readonly Color NavyDim = new Color(0.02f, 0.04f, 0.12f, 0.75f);
-        private static readonly Color WatermarkColor = new Color(0.7f, 0.95f, 1f, 0.08f);
+        private static readonly Color WatermarkColor = new Color(0.7f, 0.95f, 1f, 0.06f);
 
         private static readonly Vector2[] NodeOffsets =
         {
-            new Vector2(-420f, 40f),
-            new Vector2(-260f, 220f),
-            new Vector2(0f, 280f),
-            new Vector2(260f, 220f),
-            new Vector2(420f, 40f)
+            new Vector2(-400f, 20f),
+            new Vector2(-230f, 190f),
+            new Vector2(0f, 250f),
+            new Vector2(230f, 190f),
+            new Vector2(400f, 20f)
         };
 
         private static readonly string[] NodeNames =
@@ -300,10 +300,10 @@ namespace FracturedChorus.Hub
             var radarGo = new GameObject("Radar", typeof(RectTransform), typeof(CanvasRenderer), typeof(SocialStatsRadarGraphic));
             radarGo.transform.SetParent(chartRoot.transform, false);
             var radarRect = radarGo.GetComponent<RectTransform>();
-            radarRect.anchorMin = new Vector2(0.5f, 0.55f);
-            radarRect.anchorMax = new Vector2(0.5f, 0.55f);
+            radarRect.anchorMin = new Vector2(0.5f, 0.58f);
+            radarRect.anchorMax = new Vector2(0.5f, 0.58f);
             radarRect.pivot = new Vector2(0.5f, 0.5f);
-            radarRect.sizeDelta = new Vector2(720f, 720f);
+            radarRect.sizeDelta = new Vector2(600f, 600f);
             radarRect.anchoredPosition = Vector2.zero;
             var radarGraphic = radarGo.GetComponent<SocialStatsRadarGraphic>();
             radarGraphic.raycastTarget = false;
@@ -311,8 +311,8 @@ namespace FracturedChorus.Hub
 
             var centerGlyph = CreateImage(chartRoot.transform, "CenterGlyph", null);
             var centerRect = centerGlyph.rectTransform;
-            centerRect.anchorMin = new Vector2(0.5f, 0.55f);
-            centerRect.anchorMax = new Vector2(0.5f, 0.55f);
+            centerRect.anchorMin = new Vector2(0.5f, 0.58f);
+            centerRect.anchorMax = new Vector2(0.5f, 0.58f);
             centerRect.pivot = new Vector2(0.5f, 0.5f);
             centerRect.sizeDelta = new Vector2(48f, 48f);
             centerRect.anchoredPosition = Vector2.zero;
@@ -334,8 +334,8 @@ namespace FracturedChorus.Hub
             heroRect.anchorMin = new Vector2(0.5f, 0f);
             heroRect.anchorMax = new Vector2(0.5f, 0f);
             heroRect.pivot = new Vector2(0.5f, 0f);
-            heroRect.sizeDelta = new Vector2(420f, 480f);
-            heroRect.anchoredPosition = new Vector2(0f, -20f);
+            heroRect.sizeDelta = new Vector2(380f, 420f);
+            heroRect.anchoredPosition = new Vector2(0f, 0f);
             hero.preserveAspect = true;
             hero.raycastTarget = false;
             if (hero.sprite == null)
@@ -367,8 +367,8 @@ namespace FracturedChorus.Hub
             var go = new GameObject(name, typeof(RectTransform));
             go.transform.SetParent(parent, false);
             var rect = go.GetComponent<RectTransform>();
-            rect.anchorMin = new Vector2(0.5f, 0.55f);
-            rect.anchorMax = new Vector2(0.5f, 0.55f);
+            rect.anchorMin = new Vector2(0.5f, 0.58f);
+            rect.anchorMax = new Vector2(0.5f, 0.58f);
             rect.pivot = new Vector2(0.5f, 0.5f);
             rect.sizeDelta = new Vector2(220f, 140f);
             rect.anchoredPosition = anchoredPosition;
@@ -388,9 +388,9 @@ namespace FracturedChorus.Hub
             Stretch(rankLabel.rectTransform, new Vector2(0.3f, 0.38f), new Vector2(1f, 0.68f), Vector2.zero, Vector2.zero);
             rankLabel.color = Cyan;
 
-            var flavorLabel = CreateText(go.transform, "Flavor", string.Empty, 14, TextAnchor.UpperLeft);
+            var flavorLabel = CreateText(go.transform, "Flavor", string.Empty, 13, TextAnchor.UpperLeft);
             Stretch(flavorLabel.rectTransform, new Vector2(0f, 0f), new Vector2(1f, 0.4f), Vector2.zero, Vector2.zero);
-            flavorLabel.color = new Color(1f, 1f, 1f, 0.72f);
+            flavorLabel.color = new Color(1f, 1f, 1f, 0.78f);
             flavorLabel.horizontalOverflow = HorizontalWrapMode.Wrap;
             flavorLabel.verticalOverflow = VerticalWrapMode.Truncate;
 
