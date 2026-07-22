@@ -55,6 +55,7 @@ namespace FracturedChorus.Hub
         [SerializeField] private Sprite systemNormal;
         [SerializeField] private Sprite systemSelected;
         [SerializeField] private CalendarOverlayUI calendarOverlay;
+        [SerializeField] private SocialStatsOverlayUI socialStatsOverlay;
         [SerializeField] private TownMapSfxController sfx;
 
         private Tab _tab = Tab.Stats;
@@ -85,6 +86,11 @@ namespace FracturedChorus.Hub
                 return;
             }
 
+            if (socialStatsOverlay != null && socialStatsOverlay.IsOpen)
+            {
+                return;
+            }
+
             if (TownMapInput.CancelPressed())
             {
                 Hide();
@@ -95,10 +101,13 @@ namespace FracturedChorus.Hub
 
         public bool IsCalendarOpen => calendarOverlay != null && calendarOverlay.IsOpen;
 
+        public bool IsSocialStatsOpen => socialStatsOverlay != null && socialStatsOverlay.IsOpen;
+
         public void BindSfx(TownMapSfxController controller)
         {
             sfx = controller;
             calendarOverlay?.BindSfx(controller);
+            socialStatsOverlay?.BindSfx(controller);
         }
 
         public void Show(GameMetaState state, Tab tab = Tab.Stats)
@@ -121,6 +130,11 @@ namespace FracturedChorus.Hub
             if (calendarOverlay != null && calendarOverlay.IsOpen)
             {
                 calendarOverlay.Hide();
+            }
+
+            if (socialStatsOverlay != null && socialStatsOverlay.IsOpen)
+            {
+                socialStatsOverlay.Hide();
             }
 
             if (IsOpen)
@@ -194,6 +208,7 @@ namespace FracturedChorus.Hub
             {
                 menu.EnsureSpritesAssigned();
                 menu.EnsureCalendarOverlay(parent);
+                menu.EnsureSocialStatsOverlay(parent);
                 menu.Rewire();
                 return new BuildResult(menuButton, menu);
             }
@@ -209,6 +224,7 @@ namespace FracturedChorus.Hub
             }
 
             menu.EnsureCalendarOverlay(parent);
+            menu.EnsureSocialStatsOverlay(parent);
             return new BuildResult(menuButton, menu);
         }
 
@@ -222,6 +238,18 @@ namespace FracturedChorus.Hub
 
             calendarOverlay = CalendarOverlayUI.Build(townMapRoot).Overlay;
             calendarOverlay.BindSfx(sfx);
+        }
+
+        public void EnsureSocialStatsOverlay(Transform townMapRoot)
+        {
+            if (socialStatsOverlay != null)
+            {
+                socialStatsOverlay.BindSfx(sfx);
+                return;
+            }
+
+            socialStatsOverlay = SocialStatsOverlayUI.Build(townMapRoot).Overlay;
+            socialStatsOverlay.BindSfx(sfx);
         }
 
         private static Button CreateHudMenuButton(Transform parent)
@@ -394,7 +422,7 @@ namespace FracturedChorus.Hub
                 return;
             }
 
-            BindTab(statsButton, Tab.Stats);
+            BindTab(statsButton, Tab.Stats, openSocialStats: true);
             BindTab(bondsButton, Tab.Bonds);
             BindTab(calendarButton, Tab.Calendar, openCalendar: true);
 
@@ -411,7 +439,7 @@ namespace FracturedChorus.Hub
             _wired = true;
         }
 
-        private void BindTab(Button button, Tab tab, bool openCalendar = false)
+        private void BindTab(Button button, Tab tab, bool openCalendar = false, bool openSocialStats = false)
         {
             if (button == null)
             {
@@ -428,6 +456,10 @@ namespace FracturedChorus.Hub
                 {
                     OpenCalendarOverlay();
                 }
+                else if (openSocialStats)
+                {
+                    OpenSocialStatsOverlay();
+                }
             });
         }
 
@@ -443,6 +475,20 @@ namespace FracturedChorus.Hub
             calendarOverlay.transform.SetAsLastSibling();
             calendarOverlay.BindSfx(sfx);
             calendarOverlay.Show(_state ?? GameMetaSession.Current);
+        }
+
+        private void OpenSocialStatsOverlay()
+        {
+            var host = transform.parent != null ? transform.parent : transform;
+            EnsureSocialStatsOverlay(host);
+            if (socialStatsOverlay == null)
+            {
+                return;
+            }
+
+            socialStatsOverlay.transform.SetAsLastSibling();
+            socialStatsOverlay.BindSfx(sfx);
+            socialStatsOverlay.Show(_state ?? GameMetaSession.Current);
         }
 
         private void Refresh()
@@ -468,6 +514,10 @@ namespace FracturedChorus.Hub
                 if (_tab == Tab.Calendar)
                 {
                     detailBodyLabel.text = "Opening calendar…";
+                }
+                else if (_tab == Tab.Stats && socialStatsOverlay != null)
+                {
+                    detailBodyLabel.text = "Opening Resonance Field…";
                 }
                 else
                 {
