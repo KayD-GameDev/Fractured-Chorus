@@ -1,10 +1,23 @@
 # Boss Encounter — Stat, Skill & Combat Pacing
 
 > **Trạng thái:** Stat/boss lock · **cơ chế gameplay → xem [COMBAT_MECHANICS.md](./COMBAT_MECHANICS.md)**  
-> **Ngữ cảnh:** Party Lv 15 vs Boss Lv 18 · scene boss đầu · nhạc **Eternal Spark (Cadence Remix)** · **619 beat** (`EternalSpark_CadenceRemix_beats.csv` + pad t=0 → `MusicBeatMapSO.BeatCount`)  
+> **Ngữ cảnh:** Party Lv 15 vs Boss Lv 18 · scene boss đầu · nhạc **Eternal Spark (Cadence Remix)** · **619 beat** (EternalSpark_CadenceRemix_beats.csv + pad t=0 → MusicBeatMapSO.BeatCount)  
 > **Level / XP:** Soft target Lv15 · soft-cap grind · boss grant Lv15→18 — [combat-level-xp-progression-design](../superpowers/specs/2026-07-19-combat-level-xp-progression-design.md) · tables [CHARACTER_LEVEL_PROGRESS.md](./CHARACTER_LEVEL_PROGRESS.md)  
 > **Illustrations:** `docs/combat/illustrations/`  
-> **Code hiện tại:** DamageCalculator, PhaseAvTracker *(deprecated)*, EnemyTelegraph, UnitStatBlockSO
+> **Code hiện tại:** DamageCalculator · EnemyTelegraph · UnitStatBlockSO · CoverRuntime · CombatCounterResolver
+
+### Vòng combat khi vào boss (tóm tắt)
+
+```
+Deploy (dàn trận, chưa nhạc)
+  → Deploy → nhạc + pause sau beat 6
+  → gán skill từ beat 7 (lane / W·A·D)
+  → Execute → block 32 beat → hold → Execute tiếp
+```
+
+- Kit: **3 skill** / unit · block = **Space** (OnBeat −68% · Early −25% · Late −10%)  
+- Counter Active: nốt Tím/Xanh/Đỏ cần 3/2/1 hit → Perfect hủy đòn  
+- 3 target: **CORE** HP 1680 (win) · **MICRO** 280 · **EYE** 200 · hệ Rhythm→Melody→Harmony (×1.5 / ×0.5)
 
 ---
 
@@ -15,7 +28,7 @@
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **STR**            | Máu (party) · sát thương đánh tay và skill vật lý                                                                                                   |
 | **Ma**             | Sát thương skill phép                                                                                                                               |
-| **Heartbeat**      | Thứ tự Planning · beat bar W · telegraph intel · planning latency — xem [COMBAT_MECHANICS.md §10](./COMBAT_MECHANICS.md#10-heartbeat-hb--4-vai-trò) |
+| **Heartbeat**      | (1) Thứ tự Planning HB cao→thấp · (2) độ dài thanh W · (3) mức intel telegraph theo nhân vật · (4) planning latency sau S2 |
 | **Endurance (EN)** | Giảm sát thương nhận vào · scale reactive Guard                                                                                                     |
 
 
@@ -57,7 +70,8 @@ Advantage ×1.5    Disadvantage ×0.5
 | Planning latency | 1                               | 1                | 1              |
 
 
-Tổng HP party = 447 · Chi tiết Lv1→18 + XP: [CHARACTER_LEVEL_PROGRESS.md](./CHARACTER_LEVEL_PROGRESS.md)
+Tổng HP party = **447** (optimal build).  
+Công thức Lv1→18 (rút): cap Lv **18** · **17** điểm phân bổ · HB **+5**/điểm · HP như khối §2 bên dưới. Bảng level đầy đủ: [CHARACTER_LEVEL_PROGRESS.md](./CHARACTER_LEVEL_PROGRESS.md).
 
 > Optimal spend @ Lv15: Ren/Charlotte **6 STR → 3 HB → 5 EN** · Coda **6 Ma → 3 HB → 5 EN** (14 pts). EN +1 vs bản tune cũ (10.8/18.2/9.8) — HP/DPS không đổi.
 
@@ -84,7 +98,8 @@ Coda:      HP = STR × 2.0 + Ma × 0.35 + 15
 
 ## 3. Boss Lv 18 — The Pulse (3 target)
 
-> Boss **không có HB**. **Thân** spawn nốt CORE (dmg HP) · **Micro** / **Mắt** spawn nốt pressure (buff/debuff, không dmg HP). Chi tiết: [COMBAT_MECHANICS.md §5–§6](./COMBAT_MECHANICS.md#5-boss-anatomy--thân--micro--mắt).
+> Boss **không có HB**. **Thân** spawn nốt CORE (dmg HP) · **Micro** / **Mắt** spawn nốt pressure (không dmg HP).  
+> Leak MICRO → boss `Resonance` +1 (+6% STR/stack, max 3). Leak EYE → party `Dissonance` +1 (−12% guard/stack, max 3). Counter Perfect mini → MiniDmg + gỡ 1 stack.
 
 ### Thân (CORE) — win condition
 
@@ -213,7 +228,7 @@ Không còn skill Guard. Space đặt **barrier 1 beat**. SoT: [COMBAT_MECHANICS
 ## 5–12. Cơ chế gameplay
 
 > **Deprecated (2026-06-30):** Cycle, Guard skill, telegraph 2-beat/cycle.  
-> **Phase AV budget:** removed — assign tự do (footprint only). **BaseAv** vẫn dùng cho speed/order + target dmg (xem [COMBAT_MECHANICS.md](./COMBAT_MECHANICS.md)).  
+> **Phase AV budget:** đã bỏ — gán skill tự do (chỉ cấm trùng footprint). **BaseAv** vẫn dùng cho thứ tự hành động (thấp đi trước) và chọn target nhận dmg (BaseAv cao nhất).  
 > **Thay bằng:** [COMBAT_MECHANICS.md](./COMBAT_MECHANICS.md) — Planning/Execute, boss notes, HB roles, kit 3 skill.
 
 ### Kit skill (tóm tắt — 3 skill / nhân vật)
@@ -299,7 +314,7 @@ Coda:      HP = STR × 2.0 + Ma × 0.35 + 15
 | Coda      | 147               | 8          | 1                |
 
 
-+5 HB ≈ +0–1 W (tùy ngưỡng), xem [COMBAT_MECHANICS.md §3](./COMBAT_MECHANICS.md#3-skill-footprint--s1--s--s2)
++5 HB ≈ +0–1 W tùy ngưỡng công thức `W = clamp(7 + ⌊(HB − 120) / 26⌋, 7, 10)` (ví dụ Ren HB 167 → W **8**).
 
 ### Stat tables (Lv15 target — manual build)
 
