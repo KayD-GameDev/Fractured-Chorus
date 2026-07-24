@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: mage_ult
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.SkillDefinitionSO
   skillId: mage_ult
-  icon: {fileID: 21300000, guid: 21c50bc85e5141bda9ea219828b7e1e1, type: 3}
   displayName: Encore
-  description: 'ReduceS2 −1 (ally)'
+  icon: {fileID: -5856550698811768098, guid: ff5c0a175cb8b0e48afa1020819e4ae0, type: 3}
+  description: "ReduceS2 \u22121 (ally)"
   slotKind: 2
   avCost: 50
   delay: 5
