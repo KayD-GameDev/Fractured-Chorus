@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Track_eternal_spark_cadence
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Menu.OffBeatTrackSO
   trackId: eternal_spark_cadence
-  title: "Eternal Spark \u2014 Cadence Remix"
+  title: Eternal Cadence Remix
   artist: Astra
   clip: {fileID: 8300000, guid: a3f8c2e1b904d6479a2e5f1c8d7b6e40, type: 3}
-  cover: {fileID: 0}
+  cover: {fileID: 21300000, guid: d1e2f3a4b5c60718293a4b5c6d7e8f06, type: 3}

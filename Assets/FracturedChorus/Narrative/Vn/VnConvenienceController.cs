@@ -1,4 +1,5 @@
 using System;
+using FracturedChorus.Menu;
 using FracturedChorus.Narrative;
 using UnityEngine;
 
@@ -262,6 +263,12 @@ namespace FracturedChorus.Narrative.Vn
                 return;
             }
 
+            if (!CanSkipCurrentLine())
+            {
+                HaltSkipOnUnread();
+                return;
+            }
+
             if (InvokeBool(_bindings.IsTransitionBusy))
             {
                 _bindings.RequestSkipTransition?.Invoke();
@@ -309,6 +316,12 @@ namespace FracturedChorus.Narrative.Vn
                 return;
             }
 
+            if (!CanSkipCurrentLine())
+            {
+                HaltSkipOnUnread();
+                return;
+            }
+
             if (InvokeBool(_bindings.IsTransitionBusy))
             {
                 _bindings.RequestSkipTransition?.Invoke();
@@ -329,6 +342,30 @@ namespace FracturedChorus.Narrative.Vn
             if (InvokeBool(_bindings.IsWaitingAdvance))
             {
                 _bindings.RequestAdvance?.Invoke();
+            }
+        }
+
+        private bool CanSkipCurrentLine()
+        {
+            if (MainMenuGameSettings.SkipUnreadText)
+            {
+                return true;
+            }
+
+            if (_bindings?.IsCurrentLineRead == null)
+            {
+                return true;
+            }
+
+            return InvokeBool(_bindings.IsCurrentLineRead);
+        }
+
+        private void HaltSkipOnUnread()
+        {
+            _skipEnabled = false;
+            if (!_ctrlSkipHeld)
+            {
+                bar?.SetSkipActive(false);
             }
         }
 

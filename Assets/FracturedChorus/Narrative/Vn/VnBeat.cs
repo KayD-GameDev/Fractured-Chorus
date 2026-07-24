@@ -17,6 +17,8 @@ namespace FracturedChorus.Narrative.Vn
         public float bgmStartTime;
         public float duration;
         public string[] setFlags;
+        public string[] choices;
+        public int[] choiceNextBeatIndex;
         public bool showDateHud;
         public bool hideDateHud;
         public string dateHudDate;

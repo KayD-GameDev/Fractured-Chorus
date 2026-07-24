@@ -31,7 +31,7 @@ namespace FracturedChorus.Menu
 
         [Header("Drag / Fill")]
         [Tooltip("Bật nếu kéo sang phải mà volume giảm")]
-        [SerializeField] private bool invertDrag = true;
+        [SerializeField] private bool invertDrag;
         [SerializeField] private bool fillClockwise;
         [SerializeField] [Range(0f, 1f)] private float volume = 0.85f;
 

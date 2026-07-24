@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: befc80a3ecf2497c884a02bd9bc06037, type: 3}
+  m_Name: FlowerWorkScenario_rich_aroma
+  m_EditorClassIdentifier: 
+  id: rich_aroma
+  customerLine: They'd like flashy flowers with a rich aroma.
+  thinkPrompt: Flashy and fragrant — which do you pick?
+  choices:
+  - Scented roses
+  - Artificial silk blooms
+  - Cactus arrangement
+  correctIndex: 0
+  correctReply: Scented roses hit both flash and aroma. Nice.
+  wrongReply: No fragrance there. Scented roses were the brief.

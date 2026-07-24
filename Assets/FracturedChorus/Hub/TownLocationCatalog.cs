@@ -30,6 +30,7 @@ namespace FracturedChorus.Hub
         public TownPinIcon PinIcon;
         public Vector2 AnchorNormalized;
         public DayPhase[] AvailablePhases;
+        public DayOfWeek[] AllowedWeekdays;
         public TownSubLocation[] SubLocations;
         public string RequiredFlag;
     }
@@ -97,6 +98,7 @@ namespace FracturedChorus.Hub
                     PinIcon = TownPinIcon.Flower,
                     AnchorNormalized = new Vector2(0.38f, 0.58f),
                     AvailablePhases = new[] { DayPhase.Day },
+                    AllowedWeekdays = new[] { DayOfWeek.Wednesday, DayOfWeek.Saturday },
                     SubLocations = new[]
                     {
                         new TownSubLocation

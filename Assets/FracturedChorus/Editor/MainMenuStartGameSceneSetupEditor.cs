@@ -1193,6 +1193,9 @@ namespace FracturedChorus.Editor
             songTitle.fontStyle = FontStyle.Bold;
             songTitle.color = cyan;
             songTitle.raycastTarget = false;
+            songTitle.resizeTextForBestFit = true;
+            songTitle.resizeTextMinSize = 12;
+            songTitle.resizeTextMaxSize = 22;
             StretchRect(songTitle.gameObject, new Vector2(0.12f, 0.52f), new Vector2(0.88f, 0.66f), Vector2.zero, Vector2.zero);
             var songTitleRt = songTitle.GetComponent<RectTransform>();
             songTitleRt.anchoredPosition = new Vector2(3.8f, 13.5f);

@@ -80,7 +80,7 @@ namespace FracturedChorus.Menu
                 return;
             }
 
-            _source.volume = _normalVolume * Mathf.Clamp01(masterVolume);
+            _source.volume = _normalVolume;
         }
 
         public void SetVolume(float value)

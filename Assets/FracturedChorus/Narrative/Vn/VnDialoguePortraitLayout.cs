@@ -33,5 +33,9 @@ namespace FracturedChorus.Narrative.Vn
         public const string LuminaAlleyNight = "lumina_alley_night";
         public const string LuminaAlleyHarutoBody = "lumina_alley_haruto_body";
         public const string LuminaSquareNight = "lumina_square_night";
+        public const string FlowerArrive = "flower_arrive";
+        public const string FlowerCustomer = "flower_customer";
+        public const string FlowerThink = "flower_think";
+        public const string FlowerHappy = "flower_happy";
     }
 }

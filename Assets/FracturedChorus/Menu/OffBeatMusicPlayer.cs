@@ -18,7 +18,6 @@ namespace FracturedChorus.Menu
 
         private AudioSource _source;
         private float _baseVolume = 0.85f;
-        private float _masterVolume = 1f;
         private readonly List<OffBeatTrackSO> _playlist = new List<OffBeatTrackSO>();
         private readonly List<int> _shuffleOrder = new List<int>();
         private int _index;
@@ -315,7 +314,6 @@ namespace FracturedChorus.Menu
 
         public void ApplyMasterVolume(float masterVolume)
         {
-            _masterVolume = Mathf.Clamp01(masterVolume);
             ApplyVolume();
         }
 
@@ -330,7 +328,7 @@ namespace FracturedChorus.Menu
         {
             if (_source != null)
             {
-                _source.volume = _baseVolume * _masterVolume;
+                _source.volume = _baseVolume;
             }
         }
 

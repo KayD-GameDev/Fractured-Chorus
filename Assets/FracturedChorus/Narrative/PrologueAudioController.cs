@@ -1,5 +1,4 @@
 using System.Collections;
-using FracturedChorus.Menu;
 using UnityEngine;
 
 namespace FracturedChorus.Narrative
@@ -23,7 +22,6 @@ namespace FracturedChorus.Narrative
         private AudioSource _butterflySource;
         private AudioSource _typingSource;
         private AudioSource _sfxSource;
-        private bool _typingLineActive;
 
         private void Awake()
         {
@@ -31,13 +29,6 @@ namespace FracturedChorus.Narrative
             _butterflySource = CreateSource("PrologueButterfly", true, false);
             _typingSource = CreateSource("PrologueTyping", false, false);
             _sfxSource = CreateSource("PrologueSfx", false, false);
-            ApplyMasterVolume();
-            MainMenuGameSettings.SettingsChanged += ApplyMasterVolume;
-        }
-
-        private void OnDestroy()
-        {
-            MainMenuGameSettings.SettingsChanged -= ApplyMasterVolume;
         }
 
         public void StartBgm()
@@ -48,7 +39,7 @@ namespace FracturedChorus.Narrative
             }
 
             _bgmSource.clip = bgmClip;
-            _bgmSource.volume = bgmVolume * MainMenuGameSettings.MasterVolume;
+            _bgmSource.volume = bgmVolume;
             _bgmSource.loop = true;
             _bgmSource.Play();
         }
@@ -61,14 +52,14 @@ namespace FracturedChorus.Narrative
             }
 
             _butterflySource.clip = butterflyWingsClip;
-            _butterflySource.volume = butterflyVolume * MainMenuGameSettings.MasterVolume;
+            _butterflySource.volume = butterflyVolume;
             _butterflySource.loop = true;
             _butterflySource.pitch = 1f;
             _butterflySource.Play();
 
             if (_bgmSource != null && _bgmSource.isPlaying)
             {
-                _bgmSource.volume = bgmVolume * 0.82f * MainMenuGameSettings.MasterVolume;
+                _bgmSource.volume = bgmVolume * 0.82f;
             }
         }
 
@@ -81,7 +72,7 @@ namespace FracturedChorus.Narrative
 
             if (_bgmSource != null && _bgmSource.isPlaying)
             {
-                _bgmSource.volume = bgmVolume * MainMenuGameSettings.MasterVolume;
+                _bgmSource.volume = bgmVolume;
             }
         }
 
@@ -93,18 +84,16 @@ namespace FracturedChorus.Narrative
             }
 
             StopTypingLine();
-            _typingLineActive = true;
             _typingSource.clip = typingClip;
             _typingSource.loop = true;
             _typingSource.time = 0f;
             _typingSource.pitch = 1f;
-            _typingSource.volume = typingVolume * MainMenuGameSettings.MasterVolume;
+            _typingSource.volume = typingVolume;
             _typingSource.Play();
         }
 
         public void StopTypingLine()
         {
-            _typingLineActive = false;
             if (_typingSource != null && _typingSource.isPlaying)
             {
                 _typingSource.Stop();
@@ -119,7 +108,7 @@ namespace FracturedChorus.Narrative
             }
 
             _sfxSource.pitch = 1f;
-            _sfxSource.volume = penSignVolume * MainMenuGameSettings.MasterVolume;
+            _sfxSource.volume = penSignVolume;
             _sfxSource.PlayOneShot(penSignClip);
         }
 
@@ -131,7 +120,7 @@ namespace FracturedChorus.Narrative
             }
 
             _sfxSource.pitch = 1f;
-            _sfxSource.volume = buttonPressVolume * MainMenuGameSettings.MasterVolume;
+            _sfxSource.volume = buttonPressVolume;
             _sfxSource.PlayOneShot(buttonPressClip);
         }
 
@@ -143,7 +132,7 @@ namespace FracturedChorus.Narrative
             }
 
             _sfxSource.pitch = 1f;
-            _sfxSource.volume = menuTingVolume * MainMenuGameSettings.MasterVolume;
+            _sfxSource.volume = menuTingVolume;
             _sfxSource.PlayOneShot(menuTingClip);
             return menuTingClip.length;
         }
@@ -184,25 +173,6 @@ namespace FracturedChorus.Narrative
             }
 
             StopButterflyWings();
-        }
-
-        private void ApplyMasterVolume()
-        {
-            if (_bgmSource != null && _bgmSource.isPlaying)
-            {
-                var duck = _butterflySource != null && _butterflySource.isPlaying ? 0.82f : 1f;
-                _bgmSource.volume = bgmVolume * duck * MainMenuGameSettings.MasterVolume;
-            }
-
-            if (_butterflySource != null && _butterflySource.isPlaying)
-            {
-                _butterflySource.volume = butterflyVolume * MainMenuGameSettings.MasterVolume;
-            }
-
-            if (_typingLineActive && _typingSource != null && _typingSource.isPlaying)
-            {
-                _typingSource.volume = typingVolume * MainMenuGameSettings.MasterVolume;
-            }
         }
 
         private AudioSource CreateSource(string sourceName, bool loop, bool playOnAwake)
