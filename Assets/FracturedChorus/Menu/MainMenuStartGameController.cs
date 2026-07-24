@@ -20,7 +20,8 @@ namespace FracturedChorus.Menu
         {
             Attract,
             MainMenu,
-            Settings
+            Settings,
+            OffBeatArchive
         }
 
         [SerializeField] private CanvasGroup attractLayer;
@@ -28,6 +29,7 @@ namespace FracturedChorus.Menu
         [SerializeField] private CanvasGroup mainMenuUi;
         [SerializeField] private CanvasGroup settingsOverlay;
         [SerializeField] private CanvasGroup offBeatArchiveOverlay;
+        [SerializeField] private OffBeatArchiveController offBeatArchiveController;
         [SerializeField] private MainMenuStartGameMenuController menuController;
         [SerializeField] private MainMenuConfigOverlayController configOverlayController;
         [SerializeField] private AudioClip menuBgmClip;
@@ -181,6 +183,7 @@ namespace FracturedChorus.Menu
             _titleVoiceController?.ApplyMasterVolume(masterVolume);
             _transitionSfxController?.ApplyMasterVolume(masterVolume);
             _buttonPressSfxController?.ApplyMasterVolume(masterVolume);
+            offBeatArchiveController?.ApplyMasterVolume(masterVolume);
         }
 
         private void Start()
@@ -297,6 +300,12 @@ namespace FracturedChorus.Menu
                         SetMainMenuEditorVisible(false);
                         SetOffBeatArchiveEditorVisible(false);
                         SetSettingsEditorVisible(true);
+                        break;
+                    case MainMenuEditorPreview.OffBeatArchive:
+                        SetLayerActive(attractLayer, false, alpha: 0f);
+                        SetMainMenuEditorVisible(true);
+                        SetSettingsEditorVisible(false);
+                        SetOffBeatArchiveEditorVisible(true);
                         break;
                 }
             }
@@ -479,11 +488,19 @@ namespace FracturedChorus.Menu
                 return;
             }
 
+            if (offBeatArchiveController == null)
+            {
+                offBeatArchiveController = offBeatArchiveOverlay.GetComponent<OffBeatArchiveController>()
+                    ?? offBeatArchiveOverlay.GetComponentInChildren<OffBeatArchiveController>(true);
+            }
+
             offBeatArchiveOverlay.gameObject.SetActive(true);
             offBeatArchiveOverlay.alpha = 1f;
             offBeatArchiveOverlay.interactable = true;
             offBeatArchiveOverlay.blocksRaycasts = true;
             menuController?.SetEnabled(false);
+            offBeatArchiveController?.ApplyMasterVolume(MainMenuGameSettings.MasterVolume);
+            offBeatArchiveController?.OnShow();
         }
 
         public void HideOffBeatArchive()
@@ -493,6 +510,7 @@ namespace FracturedChorus.Menu
                 return;
             }
 
+            offBeatArchiveController?.OnHide();
             offBeatArchiveOverlay.alpha = 0f;
             offBeatArchiveOverlay.interactable = false;
             offBeatArchiveOverlay.blocksRaycasts = false;
@@ -664,6 +682,7 @@ namespace FracturedChorus.Menu
                 return;
             }
 
+            offBeatArchiveController?.OnHide();
             offBeatArchiveOverlay.alpha = 0f;
             offBeatArchiveOverlay.interactable = false;
             offBeatArchiveOverlay.blocksRaycasts = false;

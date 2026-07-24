@@ -143,11 +143,135 @@ namespace FracturedChorus.Editor
             WireOverlayBackButtonsInScene(controller);
 
             SetSerializedField(controller, "offBeatArchiveOverlay", archiveOverlay);
+            SetSerializedField(controller, "offBeatArchiveController",
+                archiveOverlay != null ? archiveOverlay.GetComponent<OffBeatArchiveController>() : null);
             SetSerializedField(menuController, "screenController", controller);
             controller.SetEditorPreview(MainMenuStartGameController.MainMenuEditorPreview.MainMenu);
 
             EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
             Debug.Log("[Fractured Chorus] Menu buttons, BGM loop, OFF-BEAT ARCHIVE upgraded — Save scene.");
+        }
+
+        [MenuItem("Fractured Chorus/Upgrade Off-Beat Transport Icons")]
+        public static void UpgradeOffBeatTransportIcons()
+        {
+            var controller = Object.FindAnyObjectByType<OffBeatArchiveController>();
+            if (controller == null)
+            {
+                EditorUtility.DisplayDialog(
+                    "Off-Beat Transport Icons",
+                    "Open MainMenuStartGame and ensure OffBeatArchiveOverlay exists.",
+                    "OK");
+                return;
+            }
+
+            Undo.RegisterFullObjectHierarchyUndo(controller.gameObject, "Upgrade Off-Beat Transport Icons");
+            var so = new SerializedObject(controller);
+            void AssignSprite(string field, string artPath)
+            {
+                var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(artPath);
+                if (sprite == null)
+                {
+                    var objs = AssetDatabase.LoadAllAssetsAtPath(artPath);
+                    foreach (var o in objs)
+                    {
+                        if (o is Sprite s)
+                        {
+                            sprite = s;
+                            break;
+                        }
+                    }
+                }
+
+                var prop = so.FindProperty(field);
+                if (prop != null)
+                {
+                    prop.objectReferenceValue = sprite;
+                }
+            }
+
+            const string root = "Assets/FracturedChorus/Art/UI/OffBeat/";
+            AssignSprite("playSprite", root + "offbeat_btn_play_v2.png");
+            AssignSprite("pauseSprite", root + "offbeat_btn_pause_v2.png");
+            AssignSprite("nextSprite", root + "offbeat_btn_next_v1.png");
+            AssignSprite("previousSprite", root + "offbeat_btn_prev_v1.png");
+            AssignSprite("repeatSprite", root + "offbeat_btn_repeat_v2.png");
+            AssignSprite("shuffleSprite", root + "offbeat_btn_shuffle_v2.png");
+            so.ApplyModifiedPropertiesWithoutUndo();
+
+            // Force rebuild icon children
+            controller.EnsureTransportIcons();
+
+            EditorUtility.SetDirty(controller);
+            EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
+            Debug.Log("[Fractured Chorus] Off-Beat transport icons assigned — Save scene.");
+        }
+
+        [MenuItem("Fractured Chorus/Upgrade Off-Beat SyncPod Layout")]
+        public static void UpgradeOffBeatSyncPodLayout()
+        {
+            var rootController = Object.FindAnyObjectByType<MainMenuStartGameController>();
+            var canvas = GameObject.Find("MainMenuCanvas")?.transform;
+            if (rootController == null || canvas == null)
+            {
+                EditorUtility.DisplayDialog(
+                    "Upgrade Off-Beat SyncPod",
+                    "Open MainMenuStartGame scene.",
+                    "OK");
+                return;
+            }
+
+            Undo.RegisterFullObjectHierarchyUndo(canvas.gameObject, "Upgrade Off-Beat SyncPod Layout");
+            EnsureOffBeatCatalogAssets();
+            var archiveOverlay = RebuildOffBeatArchiveOverlay(canvas, rootController);
+            SetSerializedField(rootController, "offBeatArchiveOverlay", archiveOverlay);
+            SetSerializedField(rootController, "offBeatArchiveController",
+                archiveOverlay.GetComponent<OffBeatArchiveController>());
+            WireOverlayBackButtonsInScene(rootController);
+            EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
+            Debug.Log("[Fractured Chorus] Off-Beat SyncPod layout rebuilt — Save scene.");
+        }
+
+        [MenuItem("Fractured Chorus/Upgrade Off-Beat Archive Player")]
+        public static void UpgradeOffBeatArchivePlayer()
+        {
+            var controller = Object.FindAnyObjectByType<MainMenuStartGameController>();
+            var canvas = GameObject.Find("MainMenuCanvas")?.transform;
+            if (controller == null || canvas == null)
+            {
+                EditorUtility.DisplayDialog(
+                    "Upgrade Off-Beat Archive",
+                    "Open MainMenuStartGame scene (MainMenuCanvas required).",
+                    "OK");
+                return;
+            }
+
+            Undo.RegisterFullObjectHierarchyUndo(canvas.gameObject, "Upgrade Off-Beat Archive Player");
+            EnsureOffBeatCatalogAssets();
+            var archiveOverlay = RebuildOffBeatArchiveOverlay(canvas, controller);
+            SetSerializedField(controller, "offBeatArchiveOverlay", archiveOverlay);
+            SetSerializedField(controller, "offBeatArchiveController",
+                archiveOverlay.GetComponent<OffBeatArchiveController>());
+            WireOverlayBackButtonsInScene(controller);
+            EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
+            Debug.Log("[Fractured Chorus] Off-Beat Archive player+catalog upgraded — Save scene.");
+        }
+
+        public static void BatchUpgradeOffBeatArchivePlayer()
+        {
+            if (!System.IO.File.Exists(ScenePath))
+            {
+                Debug.LogError($"[Fractured Chorus] Scene not found: {ScenePath}");
+                EditorApplication.Exit(1);
+                return;
+            }
+
+            EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            UpgradeOffBeatArchivePlayer();
+            EditorSceneManager.SaveOpenScenes();
+            AssetDatabase.SaveAssets();
+            Debug.Log("[Fractured Chorus] Off-Beat Archive batch upgrade complete.");
+            EditorApplication.Exit(0);
         }
 
         public static void BatchUpgradeMainMenuStartGameConfigUi()
@@ -603,6 +727,8 @@ namespace FracturedChorus.Editor
             SetSerializedField(controller, "settingsOverlay", settingsOverlay);
             SetSerializedField(controller, "configOverlayController", settingsOverlay.GetComponent<MainMenuConfigOverlayController>());
             SetSerializedField(controller, "offBeatArchiveOverlay", archiveOverlay);
+            SetSerializedField(controller, "offBeatArchiveController",
+                archiveOverlay != null ? archiveOverlay.GetComponent<OffBeatArchiveController>() : null);
             SetSerializedField(controller, "menuController", menuController);
             SetSerializedField(controller, "sceneFadeOverlay", sceneFadeOverlay);
             SetSerializedField(controller, "transitionDuration", 0.35f);
@@ -922,42 +1048,250 @@ namespace FracturedChorus.Editor
 
         private static CanvasGroup CreateOffBeatArchiveOverlay(Transform canvas, MainMenuStartGameController controller)
         {
+            return RebuildOffBeatArchiveOverlay(canvas, controller);
+        }
+
+        private static CanvasGroup RebuildOffBeatArchiveOverlay(Transform canvas, MainMenuStartGameController controller)
+        {
+            EnsureOffBeatCatalogAssets();
             var existing = canvas.Find("OffBeatArchiveOverlay");
             if (existing != null)
             {
                 Object.DestroyImmediate(existing.gameObject);
             }
 
+            var cyan = new Color(0f, 0.831f, 1f, 1f);
             var overlayGo = CreateUiObject("OffBeatArchiveOverlay", canvas);
             StretchRect(overlayGo, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             var group = overlayGo.AddComponent<CanvasGroup>();
             var dim = overlayGo.AddComponent<Image>();
-            dim.color = new Color(0f, 0f, 0f, 0.6f);
+            dim.color = new Color(0f, 0f, 0f, 0.72f);
             dim.raycastTarget = true;
 
             var panelGo = CreateUiObject("ArchivePanel", overlayGo.transform);
-            StretchRect(panelGo, new Vector2(0.22f, 0.18f), new Vector2(0.78f, 0.82f), Vector2.zero, Vector2.zero);
+            StretchRect(panelGo, new Vector2(0.08f, 0.08f), new Vector2(0.92f, 0.92f), Vector2.zero, Vector2.zero);
             var panelImage = panelGo.AddComponent<Image>();
-            panelImage.color = new Color(0.1f, 0.12f, 0.18f, 0.95f);
+            panelImage.color = new Color(0.04f, 0.06f, 0.12f, 0.96f);
 
-            var title = CreateText("Title", panelGo.transform, "OFF-BEAT ARCHIVE", 32, TextAnchor.UpperCenter);
-            StretchRect(title.gameObject, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(16f, -56f), new Vector2(-16f, -8f));
+            var title = CreateText("Title", panelGo.transform, "OFF-BEAT ARCHIVE", 30, TextAnchor.MiddleLeft);
+            title.color = cyan;
+            title.fontStyle = FontStyle.Bold;
+            StretchRect(title.gameObject, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(24f, -56f), new Vector2(-24f, -8f));
 
-            var body = CreateText("Body", panelGo.transform,
-                "▶ Midnight (Menu)\n▶ Eternal Spark — Cadence Remix\n\nStub playlist — Phase 1",
-                20,
-                TextAnchor.UpperLeft);
-            StretchRect(body.gameObject, new Vector2(0f, 0f), new Vector2(1f, 1f), new Vector2(24f, 64f), new Vector2(-24f, -72f));
+            var catalogRoot = CreateUiObject("CatalogScroll", panelGo.transform);
+            StretchRect(catalogRoot, new Vector2(0f, 0f), new Vector2(0.38f, 1f), new Vector2(20f, 72f), new Vector2(-8f, -64f));
+            var catalogBg = catalogRoot.AddComponent<Image>();
+            catalogBg.color = new Color(0.02f, 0.04f, 0.1f, 0.85f);
+            var scroll = catalogRoot.AddComponent<ScrollRect>();
+            scroll.horizontal = false;
+            scroll.vertical = true;
+            scroll.movementType = ScrollRect.MovementType.Clamped;
+
+            var viewport = CreateUiObject("Viewport", catalogRoot.transform);
+            StretchRect(viewport, Vector2.zero, Vector2.one, new Vector2(4f, 4f), new Vector2(-4f, -4f));
+            viewport.AddComponent<RectMask2D>();
+            var viewportImg = viewport.AddComponent<Image>();
+            viewportImg.color = new Color(1f, 1f, 1f, 0.01f);
+            scroll.viewport = viewport.GetComponent<RectTransform>();
+
+            var content = CreateUiObject("Content", viewport.transform);
+            StretchRect(content, new Vector2(0f, 1f), new Vector2(1f, 1f), Vector2.zero, Vector2.zero);
+            var contentRt = content.GetComponent<RectTransform>();
+            contentRt.pivot = new Vector2(0.5f, 1f);
+            var vlg = content.AddComponent<VerticalLayoutGroup>();
+            vlg.padding = new RectOffset(4, 4, 4, 4);
+            vlg.spacing = 4f;
+            vlg.childAlignment = TextAnchor.UpperCenter;
+            vlg.childControlHeight = true;
+            vlg.childControlWidth = true;
+            vlg.childForceExpandHeight = false;
+            vlg.childForceExpandWidth = true;
+            var fitter = content.AddComponent<ContentSizeFitter>();
+            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            scroll.content = contentRt;
+
+            var playerRoot = CreateUiObject("PlayerRoot", panelGo.transform);
+            StretchRect(playerRoot, new Vector2(0.38f, 0f), new Vector2(1f, 1f), new Vector2(8f, 72f), new Vector2(-20f, -64f));
+            var playerBg = playerRoot.AddComponent<Image>();
+            playerBg.color = new Color(0.02f, 0.03f, 0.08f, 0.35f);
+            playerBg.raycastTarget = false;
+
+            var syncBgGo = CreateUiObject("SyncPodBg", playerRoot.transform);
+            StretchRect(syncBgGo, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            var syncBg = syncBgGo.AddComponent<Image>();
+            syncBg.raycastTarget = false;
+            syncBg.preserveAspect = true;
+            var syncBgSprite = AssetDatabase.LoadAssetAtPath<Sprite>(
+                "Assets/FracturedChorus/Art/UI/OffBeat/offbeat_syncpod_bg_v2.png");
+            if (syncBgSprite == null)
+            {
+                var objs = AssetDatabase.LoadAllAssetsAtPath(
+                    "Assets/FracturedChorus/Art/UI/OffBeat/offbeat_syncpod_bg_v2.png");
+                foreach (var o in objs)
+                {
+                    if (o is Sprite s)
+                    {
+                        syncBgSprite = s;
+                        break;
+                    }
+                }
+            }
+
+            syncBg.sprite = syncBgSprite;
+            syncBg.color = Color.white;
+            syncBg.preserveAspect = true;
+
+            var volRoot = CreateUiObject("VolumeArcRoot", playerRoot.transform);
+            var volRt = volRoot.GetComponent<RectTransform>();
+            volRt.anchorMin = new Vector2(0.5f, 0.5f);
+            volRt.anchorMax = new Vector2(0.5f, 0.5f);
+            volRt.pivot = new Vector2(0.5f, 0.5f);
+            volRt.sizeDelta = new Vector2(228.89f, 208.41f);
+            volRt.anchoredPosition = new Vector2(0f, 155.7f);
+            volRt.localEulerAngles = new Vector3(0f, 0f, -368.749f);
+            var volTrack = CreateUiObject("Track", volRoot.transform);
+            StretchRect(volTrack, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            var volTrackImg = volTrack.AddComponent<Image>();
+            volTrackImg.raycastTarget = false;
+            var volFillGo = CreateUiObject("Fill", volRoot.transform);
+            StretchRect(volFillGo, Vector2.zero, Vector2.one, new Vector2(4f, 4f), new Vector2(-4f, -4f));
+            var volFill = volFillGo.AddComponent<Image>();
+            volFill.raycastTarget = false;
+            var volHit = CreateUiObject("HitArea", volRoot.transform);
+            StretchRect(volHit, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            var volHitImg = volHit.AddComponent<Image>();
+            volHitImg.color = new Color(1f, 1f, 1f, 0f);
+            volHitImg.raycastTarget = true;
+            var volumeArc = volHit.AddComponent<OffBeatVolumeArcView>();
+            volumeArc.Bind(volTrackImg, volFill);
+
+            var discFace = CreateUiObject("DiscFace", playerRoot.transform);
+            var discRt = discFace.GetComponent<RectTransform>();
+            discRt.anchorMin = new Vector2(0.5f, 0.5f);
+            discRt.anchorMax = new Vector2(0.5f, 0.5f);
+            discRt.pivot = new Vector2(0.5f, 0.5f);
+            discRt.sizeDelta = new Vector2(420f, 420f);
+            discRt.anchoredPosition = new Vector2(0f, 20f);
+            var discImg = discFace.AddComponent<Image>();
+            discImg.color = new Color(1f, 1f, 1f, 0f);
+            discImg.raycastTarget = true;
+            discFace.AddComponent<RectMask2D>();
+            var swipe = discFace.AddComponent<OffBeatDiscSwipeZone>();
+
+            var coverGo = CreateUiObject("CoverImage", discFace.transform);
+            var coverRt = coverGo.GetComponent<RectTransform>();
+            coverRt.anchorMin = new Vector2(0.5f, 1f);
+            coverRt.anchorMax = new Vector2(0.5f, 1f);
+            coverRt.pivot = new Vector2(0.5f, 1f);
+            coverRt.anchoredPosition = new Vector2(0f, -28.4f);
+            coverRt.sizeDelta = new Vector2(88f, 88f);
+            var coverImage = coverGo.AddComponent<Image>();
+            coverImage.color = new Color(0.08f, 0.12f, 0.2f, 1f);
+            coverImage.raycastTarget = false;
+
+            var songTitle = CreateText("SongTitle", discFace.transform, "Song title", 22, TextAnchor.MiddleCenter);
+            songTitle.fontStyle = FontStyle.Bold;
+            songTitle.color = cyan;
+            songTitle.raycastTarget = false;
+            StretchRect(songTitle.gameObject, new Vector2(0.12f, 0.52f), new Vector2(0.88f, 0.66f), Vector2.zero, Vector2.zero);
+            var songTitleRt = songTitle.GetComponent<RectTransform>();
+            songTitleRt.anchoredPosition = new Vector2(3.8f, 13.5f);
+
+            var artist = CreateText("ArtistName", discFace.transform, string.Empty, 14, TextAnchor.MiddleCenter);
+            artist.color = new Color(0.7f, 0.85f, 1f, 0.75f);
+            artist.raycastTarget = false;
+            artist.gameObject.SetActive(false);
+
+            var controls = CreateUiObject("Controls", discFace.transform);
+            var controlsRt = controls.GetComponent<RectTransform>();
+            controlsRt.anchorMin = new Vector2(0.5f, 0.5f);
+            controlsRt.anchorMax = new Vector2(0.5f, 0.5f);
+            controlsRt.anchoredPosition = new Vector2(0.4f, -40.8f);
+            controlsRt.sizeDelta = new Vector2(135.76f, 32.6f);
+            var hlg = controls.AddComponent<HorizontalLayoutGroup>();
+            hlg.spacing = 12f;
+            hlg.childAlignment = TextAnchor.MiddleCenter;
+            hlg.childForceExpandWidth = false;
+            hlg.childForceExpandHeight = false;
+            hlg.childControlWidth = true;
+            hlg.childControlHeight = true;
+
+            var shuffleBtn = CreateTransportButton(controls.transform, "Shuffle", "⇄", out var shuffleIcon);
+            var playBtn = CreateTransportButton(controls.transform, "PlayPause", "▶", out _, out var playLabel, large: true);
+            var repeatBtn = CreateTransportButton(controls.transform, "Repeat", "↻", out var repeatIcon);
+
+            var waveGo = CreateUiObject("Waveform", discFace.transform);
+            StretchRect(waveGo, new Vector2(0.12f, 0.12f), new Vector2(0.88f, 0.38f), Vector2.zero, Vector2.zero);
+            var waveRt = waveGo.GetComponent<RectTransform>();
+            waveRt.anchoredPosition = new Vector2(0f, 31f);
+            waveRt.sizeDelta = new Vector2(-68f, 0f);
+            var waveBg = waveGo.AddComponent<Image>();
+            waveBg.color = new Color(1f, 1f, 1f, 0f);
+            waveBg.raycastTarget = false;
+            var drawGo = CreateUiObject("WaveDraw", waveGo.transform);
+            StretchRect(drawGo, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            var waveformView = drawGo.AddComponent<OffBeatWaveformView>();
+            waveformView.raycastTarget = false;
+            waveformView.color = Color.white;
+
+            Button prevBtn = null;
+            Button nextBtn = null;
+            Slider seek = null;
+            Text timeCurrent = null;
+            Text timeTotal = null;
+            Button favButton = null;
+            Image favImg = null;
 
             var backGo = CreateUiObject("Btn_Back", panelGo.transform);
-            StretchRect(backGo, new Vector2(0.25f, 0f), new Vector2(0.75f, 0f), new Vector2(0f, 16f), new Vector2(0f, 56f));
+            StretchRect(backGo, new Vector2(0.35f, 0f), new Vector2(0.65f, 0f), new Vector2(0f, 16f), new Vector2(0f, 56f));
             var backImage = backGo.AddComponent<Image>();
-            backImage.color = new Color(0.42f, 0.55f, 0.75f, 1f);
+            backImage.color = new Color(0.12f, 0.28f, 0.42f, 1f);
             var backButton = backGo.AddComponent<Button>();
             backButton.targetGraphic = backImage;
             BindPersistentBackButton(backButton, controller, controller.HideOffBeatArchive);
             var backLabel = CreateText("Label", backGo.transform, "BACK", 22, TextAnchor.MiddleCenter);
+            backLabel.color = cyan;
             StretchRect(backLabel.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+
+            var archiveController = overlayGo.AddComponent<OffBeatArchiveController>();
+            if (overlayGo.GetComponent<AudioSource>() == null)
+            {
+                overlayGo.AddComponent<AudioSource>();
+            }
+
+            var musicPlayer = overlayGo.GetComponent<OffBeatMusicPlayer>();
+            if (musicPlayer == null)
+            {
+                musicPlayer = overlayGo.AddComponent<OffBeatMusicPlayer>();
+            }
+
+            var catalog = AssetDatabase.LoadAssetAtPath<OffBeatCatalogSO>(OffBeatCatalogPath);
+            var bgm = Object.FindAnyObjectByType<MainMenuBgmController>();
+            SetSerializedField(archiveController, "catalog", catalog);
+            SetSerializedField(archiveController, "musicPlayer", musicPlayer);
+            SetSerializedField(archiveController, "menuBgm", bgm);
+            SetSerializedField(archiveController, "catalogContent", content.transform);
+            SetSerializedField(archiveController, "coverImage", coverImage);
+            SetSerializedField(archiveController, "songTitleLabel", songTitle);
+            SetSerializedField(archiveController, "artistLabel", artist);
+            SetSerializedField(archiveController, "favoriteButton", favButton);
+            SetSerializedField(archiveController, "favoriteIcon", favImg);
+            SetSerializedField(archiveController, "seekSlider", seek);
+            SetSerializedField(archiveController, "timeCurrentLabel", timeCurrent);
+            SetSerializedField(archiveController, "timeTotalLabel", timeTotal);
+            SetSerializedField(archiveController, "shuffleButton", shuffleBtn);
+            SetSerializedField(archiveController, "previousButton", prevBtn);
+            SetSerializedField(archiveController, "playPauseButton", playBtn);
+            SetSerializedField(archiveController, "playPauseLabel", playLabel);
+            SetSerializedField(archiveController, "nextButton", nextBtn);
+            SetSerializedField(archiveController, "repeatButton", repeatBtn);
+            SetSerializedField(archiveController, "shuffleIcon", shuffleIcon);
+            SetSerializedField(archiveController, "repeatIcon", repeatIcon);
+            SetSerializedField(archiveController, "waveformImage", waveBg);
+            SetSerializedField(archiveController, "waveformView", waveformView);
+            SetSerializedField(archiveController, "syncPodBackground", syncBg);
+            SetSerializedField(archiveController, "discSwipeZone", swipe);
+            SetSerializedField(archiveController, "volumeArcView", volumeArc);
 
             overlayGo.SetActive(false);
             group.alpha = 0f;
@@ -966,17 +1300,141 @@ namespace FracturedChorus.Editor
             return group;
         }
 
+        private static Button CreateTransportButton(Transform parent, string name, string label, out Image iconImage)
+        {
+            return CreateTransportButton(parent, name, label, out iconImage, out _, large: false);
+        }
+
+        private static Button CreateTransportButton(
+            Transform parent,
+            string name,
+            string label,
+            out Image iconImage,
+            out Text labelText,
+            bool large)
+        {
+            var go = CreateUiObject(name, parent);
+            var le = go.AddComponent<LayoutElement>();
+            le.ignoreLayout = false;
+            le.preferredWidth = large ? 64f : 56f;
+            le.preferredHeight = large ? 64f : 56f;
+            var rt = go.GetComponent<RectTransform>();
+            rt.sizeDelta = new Vector2(le.preferredWidth, le.preferredHeight);
+            var img = go.AddComponent<Image>();
+            img.color = large
+                ? new Color(0f, 0.55f, 0.75f, 0.35f)
+                : new Color(0.08f, 0.12f, 0.2f, 0.45f);
+            var button = go.AddComponent<Button>();
+            button.targetGraphic = img;
+            labelText = CreateText("Label", go.transform, label, large ? 26 : 22, TextAnchor.MiddleCenter);
+            labelText.color = new Color(0f, 0.831f, 1f, 1f);
+            labelText.raycastTarget = false;
+            StretchRect(labelText.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            iconImage = img;
+            return button;
+        }
+
+        private static void BuildWaveformBars(Transform parent, Color cyan)
+        {
+            var heights = new[] { 0.25f, 0.55f, 0.4f, 0.85f, 0.35f, 0.7f, 0.5f, 0.95f, 0.45f, 0.65f, 0.3f, 0.8f, 0.4f, 0.6f, 0.35f, 0.75f, 0.5f, 0.9f, 0.4f, 0.55f, 0.3f, 0.7f, 0.45f, 0.6f };
+            var count = heights.Length;
+            for (var i = 0; i < count; i++)
+            {
+                var bar = CreateUiObject($"Bar_{i}", parent);
+                var rt = bar.GetComponent<RectTransform>();
+                var x0 = i / (float)count;
+                var x1 = (i + 1) / (float)count;
+                var h = heights[i];
+                rt.anchorMin = new Vector2(x0, 0.5f - h * 0.5f);
+                rt.anchorMax = new Vector2(x1, 0.5f + h * 0.5f);
+                rt.offsetMin = new Vector2(2f, 0f);
+                rt.offsetMax = new Vector2(-2f, 0f);
+                var img = bar.AddComponent<Image>();
+                img.color = new Color(cyan.r, cyan.g, cyan.b, 0.55f);
+                img.raycastTarget = false;
+            }
+        }
+
+        private const string OffBeatResourcesFolder = "Assets/FracturedChorus/Resources/OffBeat";
+        private const string OffBeatCatalogPath = "Assets/FracturedChorus/Resources/OffBeat/OffBeatCatalog.asset";
+
+        private static void EnsureOffBeatCatalogAssets()
+        {
+            EnsureFolder("Assets/FracturedChorus/Resources");
+            EnsureFolder(OffBeatResourcesFolder);
+
+            var defs = new[]
+            {
+                ("midnight", "Midnight", "Fractured Chorus", "Assets/FracturedChorus/Audio/Music/Midnight_BGM_Menu.mp3"),
+                ("eternal_spark", "Eternal Spark", "LUXE", "Assets/FracturedChorus/Audio/Music/EternalSpark.mp3"),
+                ("eternal_spark_cadence", "Eternal Spark — Cadence Remix", "Astra", "Assets/FracturedChorus/Audio/Music/EternalSpark_CadenceRemix.mp3"),
+                ("bring_me_home", "Bring Me Home", "Fractured Chorus", "Assets/FracturedChorus/Audio/Music/Bring_Me_Home.mp3"),
+                ("velvet_reverie", "Velvet Reverie", "Fractured Chorus", "Assets/FracturedChorus/Audio/Music/Velvet_Reverie_BGM.mp3"),
+                ("locked_vault", "The Locked Vault", "Fractured Chorus", "Assets/FracturedChorus/Audio/Music/The_Locked_Vault.mp3"),
+            };
+
+            var tracks = new OffBeatTrackSO[defs.Length];
+            for (var i = 0; i < defs.Length; i++)
+            {
+                var (id, title, artist, clipPath) = defs[i];
+                var assetPath = $"{OffBeatResourcesFolder}/Track_{id}.asset";
+                var track = AssetDatabase.LoadAssetAtPath<OffBeatTrackSO>(assetPath);
+                if (track == null)
+                {
+                    track = ScriptableObject.CreateInstance<OffBeatTrackSO>();
+                    AssetDatabase.CreateAsset(track, assetPath);
+                }
+
+                track.trackId = id;
+                track.title = title;
+                track.artist = artist;
+                track.clip = AssetDatabase.LoadAssetAtPath<AudioClip>(clipPath);
+                EditorUtility.SetDirty(track);
+                tracks[i] = track;
+            }
+
+            var catalog = AssetDatabase.LoadAssetAtPath<OffBeatCatalogSO>(OffBeatCatalogPath);
+            if (catalog == null)
+            {
+                catalog = ScriptableObject.CreateInstance<OffBeatCatalogSO>();
+                AssetDatabase.CreateAsset(catalog, OffBeatCatalogPath);
+            }
+
+            catalog.tracks = tracks;
+            EditorUtility.SetDirty(catalog);
+            AssetDatabase.SaveAssets();
+        }
+
+        private static void EnsureFolder(string path)
+        {
+            if (AssetDatabase.IsValidFolder(path))
+            {
+                return;
+            }
+
+            var parent = System.IO.Path.GetDirectoryName(path)?.Replace('\\', '/');
+            var name = System.IO.Path.GetFileName(path);
+            if (!string.IsNullOrEmpty(parent) && !AssetDatabase.IsValidFolder(parent))
+            {
+                EnsureFolder(parent);
+            }
+
+            AssetDatabase.CreateFolder(parent, name);
+        }
+
         private static CanvasGroup EnsureOffBeatArchiveOverlay(Transform canvas, MainMenuStartGameController controller)
         {
             var existing = canvas.Find("OffBeatArchiveOverlay");
-            if (existing != null)
+            if (existing != null && existing.GetComponent<OffBeatArchiveController>() != null
+                && existing.Find("ArchivePanel/PlayerRoot") != null
+                && existing.Find("ArchivePanel/PlayerRoot/SyncPodBg") != null
+                && existing.Find("ArchivePanel/PlayerRoot/DiscFace") != null)
             {
-                var group = existing.GetComponent<CanvasGroup>();
                 WireOverlayBackButtonInHierarchy(existing, controller, controller.HideOffBeatArchive);
-                return group;
+                return existing.GetComponent<CanvasGroup>();
             }
 
-            return CreateOffBeatArchiveOverlay(canvas, controller);
+            return RebuildOffBeatArchiveOverlay(canvas, controller);
         }
 
         private static void EnsureMainMenuBgm(Transform root)
@@ -1732,6 +2190,44 @@ namespace FracturedChorus.Editor
                 MainMenuStartGameSceneSetupEditor.EnsureConfigSkipUnreadRow();
                 EditorSceneManager.MarkSceneDirty(scene);
             }
+        }
+    }
+
+    [InitializeOnLoad]
+    internal static class MainMenuStartGameOffBeatArchiveAutoUpgrade
+    {
+        private const string SessionKey = "FC_MainMenuStartGame_OffBeatArchive_v1";
+
+        static MainMenuStartGameOffBeatArchiveAutoUpgrade()
+        {
+            EditorApplication.delayCall += TryUpgradeActiveScene;
+        }
+
+        private static void TryUpgradeActiveScene()
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode || SessionState.GetBool(SessionKey, false))
+            {
+                return;
+            }
+
+            var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+            if (scene.path != MainMenuStartGameSceneSetupEditor.ScenePathForAutoUpgrade)
+            {
+                return;
+            }
+
+            SessionState.SetBool(SessionKey, true);
+
+            var overlay = GameObject.Find("OffBeatArchiveOverlay");
+            if (overlay != null
+                && overlay.GetComponent<OffBeatArchiveController>() != null
+                && overlay.transform.Find("ArchivePanel/PlayerRoot") != null)
+            {
+                return;
+            }
+
+            MainMenuStartGameSceneSetupEditor.UpgradeOffBeatArchivePlayer();
+            EditorSceneManager.MarkSceneDirty(scene);
         }
     }
 }

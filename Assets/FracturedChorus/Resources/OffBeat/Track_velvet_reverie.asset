@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1b2c3d4e5f6478901234567890abc01, type: 3}
+  m_Name: Track_velvet_reverie
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Menu.OffBeatTrackSO
+  trackId: velvet_reverie
+  title: Velvet Reverie
+  artist: Fractured Chorus
+  clip: {fileID: 8300000, guid: 7ee67cad4e791024f8fc5b257a47acc3, type: 3}
+  cover: {fileID: 0}
