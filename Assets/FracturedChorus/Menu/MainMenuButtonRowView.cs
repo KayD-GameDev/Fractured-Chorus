@@ -1,11 +1,9 @@
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace FracturedChorus.Menu
 {
-    [RequireComponent(typeof(Button))]
-    public class MainMenuButtonRowView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+    public class MainMenuButtonRowView : MonoBehaviour
     {
         [SerializeField] private MainMenuStartGameMenuController menuController;
         [SerializeField] private int optionIndex;
@@ -21,7 +19,7 @@ namespace FracturedChorus.Menu
         private void Awake()
         {
             _button = GetComponent<Button>();
-            if (hitArea != null)
+            if (_button != null && hitArea != null)
             {
                 _button.targetGraphic = hitArea;
             }
@@ -41,6 +39,11 @@ namespace FracturedChorus.Menu
             label = labelText;
             hitArea = hitTarget;
             _button = GetComponent<Button>();
+            if (_button == null)
+            {
+                return;
+            }
+
             _button.interactable = interactable;
             if (hitArea != null)
             {
@@ -65,7 +68,7 @@ namespace FracturedChorus.Menu
             ApplyVisual(_hovered);
         }
 
-        public void OnPointerEnter(PointerEventData eventData)
+        public void NotifyPointerEnter()
         {
             if (_button == null || !_button.interactable)
             {
@@ -77,15 +80,16 @@ namespace FracturedChorus.Menu
             ApplyVisual(true);
         }
 
-        public void OnPointerExit(PointerEventData eventData)
+        public void NotifyPointerExit()
         {
             _hovered = false;
             ApplyVisual(false);
+            menuController?.NotifyHoverExit(optionIndex);
         }
 
         public void ApplySelectionVisual(bool selected)
         {
-            ApplyVisual(_hovered || selected);
+            ApplyVisual(_hovered);
         }
 
         private void ApplyVisual(bool bright)

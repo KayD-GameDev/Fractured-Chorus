@@ -3,7 +3,7 @@ using UnityEngine.EventSystems;
 
 namespace FracturedChorus.Narrative
 {
-    public class PrologueChoiceOptionHitbox : MonoBehaviour, IPointerEnterHandler, IPointerClickHandler
+    public class PrologueChoiceOptionHitbox : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
     {
         private PrologueChoiceView _view;
         private int _optionIndex;
@@ -17,6 +17,11 @@ namespace FracturedChorus.Narrative
         public void OnPointerEnter(PointerEventData eventData)
         {
             _view?.HoverOption(_optionIndex);
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            _view?.HoverExitOption(_optionIndex);
         }
 
         public void OnPointerClick(PointerEventData eventData)

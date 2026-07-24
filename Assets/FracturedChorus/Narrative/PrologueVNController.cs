@@ -1,6 +1,6 @@
 using System.Collections;
-using FracturedChorus.Menu;
 using FracturedChorus.Meta;
+using FracturedChorus.Narrative.Vn;
 using FracturedChorus.RunMap;
 using UnityEngine;
 using UnityEngine.UI;
@@ -41,6 +41,14 @@ namespace FracturedChorus.Narrative
         private const string ChoicePrompt =
             "Only those who have agreed to the above\nhave the privilege of partaking in this game.";
 
+        private static readonly string[] DisagreeLines =
+        {
+            "Perhaps you are not ready yet—we will wait for you.",
+            "The cadence does not hurry those who still need silence.",
+            "We will keep your place at the threshold until you choose to listen again.",
+            "Return when the melody calls to you. We will be here."
+        };
+
         private const string ThankYouLine =
             "Thank you, {0}. The cadence remembers your name.\nMay your melody find its way home.";
 
@@ -63,14 +71,28 @@ namespace FracturedChorus.Narrative
         [SerializeField] private CanvasGroup choiceBackdrop;
         [SerializeField] private PrologueVNLayoutConfig layoutConfig;
         [SerializeField] private PrologueEditorPreview editorPreview = PrologueEditorPreview.Contract;
+        [SerializeField] private VnConvenienceController convenience;
 
         private bool _waitingAdvance;
         private bool _running;
         private bool _acceptNarrationInput;
         private string _pendingTypeText;
+        private string _currentLineReadKey;
         private PrologueTypewriterView _activeTypewriter;
         [SerializeField] private int narrationFontSize = 40;
         private Color _butterflyBaseColor = Color.white;
+
+        private void OnEnable()
+        {
+            BindConvenience();
+
+#if UNITY_EDITOR
+            if (!Application.isPlaying)
+            {
+                EditorApplication.delayCall += ApplyEditorPreviewDeferred;
+            }
+#endif
+        }
 
         private void Start()
         {
@@ -85,6 +107,8 @@ namespace FracturedChorus.Narrative
                 contractView?.SetLayoutConfig(layoutConfig);
             }
             ApplyCenteredNarrationLayout();
+            BindConvenience();
+            convenience?.ResetSession();
 
             if (butterflyBackground != null)
             {
@@ -109,6 +133,17 @@ namespace FracturedChorus.Narrative
         {
             if (!_running || !_acceptNarrationInput)
             {
+                return;
+            }
+
+            if (convenience != null && convenience.LogOpen)
+            {
+                if (PrologueInput.WasCancelPressedThisFrame() ||
+                    PrologueInput.WasKeyboardAdvancePressedThisFrame())
+                {
+                    convenience.CloseLog();
+                }
+
                 return;
             }
 
@@ -149,7 +184,7 @@ namespace FracturedChorus.Narrative
             }
 
             var typed = false;
-            BeginTypeLine(disclaimerTypewriter, OpeningLine, () => typed = true);
+            BeginTypeLine(disclaimerTypewriter, OpeningLine, "prologue_disclaimer", () => typed = true);
             while (!typed)
             {
                 yield return null;
@@ -198,7 +233,7 @@ namespace FracturedChorus.Narrative
             {
                 var displayLine = PrologueNarrationText.WrapBalanced(StoryLines[i]);
                 var typed = false;
-                BeginTypeLine(dialogueTypewriter, displayLine, () => typed = true);
+                BeginTypeLine(dialogueTypewriter, displayLine, $"prologue_story_{i}", () => typed = true);
                 while (!typed)
                 {
                     yield return null;
@@ -210,15 +245,18 @@ namespace FracturedChorus.Narrative
 
         private IEnumerator RunChoicePhase()
         {
+            HideChoiceUi();
+
             var displayLine = PrologueNarrationText.WrapBalanced(ChoicePrompt);
             var typed = false;
-            BeginTypeLine(dialogueTypewriter, displayLine, () => typed = true);
+            BeginTypeLine(dialogueTypewriter, displayLine, "prologue_choice", () => typed = true);
             while (!typed)
             {
                 yield return null;
             }
 
             yield return WaitForAdvance();
+            yield return null;
 
             _acceptNarrationInput = false;
             audioController?.StopButterflyWings();
@@ -253,13 +291,15 @@ namespace FracturedChorus.Narrative
             }
 
             HideChoiceUi();
-            HideDialogueUi();
 
             if (!agreed)
             {
+                yield return RunDisagreePhase();
                 yield return ReturnToMainMenuRoutine();
                 yield break;
             }
+
+            HideDialogueUi();
 
             var tingDuration = audioController != null ? audioController.PlayMenuTing() : 0f;
             if (tingDuration > 0f)
@@ -268,6 +308,30 @@ namespace FracturedChorus.Narrative
             }
 
             yield return RunContractPhase();
+        }
+
+        private IEnumerator RunDisagreePhase()
+        {
+            _acceptNarrationInput = true;
+
+            if (dialoguePanel != null)
+            {
+                dialoguePanel.gameObject.SetActive(true);
+                dialoguePanel.alpha = 1f;
+            }
+
+            for (var i = 0; i < DisagreeLines.Length; i++)
+            {
+                var displayLine = PrologueNarrationText.WrapBalanced(DisagreeLines[i]);
+                var typed = false;
+                BeginTypeLine(dialogueTypewriter, displayLine, $"prologue_disagree_{i}", () => typed = true);
+                while (!typed)
+                {
+                    yield return null;
+                }
+
+                yield return WaitForAdvance();
+            }
         }
 
         private void HideChoiceUi()
@@ -336,7 +400,7 @@ namespace FracturedChorus.Narrative
 
             var thankYou = PrologueNarrationText.WrapBalanced(string.Format(ThankYouLine, RunProfile.PlayerName));
             var typed = false;
-            BeginTypeLine(dialogueTypewriter, thankYou, () => typed = true);
+            BeginTypeLine(dialogueTypewriter, thankYou, "prologue_thank_you", () => typed = true);
             while (!typed)
             {
                 yield return null;
@@ -362,14 +426,69 @@ namespace FracturedChorus.Narrative
             RunMapSceneLoader.LoadByName(nextSceneName);
         }
 
-        private void BeginTypeLine(PrologueTypewriterView typewriter, string text, System.Action onComplete)
+        private void BeginTypeLine(PrologueTypewriterView typewriter, string text, string readKey, System.Action onComplete)
         {
             _activeTypewriter = typewriter;
             _pendingTypeText = text;
+            _currentLineReadKey = readKey;
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                if (convenience == null)
+                {
+                    convenience = FindAnyObjectByType<VnConvenienceController>();
+                }
+
+                if (convenience != null)
+                {
+                    convenience.AppendLog(string.Empty, text);
+                }
+                else
+                {
+                    VnDialogueLog.Session.Append(string.Empty, text);
+                }
+            }
             typewriter?.Type(text, () =>
             {
+                if (!string.IsNullOrEmpty(_currentLineReadKey))
+                {
+                    VnReadTracker.MarkRead(_currentLineReadKey);
+                }
+
                 _activeTypewriter = null;
                 onComplete?.Invoke();
+            });
+        }
+
+        private void BindConvenience()
+        {
+            if (convenience == null)
+            {
+                convenience = FindAnyObjectByType<VnConvenienceController>();
+            }
+
+            if (convenience == null)
+            {
+                return;
+            }
+
+            convenience.Bind(new VnConvenienceBindings
+            {
+                IsRunning = () => _running,
+                IsPlaybackActive = () => _running && _acceptNarrationInput,
+                IsTyping = () => _activeTypewriter != null && _activeTypewriter.IsTyping,
+                IsWaitingAdvance = () => _waitingAdvance,
+                IsTransitionBusy = () => false,
+                IsAtSkipStop = () => !_acceptNarrationInput,
+                IsCurrentLineRead = () => string.IsNullOrEmpty(_currentLineReadKey) || VnReadTracker.IsRead(_currentLineReadKey),
+                RequestAdvance = () =>
+                {
+                    if (_waitingAdvance)
+                    {
+                        _waitingAdvance = false;
+                    }
+                },
+                SkipTyping = () => _activeTypewriter?.SkipToEnd(_pendingTypeText),
+                RequestSkipTransition = () => { }
             });
         }
 
@@ -502,24 +621,7 @@ namespace FracturedChorus.Narrative
 
 #if UNITY_EDITOR
         private Transform _canvasTransform;
-
-        private void OnEnable()
-        {
-            if (!Application.isPlaying)
-            {
-                EditorApplication.delayCall += ApplyEditorPreviewDeferred;
-            }
-        }
-
-        private void OnValidate()
-        {
-            if (Application.isPlaying)
-            {
-                return;
-            }
-
-            EditorApplication.delayCall += ApplyEditorPreviewDeferred;
-        }
+        private bool _applyingEditorPreview;
 
         private void ApplyEditorPreviewDeferred()
         {
@@ -539,34 +641,47 @@ namespace FracturedChorus.Narrative
 
         public void ApplyEditorPreview()
         {
-            ApplyCenteredNarrationLayout();
-            if (layoutConfig != null)
+            if (_applyingEditorPreview)
             {
-                contractView?.SetLayoutConfig(layoutConfig);
+                return;
             }
 
-            HideAllEditorLayers();
-
-            switch (editorPreview)
+            _applyingEditorPreview = true;
+            try
             {
-                case PrologueEditorPreview.Disclaimer:
-                    PreviewDisclaimer();
-                    break;
-                case PrologueEditorPreview.Story:
-                    PreviewStory();
-                    break;
-                case PrologueEditorPreview.Choice:
-                    PreviewChoice();
-                    break;
-                case PrologueEditorPreview.Contract:
-                    PreviewContract();
-                    break;
-                case PrologueEditorPreview.ThankYou:
-                    PreviewThankYou();
-                    break;
-            }
+                ApplyCenteredNarrationLayout();
+                if (layoutConfig != null)
+                {
+                    contractView?.SetLayoutConfig(layoutConfig);
+                }
 
-            SetFade(0f);
+                HideAllEditorLayers();
+
+                switch (editorPreview)
+                {
+                    case PrologueEditorPreview.Disclaimer:
+                        PreviewDisclaimer();
+                        break;
+                    case PrologueEditorPreview.Story:
+                        PreviewStory();
+                        break;
+                    case PrologueEditorPreview.Choice:
+                        PreviewChoice();
+                        break;
+                    case PrologueEditorPreview.Contract:
+                        PreviewContract();
+                        break;
+                    case PrologueEditorPreview.ThankYou:
+                        PreviewThankYou();
+                        break;
+                }
+
+                SetFade(0f);
+            }
+            finally
+            {
+                _applyingEditorPreview = false;
+            }
         }
 
         private Transform CanvasTransform =>

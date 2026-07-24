@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
@@ -41,7 +42,9 @@ namespace FracturedChorus.Menu
             _enabled = enabled;
             if (enabled)
             {
-                SelectIndex(FindFirstInteractableIndex(), fromHover: false, playSfx: false);
+                _selectedIndex = -1;
+                EventSystem.current?.SetSelectedGameObject(null);
+                RefreshHighlight();
             }
         }
 
@@ -53,6 +56,17 @@ namespace FracturedChorus.Menu
             }
 
             SelectIndex(index, fromHover: true, playSfx: true);
+        }
+
+        public void NotifyHoverExit(int index)
+        {
+            if (!_enabled || _selectedIndex != index)
+            {
+                return;
+            }
+
+            _selectedIndex = -1;
+            RefreshHighlight();
         }
 
         public void HandleInput()
@@ -157,11 +171,11 @@ namespace FracturedChorus.Menu
                 }
 
                 option.rowView.Configure(this, i, option.label, hitArea, option.interactable);
-                EnsurePointerSfx(option.row, hitArea != null ? hitArea.gameObject : option.row.gameObject);
+                EnsurePointerSfx(hitArea != null ? hitArea.gameObject : option.row.gameObject, option.rowView);
             }
         }
 
-        private void EnsurePointerSfx(RectTransform row, GameObject eventTarget)
+        private void EnsurePointerSfx(GameObject eventTarget, MainMenuButtonRowView rowView)
         {
             if (eventTarget == null || screenController == null)
             {
@@ -174,7 +188,7 @@ namespace FracturedChorus.Menu
                 pointerSfx = eventTarget.AddComponent<MainMenuUiPointerSfx>();
             }
 
-            pointerSfx.Bind(screenController);
+            pointerSfx.Bind(screenController, rowView);
         }
 
         private void OnOptionClicked(int index)
@@ -259,6 +273,12 @@ namespace FracturedChorus.Menu
                 return;
             }
 
+            if (_selectedIndex < 0)
+            {
+                SelectIndex(FindFirstInteractableIndex(), fromHover: false, playSfx: true);
+                return;
+            }
+
             var next = _selectedIndex;
             for (var step = 0; step < options.Length; step++)
             {
@@ -275,6 +295,12 @@ namespace FracturedChorus.Menu
         {
             if (options.Length == 0)
             {
+                return;
+            }
+
+            if (_selectedIndex < 0)
+            {
+                SelectIndex(FindLastInteractableIndex(), fromHover: false, playSfx: true);
                 return;
             }
 
@@ -321,10 +347,35 @@ namespace FracturedChorus.Menu
             return 0;
         }
 
+        private int FindLastInteractableIndex()
+        {
+            for (var i = options.Length - 1; i >= 0; i--)
+            {
+                if (options[i].interactable)
+                {
+                    return i;
+                }
+            }
+
+            return options.Length - 1;
+        }
+
         private void RefreshHighlight()
         {
-            if (highlightBar == null || _selectedIndex < 0 || _selectedIndex >= options.Length)
+            if (highlightBar == null || options == null)
             {
+                return;
+            }
+
+            if (_selectedIndex < 0 || _selectedIndex >= options.Length)
+            {
+                highlightBar.gameObject.SetActive(false);
+                for (var i = 0; i < options.Length; i++)
+                {
+                    options[i].rowView?.SetInteractable(options[i].interactable);
+                    options[i].rowView?.ApplySelectionVisual(false);
+                }
+
                 return;
             }
 
@@ -334,6 +385,7 @@ namespace FracturedChorus.Menu
                 return;
             }
 
+            highlightBar.gameObject.SetActive(true);
             highlightBar.SetParent(row, false);
             var barRect = highlightBar;
             barRect.anchorMin = Vector2.zero;

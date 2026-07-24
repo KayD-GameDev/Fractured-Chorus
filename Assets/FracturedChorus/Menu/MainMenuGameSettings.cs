@@ -14,12 +14,14 @@ namespace FracturedChorus.Menu
     {
         private const string KeyVolume = "fc_master_volume";
         private const string KeyBrightness = "fc_bg_brightness";
+        private const string KeySkipUnreadText = "fc_skip_unread_text";
         private const string KeyDifficulty = "fc_difficulty";
 
         public static event Action SettingsChanged;
 
         public static float MasterVolume { get; private set; } = 0.85f;
         public static float BackgroundBrightness { get; private set; } = 1f;
+        public static bool SkipUnreadText { get; private set; }
         public static GameDifficulty Difficulty { get; private set; } = GameDifficulty.Cadence;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -32,6 +34,7 @@ namespace FracturedChorus.Menu
         {
             MasterVolume = PlayerPrefs.GetFloat(KeyVolume, 0.85f);
             BackgroundBrightness = PlayerPrefs.GetFloat(KeyBrightness, 1f);
+            SkipUnreadText = PlayerPrefs.GetInt(KeySkipUnreadText, 0) == 1;
             Difficulty = (GameDifficulty)PlayerPrefs.GetInt(KeyDifficulty, (int)GameDifficulty.Cadence);
         }
 
@@ -47,6 +50,14 @@ namespace FracturedChorus.Menu
         {
             BackgroundBrightness = Mathf.Clamp01(value);
             PlayerPrefs.SetFloat(KeyBrightness, BackgroundBrightness);
+            PlayerPrefs.Save();
+            SettingsChanged?.Invoke();
+        }
+
+        public static void SetSkipUnreadText(bool enabled)
+        {
+            SkipUnreadText = enabled;
+            PlayerPrefs.SetInt(KeySkipUnreadText, SkipUnreadText ? 1 : 0);
             PlayerPrefs.Save();
             SettingsChanged?.Invoke();
         }

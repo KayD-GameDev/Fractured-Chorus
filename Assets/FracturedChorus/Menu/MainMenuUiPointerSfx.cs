@@ -3,13 +3,25 @@ using UnityEngine.EventSystems;
 
 namespace FracturedChorus.Menu
 {
-    public class MainMenuUiPointerSfx : MonoBehaviour, IPointerDownHandler
+    public class MainMenuUiPointerSfx : MonoBehaviour, IPointerDownHandler, IPointerEnterHandler, IPointerExitHandler
     {
         private MainMenuStartGameController _controller;
+        private MainMenuButtonRowView _rowView;
 
-        public void Bind(MainMenuStartGameController controller)
+        public void Bind(MainMenuStartGameController controller, MainMenuButtonRowView rowView = null)
         {
             _controller = controller;
+            _rowView = rowView;
+        }
+
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            _rowView?.NotifyPointerEnter();
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            _rowView?.NotifyPointerExit();
         }
 
         public void OnPointerDown(PointerEventData eventData)
