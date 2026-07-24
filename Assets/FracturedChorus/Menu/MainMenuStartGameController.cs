@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using FracturedChorus.Combat.Bootstrap;
 using FracturedChorus.RunMap;
 using UnityEngine;
@@ -52,6 +53,8 @@ namespace FracturedChorus.Menu
         private MainMenuTitleVoiceController _titleVoiceController;
         private MainMenuTransitionSfxController _transitionSfxController;
         private MainMenuButtonPressSfxController _buttonPressSfxController;
+        private Image _settingsBackgroundImage;
+        private readonly Dictionary<Image, Color> _brightnessBaseColors = new Dictionary<Image, Color>();
 
         private void Awake()
         {
@@ -65,6 +68,7 @@ namespace FracturedChorus.Menu
                 settingsOverlay.interactable = false;
                 settingsOverlay.blocksRaycasts = false;
                 settingsOverlay.gameObject.SetActive(false);
+                _settingsBackgroundImage = settingsOverlay.transform.Find("ConfigBackground")?.GetComponent<Image>();
             }
 
             if (offBeatArchiveOverlay != null)
@@ -136,24 +140,38 @@ namespace FracturedChorus.Menu
             brightness = Mathf.Clamp01(brightness);
             ApplyLayerImageBrightness(attractLayer, brightness);
             ApplyLayerImageBrightness(mainMenuBackground, brightness);
+            ApplyImageBrightness(_settingsBackgroundImage, brightness);
         }
 
-        private static void ApplyLayerImageBrightness(CanvasGroup layer, float brightness)
+        private void ApplyLayerImageBrightness(CanvasGroup layer, float brightness)
         {
             if (layer == null)
             {
                 return;
             }
 
-            var image = layer.GetComponent<Image>();
+            ApplyImageBrightness(layer.GetComponent<Image>(), brightness);
+        }
+
+        private void ApplyImageBrightness(Image image, float brightness)
+        {
             if (image == null)
             {
                 return;
             }
 
-            var c = image.color;
+            if (!_brightnessBaseColors.TryGetValue(image, out var baseColor))
+            {
+                baseColor = image.color;
+                _brightnessBaseColors[image] = baseColor;
+            }
+
             var scalar = Mathf.Lerp(0.35f, 1f, brightness);
-            image.color = new Color(scalar, scalar, scalar, c.a);
+            image.color = new Color(
+                baseColor.r * scalar,
+                baseColor.g * scalar,
+                baseColor.b * scalar,
+                baseColor.a);
         }
 
         private void ApplyMasterVolume(float masterVolume)
@@ -224,22 +242,14 @@ namespace FracturedChorus.Menu
         }
 
 #if UNITY_EDITOR
+        private bool _applyingEditorPreview;
+
         private void OnEnable()
         {
             if (!Application.isPlaying)
             {
                 EditorApplication.delayCall += ApplyEditorPreviewDeferred;
             }
-        }
-
-        private void OnValidate()
-        {
-            if (Application.isPlaying)
-            {
-                return;
-            }
-
-            EditorApplication.delayCall += ApplyEditorPreviewDeferred;
         }
 
         private void ApplyEditorPreviewDeferred()
@@ -260,33 +270,55 @@ namespace FracturedChorus.Menu
 
         public void ApplyEditorPreview()
         {
-            if (attractLayer == null)
+            if (attractLayer == null || _applyingEditorPreview)
             {
                 return;
             }
 
-            switch (editorPreview)
+            _applyingEditorPreview = true;
+            try
             {
-                case MainMenuEditorPreview.Attract:
-                    attractLayer.gameObject.SetActive(true);
-                    attractLayer.alpha = 1f;
-                    SetMainMenuEditorVisible(false);
-                    SetSettingsEditorVisible(false);
-                    SetOffBeatArchiveEditorVisible(false);
-                    break;
-                case MainMenuEditorPreview.MainMenu:
-                    attractLayer.gameObject.SetActive(false);
-                    SetMainMenuEditorVisible(true);
-                    SetSettingsEditorVisible(false);
-                    SetOffBeatArchiveEditorVisible(false);
-                    break;
-                case MainMenuEditorPreview.Settings:
-                    attractLayer.gameObject.SetActive(false);
-                    SetMainMenuEditorVisible(false);
-                    SetOffBeatArchiveEditorVisible(false);
-                    SetSettingsEditorVisible(true);
-                    break;
+                switch (editorPreview)
+                {
+                    case MainMenuEditorPreview.Attract:
+                        SetLayerActive(attractLayer, true, alpha: 1f);
+                        SetMainMenuEditorVisible(false);
+                        SetSettingsEditorVisible(false);
+                        SetOffBeatArchiveEditorVisible(false);
+                        break;
+                    case MainMenuEditorPreview.MainMenu:
+                        SetLayerActive(attractLayer, false, alpha: 0f);
+                        SetMainMenuEditorVisible(true);
+                        SetSettingsEditorVisible(false);
+                        SetOffBeatArchiveEditorVisible(false);
+                        break;
+                    case MainMenuEditorPreview.Settings:
+                        SetLayerActive(attractLayer, false, alpha: 0f);
+                        SetMainMenuEditorVisible(false);
+                        SetOffBeatArchiveEditorVisible(false);
+                        SetSettingsEditorVisible(true);
+                        break;
+                }
             }
+            finally
+            {
+                _applyingEditorPreview = false;
+            }
+        }
+
+        private static void SetLayerActive(CanvasGroup layer, bool active, float alpha)
+        {
+            if (layer == null)
+            {
+                return;
+            }
+
+            if (layer.gameObject.activeSelf != active)
+            {
+                layer.gameObject.SetActive(active);
+            }
+
+            layer.alpha = alpha;
         }
 
         private void SetOffBeatArchiveEditorVisible(bool visible)
@@ -296,26 +328,38 @@ namespace FracturedChorus.Menu
                 return;
             }
 
-            offBeatArchiveOverlay.gameObject.SetActive(visible);
+            if (offBeatArchiveOverlay.gameObject.activeSelf != visible)
+            {
+                offBeatArchiveOverlay.gameObject.SetActive(visible);
+            }
+
             offBeatArchiveOverlay.alpha = visible ? 1f : 0f;
-            offBeatArchiveOverlay.interactable = visible;
-            offBeatArchiveOverlay.blocksRaycasts = visible;
+            offBeatArchiveOverlay.interactable = false;
+            offBeatArchiveOverlay.blocksRaycasts = false;
         }
 
         private void SetMainMenuEditorVisible(bool visible)
         {
             if (mainMenuBackground != null)
             {
-                mainMenuBackground.gameObject.SetActive(visible);
-                mainMenuBackground.alpha = 1f;
+                if (mainMenuBackground.gameObject.activeSelf != visible)
+                {
+                    mainMenuBackground.gameObject.SetActive(visible);
+                }
+
+                mainMenuBackground.alpha = visible ? 1f : 0f;
             }
 
             if (mainMenuUi != null)
             {
-                mainMenuUi.gameObject.SetActive(visible);
-                mainMenuUi.alpha = 1f;
-                mainMenuUi.interactable = true;
-                mainMenuUi.blocksRaycasts = true;
+                if (mainMenuUi.gameObject.activeSelf != visible)
+                {
+                    mainMenuUi.gameObject.SetActive(visible);
+                }
+
+                mainMenuUi.alpha = visible ? 1f : 0f;
+                mainMenuUi.interactable = false;
+                mainMenuUi.blocksRaycasts = false;
             }
         }
 
@@ -326,19 +370,15 @@ namespace FracturedChorus.Menu
                 return;
             }
 
-            settingsOverlay.gameObject.SetActive(visible);
-            settingsOverlay.alpha = visible ? 1f : 0f;
-            settingsOverlay.interactable = visible;
-            settingsOverlay.blocksRaycasts = visible;
+            if (settingsOverlay.gameObject.activeSelf != visible)
+            {
+                settingsOverlay.gameObject.SetActive(visible);
+            }
 
-            if (visible)
-            {
-                configOverlayController?.SetActive(true);
-            }
-            else
-            {
-                configOverlayController?.SetActive(false);
-            }
+            settingsOverlay.alpha = visible ? 1f : 0f;
+            settingsOverlay.interactable = false;
+            settingsOverlay.blocksRaycasts = false;
+            configOverlayController?.SetEditorPreviewActive(visible);
         }
 #endif
 
@@ -652,20 +692,15 @@ namespace FracturedChorus.Menu
                 elapsed += Time.unscaledDeltaTime;
                 var t = Mathf.Clamp01(elapsed / duration);
                 attractLayer.alpha = 1f - t;
-                SetMainMenuAlpha(t, interactable: false, blocksRaycasts: false);
+                var acceptPointer = t >= 0.9f;
+                SetMainMenuAlpha(t, interactable: acceptPointer, blocksRaycasts: acceptPointer);
                 yield return null;
             }
 
             ApplyLayerState(showAttract: false, immediate: true);
-
-            if (_transitionSfxController != null)
-            {
-                yield return _transitionSfxController.WaitUntilFinishedRoutine();
-            }
-
             _bgmController?.RestoreVolume();
-            _transitioning = false;
             menuController?.SetEnabled(true);
+            _transitioning = false;
         }
 
         private void ApplyLayerState(bool showAttract, bool immediate)

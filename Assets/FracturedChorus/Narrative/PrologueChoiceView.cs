@@ -20,6 +20,7 @@ namespace FracturedChorus.Narrative
 
         private int _selectedIndex;
         private bool _active;
+        private int _ignoreInputUntilFrame = -1;
         private Action<bool> _onChosen;
         private PrologueAudioController _audio;
 
@@ -37,6 +38,7 @@ namespace FracturedChorus.Narrative
         public void Hide()
         {
             _active = false;
+            _ignoreInputUntilFrame = -1;
             _onChosen = null;
             if (root != null)
             {
@@ -57,7 +59,8 @@ namespace FracturedChorus.Narrative
             NormalizeLegacyColors();
             EnsureChoiceUi();
             _onChosen = onChosen;
-            _selectedIndex = 0;
+            _selectedIndex = -1;
+            _ignoreInputUntilFrame = Time.frameCount + 1;
             _active = true;
 
             if (promptText != null)
@@ -89,14 +92,19 @@ namespace FracturedChorus.Narrative
             {
                 root.gameObject.SetActive(true);
                 root.alpha = 1f;
-                root.interactable = true;
-                root.blocksRaycasts = true;
+                root.interactable = CanAcceptInput();
+                root.blocksRaycasts = CanAcceptInput();
             }
+        }
+
+        private bool CanAcceptInput()
+        {
+            return Time.frameCount > _ignoreInputUntilFrame;
         }
 
         public void HoverOption(int optionIndex)
         {
-            if (!_active)
+            if (!_active || !CanAcceptInput())
             {
                 return;
             }
@@ -112,9 +120,20 @@ namespace FracturedChorus.Narrative
             RefreshSelectionVisuals();
         }
 
+        public void HoverExitOption(int optionIndex)
+        {
+            if (!_active || !CanAcceptInput() || _selectedIndex != optionIndex)
+            {
+                return;
+            }
+
+            _selectedIndex = -1;
+            RefreshSelectionVisuals();
+        }
+
         public void ClickOption(int optionIndex)
         {
-            if (!_active)
+            if (!_active || !CanAcceptInput())
             {
                 return;
             }
@@ -130,15 +149,26 @@ namespace FracturedChorus.Narrative
                 return;
             }
 
+            if (root != null && !root.interactable && CanAcceptInput())
+            {
+                root.interactable = true;
+                root.blocksRaycasts = true;
+            }
+
+            if (!CanAcceptInput())
+            {
+                return;
+            }
+
             if (PrologueInput.WasUpPressedThisFrame())
             {
-                HoverOption(_selectedIndex == 0 ? 1 : 0);
+                HoverOption(_selectedIndex < 0 ? 1 : _selectedIndex == 0 ? 1 : 0);
             }
             else if (PrologueInput.WasDownPressedThisFrame())
             {
-                HoverOption(_selectedIndex == 0 ? 1 : 0);
+                HoverOption(_selectedIndex < 0 ? 0 : _selectedIndex == 0 ? 1 : 0);
             }
-            else if (PrologueInput.WasAdvancePressedThisFrame())
+            else if (PrologueInput.WasAdvancePressedThisFrame() && _selectedIndex >= 0)
             {
                 ConfirmSelection();
             }
@@ -146,7 +176,7 @@ namespace FracturedChorus.Narrative
 
         private void ConfirmSelection()
         {
-            if (!_active)
+            if (!_active || _selectedIndex < 0)
             {
                 return;
             }
@@ -191,7 +221,7 @@ namespace FracturedChorus.Narrative
                 disagreeLabel.text = "I do not agree.";
             }
 
-            _selectedIndex = 0;
+            _selectedIndex = -1;
             RefreshSelectionVisuals();
 
             if (root != null)

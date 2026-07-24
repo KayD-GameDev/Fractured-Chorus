@@ -103,7 +103,7 @@ Chữ *Fractured Chorus*, *PRESS ANY BUTTON*, logo *FC* — **baked** trong PNG.
 
 | File | Vai trò |
 |------|---------|
-| `Menu/MainMenuGameSettings.cs` | PlayerPrefs: volume · brightness · difficulty |
+| `Menu/MainMenuGameSettings.cs` | PlayerPrefs: volume · brightness · skip unread · difficulty |
 | `Menu/MainMenuConfigOverlayController.cs` | Config overlay nav · sliders · difficulty cycle |
 | `Menu/MainMenuStartGameController.cs` | Attract ↔ MainMenu · fade · Settings + Archive overlay |
 | `Menu/MainMenuStartGameMenuController.cs` | Keyboard/gamepad nav · highlight bar · load map |
@@ -124,13 +124,15 @@ Chữ *Fractured Chorus*, *PRESS ANY BUTTON*, logo *FC* — **baked** trong PNG.
 | `Row_*` | Spacing `VerticalLayoutGroup` · font 28 bold |
 | `HighlightBar` | Màu `(0.102, 0.227, 0.361)` |
 | `AttractLayer` / `MainMenuLayer` | Đổi sprite ref nếu art mới |
-| `SettingsOverlay/ConfigUiRoot` | Anchor trái ~4–44% · UI nằm vùng xanh của art |
+| `SettingsOverlay/ConfigUiRoot` | Free Rect (Pos/Scale) · mặc định center trái ~768×734 |
 | `ConfigBackground` | `offsetMin.y = 72` — ẩn band CONFIG trắng dưới |
+| `ConfigList` / `Row_*` | Free Rect — không LayoutGroup; kéo Pos/Scale tự do |
 | `Row_Volume` / `Row_Background_Brightness` | Slider 0–1 |
+| `Row_Skip_Unread_Text` | Toggle switch — click ON/OFF |
 | `Row_Difficulty` | **ON BEAT** · **CADENCE** · **OFF-BEAT** (←→) |
 | `MainMenuStartGameController` | `transitionDuration` (mặc định 0.35) |
 
-**Quy tắc:** Scene = source of truth. Rebuild hierarchy chỉ qua menu Editor, không auto lúc Play.
+**Quy tắc layout:** Scene = source of truth. Menu **Upgrade/Ensure** chỉ thêm row thiếu + gỡ LayoutGroup — **không reset Pos/Scale**. Chỉ menu **Rebuild Config UI (Resets Layout)** mới xóa và tạo lại mặc định.
 
 ---
 

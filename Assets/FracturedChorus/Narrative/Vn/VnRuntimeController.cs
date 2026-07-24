@@ -28,6 +28,7 @@ namespace FracturedChorus.Narrative.Vn
         [SerializeField] private bool playOnStart = true;
         [SerializeField] private string openingDateDisplay = "17/08";
         [SerializeField] private string openingPhaseDisplay = "Late Night";
+        [SerializeField] private VnConvenienceController convenience;
 
         private int _index;
         private bool _waitingAdvance;
@@ -39,6 +40,7 @@ namespace FracturedChorus.Narrative.Vn
         private bool _skipTransitionRequested;
         private bool _textCardBusy;
         private bool _skipTextCardRequested;
+        private int _lastLoggedIndex = -1;
         private string _dateHudDate;
         private string _dateHudPhase;
         private AudioSource _textCardTypingSource;
@@ -63,6 +65,13 @@ namespace FracturedChorus.Narrative.Vn
             {
                 typewriter?.BindTypingClip(typingClip);
             }
+
+            BindConvenience();
+        }
+
+        private void OnEnable()
+        {
+            BindConvenience();
         }
 
         private void Start()
@@ -104,6 +113,17 @@ namespace FracturedChorus.Narrative.Vn
         {
             if (!_running)
             {
+                return;
+            }
+
+            if (convenience != null && convenience.LogOpen)
+            {
+                if (PrologueInput.WasCancelPressedThisFrame() ||
+                    PrologueInput.WasKeyboardAdvancePressedThisFrame())
+                {
+                    convenience.CloseLog();
+                }
+
                 return;
             }
 
@@ -149,6 +169,8 @@ namespace FracturedChorus.Narrative.Vn
 
             StopBeatRoutine();
             StopAllCoroutines();
+            convenience?.ResetSession();
+            _lastLoggedIndex = -1;
             _running = true;
             _index = 0;
             _waitingAdvance = false;
@@ -336,6 +358,7 @@ namespace FracturedChorus.Narrative.Vn
             }
 
             _pendingText = beat.text ?? string.Empty;
+            AppendDialogueLog(beat);
             if (typewriter == null)
             {
                 _waitingAdvance = true;
@@ -343,7 +366,123 @@ namespace FracturedChorus.Narrative.Vn
             }
 
             _waitingAdvance = false;
-            typewriter.Type(_pendingText, () => { _waitingAdvance = true; });
+            typewriter.Type(_pendingText, () =>
+            {
+                MarkCurrentBeatRead();
+                _waitingAdvance = true;
+            });
+        }
+
+        private void AppendDialogueLog(VnBeat beat)
+        {
+            if (convenience == null || beat == null)
+            {
+                return;
+            }
+
+            if (_lastLoggedIndex == _index)
+            {
+                return;
+            }
+
+            _lastLoggedIndex = _index;
+
+            var speaker = string.Empty;
+            if (beat.kind != VnBeatKind.Narration && !string.IsNullOrWhiteSpace(beat.speakerId))
+            {
+                if (speakerCatalog != null && speakerCatalog.TryGet(beat.speakerId, out var speakerDef))
+                {
+                    speaker = speakerDef.displayName;
+                }
+                else
+                {
+                    speaker = beat.speakerId;
+                }
+            }
+
+            convenience.AppendLog(speaker, beat.text);
+        }
+
+        private void BindConvenience()
+        {
+            if (convenience == null)
+            {
+                return;
+            }
+
+            convenience.Bind(new VnConvenienceBindings
+            {
+                IsRunning = () => _running,
+                IsPlaybackActive = () => _running,
+                IsTyping = () => (typewriter != null && typewriter.IsTyping) || _textCardBusy,
+                IsWaitingAdvance = () => _waitingAdvance,
+                IsTransitionBusy = () => _transitionBusy,
+                IsAtSkipStop = IsAtSkipStop,
+                IsCurrentLineRead = () => VnReadTracker.IsRead(GetReadScope(), _index),
+                RequestAdvance = ConvenienceAdvance,
+                SkipTyping = ConvenienceSkipTyping,
+                RequestSkipTransition = () =>
+                {
+                    _skipTransitionRequested = true;
+                    _skipTextCardRequested = true;
+                }
+            });
+        }
+
+        private bool IsAtSkipStop()
+        {
+            if (!_running || script == null || script.beats == null || _index < 0)
+            {
+                return true;
+            }
+
+            if (_index >= script.beats.Length)
+            {
+                return true;
+            }
+
+            var beat = script.beats[_index];
+            if (beat == null)
+            {
+                return false;
+            }
+
+            return beat.kind == VnBeatKind.Choice || beat.kind == VnBeatKind.End;
+        }
+
+        private void ConvenienceAdvance()
+        {
+            if (!_waitingAdvance || _transitionBusy)
+            {
+                return;
+            }
+
+            _waitingAdvance = false;
+            Advance();
+        }
+
+        private void ConvenienceSkipTyping()
+        {
+            if (_textCardBusy)
+            {
+                _skipTextCardRequested = true;
+                return;
+            }
+
+            if (typewriter != null && typewriter.IsTyping)
+            {
+                typewriter.SkipToEnd(_pendingText);
+            }
+        }
+
+        private string GetReadScope()
+        {
+            return script != null ? script.name : "vn";
+        }
+
+        private void MarkCurrentBeatRead()
+        {
+            VnReadTracker.MarkRead(GetReadScope(), _index);
         }
 
         private IEnumerator TextCardRoutine(VnBeat beat)
@@ -354,6 +493,7 @@ namespace FracturedChorus.Narrative.Vn
             SetPanel(dialoguePanel, false);
             portraitView?.ClearStage();
             SetPanel(textCardPanel, true);
+            AppendDialogueLog(beat);
 
             yield return null;
 
@@ -378,6 +518,7 @@ namespace FracturedChorus.Narrative.Vn
             }
 
             StopTextCardTypingSound();
+            MarkCurrentBeatRead();
             _textCardBusy = false;
             _beatRoutine = null;
             _waitingAdvance = true;

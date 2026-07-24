@@ -20,6 +20,7 @@ namespace FracturedChorus.Narrative
         private AudioSource _localTypingSource;
         private Action _onComplete;
         private bool _localTypingActive;
+        private string _pendingFullText;
 
         public bool IsTyping { get; private set; }
 
@@ -48,6 +49,7 @@ namespace FracturedChorus.Narrative
             StopTypingSound();
             IsTyping = false;
             _onComplete = null;
+            _pendingFullText = null;
             _builder.Clear();
             if (bodyText != null)
             {
@@ -68,6 +70,7 @@ namespace FracturedChorus.Narrative
         {
             Clear();
             _onComplete = onComplete;
+            _pendingFullText = text;
             if (bodyText == null || string.IsNullOrEmpty(text))
             {
                 CompleteTyping();
@@ -77,18 +80,22 @@ namespace FracturedChorus.Narrative
             _routine = StartCoroutine(TypeRoutine(text));
         }
 
-        public void SkipToEnd(string text)
+        public void SkipToEnd(string text = null)
         {
+            if (!IsTyping && _routine == null)
+            {
+                return;
+            }
+
             if (_routine != null)
             {
                 StopCoroutine(_routine);
                 _routine = null;
             }
 
-            IsTyping = false;
             if (bodyText != null)
             {
-                bodyText.text = text ?? string.Empty;
+                bodyText.text = !string.IsNullOrEmpty(text) ? text : (_pendingFullText ?? bodyText.text);
             }
 
             CompleteTyping();
@@ -119,6 +126,7 @@ namespace FracturedChorus.Narrative
 
             IsTyping = false;
             _routine = null;
+            _pendingFullText = null;
             CompleteTyping();
         }
 

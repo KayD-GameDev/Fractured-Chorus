@@ -32,9 +32,6 @@ namespace FracturedChorus.Narrative.Vn
         private string _activeSpeakerId;
         private string _leftExpression;
         private string _rightExpression;
-#if UNITY_EDITOR
-        private bool _previewRefreshQueued;
-#endif
 
         public RectTransform LeftRoot => leftRoot;
         public RectTransform RightRoot => rightRoot;
@@ -62,7 +59,9 @@ namespace FracturedChorus.Narrative.Vn
 
         public void Bind(RectTransform portraitRoot, Image shadow, Image portrait)
         {
-            EnsureDualFromLegacy(portraitRoot, shadow, portrait);
+            leftRoot = portraitRoot;
+            leftShadow = shadow;
+            leftPortrait = portrait;
             ApplyFixedSlotLayout();
             if (!editorPreview)
             {
@@ -83,7 +82,6 @@ namespace FracturedChorus.Narrative.Vn
                 return;
             }
 
-            EnsureDualSlotsExist();
             AssignSpeaker(speaker, expressionId);
             _activeSpeakerId = speaker.speakerId;
             RefreshSlots();
@@ -138,7 +136,6 @@ namespace FracturedChorus.Narrative.Vn
 
         public void ApplyEditorPreview(VnSpeakerDefinitionSO left, VnSpeakerDefinitionSO right)
         {
-            EnsureDualSlotsExist();
             previewLeftSpeaker = left;
             previewRightSpeaker = right;
             editorPreview = true;
@@ -158,36 +155,6 @@ namespace FracturedChorus.Narrative.Vn
                 ApplyEditorPreview(previewLeftSpeaker, previewRightSpeaker);
             }
         }
-
-#if UNITY_EDITOR
-        private void OnValidate()
-        {
-            if (Application.isPlaying || !editorPreview || _previewRefreshQueued)
-            {
-                return;
-            }
-
-            _previewRefreshQueued = true;
-            UnityEditor.EditorApplication.delayCall += RefreshEditorPreviewDeferred;
-        }
-
-        private void RefreshEditorPreviewDeferred()
-        {
-            _previewRefreshQueued = false;
-            if (this == null || Application.isPlaying || !editorPreview)
-            {
-                return;
-            }
-
-            EnsureDualSlotsExist();
-            _leftSpeaker = previewLeftSpeaker;
-            _rightSpeaker = previewRightSpeaker;
-            _activeSpeakerId = previewRightSpeaker != null
-                ? previewRightSpeaker.speakerId
-                : previewLeftSpeaker != null ? previewLeftSpeaker.speakerId : null;
-            RefreshSlots();
-        }
-#endif
 
         private void AssignSpeaker(VnSpeakerDefinitionSO speaker, string expressionId)
         {
@@ -347,97 +314,50 @@ namespace FracturedChorus.Narrative.Vn
             root.localScale = Vector3.one;
         }
 
-        private static void SetSlotActive(RectTransform root, bool active)
+        private void SetSlotActive(RectTransform root, bool active)
         {
-            if (root != null)
+            if (root == null)
+            {
+                return;
+            }
+
+            if (root.gameObject == gameObject)
+            {
+                SetHostSlotVisualsActive(active);
+                return;
+            }
+
+            if (root.gameObject.activeSelf != active)
             {
                 root.gameObject.SetActive(active);
             }
         }
 
-        private void EnsureDualSlotsExist()
+        private void SetHostSlotVisualsActive(bool active)
         {
-            if (leftRoot != null && rightRoot != null)
+            if (leftShadow != null)
             {
-                return;
+                leftShadow.enabled = active && leftShadow.sprite != null;
             }
 
-            if (leftRoot != null)
+            if (leftPortrait != null)
             {
-                EnsureDualFromLegacy(leftRoot, leftShadow, leftPortrait);
+                leftPortrait.enabled = active && leftPortrait.sprite != null;
             }
-        }
-
-        private void EnsureDualFromLegacy(RectTransform portraitRoot, Image shadow, Image portrait)
-        {
-            if (portraitRoot == null)
-            {
-                return;
-            }
-
-            leftRoot = portraitRoot;
-            leftShadow = shadow;
-            leftPortrait = portrait;
-            leftRoot.name = "DialoguePortrait_Left";
-
-            if (rightRoot != null)
-            {
-                return;
-            }
-
-            var parent = portraitRoot.parent;
-            var rightGo = Instantiate(portraitRoot.gameObject, parent, false);
-            rightGo.name = "DialoguePortrait_Right";
-            rightRoot = rightGo.GetComponent<RectTransform>();
-            var images = rightGo.GetComponentsInChildren<Image>(true);
-            rightShadow = null;
-            rightPortrait = null;
-            for (var i = 0; i < images.Length; i++)
-            {
-                if (images[i].gameObject.name == "Shadow")
-                {
-                    rightShadow = images[i];
-                }
-                else if (images[i].gameObject.name == "Portrait")
-                {
-                    rightPortrait = images[i];
-                }
-            }
-
-            var nested = rightGo.GetComponent<VnDialoguePortraitView>();
-            if (nested != null && nested != this)
-            {
-                if (Application.isPlaying)
-                {
-                    Destroy(nested);
-                }
-                else
-                {
-                    DestroyImmediate(nested);
-                }
-            }
-
-            LayoutSlot(leftRoot, true);
-            LayoutSlot(rightRoot, false);
-            SetSlotActive(rightRoot, false);
         }
 
         private void Awake()
         {
-            if (leftRoot != null && rightRoot == null)
+            if (Application.isPlaying)
             {
-                EnsureDualFromLegacy(leftRoot, leftShadow, leftPortrait);
+                editorPreview = false;
+                Hide();
+                return;
             }
 
-            CaptureLayoutFromSlots();
-
-            if (!Application.isPlaying && editorPreview)
+            if (editorPreview)
             {
                 ApplyEditorPreview(previewLeftSpeaker, previewRightSpeaker);
-            }
-            else if (Application.isPlaying && !editorPreview)
-            {
-                Hide();
             }
         }
     }

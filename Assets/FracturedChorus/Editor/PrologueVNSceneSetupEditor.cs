@@ -14,7 +14,7 @@ namespace FracturedChorus.Editor
         private const string ScenePath = "Assets/FracturedChorus/Scenes/PrologueVN.unity";
         private const string ButterflyBgPath = "Assets/FracturedChorus/Art/Backgrounds/PrologueVN_ButterflyVoid_v1.png";
         private const string DialogueFramePath = "Assets/FracturedChorus/Art/UI/Narrative/DialogueBox_Frame_LightBlueHolo_v1.png";
-        private const string ContractPath = "Assets/FracturedChorus/Art/UI/Narrative/Contract_Document_Scribble_v1.png";
+        private const string ContractPath = "Assets/FracturedChorus/Art/UI/Narrative/Contract_Document_Realistic_v2.png";
         private const string BgmPath = "Assets/FracturedChorus/Audio/Music/Velvet_Reverie_BGM.mp3";
         private const string TypingPath = "Assets/FracturedChorus/Audio/SFX/Prologue_Typing.mp3";
         private const string ButterflyPath = "Assets/FracturedChorus/Audio/SFX/Prologue_ButterflyWings.mp3";
@@ -266,13 +266,16 @@ namespace FracturedChorus.Editor
             hintText.color = new Color(0.85f, 0.92f, 1f, 1f);
 
             var confirmGo = CreateUiObject("ConfirmButton", contractRoot.transform);
-            StretchRect(confirmGo, new Vector2(0.4f, 0.08f), new Vector2(0.6f, 0.14f), Vector2.zero, Vector2.zero);
+            StretchRect(confirmGo, new Vector2(0.38f, 0.03f), new Vector2(0.62f, 0.11f), Vector2.zero, Vector2.zero);
             var confirmImage = confirmGo.AddComponent<Image>();
-            confirmImage.color = new Color(0.35f, 0.72f, 1f, 0.85f);
+            confirmImage.sprite = LoadSprite("Assets/FracturedChorus/Art/UI/Narrative/prologue_contract_confirm_button_holo_v1.png");
+            confirmImage.color = Color.white;
+            confirmImage.preserveAspect = true;
             var confirmButton = confirmGo.AddComponent<Button>();
             var confirmLabel = CreateText("Label", confirmGo.transform, "Confirm", 28, TextAnchor.MiddleCenter);
             StretchRect(confirmLabel.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             confirmLabel.color = Color.white;
+            confirmLabel.gameObject.SetActive(false);
 
             SetSerializedField(contractView, "root", contractGroup);
             SetSerializedField(contractView, "contractPaper", contractPaper);
@@ -289,6 +292,8 @@ namespace FracturedChorus.Editor
             var fadeGroup = fadeGo.AddComponent<CanvasGroup>();
             fadeGroup.alpha = 1f;
             fadeGroup.blocksRaycasts = false;
+
+            var convenience = VnConvenienceUiSetupEditor.EnsureConvenienceUi(canvasGo.transform);
 
             SetSerializedField(audio, "bgmClip", LoadAudio(BgmPath));
             SetSerializedField(audio, "butterflyWingsClip", LoadAudio(ButterflyPath));
@@ -307,6 +312,7 @@ namespace FracturedChorus.Editor
             SetSerializedField(controller, "contractView", contractView);
             SetSerializedField(controller, "audioController", audio);
             SetSerializedField(controller, "choiceBackdrop", choiceGroup);
+            SetSerializedField(controller, "convenience", convenience);
         }
 
         private static void EnsureBuildSettings()

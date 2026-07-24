@@ -167,8 +167,45 @@ namespace FracturedChorus.Editor
             EditorApplication.Exit(0);
         }
 
+        public static void BatchEnsureConfigSkipUnreadRow()
+        {
+            if (!System.IO.File.Exists(ScenePath))
+            {
+                Debug.LogError($"[Fractured Chorus] Scene not found: {ScenePath}");
+                EditorApplication.Exit(1);
+                return;
+            }
+
+            EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            EnsureConfigSkipUnreadRow();
+            EditorSceneManager.SaveOpenScenes();
+            AssetDatabase.SaveAssets();
+            Debug.Log("[Fractured Chorus] Config Skip Unread row batch ensure complete.");
+            EditorApplication.Exit(0);
+        }
+
         [MenuItem("Fractured Chorus/Upgrade MainMenuStartGame Config UI")]
         public static void UpgradeMainMenuStartGameConfigUi()
+        {
+            EnsureMainMenuStartGameConfigUi(preserveLayout: true);
+        }
+
+        [MenuItem("Fractured Chorus/Rebuild MainMenuStartGame Config UI (Resets Layout)")]
+        public static void RebuildMainMenuStartGameConfigUi()
+        {
+            if (!EditorUtility.DisplayDialog(
+                    "Rebuild Config UI",
+                    "This deletes SettingsOverlay and recreates default layout. Custom Pos/Scale will be lost.",
+                    "Rebuild",
+                    "Cancel"))
+            {
+                return;
+            }
+
+            EnsureMainMenuStartGameConfigUi(preserveLayout: false);
+        }
+
+        private static void EnsureMainMenuStartGameConfigUi(bool preserveLayout)
         {
             var canvas = GameObject.Find("MainMenuCanvas")?.transform;
             var controller = Object.FindAnyObjectByType<MainMenuStartGameController>();
@@ -181,13 +218,306 @@ namespace FracturedChorus.Editor
                 return;
             }
 
-            Undo.RegisterFullObjectHierarchyUndo(canvas.gameObject, "Upgrade MainMenuStartGame Config UI");
-            var settingsOverlay = CreateSettingsOverlay(canvas, controller);
-            SetSerializedField(controller, "settingsOverlay", settingsOverlay);
-            SetSerializedField(controller, "configOverlayController", settingsOverlay.GetComponent<MainMenuConfigOverlayController>());
+            Undo.RegisterFullObjectHierarchyUndo(canvas.gameObject, preserveLayout
+                ? "Ensure MainMenuStartGame Config UI"
+                : "Rebuild MainMenuStartGame Config UI");
+
+            CanvasGroup settingsOverlay;
+            if (preserveLayout && canvas.Find("SettingsOverlay") != null)
+            {
+                StripConfigLayoutGroups();
+                EnsureConfigSkipUnreadRow();
+                WireConfigOverlayReferences(controller);
+                settingsOverlay = GameObject.Find("SettingsOverlay")?.GetComponent<CanvasGroup>();
+            }
+            else
+            {
+                settingsOverlay = CreateSettingsOverlay(canvas, controller);
+            }
+
+            if (settingsOverlay != null)
+            {
+                SetSerializedField(controller, "settingsOverlay", settingsOverlay);
+                SetSerializedField(controller, "configOverlayController", settingsOverlay.GetComponent<MainMenuConfigOverlayController>());
+            }
+
             WireOverlayBackButtonsInScene(controller);
             EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
-            Debug.Log("[Fractured Chorus] Config UI upgraded — Save scene.");
+            Debug.Log(preserveLayout
+                ? "[Fractured Chorus] Config UI ensured without resetting layout — Save scene."
+                : "[Fractured Chorus] Config UI rebuilt from defaults — Save scene.");
+        }
+
+        [MenuItem("Fractured Chorus/Unlock Config UI Free Layout")]
+        public static void UnlockConfigUiFreeLayoutMenu()
+        {
+            if (!UnlockConfigUiFreeLayout())
+            {
+                EditorUtility.DisplayDialog(
+                    "Unlock Config UI",
+                    "ConfigList / ConfigUiRoot not found. Open MainMenuStartGame and select Config preview.",
+                    "OK");
+                return;
+            }
+
+            EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
+            Debug.Log("[Fractured Chorus] Config UI unlocked for free Pos/Scale — Save scene (Ctrl+S).");
+        }
+
+        public static bool UnlockConfigUiFreeLayout()
+        {
+            var configRoot = GameObject.Find("ConfigUiRoot");
+            var configList = GameObject.Find("ConfigList");
+            if (configRoot == null || configList == null)
+            {
+                return false;
+            }
+
+            Undo.RegisterFullObjectHierarchyUndo(configRoot, "Unlock Config UI Free Layout");
+            StripConfigLayoutGroups();
+            EnsureConfigSkipUnreadRow();
+            EditorUtility.SetDirty(configRoot);
+            EditorUtility.SetDirty(configList);
+            return true;
+        }
+
+        private static void StripConfigLayoutGroups()
+        {
+            var configRoot = GameObject.Find("ConfigUiRoot");
+            var configList = GameObject.Find("ConfigList");
+            if (configRoot == null || configList == null)
+            {
+                return;
+            }
+
+            StripLayoutComponents(configList);
+            foreach (Transform child in configList.transform)
+            {
+                StripLayoutComponents(child.gameObject);
+                StripConfigRowChildren(child);
+            }
+
+            StripLayoutComponentsInChildren(configRoot.transform);
+        }
+
+        private static void StripLayoutComponentsInChildren(Transform root)
+        {
+            foreach (Transform child in root)
+            {
+                if (child.name == "ConfigList")
+                {
+                    continue;
+                }
+
+                StripLayoutComponents(child.gameObject);
+                StripLayoutComponentsInChildren(child);
+            }
+        }
+
+        private static void StripLayoutComponents(GameObject go)
+        {
+            DestroyComponents<VerticalLayoutGroup>(go);
+            DestroyComponents<HorizontalLayoutGroup>(go);
+            DestroyComponents<LayoutElement>(go);
+        }
+
+        private static void StripConfigRowChildren(Transform row)
+        {
+            foreach (Transform child in row)
+            {
+                StripLayoutComponents(child.gameObject);
+            }
+        }
+
+        [MenuItem("Fractured Chorus/Ensure Config Skip Unread Row")]
+        public static void EnsureConfigSkipUnreadRowMenu()
+        {
+            if (!EnsureConfigSkipUnreadRow())
+            {
+                EditorUtility.DisplayDialog(
+                    "Ensure Skip Unread Row",
+                    "ConfigList / SettingsOverlay not found. Open MainMenuStartGame first.",
+                    "OK");
+                return;
+            }
+
+            EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
+            Debug.Log("[Fractured Chorus] Skip Unread Text row ensured — Save scene (Ctrl+S).");
+        }
+
+        public static bool EnsureConfigSkipUnreadRow()
+        {
+            var configList = GameObject.Find("ConfigList")?.transform;
+            var settingsOverlay = GameObject.Find("SettingsOverlay");
+            if (configList == null || settingsOverlay == null)
+            {
+                return false;
+            }
+
+            var configController = settingsOverlay.GetComponent<MainMenuConfigOverlayController>();
+            if (configController == null)
+            {
+                return false;
+            }
+
+            var volumeRow = configList.Find("Row_Volume");
+            var brightnessRow = configList.Find("Row_Background_Brightness");
+            var difficultyRow = configList.Find("Row_Difficulty");
+            var skipRowTransform = configList.Find("Row_Skip_Unread_Text");
+            Slider skipUnreadSlider = null;
+            Text skipLabel = null;
+            RectTransform skipRowRect = null;
+
+            if (skipRowTransform == null)
+            {
+                var created = CreateConfigToggleSliderRow(configList, "Skip Unread Text", out skipUnreadSlider);
+                skipRowRect = created.row;
+                skipLabel = created.label;
+                skipRowTransform = skipRowRect.transform;
+                PlaceNewRowFromReference(skipRowTransform.gameObject, brightnessRow, difficultyRow);
+            }
+            else
+            {
+                skipRowRect = skipRowTransform.GetComponent<RectTransform>();
+                skipLabel = skipRowTransform.Find("Label")?.GetComponent<Text>();
+                skipUnreadSlider = skipRowTransform.Find("Slider")?.GetComponent<Slider>();
+            }
+
+            var skipUnreadToggle = EnsureToggleSwitchOnSlider(skipUnreadSlider);
+
+            var so = new SerializedObject(configController);
+            so.FindProperty("skipUnreadToggle").objectReferenceValue = skipUnreadToggle;
+
+            var rowsProp = so.FindProperty("rows");
+            rowsProp.arraySize = 4;
+            WriteConfigRow(rowsProp.GetArrayElementAtIndex(0), volumeRow?.GetComponent<RectTransform>(), volumeRow?.Find("Label")?.GetComponent<Text>());
+            WriteConfigRow(rowsProp.GetArrayElementAtIndex(1), brightnessRow?.GetComponent<RectTransform>(), brightnessRow?.Find("Label")?.GetComponent<Text>());
+            WriteConfigRow(rowsProp.GetArrayElementAtIndex(2), skipRowRect, skipLabel);
+            WriteConfigRow(rowsProp.GetArrayElementAtIndex(3), difficultyRow?.GetComponent<RectTransform>(), difficultyRow?.Find("Label")?.GetComponent<Text>());
+            so.ApplyModifiedPropertiesWithoutUndo();
+
+            EditorUtility.SetDirty(configController);
+            return true;
+        }
+
+        private static void PlaceNewRowFromReference(GameObject newRow, Transform upperRow, Transform lowerRow)
+        {
+            var rect = newRow.GetComponent<RectTransform>();
+            if (rect == null)
+            {
+                return;
+            }
+
+            Transform template = upperRow ?? lowerRow;
+            if (template != null)
+            {
+                CopyRectTransformLayout(rect, template.GetComponent<RectTransform>());
+            }
+            else
+            {
+                SetFreeRect(newRow, new Vector2(0.5f, 1f), new Vector2(744f, 44f), new Vector2(0f, -138f));
+            }
+
+            if (upperRow != null && lowerRow != null)
+            {
+                var upper = upperRow.GetComponent<RectTransform>();
+                var lower = lowerRow.GetComponent<RectTransform>();
+                rect.anchoredPosition = new Vector2(
+                    upper.anchoredPosition.x,
+                    (upper.anchoredPosition.y + lower.anchoredPosition.y) * 0.5f);
+            }
+            else if (upperRow != null)
+            {
+                var upper = upperRow.GetComponent<RectTransform>();
+                rect.anchoredPosition = upper.anchoredPosition + new Vector2(0f, -54f);
+            }
+            else if (lowerRow != null)
+            {
+                var lower = lowerRow.GetComponent<RectTransform>();
+                rect.anchoredPosition = lower.anchoredPosition + new Vector2(0f, 54f);
+            }
+        }
+
+        private static void CopyRectTransformLayout(RectTransform target, RectTransform source)
+        {
+            if (target == null || source == null)
+            {
+                return;
+            }
+
+            target.anchorMin = source.anchorMin;
+            target.anchorMax = source.anchorMax;
+            target.pivot = source.pivot;
+            target.sizeDelta = source.sizeDelta;
+            target.anchoredPosition = source.anchoredPosition;
+            target.localScale = source.localScale;
+            target.localRotation = source.localRotation;
+        }
+
+        private static void WireConfigOverlayReferences(MainMenuStartGameController controller)
+        {
+            var settingsOverlay = GameObject.Find("SettingsOverlay");
+            var configList = GameObject.Find("ConfigList")?.transform;
+            if (settingsOverlay == null || configList == null)
+            {
+                return;
+            }
+
+            var configController = settingsOverlay.GetComponent<MainMenuConfigOverlayController>();
+            if (configController == null)
+            {
+                return;
+            }
+
+            var volumeRow = configList.Find("Row_Volume");
+            var brightnessRow = configList.Find("Row_Background_Brightness");
+            var skipRow = configList.Find("Row_Skip_Unread_Text");
+            var difficultyRow = configList.Find("Row_Difficulty");
+            var highlightBar = configList.Find("HighlightBar")?.GetComponent<RectTransform>();
+            var infoText = settingsOverlay.transform.Find("ConfigUiRoot/InfoText")?.GetComponent<Text>();
+
+            var so = new SerializedObject(configController);
+            so.FindProperty("screenController").objectReferenceValue = controller;
+            if (highlightBar != null)
+            {
+                so.FindProperty("highlightBar").objectReferenceValue = highlightBar;
+            }
+
+            if (infoText != null)
+            {
+                so.FindProperty("infoText").objectReferenceValue = infoText;
+            }
+
+            so.FindProperty("volumeSlider").objectReferenceValue =
+                volumeRow?.Find("Slider")?.GetComponent<Slider>();
+            so.FindProperty("brightnessSlider").objectReferenceValue =
+                brightnessRow?.Find("Slider")?.GetComponent<Slider>();
+            so.FindProperty("skipUnreadToggle").objectReferenceValue =
+                EnsureToggleSwitchOnSlider(skipRow?.Find("Slider")?.GetComponent<Slider>());
+            so.FindProperty("difficultyValueText").objectReferenceValue =
+                difficultyRow?.Find("Value")?.GetComponent<Text>();
+            so.FindProperty("difficultyPrevButton").objectReferenceValue =
+                difficultyRow?.Find("Lt")?.GetComponent<Button>();
+            so.FindProperty("difficultyNextButton").objectReferenceValue =
+                difficultyRow?.Find("Gt")?.GetComponent<Button>();
+
+            var rowsProp = so.FindProperty("rows");
+            rowsProp.arraySize = 4;
+            WriteConfigRow(rowsProp.GetArrayElementAtIndex(0), volumeRow?.GetComponent<RectTransform>(), volumeRow?.Find("Label")?.GetComponent<Text>());
+            WriteConfigRow(rowsProp.GetArrayElementAtIndex(1), brightnessRow?.GetComponent<RectTransform>(), brightnessRow?.Find("Label")?.GetComponent<Text>());
+            WriteConfigRow(rowsProp.GetArrayElementAtIndex(2), skipRow?.GetComponent<RectTransform>(), skipRow?.Find("Label")?.GetComponent<Text>());
+            WriteConfigRow(rowsProp.GetArrayElementAtIndex(3), difficultyRow?.GetComponent<RectTransform>(), difficultyRow?.Find("Label")?.GetComponent<Text>());
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(configController);
+        }
+
+        private static void DestroyComponents<T>(GameObject go) where T : Component
+        {
+            var components = go.GetComponents<T>();
+            for (var i = 0; i < components.Length; i++)
+            {
+                Undo.DestroyObjectImmediate(components[i]);
+            }
         }
 
         [MenuItem("Fractured Chorus/Upgrade MainMenuStartGame Layers")]
@@ -924,7 +1254,7 @@ namespace FracturedChorus.Editor
             bgImage.color = Color.white;
 
             var uiRootGo = CreateUiObject("ConfigUiRoot", overlayGo.transform);
-            StretchRect(uiRootGo, new Vector2(0.04f, 0.16f), new Vector2(0.44f, 0.84f), Vector2.zero, Vector2.zero);
+            SetFreeRect(uiRootGo, new Vector2(0.24f, 0.5f), new Vector2(768f, 734f), Vector2.zero);
 
             var infoGo = CreateUiObject("InfoText", uiRootGo.transform);
             var infoText = infoGo.AddComponent<Text>();
@@ -934,17 +1264,10 @@ namespace FracturedChorus.Editor
             infoText.alignment = TextAnchor.UpperLeft;
             infoText.color = new Color(0.88f, 0.92f, 0.96f, 0.95f);
             infoText.raycastTarget = false;
-            StretchRect(infoGo, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -52f), new Vector2(0f, 0f));
+            SetFreeRect(infoGo, new Vector2(0.5f, 1f), new Vector2(768f, 52f), new Vector2(0f, -26f));
 
             var listGo = CreateUiObject("ConfigList", uiRootGo.transform);
-            StretchRect(listGo, new Vector2(0f, 0.12f), new Vector2(1f, 0.88f), Vector2.zero, Vector2.zero);
-            var listLayout = listGo.AddComponent<VerticalLayoutGroup>();
-            listLayout.spacing = 10f;
-            listLayout.childControlWidth = true;
-            listLayout.childControlHeight = true;
-            listLayout.childForceExpandWidth = true;
-            listLayout.childForceExpandHeight = false;
-            listLayout.padding = new RectOffset(0, 0, 8, 8);
+            SetFreeRect(listGo, new Vector2(0.5f, 0.5f), new Vector2(768f, 556f), new Vector2(0f, 12f));
 
             var highlightGo = CreateUiObject("HighlightBar", listGo.transform);
             var highlightImage = highlightGo.AddComponent<Image>();
@@ -956,16 +1279,22 @@ namespace FracturedChorus.Editor
             CreateHighlightBorder(highlightGo.transform, false);
 
             var rowVolume = CreateConfigSliderRow(listGo.transform, "Volume", out var volumeSlider);
+            SetFreeRect(rowVolume.row.gameObject, new Vector2(0.5f, 1f), new Vector2(744f, 44f), new Vector2(0f, -30f));
             var rowBrightness = CreateConfigSliderRow(listGo.transform, "Background Brightness", out var brightnessSlider);
+            SetFreeRect(rowBrightness.row.gameObject, new Vector2(0.5f, 1f), new Vector2(744f, 44f), new Vector2(0f, -84f));
+            var rowSkipUnread = CreateConfigToggleSliderRow(listGo.transform, "Skip Unread Text", out var skipUnreadSlider);
+            SetFreeRect(rowSkipUnread.row.gameObject, new Vector2(0.5f, 1f), new Vector2(744f, 44f), new Vector2(0f, -138f));
+            var skipUnreadToggle = EnsureToggleSwitchOnSlider(skipUnreadSlider);
             var rowDifficulty = CreateConfigDifficultyRow(listGo.transform, out var difficultyValue, out var diffPrev, out var diffNext);
+            SetFreeRect(rowDifficulty.row.gameObject, new Vector2(0.5f, 1f), new Vector2(744f, 44f), new Vector2(0f, -192f));
 
             var footerGo = CreateUiObject("Footer", uiRootGo.transform);
-            StretchRect(footerGo, new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(0f, 0f), new Vector2(0f, 44f));
+            SetFreeRect(footerGo, new Vector2(0.5f, 0f), new Vector2(768f, 44f), new Vector2(0f, 22f));
             var footerText = CreateText("Hints", footerGo.transform, "←→ Difficulty   ·   ESC Back", 16, TextAnchor.MiddleLeft);
-            StretchRect(footerText.gameObject, new Vector2(0f, 0f), new Vector2(0.72f, 1f), Vector2.zero, Vector2.zero);
+            SetFreeRect(footerText.gameObject, new Vector2(0f, 0.5f), new Vector2(520f, 44f), new Vector2(260f, 0f));
 
             var backGo = CreateUiObject("Btn_Back", footerGo.transform);
-            StretchRect(backGo, new Vector2(0.72f, 0f), new Vector2(1f, 1f), Vector2.zero, Vector2.zero);
+            SetFreeRect(backGo, new Vector2(1f, 0.5f), new Vector2(200f, 44f), new Vector2(-100f, 0f));
             var backImage = backGo.AddComponent<Image>();
             backImage.color = new Color(0.18f, 0.28f, 0.42f, 0.92f);
             var backButton = backGo.AddComponent<Button>();
@@ -981,14 +1310,16 @@ namespace FracturedChorus.Editor
             so.FindProperty("infoText").objectReferenceValue = infoText;
             so.FindProperty("volumeSlider").objectReferenceValue = volumeSlider;
             so.FindProperty("brightnessSlider").objectReferenceValue = brightnessSlider;
+            so.FindProperty("skipUnreadToggle").objectReferenceValue = skipUnreadToggle;
             so.FindProperty("difficultyValueText").objectReferenceValue = difficultyValue;
             so.FindProperty("difficultyPrevButton").objectReferenceValue = diffPrev;
             so.FindProperty("difficultyNextButton").objectReferenceValue = diffNext;
             var rowsProp = so.FindProperty("rows");
-            rowsProp.arraySize = 3;
+            rowsProp.arraySize = 4;
             WriteConfigRow(rowsProp.GetArrayElementAtIndex(0), rowVolume.row, rowVolume.label);
             WriteConfigRow(rowsProp.GetArrayElementAtIndex(1), rowBrightness.row, rowBrightness.label);
-            WriteConfigRow(rowsProp.GetArrayElementAtIndex(2), rowDifficulty.row, rowDifficulty.label);
+            WriteConfigRow(rowsProp.GetArrayElementAtIndex(2), rowSkipUnread.row, rowSkipUnread.label);
+            WriteConfigRow(rowsProp.GetArrayElementAtIndex(3), rowDifficulty.row, rowDifficulty.label);
             so.ApplyModifiedPropertiesWithoutUndo();
 
             highlightRect.SetParent(rowVolume.row, false);
@@ -1024,32 +1355,56 @@ namespace FracturedChorus.Editor
             out Slider slider)
         {
             var rowGo = CreateUiObject($"Row_{labelText.Replace(' ', '_')}", parent);
-            var layout = rowGo.AddComponent<LayoutElement>();
-            layout.preferredHeight = 44f;
-            layout.flexibleWidth = 1f;
-
-            var rowLayout = rowGo.AddComponent<HorizontalLayoutGroup>();
-            rowLayout.spacing = 12f;
-            rowLayout.childAlignment = TextAnchor.MiddleLeft;
-            rowLayout.childControlWidth = true;
-            rowLayout.childControlHeight = true;
-            rowLayout.childForceExpandWidth = false;
-            rowLayout.childForceExpandHeight = true;
-            rowLayout.padding = new RectOffset(12, 12, 0, 0);
 
             var label = CreateText("Label", rowGo.transform, labelText, 22, TextAnchor.MiddleLeft);
-            var labelLayout = label.gameObject.AddComponent<LayoutElement>();
-            labelLayout.preferredWidth = 210f;
-            labelLayout.flexibleWidth = 0f;
             label.color = Color.white;
             label.fontStyle = FontStyle.Bold;
+            SetFreeRect(label.gameObject, new Vector2(0f, 0.5f), new Vector2(210f, 44f), new Vector2(117f, 0f));
 
             slider = CreateStyledSlider(rowGo.transform);
-            var sliderLayout = slider.GetComponent<LayoutElement>() ?? slider.gameObject.AddComponent<LayoutElement>();
-            sliderLayout.flexibleWidth = 1f;
-            sliderLayout.preferredHeight = 28f;
+            SetFreeRect(slider.gameObject, new Vector2(1f, 0.5f), new Vector2(490f, 28f), new Vector2(-257f, 0f));
 
             return (rowGo.GetComponent<RectTransform>(), label);
+        }
+
+        private static (RectTransform row, Text label) CreateConfigToggleSliderRow(
+            Transform parent,
+            string labelText,
+            out Slider slider)
+        {
+            var row = CreateConfigSliderRow(parent, labelText, out slider);
+            slider.wholeNumbers = true;
+            slider.value = 0f;
+            EnsureToggleSwitchOnSlider(slider);
+            return row;
+        }
+
+        private static MainMenuConfigToggleSwitch EnsureToggleSwitchOnSlider(Slider slider)
+        {
+            if (slider == null)
+            {
+                return null;
+            }
+
+            slider.wholeNumbers = true;
+            slider.interactable = false;
+
+            if (slider.GetComponent<CanvasRenderer>() == null)
+            {
+                slider.gameObject.AddComponent<CanvasRenderer>();
+            }
+
+            var image = slider.GetComponent<Image>() ?? slider.gameObject.AddComponent<Image>();
+            image.color = new Color(1f, 1f, 1f, 0.001f);
+            image.raycastTarget = true;
+
+            var toggle = slider.GetComponent<MainMenuConfigToggleSwitch>() ??
+                         slider.gameObject.AddComponent<MainMenuConfigToggleSwitch>();
+            var so = new SerializedObject(toggle);
+            so.FindProperty("visualSlider").objectReferenceValue = slider;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(toggle);
+            return toggle;
         }
 
         private static (RectTransform row, Text label) CreateConfigDifficultyRow(
@@ -1059,23 +1414,14 @@ namespace FracturedChorus.Editor
             out Button nextButton)
         {
             var rowGo = CreateUiObject("Row_Difficulty", parent);
-            var layout = rowGo.AddComponent<LayoutElement>();
-            layout.preferredHeight = 44f;
-
-            var rowLayout = rowGo.AddComponent<HorizontalLayoutGroup>();
-            rowLayout.spacing = 8f;
-            rowLayout.childAlignment = TextAnchor.MiddleLeft;
-            rowLayout.childControlWidth = true;
-            rowLayout.childControlHeight = true;
-            rowLayout.padding = new RectOffset(12, 12, 0, 0);
 
             var label = CreateText("Label", rowGo.transform, "Difficulty", 22, TextAnchor.MiddleLeft);
-            var labelLayout = label.gameObject.AddComponent<LayoutElement>();
-            labelLayout.preferredWidth = 210f;
             label.color = Color.white;
             label.fontStyle = FontStyle.Bold;
+            SetFreeRect(label.gameObject, new Vector2(0f, 0.5f), new Vector2(210f, 44f), new Vector2(117f, 0f));
 
             prevButton = CreateSmallButton(rowGo.transform, "Lt", 36f);
+            SetFreeRect(prevButton.gameObject, new Vector2(0f, 0.5f), new Vector2(36f, 32f), new Vector2(246f, 0f));
             var prevLabel = prevButton.transform.Find("Label")?.GetComponent<Text>();
             if (prevLabel != null)
             {
@@ -1083,12 +1429,12 @@ namespace FracturedChorus.Editor
             }
 
             valueText = CreateText("Value", rowGo.transform, "CADENCE", 22, TextAnchor.MiddleCenter);
-            var valueLayout = valueText.gameObject.AddComponent<LayoutElement>();
-            valueLayout.flexibleWidth = 1f;
             valueText.color = new Color(0.55f, 0.85f, 1f, 1f);
             valueText.fontStyle = FontStyle.Bold;
+            SetFreeRect(valueText.gameObject, new Vector2(0.5f, 0.5f), new Vector2(280f, 44f), new Vector2(80f, 0f));
 
             nextButton = CreateSmallButton(rowGo.transform, "Gt", 36f);
+            SetFreeRect(nextButton.gameObject, new Vector2(1f, 0.5f), new Vector2(36f, 32f), new Vector2(-30f, 0f));
             var nextLabel = nextButton.transform.Find("Label")?.GetComponent<Text>();
             if (nextLabel != null)
             {
@@ -1101,9 +1447,6 @@ namespace FracturedChorus.Editor
         private static Button CreateSmallButton(Transform parent, string name, float width)
         {
             var go = CreateUiObject(name, parent);
-            var layout = go.AddComponent<LayoutElement>();
-            layout.preferredWidth = width;
-            layout.preferredHeight = 32f;
             var image = go.AddComponent<Image>();
             image.color = new Color(0.12f, 0.18f, 0.28f, 0.95f);
             var button = go.AddComponent<Button>();
@@ -1268,6 +1611,17 @@ namespace FracturedChorus.Editor
             rect.offsetMax = offsetMax;
         }
 
+        private static void SetFreeRect(GameObject go, Vector2 anchor, Vector2 size, Vector2 anchoredPosition)
+        {
+            var rect = go.GetComponent<RectTransform>();
+            rect.anchorMin = anchor;
+            rect.anchorMax = anchor;
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.sizeDelta = size;
+            rect.anchoredPosition = anchoredPosition;
+            rect.localScale = Vector3.one;
+        }
+
         private static void SetSerializedField(Object target, string fieldName, object value)
         {
             var so = new SerializedObject(target);
@@ -1342,7 +1696,7 @@ namespace FracturedChorus.Editor
     [InitializeOnLoad]
     internal static class MainMenuStartGameConfigUiAutoUpgrade
     {
-        private const string SessionKey = "FC_MainMenuStartGame_ConfigUi_v1";
+        private const string SessionKey = "FC_MainMenuStartGame_ConfigUi_v4";
 
         static MainMenuStartGameConfigUiAutoUpgrade()
         {
@@ -1356,6 +1710,8 @@ namespace FracturedChorus.Editor
                 return;
             }
 
+            SessionState.SetBool(SessionKey, true);
+
             var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
             if (scene.path != MainMenuStartGameSceneSetupEditor.ScenePathForAutoUpgrade)
             {
@@ -1363,16 +1719,19 @@ namespace FracturedChorus.Editor
             }
 
             var settings = GameObject.Find("SettingsOverlay");
-            if (settings != null && settings.transform.Find("ConfigBackground") != null &&
-                settings.GetComponent<MainMenuConfigOverlayController>() != null)
+            if (settings == null || settings.transform.Find("ConfigBackground") == null ||
+                settings.GetComponent<MainMenuConfigOverlayController>() == null)
             {
-                SessionState.SetBool(SessionKey, true);
+                MainMenuStartGameSceneSetupEditor.UpgradeMainMenuStartGameConfigUi();
+                EditorSceneManager.MarkSceneDirty(scene);
                 return;
             }
 
-            MainMenuStartGameSceneSetupEditor.UpgradeMainMenuStartGameConfigUi();
-            EditorSceneManager.SaveOpenScenes();
-            SessionState.SetBool(SessionKey, true);
+            if (GameObject.Find("ConfigList")?.transform.Find("Row_Skip_Unread_Text") == null)
+            {
+                MainMenuStartGameSceneSetupEditor.EnsureConfigSkipUnreadRow();
+                EditorSceneManager.MarkSceneDirty(scene);
+            }
         }
     }
 }
