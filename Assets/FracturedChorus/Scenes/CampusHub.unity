@@ -2083,6 +2083,7 @@ MonoBehaviour:
   systemNormal: {fileID: -3137741735344166713, guid: c46d4db94699f6c46ad7af9243a13833, type: 3}
   systemSelected: {fileID: 6770731894727230924, guid: b71be96e53851734a92cd1dad6d1f8e7, type: 3}
   calendarOverlay: {fileID: 1248267368}
+  socialStatsOverlay: {fileID: 0}
   sfx: {fileID: 0}
 --- !u!1 &140608202
 GameObject:
@@ -24334,7 +24335,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.06, y: 0.84}
   m_AnchorMax: {x: 0.35, y: 0.9}
-  m_AnchoredPosition: {x: 241.99991, y: 21}
+  m_AnchoredPosition: {x: 241.99986, y: 21}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1965711758

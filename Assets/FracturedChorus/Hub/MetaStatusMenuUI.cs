@@ -515,7 +515,7 @@ namespace FracturedChorus.Hub
                 {
                     detailBodyLabel.text = "Opening calendar…";
                 }
-                else if (_tab == Tab.Stats && socialStatsOverlay != null)
+                else if (_tab == Tab.Stats && socialStatsOverlay != null && socialStatsOverlay.IsOpen)
                 {
                     detailBodyLabel.text = "Opening Resonance Field…";
                 }
