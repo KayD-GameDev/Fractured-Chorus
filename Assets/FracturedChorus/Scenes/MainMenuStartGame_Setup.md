@@ -15,6 +15,8 @@ Logic trong **MonoBehaviour `.cs`**. Layout chỉnh trong **Hierarchy**; art n�
    - Hoặc mở scene có sẵn → **Fractured Chorus → Setup MainMenuStartGame Scene Hierarchy** (rebuild trên scene active)
    - Scene cũ: **Fractured Chorus → Upgrade MainMenuStartGame Menu And Audio** (HitArea · BGM · OFF-BEAT ARCHIVE)
    - Scene cũ thiếu Config UI: **Fractured Chorus → Upgrade MainMenuStartGame Config UI**
+   - Scene cũ thiếu player Archive: **Fractured Chorus → Upgrade Off-Beat Archive Player**
+   - Scene cũ → SyncPod face player: **Fractured Chorus → Upgrade Off-Beat SyncPod Layout**
 3. **File → Build Settings** — thứ tự:
    - `MainMenuStartGame.unity` (index **0**)
    - `RunMapPrototype.unity`
@@ -39,7 +41,7 @@ MainMenuStartGameRoot          ← MainMenuStartGameController (+ Edit Mode Prev
     ├── MainMenuBackground     ← CanvasGroup + Image · v5 PNG (tách riêng)
     ├── MenuPanel              ← CanvasGroup + buttons (sibling, không nằm dưới BG)
     ├── SettingsOverlay        ← Config BG + Volume · Brightness · Difficulty · ESC/B Back
-    └── OffBeatArchiveOverlay  ← stub playlist nhạc in-game · ESC/B Back
+    └── OffBeatArchiveOverlay  ← catalog trái + player phải · ESC/B Back
 MainMenuBgm                    ← loop Midnight (Menu) · sau voice intro
 MainMenuTitleVoice             ← random Female/Male · đọc tên game trước BGM
 EventSystem
@@ -54,7 +56,8 @@ Inspector `MainMenuStartGameRoot` → **Edit Mode Preview**:
 |-----|----------|
 | **Attract** | Chỉ AttractLayer |
 | **Main Menu** | MainMenuBackground + MenuPanel |
-| **Settings** | Chỉ Config overlay (Ren background + sliders) |
+| **Config** | Chỉ Config overlay (Ren background + sliders) |
+| **Off-Beat** | Main menu BG + `OffBeatArchiveOverlay` (catalog + player) — chỉnh layout Archive |
 
 Menu: **Fractured Chorus → Upgrade MainMenuStartGame Layers** (scene cũ còn `MainMenuLayer` + MenuPanel con).
 
@@ -74,7 +77,7 @@ Menu: **Fractured Chorus → Upgrade MainMenuStartGame Layers** (scene cũ còn 
 | **ESC / B** (overlay) | Đóng overlay → Main Menu |
 | **NEW GAME** | `RunMapSceneLoader.LoadByName(RunMapPrototype)` |
 | **LOAD GAME** | Stub — status *"Chưa có dữ liệu lưu."* |
-| **OFF-BEAT ARCHIVE** | Mở playlist stub — nghe lại nhạc đã gặp in-game |
+| **OFF-BEAT ARCHIVE** | Catalog + music player — nghe lại BGM in-game |
 | **CONFIG** | Mở `SettingsOverlay` — Volume · Background Brightness · Difficulty · Back hoặc ESC/B |
 | **QUIT** | Thoát game |
 | Boss F16 (map) | Không đổi — vẫn load `CombatPrototype` |
@@ -106,6 +109,9 @@ Chữ *Fractured Chorus*, *PRESS ANY BUTTON*, logo *FC* — **baked** trong PNG.
 | `Menu/MainMenuGameSettings.cs` | PlayerPrefs: volume · brightness · skip unread · difficulty |
 | `Menu/MainMenuConfigOverlayController.cs` | Config overlay nav · sliders · difficulty cycle |
 | `Menu/MainMenuStartGameController.cs` | Attract ↔ MainMenu · fade · Settings + Archive overlay |
+| `Menu/OffBeatArchiveController.cs` | Catalog + player UI · seek · shuffle/repeat · favorite Prefs · duck menu BGM |
+| `Menu/OffBeatMusicPlayer.cs` | AudioSource playback / playlist transport |
+| `Menu/OffBeatTrackSO.cs` / `OffBeatCatalogSO.cs` | Track + catalog data (`Resources/OffBeat/`) |
 | `Menu/MainMenuStartGameMenuController.cs` | Keyboard/gamepad nav · highlight bar · load map |
 | `Menu/MainMenuButtonRowView.cs` | Hover sáng label · HitArea raycast |
 | `Menu/MainMenuBgmController.cs` | Loop menu BGM (sau voice) |
@@ -140,6 +146,9 @@ Chữ *Fractured Chorus*, *PRESS ANY BUTTON*, logo *FC* — **baked** trong PNG.
 
 | Ngày | Thay đổi |
 |------|----------|
+| 2026-07-24 | SyncPod layout snapshot (VolumeArc pos/size/rot · Controls · hit alpha 0) |
+| 2026-07-24 | Off-Beat SyncPod redesign (BG v2 · face waveform · swipe track · volume arc · no prev/next/seek) |
+| 2026-07-24 | Off-Beat Archive player + catalog (split UI · seek · shuffle/repeat · favorite · duck BGM) |
 | 2026-07-02 | Tách Ting (Attract→Menu) và ButtonPress SFX cho menu/config |
 | 2026-07-02 | Config UI — Ren background · volume/brightness sliders · difficulty tiers |
 | 2026-07-03 | Title voice random · ESC Main Menu → Attract · QUIT |
@@ -149,10 +158,20 @@ Chữ *Fractured Chorus*, *PRESS ANY BUTTON*, logo *FC* — **baked** trong PNG.
 
 ---
 
+## Off-Beat Archive — Play checklist
+
+1. Mở `MainMenuStartGame` → **Fractured Chorus → Upgrade Off-Beat SyncPod Layout** → Save  
+   (stub cũ: **Upgrade Off-Beat Archive Player** trước)
+2. Play → Attract → Main Menu → **OFF-BEAT ARCHIVE**
+3. Catalog trái · SyncPod player phải (`offbeat_syncpod_bg_v2` · cover / title / Shuffle·Play·Repeat · waveform trên mặt đĩa · volume arc đáy)
+4. Click bài hoặc ↑↓ + Enter → Play · Midnight duck · **waveform string cyan trên face**
+5. Vuốt trái/phải trên đĩa = Next/Prev · kéo volume arc (outer ring) · Shuffle / Repeat glow · ♥ favorite (Prefs)
+6. ESC / BACK → stop Archive · restore Midnight
+7. Config Master Volume vẫn nhân Archive volume (`fc_offbeat_volume`)
+
 ## Phase sau (chưa làm)
 
 - Contract Select sau NEW GAME
 - Load Profile / Echo meta
-- Playlist playback thật (Archive hiện stub list)
-- SFX UI
+- Off-Beat unlock theo story flag · cover art per-track
 - Silhouette idle pulse theo beat

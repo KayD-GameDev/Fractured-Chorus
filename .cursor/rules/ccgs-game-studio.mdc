@@ -1,0 +1,55 @@
+---
+description: Mặc định áp dụng skill game + tạo hình ảnh cho Fractured Chorus
+alwaysApply: true
+---
+
+# Fractured Chorus — Game & Image skills (default)
+
+Mọi task trong project này mặc định dùng skill **game** và **tạo hình ảnh**. Đọc `SKILL.md` liên quan **trước** khi làm; follow end-to-end.
+
+## 1. Studio router (luôn ưu tiên cho workflow)
+
+- `C:\Users\Asus\.agents\skills\ccgs-game-studio\SKILL.md`
+- Detect intent → load **đúng một** `workflows/<key>.md`
+- Không chắc → `help` hoặc `start`
+- Không đọc hết 73 workflow cùng lúc
+
+## 2. Skill game — load theo task
+
+| Task | Skill path |
+|------|------------|
+| Design / MDA / balance theory | `...\agents\skills\game-design-theory\SKILL.md` |
+| Design lenses (Schell) | `...\cursor\skills\game-design-lenses\SKILL.md` |
+| Hệ thống game / gameplay code | `...\agents\skills\game-developer\SKILL.md` |
+| Unity C# / engine | `...\agents\skills\unity-developer\SKILL.md` |
+| UI/HUD/menu | `...\agents\skills\game-ui-design\SKILL.md` |
+| Level / pacing | `...\agents\skills\level-design\SKILL.md` |
+| Visual novel / dialogue | `...\agents\skills\visual-novel\SKILL.md` |
+| Creative brainstorm trước khi thiết kế mới | `...\agents\skills\brainstorming\SKILL.md` |
+| Audio gen (nhạc) | `...\cursor\skills\elevenlabs-music-generation\SKILL.md` |
+
+## 3. Skill tạo hình ảnh — load theo task
+
+| Task | Skill path |
+|------|------------|
+| Gen ảnh AI (pipeline chung) | `...\cursor\skills\ai-image-generation\SKILL.md` |
+| GPT Image 2 / edit ảnh | `...\cursor\skills\gpt-image-2\SKILL.md` |
+| Asset 2D game (sprite, UI art, tile) | `...\cursor\skills\game-2d-asset-creation\SKILL.md` |
+| Character 2D / style ref | `...\cursor\skills\drawing-2d-characters-reference-style\SKILL.md` |
+| Figure construction | `...\cursor\skills\hampton-figure-drawing\SKILL.md` |
+| Style P5 (khi user/style yêu cầu) | `...\cursor\skills\persona-5-character-art-style\SKILL.md` |
+| Style Limbus/gritty (khi yêu cầu) | `...\cursor\skills\limbus-gritty-rpg-art-style\SKILL.md` |
+| Vehicle concept | `...\cursor\skills\vehicle-concept-drawing\SKILL.md` |
+
+## 4. Quy tắc kết hợp
+
+1. **Workflow/sprint/GDD/QA/release** → CCGS trước, rồi skill chuyên sâu ở §2–3 nếu cần.
+2. **Code Unity** → `unity-developer` + `game-developer` (+ CCGS `dev-story` nếu đang implement story).
+3. **Gen/sửa art** → skill ảnh phù hợp + tuân rule `character-art-lock` (CHARACTER_LOCK.md). Sprite nhân vật = full body trừ khi user nói khác. Sửa ảnh = giữ nguyên chi tiết gốc, chỉ chỉnh phần được yêu cầu.
+4. Có thể load **nhiều skill chuyên sâu** cùng lúc nếu task giao nhau (VD: UI art = `game-ui-design` + `game-2d-asset-creation` + `ai-image-generation`).
+5. User chỉ định skill/workflow khác → ưu tiên chỉ định đó.
+
+## 5. Ngoại lệ
+
+- Cursor/IDE settings, git commit/PR thuần kỹ thuật → không bắt buộc skill game/art.
+- `...\` = `C:\Users\Asus\` + path tương ứng ở bảng trên.

@@ -118,6 +118,19 @@ namespace FracturedChorus.Hub
                     return;
                 }
 
+                if (option.Id == "flower_job")
+                {
+                    HubPendingActivity.Set(option.Id);
+                    GameMetaSession.Save();
+                    if (!RunMapSceneLoader.LoadByName(RunMapSceneCatalog.FlowerShopWork))
+                    {
+                        HubPendingActivity.Clear();
+                        _host.ShowStatus("Flower shop scene chưa sẵn sàng.");
+                    }
+
+                    return;
+                }
+
                 option.Apply(state);
                 var dayEnded = state.ConsumeActivitySlot();
                 GameMetaSession.Save();

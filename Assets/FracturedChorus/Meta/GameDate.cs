@@ -72,6 +72,11 @@ namespace FracturedChorus.Meta
 
         public string ToDisplayString() => $"{Day:00}/{Month:00}";
 
+        public DayOfWeek GetDayOfWeek(int year = 2026)
+        {
+            return new DateTime(year, Month, Day).DayOfWeek;
+        }
+
         public static int GetDaysInMonth(int month) => DaysInMonth(month);
 
         public static bool operator ==(GameDate left, GameDate right) => left.Equals(right);

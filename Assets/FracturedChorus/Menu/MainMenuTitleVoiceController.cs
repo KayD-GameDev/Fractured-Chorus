@@ -28,7 +28,7 @@ namespace FracturedChorus.Menu
         {
             if (_source != null)
             {
-                _source.volume = _baseVolume * Mathf.Clamp01(masterVolume);
+                _source.volume = _baseVolume;
             }
         }
 

@@ -18,6 +18,9 @@ EditorBuildSettings:
     path: Assets/FracturedChorus/Scenes/CampusHub.unity
     guid: da17fc6d2fa50e747847eeee5f1f906d
   - enabled: 1
+    path: Assets/FracturedChorus/Scenes/FlowerShopWork.unity
+    guid: 00000000000000000000000000000000
+  - enabled: 1
     path: Assets/FracturedChorus/Scenes/RunMapPrototype.unity
     guid: 9e221f76e321b6f468f489f5e752ad29
   - enabled: 1

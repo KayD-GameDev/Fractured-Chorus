@@ -83,6 +83,25 @@ namespace FracturedChorus.Hub
                 return false;
             }
 
+            if (_definition.AllowedWeekdays != null && _definition.AllowedWeekdays.Length > 0)
+            {
+                var weekday = state.Calendar.CurrentDate.GetDayOfWeek();
+                var weekdayOk = false;
+                foreach (var allowed in _definition.AllowedWeekdays)
+                {
+                    if (allowed == weekday)
+                    {
+                        weekdayOk = true;
+                        break;
+                    }
+                }
+
+                if (!weekdayOk)
+                {
+                    return false;
+                }
+            }
+
             if (_definition.AvailablePhases == null || _definition.AvailablePhases.Length == 0)
             {
                 return true;

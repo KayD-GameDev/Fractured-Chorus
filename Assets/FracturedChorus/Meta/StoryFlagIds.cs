@@ -23,5 +23,6 @@ namespace FracturedChorus.Meta
         public const string Arc1MidpointCleared = "arc1_midpoint_cleared";
         public const string InvestigationStarted = "investigation_started";
         public const string MissedRyo1209 = "missed_ryo_12_09";
+        public const string FlowerJobIntroDone = "flower_job_intro_done";
     }
 }

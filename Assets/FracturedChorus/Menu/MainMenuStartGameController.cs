@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using FracturedChorus.Combat.Bootstrap;
 using FracturedChorus.RunMap;
 using UnityEngine;
@@ -20,7 +19,8 @@ namespace FracturedChorus.Menu
         {
             Attract,
             MainMenu,
-            Settings
+            Settings,
+            OffBeatArchive
         }
 
         [SerializeField] private CanvasGroup attractLayer;
@@ -28,6 +28,7 @@ namespace FracturedChorus.Menu
         [SerializeField] private CanvasGroup mainMenuUi;
         [SerializeField] private CanvasGroup settingsOverlay;
         [SerializeField] private CanvasGroup offBeatArchiveOverlay;
+        [SerializeField] private OffBeatArchiveController offBeatArchiveController;
         [SerializeField] private MainMenuStartGameMenuController menuController;
         [SerializeField] private MainMenuConfigOverlayController configOverlayController;
         [SerializeField] private AudioClip menuBgmClip;
@@ -53,8 +54,6 @@ namespace FracturedChorus.Menu
         private MainMenuTitleVoiceController _titleVoiceController;
         private MainMenuTransitionSfxController _transitionSfxController;
         private MainMenuButtonPressSfxController _buttonPressSfxController;
-        private Image _settingsBackgroundImage;
-        private readonly Dictionary<Image, Color> _brightnessBaseColors = new Dictionary<Image, Color>();
 
         private void Awake()
         {
@@ -68,7 +67,6 @@ namespace FracturedChorus.Menu
                 settingsOverlay.interactable = false;
                 settingsOverlay.blocksRaycasts = false;
                 settingsOverlay.gameObject.SetActive(false);
-                _settingsBackgroundImage = settingsOverlay.transform.Find("ConfigBackground")?.GetComponent<Image>();
             }
 
             if (offBeatArchiveOverlay != null)
@@ -93,7 +91,6 @@ namespace FracturedChorus.Menu
 
             WireOverlayBackButtons();
             menuController?.SetEnabled(false);
-            ApplyBackgroundBrightness(MainMenuGameSettings.BackgroundBrightness);
             ApplyMasterVolume(MainMenuGameSettings.MasterVolume);
             MainMenuGameSettings.SettingsChanged += OnGameSettingsChanged;
         }
@@ -105,7 +102,6 @@ namespace FracturedChorus.Menu
 
         private void OnGameSettingsChanged()
         {
-            ApplyBackgroundBrightness(MainMenuGameSettings.BackgroundBrightness);
             ApplyMasterVolume(MainMenuGameSettings.MasterVolume);
         }
 
@@ -137,41 +133,6 @@ namespace FracturedChorus.Menu
 
         public void ApplyBackgroundBrightness(float brightness)
         {
-            brightness = Mathf.Clamp01(brightness);
-            ApplyLayerImageBrightness(attractLayer, brightness);
-            ApplyLayerImageBrightness(mainMenuBackground, brightness);
-            ApplyImageBrightness(_settingsBackgroundImage, brightness);
-        }
-
-        private void ApplyLayerImageBrightness(CanvasGroup layer, float brightness)
-        {
-            if (layer == null)
-            {
-                return;
-            }
-
-            ApplyImageBrightness(layer.GetComponent<Image>(), brightness);
-        }
-
-        private void ApplyImageBrightness(Image image, float brightness)
-        {
-            if (image == null)
-            {
-                return;
-            }
-
-            if (!_brightnessBaseColors.TryGetValue(image, out var baseColor))
-            {
-                baseColor = image.color;
-                _brightnessBaseColors[image] = baseColor;
-            }
-
-            var scalar = Mathf.Lerp(0.35f, 1f, brightness);
-            image.color = new Color(
-                baseColor.r * scalar,
-                baseColor.g * scalar,
-                baseColor.b * scalar,
-                baseColor.a);
         }
 
         private void ApplyMasterVolume(float masterVolume)
@@ -181,6 +142,7 @@ namespace FracturedChorus.Menu
             _titleVoiceController?.ApplyMasterVolume(masterVolume);
             _transitionSfxController?.ApplyMasterVolume(masterVolume);
             _buttonPressSfxController?.ApplyMasterVolume(masterVolume);
+            offBeatArchiveController?.ApplyMasterVolume(masterVolume);
         }
 
         private void Start()
@@ -297,6 +259,12 @@ namespace FracturedChorus.Menu
                         SetMainMenuEditorVisible(false);
                         SetOffBeatArchiveEditorVisible(false);
                         SetSettingsEditorVisible(true);
+                        break;
+                    case MainMenuEditorPreview.OffBeatArchive:
+                        SetLayerActive(attractLayer, false, alpha: 0f);
+                        SetMainMenuEditorVisible(true);
+                        SetSettingsEditorVisible(false);
+                        SetOffBeatArchiveEditorVisible(true);
                         break;
                 }
             }
@@ -479,11 +447,19 @@ namespace FracturedChorus.Menu
                 return;
             }
 
+            if (offBeatArchiveController == null)
+            {
+                offBeatArchiveController = offBeatArchiveOverlay.GetComponent<OffBeatArchiveController>()
+                    ?? offBeatArchiveOverlay.GetComponentInChildren<OffBeatArchiveController>(true);
+            }
+
             offBeatArchiveOverlay.gameObject.SetActive(true);
             offBeatArchiveOverlay.alpha = 1f;
             offBeatArchiveOverlay.interactable = true;
             offBeatArchiveOverlay.blocksRaycasts = true;
             menuController?.SetEnabled(false);
+            offBeatArchiveController?.ApplyMasterVolume(MainMenuGameSettings.MasterVolume);
+            offBeatArchiveController?.OnShow();
         }
 
         public void HideOffBeatArchive()
@@ -493,6 +469,7 @@ namespace FracturedChorus.Menu
                 return;
             }
 
+            offBeatArchiveController?.OnHide();
             offBeatArchiveOverlay.alpha = 0f;
             offBeatArchiveOverlay.interactable = false;
             offBeatArchiveOverlay.blocksRaycasts = false;
@@ -664,6 +641,7 @@ namespace FracturedChorus.Menu
                 return;
             }
 
+            offBeatArchiveController?.OnHide();
             offBeatArchiveOverlay.alpha = 0f;
             offBeatArchiveOverlay.interactable = false;
             offBeatArchiveOverlay.blocksRaycasts = false;

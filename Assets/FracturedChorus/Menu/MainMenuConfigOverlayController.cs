@@ -269,10 +269,10 @@ namespace FracturedChorus.Menu
             switch (_selectedIndex)
             {
                 case 0:
-                    infoText.text = "Adjust master volume for menu and game audio.";
+                    infoText.text = "Adjust master volume across all scenes.";
                     break;
                 case 1:
-                    infoText.text = "Adjust attract, main menu, and config background brightness.";
+                    infoText.text = "Adjust screen brightness across all scenes.";
                     break;
                 case 2:
                     infoText.text = MainMenuGameSettings.SkipUnreadText

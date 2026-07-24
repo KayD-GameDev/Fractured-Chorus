@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using FracturedChorus.Meta;
 using FracturedChorus.RunMap;
@@ -21,11 +22,13 @@ namespace FracturedChorus.Narrative.Vn
         [SerializeField] private CanvasGroup fadeOverlay;
         [SerializeField] private Image backgroundImage;
         [SerializeField] private VnStoryDateHud dateHud;
+        [SerializeField] private VnChoiceView choiceView;
         [SerializeField] private AudioClip typingClip;
         [SerializeField] private float defaultFadeSeconds = 0.6f;
         [SerializeField] private float dramaticBgFadeSeconds = 0.28f;
         [SerializeField] private bool beginHubOnEnd;
         [SerializeField] private bool playOnStart = true;
+        [SerializeField] private bool loadNextSceneOnEnd = true;
         [SerializeField] private string openingDateDisplay = "17/08";
         [SerializeField] private string openingPhaseDisplay = "Late Night";
         [SerializeField] private VnConvenienceController convenience;
@@ -33,6 +36,7 @@ namespace FracturedChorus.Narrative.Vn
         private int _index;
         private bool _waitingAdvance;
         private bool _running;
+        private bool _choiceActive;
         private string _pendingText;
         private string _currentBgId;
         private Coroutine _beatRoutine;
@@ -44,6 +48,22 @@ namespace FracturedChorus.Narrative.Vn
         private string _dateHudDate;
         private string _dateHudPhase;
         private AudioSource _textCardTypingSource;
+
+        public event Action<int> ChoiceSelected;
+        public event Action Finished;
+
+        public int LastChoiceIndex { get; private set; } = -1;
+        public bool LoadNextSceneOnEnd
+        {
+            get => loadNextSceneOnEnd;
+            set => loadNextSceneOnEnd = value;
+        }
+
+        public bool PlayOnStart
+        {
+            get => playOnStart;
+            set => playOnStart = value;
+        }
 
         public Text NameplateText => nameplateText;
         public Text TextCardBody => textCardBody;
@@ -58,6 +78,12 @@ namespace FracturedChorus.Narrative.Vn
             script = next;
         }
 
+        public void SetDateHudDefaults(string date, string phase)
+        {
+            openingDateDisplay = date;
+            openingPhaseDisplay = phase;
+        }
+
         private void Awake()
         {
             ApplyDialogueFonts();
@@ -66,6 +92,12 @@ namespace FracturedChorus.Narrative.Vn
                 typewriter?.BindTypingClip(typingClip);
             }
 
+            if (choiceView == null)
+            {
+                choiceView = GetComponentInChildren<VnChoiceView>(true);
+            }
+
+            choiceView?.Hide();
             BindConvenience();
         }
 
@@ -127,6 +159,11 @@ namespace FracturedChorus.Narrative.Vn
                 return;
             }
 
+            if (_choiceActive)
+            {
+                return;
+            }
+
             if (!VnInput.WasAdvancePressedThisFrame())
             {
                 return;
@@ -173,11 +210,14 @@ namespace FracturedChorus.Narrative.Vn
             _lastLoggedIndex = -1;
             _running = true;
             _index = 0;
+            LastChoiceIndex = -1;
+            _choiceActive = false;
             _waitingAdvance = false;
             _transitionBusy = false;
             _textCardBusy = false;
             _skipTransitionRequested = false;
             _skipTextCardRequested = false;
+            choiceView?.Hide();
             SetPanel(textCardPanel, false);
             SetPanel(dialoguePanel, false);
             _dateHudDate = openingDateDisplay;
@@ -314,13 +354,74 @@ namespace FracturedChorus.Narrative.Vn
                     Finish(beat);
                     break;
                 case VnBeatKind.Choice:
-                    Debug.LogWarning("[VnRuntime] Choice reserved — treating as Line.");
-                    ShowLine(beat);
+                    ShowChoice(beat);
                     break;
                 default:
                     ShowLine(beat);
                     break;
             }
+        }
+
+        private void ShowChoice(VnBeat beat)
+        {
+            if (choiceView == null)
+            {
+                Debug.LogError("[VnRuntime] Choice beat requires VnChoiceView.");
+                Advance();
+                return;
+            }
+
+            _waitingAdvance = false;
+            _choiceActive = true;
+            SetPanel(textCardPanel, false);
+            SetPanel(dialoguePanel, false);
+            portraitView?.DimAll();
+            AppendDialogueLog(beat);
+
+            var options = beat.choices ?? Array.Empty<string>();
+            choiceView.Show(beat.text, options, OnChoicePicked);
+        }
+
+        private void OnChoicePicked(int choiceIndex)
+        {
+            if (!_choiceActive)
+            {
+                return;
+            }
+
+            _choiceActive = false;
+            LastChoiceIndex = choiceIndex;
+            ChoiceSelected?.Invoke(choiceIndex);
+
+            var beat = script != null && script.beats != null && _index >= 0 && _index < script.beats.Length
+                ? script.beats[_index]
+                : null;
+
+            if (beat?.choiceNextBeatIndex != null &&
+                choiceIndex >= 0 &&
+                choiceIndex < beat.choiceNextBeatIndex.Length)
+            {
+                var next = beat.choiceNextBeatIndex[choiceIndex];
+                if (next >= 0)
+                {
+                    JumpToBeat(next);
+                    return;
+                }
+            }
+
+            Advance();
+        }
+
+        private void JumpToBeat(int beatIndex)
+        {
+            if (script == null || script.beats == null || beatIndex < 0 || beatIndex >= script.beats.Length)
+            {
+                Finish(null);
+                return;
+            }
+
+            _index = beatIndex;
+            PlayBeat(script.beats[_index]);
         }
 
         private void ShowLine(VnBeat beat)
@@ -627,6 +728,8 @@ namespace FracturedChorus.Narrative.Vn
 
         private void ApplyCues(VnBeat beat)
         {
+            ApplyFlags(beat?.setFlags);
+
             if (!string.IsNullOrWhiteSpace(beat.bgId) && backgroundImage != null)
             {
                 if (beat.bgId == VnBgIds.Black)
@@ -749,6 +852,8 @@ namespace FracturedChorus.Narrative.Vn
         {
             _running = false;
             _waitingAdvance = false;
+            _choiceActive = false;
+            choiceView?.Hide();
             StopBeatRoutine();
             audioPlayer?.StopBgm();
             audioPlayer?.StopAmbience();
@@ -759,6 +864,12 @@ namespace FracturedChorus.Narrative.Vn
             }
 
             ApplyFlags(endBeat?.setFlags);
+            Finished?.Invoke();
+
+            if (!loadNextSceneOnEnd)
+            {
+                return;
+            }
 
             var next = script != null ? script.nextScene : null;
             if (string.IsNullOrWhiteSpace(next))

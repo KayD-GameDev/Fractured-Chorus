@@ -46,7 +46,18 @@ namespace FracturedChorus.Editor
                 SceneView.RepaintAll();
             }
 
+            if (GUILayout.Button("Off-Beat"))
+            {
+                Undo.RecordObject(controller, "Preview Off-Beat Archive");
+                controller.SetEditorPreview(MainMenuStartGameController.MainMenuEditorPreview.OffBeatArchive);
+                EditorUtility.SetDirty(controller);
+                SceneView.RepaintAll();
+            }
+
             EditorGUILayout.EndHorizontal();
+            EditorGUILayout.HelpBox(
+                "Off-Beat: chỉnh ArchivePanel / CatalogScroll / PlayerRoot trên MainMenuCanvas.",
+                MessageType.None);
         }
     }
 }
