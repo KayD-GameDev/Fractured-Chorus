@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: ren_ult
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.SkillDefinitionSO
   skillId: ren_ult
-  icon: {fileID: 21300000, guid: 8359d77e0955446cb2ee61fbc87ec86b, type: 3}
   displayName: Finale
-  description: 'Damage burst · 3 counter hit'
+  icon: {fileID: -8925720143848478694, guid: f092df159eb620f439a1d72249254bc6, type: 3}
+  description: "Damage burst \xB7 3 counter hit"
   slotKind: 2
   avCost: 50
   delay: 5
