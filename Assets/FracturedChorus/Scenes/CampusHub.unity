@@ -2083,6 +2083,7 @@ MonoBehaviour:
   systemNormal: {fileID: -3137741735344166713, guid: c46d4db94699f6c46ad7af9243a13833, type: 3}
   systemSelected: {fileID: 6770731894727230924, guid: b71be96e53851734a92cd1dad6d1f8e7, type: 3}
   calendarOverlay: {fileID: 1248267368}
+  socialStatsOverlay: {fileID: 0}
   sfx: {fileID: 0}
 --- !u!1 &140608202
 GameObject:

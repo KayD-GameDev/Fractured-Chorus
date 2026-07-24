@@ -69,11 +69,17 @@ namespace FracturedChorus.Editor
             calendarHost.transform.SetParent(layersFolder.transform, false);
             StretchFull(calendarHost.GetComponent<RectTransform>());
 
+            var socialHost = new GameObject("02_SocialStats_Layers", typeof(RectTransform));
+            socialHost.transform.SetParent(layersFolder.transform, false);
+            StretchFull(socialHost.GetComponent<RectTransform>());
+
             var statusBuilt = MetaStatusMenuUI.Build(statusHost.transform);
             var calendarBuilt = CalendarOverlayUI.Build(calendarHost.transform);
+            var socialBuilt = SocialStatsOverlayUI.Build(socialHost.transform);
 
             var statusGo = statusHost.transform.Find("StatusMenu")?.gameObject;
             var calendarGo = calendarHost.transform.Find("CalendarOverlay")?.gameObject;
+            var socialGo = socialHost.transform.Find("SocialStatsOverlay")?.gameObject;
 
             if (statusGo != null)
             {
@@ -87,12 +93,23 @@ namespace FracturedChorus.Editor
                 calendarGo.SetActive(true);
             }
 
+            if (socialGo != null)
+            {
+                socialGo.SetActive(true);
+            }
+
             if (statusBuilt.MenuButton != null)
             {
                 statusBuilt.MenuButton.gameObject.SetActive(false);
             }
 
-            preview.BindLayerRefs(statusGo, statusBuilt.Menu, calendarGo, calendarBuilt.Overlay);
+            preview.BindLayerRefs(
+                statusGo,
+                statusBuilt.Menu,
+                calendarGo,
+                calendarBuilt.Overlay,
+                socialGo,
+                socialBuilt.Overlay);
 
             if (calendarGo != null && calendarBuilt.Overlay != null)
             {
@@ -122,6 +139,12 @@ namespace FracturedChorus.Editor
         public static void ShowCalendarLayers()
         {
             SetPreviewMode(UiEditPreviewRoot.PreviewMode.Calendar);
+        }
+
+        [MenuItem("Fractured Chorus/UI Edit Preview/Show Social Stats Layers")]
+        public static void ShowSocialStatsLayers()
+        {
+            SetPreviewMode(UiEditPreviewRoot.PreviewMode.SocialStats);
         }
 
         private static void SetPreviewMode(UiEditPreviewRoot.PreviewMode mode)
@@ -188,7 +211,7 @@ namespace FracturedChorus.Editor
             text.raycastTarget = false;
             text.text =
                 "UI_EditPreview — bật/tắt từng Lxx_* trong Hierarchy để chỉnh.\n" +
-                "Component UiEditPreviewRoot: Mode StatusMenu / Calendar.\n" +
+                "Component UiEditPreviewRoot: Mode StatusMenu / Calendar / SocialStats.\n" +
                 "Menu: Fractured Chorus/UI Edit Preview/...";
         }
 

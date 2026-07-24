@@ -8,14 +8,17 @@ namespace FracturedChorus.Hub
         public enum PreviewMode
         {
             StatusMenu = 0,
-            Calendar = 1
+            Calendar = 1,
+            SocialStats = 2
         }
 
         [SerializeField] private PreviewMode mode = PreviewMode.Calendar;
         [SerializeField] private GameObject statusMenuRoot;
         [SerializeField] private GameObject calendarRoot;
+        [SerializeField] private GameObject socialStatsRoot;
         [SerializeField] private MetaStatusMenuUI statusMenu;
         [SerializeField] private CalendarOverlayUI calendarOverlay;
+        [SerializeField] private SocialStatsOverlayUI socialStatsOverlay;
         [SerializeField] private bool applyMockDataOnEnable = true;
 
         [Header("Layer refs — Status")]
@@ -70,6 +73,11 @@ namespace FracturedChorus.Hub
             {
                 calendarRoot.SetActive(mode == PreviewMode.Calendar);
             }
+
+            if (socialStatsRoot != null)
+            {
+                socialStatsRoot.SetActive(mode == PreviewMode.SocialStats);
+            }
         }
 
         public void RefreshMockData()
@@ -88,18 +96,32 @@ namespace FracturedChorus.Hub
             {
                 calendarOverlay.Show(state);
             }
+
+            if (mode == PreviewMode.SocialStats && socialStatsOverlay != null)
+            {
+                state.SocialStats.ImportRank(SocialStatType.Resonance, 4, 0);
+                state.SocialStats.ImportRank(SocialStatType.Cadence, 5, 0);
+                state.SocialStats.ImportRank(SocialStatType.Pulse, 3, 0);
+                state.SocialStats.ImportRank(SocialStatType.Harmony, 4, 0);
+                state.SocialStats.ImportRank(SocialStatType.Rhythm, 2, 0);
+                socialStatsOverlay.Show(state);
+            }
         }
 
         public void BindLayerRefs(
             GameObject statusRoot,
             MetaStatusMenuUI status,
             GameObject calendar,
-            CalendarOverlayUI overlay)
+            CalendarOverlayUI overlay,
+            GameObject socialStats = null,
+            SocialStatsOverlayUI socialOverlay = null)
         {
             statusMenuRoot = statusRoot;
             statusMenu = status;
             calendarRoot = calendar;
             calendarOverlay = overlay;
+            socialStatsRoot = socialStats;
+            socialStatsOverlay = socialOverlay;
 
             if (statusRoot != null)
             {
