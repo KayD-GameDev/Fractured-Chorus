@@ -110,6 +110,43 @@ namespace FracturedChorus.Editor
             Debug.Log("[Fractured Chorus] Wired Town Map MENU button + Status panel (v6 art). Save the scene.");
         }
 
+        [MenuItem("Fractured Chorus/Wire Social Stats Overlay")]
+        public static void WireSocialStatsOverlay()
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+            {
+                EditorUtility.DisplayDialog(
+                    "Wire Social Stats",
+                    "Không thể wire khi đang Play Mode.\nExit Play Mode rồi chạy lại.",
+                    "OK");
+                return;
+            }
+
+            var townMap = UnityEngine.Object.FindAnyObjectByType<TownMapView>();
+            if (townMap == null)
+            {
+                EditorUtility.DisplayDialog("Wire Social Stats", "Không tìm thấy TownMapView trong scene.", "OK");
+                return;
+            }
+
+            var statusMenu = townMap.GetComponentInChildren<MetaStatusMenuUI>(true);
+            if (statusMenu == null)
+            {
+                var built = MetaStatusMenuUI.Build(townMap.transform);
+                statusMenu = built.Menu;
+                var sfx = townMap.GetComponentInChildren<TownMapSfxController>(true);
+                if (sfx != null)
+                {
+                    statusMenu.BindSfx(sfx);
+                }
+            }
+
+            statusMenu.EnsureSocialStatsOverlay(townMap.transform);
+            EditorUtility.SetDirty(statusMenu);
+            EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
+            Debug.Log("[Fractured Chorus] Wired Social Stats Overlay under TownMap. Save the scene.");
+        }
+
         private static void EnsureStatusMenuSpriteImport()
         {
             var folders = new[]
