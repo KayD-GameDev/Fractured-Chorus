@@ -9,7 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: befc80a3ecf2497c884a02bd9bc06037, type: 3}
+  m_Script: {fileID: 11500000, guid: 36cd7c3b307a4f99bdef54566de4b55c, type: 3}
   m_Name: FlowerWorkScenario_rich_aroma
   m_EditorClassIdentifier: 
   id: rich_aroma
