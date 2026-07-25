@@ -1063,7 +1063,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 186090763}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a1b2c3d4e5f6478901234567890abc03, type: 3}
+  m_Script: {fileID: 11500000, guid: 917019402bf942848848ccc979822a1f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Menu.OffBeatMusicPlayer
   volume: 0.85
@@ -1211,7 +1211,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 186090763}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a1b2c3d4e5f6478901234567890abc04, type: 3}
+  m_Script: {fileID: 11500000, guid: db78a631e3cb44c2b4f82b411a100b43, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Menu.OffBeatArchiveController
   catalog: {fileID: 11400000, guid: b1c2d3e4f5a6478901234567890abd00, type: 2}
@@ -3210,7 +3210,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 726294802}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 24223de1f4cc41f19c4eaf952c03114f, type: 3}
+  m_Script: {fileID: 11500000, guid: b6db2c8a30d0426a9f075992c6a030b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Menu.OffBeatDiscSwipeZone
   swipeThresholdPx: 80
@@ -6924,7 +6924,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1625703713}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9822527e6cec4fefbdfd51626f4fdcef, type: 3}
+  m_Script: {fileID: 11500000, guid: d580fb22dc024e2697c3f063ad838694, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Menu.OffBeatVolumeArcView
   arcRoot: {fileID: 615398306}
@@ -8236,7 +8236,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1983098200}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a1b2c3d4e5f6478901234567890abc06, type: 3}
+  m_Script: {fileID: 11500000, guid: ad492957b462477b9e3dea15be0e7900, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Menu.OffBeatWaveformView
   m_Material: {fileID: 0}

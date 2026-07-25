@@ -102,6 +102,12 @@ namespace FracturedChorus.UI
             }
 
             var screenPos = GetPointerScreenPosition();
+            if (!IsValidScreenPosition(screenPos))
+            {
+                // Input System can report NaN when Game view / pointer is unavailable;
+                // never feed that into UI raycasts (spams frustum errors).
+                return;
+            }
 
             if (WasPointerPressedThisFrame())
             {
@@ -389,7 +395,7 @@ namespace FracturedChorus.UI
 
         private bool IsScreenPointBlockedByUi(Vector2 screenPos)
         {
-            if (EventSystem.current == null)
+            if (EventSystem.current == null || !IsValidScreenPosition(screenPos))
             {
                 return false;
             }
@@ -585,20 +591,34 @@ namespace FracturedChorus.UI
             return cam.ScreenToWorldPoint(new Vector3(screenPoint.x, screenPoint.y, depth));
         }
 
+        private static bool IsValidScreenPosition(Vector2 screenPos)
+        {
+            return float.IsFinite(screenPos.x) && float.IsFinite(screenPos.y);
+        }
+
         private static Vector2 GetPointerScreenPosition()
         {
 #if ENABLE_INPUT_SYSTEM
             if (Mouse.current != null)
             {
-                return Mouse.current.position.ReadValue();
+                var mousePos = Mouse.current.position.ReadValue();
+                if (IsValidScreenPosition(mousePos))
+                {
+                    return mousePos;
+                }
             }
 
             if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed)
             {
-                return Touchscreen.current.primaryTouch.position.ReadValue();
+                var touchPos = Touchscreen.current.primaryTouch.position.ReadValue();
+                if (IsValidScreenPosition(touchPos))
+                {
+                    return touchPos;
+                }
             }
 #endif
-            return Input.mousePosition;
+            var legacyPos = (Vector2)Input.mousePosition;
+            return IsValidScreenPosition(legacyPos) ? legacyPos : new Vector2(float.NaN, float.NaN);
         }
 
         private static bool WasPointerPressedThisFrame()
