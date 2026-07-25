@@ -1,4 +1,5 @@
 using System.Collections;
+using FracturedChorus.Combat.Bootstrap;
 using FracturedChorus.RunMap.Core;
 using FracturedChorus.RunMap.UI;
 using UnityEngine;
@@ -131,7 +132,90 @@ namespace FracturedChorus.RunMap
             }
 
             Initialize(graph, seed);
+            ApplyCombatReturnHandoff();
             SyncLegendPanel();
+        }
+
+        public void ApplyCombatReturnHandoff()
+        {
+            if (!CombatEncounterHandoff.HasResult || Graph == null)
+            {
+                return;
+            }
+
+            if (CombatEncounterHandoff.LastVictory)
+            {
+                TryClearSourceNodeAfterVictory();
+                CombatEncounterHandoff.ClearResultFlags();
+                return;
+            }
+
+            if (!CombatEncounterHandoff.PendingReturnToNearestCamp)
+            {
+                CombatEncounterHandoff.ClearResultFlags();
+                return;
+            }
+
+            PartyRunHpStore.RestoreFullAtCamp();
+
+            var camp = FindNearestCampNode();
+            if (camp != null)
+            {
+                State.EnterNode(camp);
+                mapView?.RefreshInteraction(Graph, State);
+                mapView?.ScrollToNode(camp);
+                UpdateLabels($"Returned to Camp (F{camp.Floor}) — HP restored. Set up before continuing.");
+            }
+            else
+            {
+                UpdateLabels("Defeat — no Camp found. HP restored. Select a node to continue.");
+            }
+
+            CombatEncounterHandoff.ClearResultFlags();
+        }
+
+        private void TryClearSourceNodeAfterVictory()
+        {
+            if (Graph == null || CombatEncounterHandoff.SourceNodeId < 0)
+            {
+                return;
+            }
+
+            var node = Graph.GetNode(CombatEncounterHandoff.SourceNodeId);
+            if (node == null)
+            {
+                return;
+            }
+
+            node.Cleared = true;
+            mapView?.RefreshInteraction(Graph, State);
+        }
+
+        private MapNodeData FindNearestCampNode()
+        {
+            MapNodeData best = null;
+            var bestFloor = int.MinValue;
+            var bossFloor = Graph.BossNode != null ? Graph.BossNode.Floor : Graph.Profile.BossFloor;
+            foreach (var node in Graph.Nodes)
+            {
+                if (node == null || node.Type != MapNodeType.Camp || node.IsBoss)
+                {
+                    continue;
+                }
+
+                if (node.Floor > bossFloor)
+                {
+                    continue;
+                }
+
+                if (node.Floor >= bestFloor)
+                {
+                    bestFloor = node.Floor;
+                    best = node;
+                }
+            }
+
+            return best;
         }
 
         public void Initialize(MapGraph graph, int seed)
@@ -221,9 +305,6 @@ namespace FracturedChorus.RunMap
 
             if (isBoss)
             {
-                node.Cleared = true;
-                mapView.RefreshInteraction(Graph, State);
-
                 var cadence = GetComponentInParent<CadenceMapController>();
                 if (cadence != null && Graph?.Profile != null)
                 {
@@ -247,13 +328,37 @@ namespace FracturedChorus.RunMap
                     return;
                 }
 
-                Debug.Log("[Fractured Chorus] Boss node selected — loading combat scene.");
-                UpdateLabels("Entering battle: Oni F16…");
-                BeginBossCombatTransition();
+                BeginCombatForNode(node, EncounterCatalog.BossDespair, "Entering boss battle…");
+                return;
+            }
+
+            if (node.Type == MapNodeType.Battle ||
+                node.Type == MapNodeType.Elite ||
+                node.Type == MapNodeType.Treasure ||
+                node.Type == MapNodeType.Event ||
+                node.Type == MapNodeType.Relay)
+            {
+                UpdateLabels($"{MapNodePalette.DisplayName(node.Type)} — coming soon.");
                 return;
             }
 
             UpdateLabels($"Entered {MapNodePalette.DisplayName(node.Type)} (F{node.Floor}). Select next node.");
+        }
+
+        private void BeginCombatForNode(MapNodeData node, string encounterId, string status)
+        {
+            if (string.IsNullOrWhiteSpace(encounterId))
+            {
+                UpdateLabels("No encounter mapped for this node.");
+                return;
+            }
+
+            CombatEncounterHandoff.SetPending(
+                encounterId,
+                RunMapSceneCatalog.RunMapPrototype,
+                node != null ? node.Id : -1);
+            UpdateLabels(status);
+            BeginBossCombatTransition();
         }
 
         private static int SectorMapIndex(PinkySectorId sector) => sector switch

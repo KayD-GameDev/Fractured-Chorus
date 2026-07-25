@@ -68,19 +68,45 @@ namespace FracturedChorus.Combat.Bootstrap
             EnsureHoneycombGrid();
             CacheGridCellTransforms();
 
+            var handoffEncounter = CombatEncounterHandoff.HasPendingEncounter
+                ? EncounterCatalog.LoadOrCreate(CombatEncounterHandoff.EncounterId)
+                : null;
+            var encounter = handoffEncounter != null
+                ? handoffEncounter
+                : encounterDefinition != null
+                    ? encounterDefinition
+                    : null;
+
             if (HasSceneUnits())
             {
+                if (handoffEncounter != null)
+                {
+                    ClearSceneEnemyUnits();
+                }
+
                 RegisterSceneUnits();
+                if (handoffEncounter != null)
+                {
+                    SpawnUnitsFromEncounter(handoffEncounter, enemiesOnly: true);
+                }
             }
             else
             {
-                var encounter = encounterDefinition != null
-                    ? encounterDefinition
+                var full = encounter != null
+                    ? MergePartyIfEnemyOnly(encounter)
                     : EncounterRuntimeFactory.CreateDemoEncounter();
-                SpawnUnitsFromEncounter(encounter);
+                SpawnUnitsFromEncounter(full, enemiesOnly: false);
+            }
+
+            RefreshUnitViewsCache();
+
+            if (CombatEncounterHandoff.HasPendingEncounter)
+            {
+                CombatEncounterHandoff.ConsumePendingEncounter();
             }
 
             _session.Initialize(_grid, _timeline);
+            PartyRunHpStore.ApplyToSession(_session);
             SetupBoardDrag();
 
             if (combatController == null)
@@ -578,8 +604,78 @@ namespace FracturedChorus.Combat.Bootstrap
             }
         }
 
-        private void SpawnUnitsFromEncounter(EncounterDefinitionSO encounter)
+        private void ClearSceneEnemyUnits()
         {
+            if (unitViews == null)
+            {
+                return;
+            }
+
+            for (var i = 0; i < unitViews.Length; i++)
+            {
+                var view = unitViews[i];
+                if (view == null || view.Side != GridSide.Enemy)
+                {
+                    continue;
+                }
+
+                Destroy(view.gameObject);
+                unitViews[i] = null;
+            }
+        }
+
+        private void RefreshUnitViewsCache()
+        {
+            unitViews = unitsRoot != null
+                ? unitsRoot.GetComponentsInChildren<UnitView>(true)
+                : GetComponentsInChildren<UnitView>(true);
+        }
+
+        private static EncounterDefinitionSO MergePartyIfEnemyOnly(EncounterDefinitionSO encounter)
+        {
+            if (encounter?.units == null || encounter.units.Length == 0)
+            {
+                return EncounterRuntimeFactory.CreateDemoEncounter();
+            }
+
+            var hasPlayer = false;
+            foreach (var spawn in encounter.units)
+            {
+                if (spawn.preset != null && spawn.side == GridSide.Player)
+                {
+                    hasPlayer = true;
+                    break;
+                }
+            }
+
+            if (hasPlayer)
+            {
+                return encounter;
+            }
+
+            var merged = ScriptableObject.CreateInstance<EncounterDefinitionSO>();
+            merged.encounterId = encounter.encounterId;
+            merged.units = MergeSpawns(
+                EncounterRuntimeFactory.CreateDefaultPartySpawns(),
+                encounter.units);
+            return merged;
+        }
+
+        private static EncounterUnitSpawn[] MergeSpawns(EncounterUnitSpawn[] a, EncounterUnitSpawn[] b)
+        {
+            var merged = new EncounterUnitSpawn[a.Length + b.Length];
+            System.Array.Copy(a, 0, merged, 0, a.Length);
+            System.Array.Copy(b, 0, merged, a.Length, b.Length);
+            return merged;
+        }
+
+        private void SpawnUnitsFromEncounter(EncounterDefinitionSO encounter, bool enemiesOnly)
+        {
+            if (encounter?.units == null)
+            {
+                return;
+            }
+
             if (unitsRoot == null)
             {
                 var go = new GameObject("Units");
@@ -590,6 +686,11 @@ namespace FracturedChorus.Combat.Bootstrap
             foreach (var spawn in encounter.units)
             {
                 if (spawn.preset == null)
+                {
+                    continue;
+                }
+
+                if (enemiesOnly && spawn.side != GridSide.Enemy)
                 {
                     continue;
                 }

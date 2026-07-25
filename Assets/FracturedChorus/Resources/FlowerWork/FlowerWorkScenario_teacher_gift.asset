@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: teacher_gift
   customerLine: I need a respectful gift for my teacher. Nothing romantic.
-  thinkPrompt: Respectful, not romantic — your pick?
+  thinkPrompt: "Respectful, not romantic \u2014 your pick?"
   choices:
   - Red rose bouquet
   - Yellow chrysanthemums

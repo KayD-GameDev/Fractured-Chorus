@@ -54,6 +54,36 @@ namespace FracturedChorus.Audio
         public bool IsPlaying => _playing && source != null && source.isPlaying;
         public bool UsesBeatMap => beatMap != null && beatMap.HasData;
         public int LoopCount => _loopCount;
+        public float SourceTimeSec => source != null ? source.time : 0f;
+
+        public bool TryGetDspTimeForMusicalBeat(float musicalBeat, out double dspTime)
+        {
+            dspTime = AudioSettings.dspTime;
+            if (source == null || !UsesBeatMap)
+            {
+                return false;
+            }
+
+            var targetAudioTime = beatMap.MusicalBeatToTime(musicalBeat);
+            var pitch = Mathf.Abs(source.pitch) > 0.0001f ? source.pitch : 1f;
+            var deltaSec = (targetAudioTime - source.time) / pitch;
+            dspTime = AudioSettings.dspTime + deltaSec;
+            return true;
+        }
+
+        public bool TryGetMusicDeltaMs(float musicalBeat, out float deltaMs)
+        {
+            deltaMs = 0f;
+            if (source == null || !UsesBeatMap)
+            {
+                return false;
+            }
+
+            var targetAudioTime = beatMap.MusicalBeatToTime(musicalBeat);
+            var pitch = Mathf.Abs(source.pitch) > 0.0001f ? source.pitch : 1f;
+            deltaMs = (source.time - targetAudioTime) * 1000f / pitch;
+            return true;
+        }
 
         private void Awake()
         {

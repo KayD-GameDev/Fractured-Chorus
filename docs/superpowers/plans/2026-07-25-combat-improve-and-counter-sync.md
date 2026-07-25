@@ -60,22 +60,10 @@
 - Consumes: `CombatPhase`, `OnEncounterEnded`
 - Produces: `CombatResultOverlayUIView.Show(won)`, button → load RunMap; handoff flag boss cleared / failed
 
-- [ ] **Step 1: Thêm overlay tối giản**
-
-`CombatResultOverlayUIView`: panel + title (`VICTORY` / `DEFEAT`) + button `Continue`. `Show(bool victory)` bật panel, chặn input timeline.
-
-- [ ] **Step 2: Wire `HandleEncounterEnded`**
-
-Trong `CombatController.HandleEncounterEnded`: sau stop music/timeline → `resultOverlay.Show(_session.Phase == CombatPhase.Victory)`.
-
-- [ ] **Step 3: Continue → RunMap**
-
-Button gọi `CombatEncounterHandoff.SetResult(...)` rồi `RunMapSceneLoader.LoadRunMapPrototype()` (Single).
-
-- [ ] **Step 4: Play Mode checklist**
-
-1. RunMap → Boss → combat → giết hết enemy → overlay Victory → Continue → về RunMap.
-2. Defeat (hạ hết party) → overlay Defeat → Continue → về RunMap (node fail theo rule hiện có hoặc stub log).
+- [x] **Step 1: Overlay** — `CombatResultOverlayUIView` + art Result/ (Victory/Defeat/Continue/Retry)
+- [x] **Step 2: Wire `HandleEncounterEnded`** — stop music + show overlay
+- [x] **Step 3: Continue / Retry** — handoff + Cadence victory pending / camp return; Retry reload scene
+- [ ] **Step 4: Play Mode checklist** (user)
 
 **Done when:** Không còn kẹt trong `CombatPrototype` sau win/lose.
 
@@ -95,7 +83,14 @@ Button gọi `CombatEncounterHandoff.SetResult(...)` rồi `RunMapSceneLoader.Lo
 - `CombatEncounterHandoff.SetPending(encounterId, nodeType, returnScene)`
 - Bootstrap: nếu handoff có id → load SO; else scene units / demo factory (giữ fallback)
 
-- [ ] **Step 1: `CombatEncounterHandoff` static**
+- [x] **Step 1: `CombatEncounterHandoff` + `EncounterCatalog`**
+- [x] **Step 2: Bootstrap load handoff encounter (party scene + enemy SO)**
+- [x] **Step 3: Map Battle/Elite/Boss → combat; Treasure/Event/Relay toast**
+- [ ] **Step 4: Menu Create Encounter Assets + Play Mode**
+
+~~legacy steps below~~
+
+- [x] **Step 1b: `CombatEncounterHandoff` static**
 
 ```csharp
 namespace FracturedChorus.Combat.Bootstrap
@@ -145,11 +140,12 @@ Battle node → combat grunt pack; Boss → despair; Continue về đúng `Retur
 - Modify: `CombatEncounterHandoff` thêm `LastVictory`, `LastNodeId`
 - Modify: RunMap OnEnable/Start apply handoff result
 
-- [ ] **Step 1:** Handoff ghi `LastVictory` + node id trước khi load combat.
-- [ ] **Step 2:** Khi return, RunMap mark node cleared / apply fail rule (đúng convention map hiện tại).
-- [ ] **Step 3:** Play Mode: thắng boss → node cleared; thua → không clear (hoặc rule đã chốt).
+- [x] **Step 1:** Handoff result + reward stub + `LastFoughtEncounterId`
+- [x] **Step 2:** Boss không clear trước combat; victory → Cadence + clear source node; defeat → camp + full heal HP store
+- [x] **Step 3:** `PartyRunHpStore` persist HP; Prep reset mỗi fight
+- [ ] **Step 4:** Play Mode verify
 
-**Done when:** Win/lose ảnh hưởng map state.
+**Done when:** Win/lose ảnh hưởng map state + HP persist.
 
 ---
 
@@ -175,54 +171,12 @@ Battle node → combat grunt pack; Boss → despair; Continue về đúng `Retur
 
 **Target feel:** Onset counter SFX trong **±30ms** so với `beatTimesSec[beat]` của map (sau khi bù clip padding nếu có).
 
-- [ ] **Step 1: Chốt semantic hit = đầu beat**
-
-Đổi default `beatHitAnchorT` → `0f` (đầu nốt = musical beat index nguyên).  
-Nếu art/timeline đang “căn giữa” có chủ đích: giữ visual riêng, nhưng **SFX + resolve** dùng anchor 0 — tách `logicHitAnchorT` vs visual nếu cần.
-
-- [ ] **Step 2: API thời điểm DSP của beat**
-
-`CombatMusicController`:
-
-```csharp
-public bool TryGetDspTimeForMusicalBeat(float musicalBeat, out double dspTime)
-{
-    // musicalBeat absolute trên track đang play
-    // dspTime = AudioSettings.dspTime + (beatMap.MusicalBeatToTime(musicalBeat) - source.time) / pitch
-}
-```
-
-Thêm inverse `MusicalBeatToTime` trên `MusicBeatMapSO` nếu chưa có.
-
-- [ ] **Step 3: Schedule SFX đúng beat, không `PlayScheduled(now)`**
-
-`CombatSfxController.PlayPerfectCounter(double dspTime)`:
-- nếu `dspTime > AudioSettings.dspTime` → `PlayScheduled(dspTime)`
-- nếu đã trễ < 30ms → play immediate
-- nếu trễ > 30ms → skip hoặc play immediate + log (tránh “đuổi theo” muộn)
-
-`NotifyPerfect` / `TryPlayCounterEnterSfx`: tính `targetDsp` từ beat index + music controller; truyền vào SFX.
-
-- [ ] **Step 4: Rebuild counter cache mọi path playback**
-
-Trong `PrepareSegmentScanStart` (cả nhánh không `continueFromHold`) gọi `RebuildCounterBeatCache()` sau layout.  
-`BeginRoundPlayback`: reset state rồi rebuild trong `PrepareSegmentScanStart` (không để cache rỗng).
-
-- [ ] **Step 5: Đo offset Play Mode**
-
-Log khi counter fire:
-
-```text
-[CounterSync] beat=N musicBeat=X.xxx deltaMs=Y
-```
-
-`deltaMs = (source.time - beatMap.TimeOfBeat(N)) * 1000`.
-
-Acceptance: 10 counter liên tiếp, `|deltaMs| <= 30` (trừ frame hitch >50ms có log riêng).
-
-- [ ] **Step 6: Kiểm tra clip**
-
-Mở `Combat_PerfectCounter.wav` — nếu có silence đầu >10ms, trim import hoặc bù `sfxLeadSec` âm trong schedule.
+- [x] **Step 1: Chốt semantic hit = đầu beat** — `beatHitAnchorT = 0` (code + scene)
+- [x] **Step 2: API DSP** — `MusicalBeatToTime` + `TryGetDspTimeForMusicalBeat` / `TryGetMusicDeltaMs`
+- [x] **Step 3: Schedule SFX** — `PlayPerfectCounter(targetDsp)`; late ≤30ms immediate; >30ms warn + immediate
+- [x] **Step 4: Rebuild counter cache** — mọi nhánh `PrepareSegmentScanStart`
+- [ ] **Step 5: Play Mode** — log `[CounterSync]`; accept `|deltaMs|≤30`
+- [x] **Step 6: Clip** — trim ~46ms silence `Perfect sound Game.wav` (onset≈0ms)
 
 **Done when:** Counter nghe dính kick/snare của Eternal Spark; log delta trong budget.
 
@@ -237,9 +191,10 @@ Mở `Combat_PerfectCounter.wav` — nếu có silence đầu >10ms, trim import
 - Create/Modify: floating text helper trên `UnitView` hoặc canvas world/UI
 - Wire crit / Perfect tint nếu đã có sprite feedback
 
-- [ ] **Step 1:** Subscribe HP → spawn số + punch bar.
-- [ ] **Step 2:** Counter beat: số/crit không che SFX (spawn cùng frame hoặc +1 frame sau SFX đã schedule).
-- [ ] **Step 3:** Play Mode — hit thường / crit / heal đọc rõ.
+- [x] **Step 1:** `LastHpChange` + float digits + unit/bar punch
+- [x] **Step 2:** Spawn cùng frame HP event (sau SFX schedule path; không chặn audio)
+- [ ] **Step 3:** Play Mode — hit thường / crit / heal đọc rõ
+- [ ] **Art note:** CRIT badge gen lệch chữ (HIT) — tạm ẩn; crit = scale lớn hơn
 
 **Done when:** Mọi `TakeDamage` / heal có feedback nhìn thấy trên unit hoặc bar.
 
@@ -306,3 +261,114 @@ Không làm Task 5 trước Task 4: số bay lệch beat sẽ “khóa sai” c�
 | Stub debt | 6 |
 | Prefab scale | 7 |
 | Không placeholder TBD | ✓ paths/API cụ thể |
+
+---
+
+## Decision gates — câu hỏi duyệt (chờ user)
+
+Trả lời từng câu với Diana. Chỉ implement khi gate đã chốt.
+
+**Quyết định đã chốt — ĐỦ GATE:** `G-Q1: C` · `G-Q2: A` · xem bảng tổng kết bên dưới.
+
+**T6-Q4 rule (user):**
+- Space trên timeline (thanh/beat đỏ boss) tại beat **chưa** bị block
+- Đặt barrier → giảm damage nhận
+- Block đúng timing (OnBeat) → phát **perfect/clash sound** (cùng clip counter)
+- Hệ `BlockInputController` / `BlockBarrier` đã có nền — Task 6 polish + SFX; flag Bulwark stub bỏ pretend hoặc gộp vào flow này
+
+**Art số bay (T5):**
+- `Art/UI/Combat/DamageNumbers/combat_dmg_digits_holo_v1.png` (+ v2 nếu cleaner)
+- `Art/UI/Combat/DamageNumbers/combat_heal_digits_holo_v1.png`
+- `Art/UI/Combat/DamageNumbers/combat_crit_badge_holo_v1.png`
+- Mirror: `Resources/UI/Combat/DamageNumbers/`
+
+**Art đã gen (T1):**
+- `Assets/FracturedChorus/Art/UI/Combat/Result/combat_result_victory_v1.png`
+- `Assets/FracturedChorus/Art/UI/Combat/Result/combat_result_defeat_v1.png`
+- `Assets/FracturedChorus/Art/UI/Combat/Result/combat_btn_continue_v1.png`
+- `Assets/FracturedChorus/Art/UI/Combat/Result/combat_btn_retry_v1.png`
+- Mirror: `Resources/UI/Combat/Result/`
+
+### Task 1 — Win/Lose + return RunMap
+
+| ID | Câu hỏi | Options | Đề xuất | Chốt |
+|----|---------|---------|---------|------|
+| T1-Q1 | Overlay copy ngôn ngữ? | A) EN (`VICTORY`/`DEFEAT`) · B) VI · C) EN + VI phụ | A | **A** |
+| T1-Q2 | Sau Continue luôn về đâu? | A) `RunMapPrototype` · B) scene đã lưu trong handoff · C) Hub nếu fail | B | **B** |
+| T1-Q3 | Defeat có cho Retry trong combat không? | A) Chỉ Continue về map · B) thêm Retry (reload encounter) · C) Retry + Continue | A | **C** — Continue = về **camp gần nhất** (set up), không phải node vừa thua |
+| T1-Q4 | Nhạc khi hiện overlay? | A) Stop hẳn · B) duck volume · C) stinger riêng (chưa có asset thì A) | A | **A** |
+| T1-Q5 | Scope Task 1 có cần art overlay mới không? | A) Panel Text · B) chờ art · C) reuse Execute · Gen = Diana tạo art | A | **Gen** — art hologram đã tạo (`Result/`) |
+
+### Task 2 — Encounter handoff + Battle/Elite
+
+| ID | Câu hỏi | Options | Đề xuất | Chốt |
+|----|---------|---------|---------|------|
+| T2-Q1 | Node nào vào combat ở sprint này? | A) Battle+Elite+Boss · B) chỉ Battle+Boss · C) chỉ Boss (Task 2 hoãn) | A | **A** |
+| T2-Q2 | Roster tạm khi chưa có SO đủ? | A) Author 3 Encounter SO ngay · B) map type → factory keys (Grunt/Elite/Boss) · C) mọi node dùng demo hiện tại | B | **A** |
+| T2-Q3 | Party vào combat lấy từ đâu? | A) Scene/default formation như nay · B) persist HP từ run · C) full heal mỗi fight | A (B để Task 3+) | **B** |
+| T2-Q4 | Treasure/Camp/Event có đụng Task 2 không? | A) Không — giữ behavior cũ · B) stub toast “coming soon” | A | **B** |
+
+### Task 3 — Run state win/lose
+
+| ID | Câu hỏi | Options | Đề xuất | Chốt |
+|----|---------|---------|---------|------|
+| T3-Q1 | Thắng Boss →? | A) Clear boss + dùng `NotifyBossVictory` / flow Cadence sẵn có · B) chỉ mark node visited · C) về Hub luôn | A | **A** |
+| T3-Q2 | Thắng Battle/Elite →? | A) Clear node, mở path tiếp · B) clear + reward screen (hoãn reward) · C) clear + heal party | A | **B** |
+| T3-Q3 | Thua combat →? | A) Về map, **không** clear node (vào lại được) · B) Game Over / về Hub · C) mất run | A | **A** — Continue → camp gần nhất |
+| T3-Q4 | Có persist HP/Prep giữa node không (sprint này)? | A) Không — mỗi fight full · B) Có persist · C) chỉ persist HP, Prep reset | A | **C** |
+
+### Task 4 — Counter sync beat
+
+| ID | Câu hỏi | Options | Đề xuất | Chốt |
+|----|---------|---------|---------|------|
+| T4-Q1 | Hit semantic muốn khớp cái gì? | A) **Downbeat / đầu slot** (`beatHitAnchorT=0`) · B) giữ giữa slot (0.5) · C) tách: resolve@0, SFX có offset ms chỉnh Inspector | A | **A** |
+| T4-Q2 | Đổi hit có kéo **damage resolve** cùng lúc không? | A) Có — SFX + resolve cùng anchor · B) Chỉ SFX; resolve giữ 0.5 | A | **A** |
+| T4-Q3 | Budget sync chấp nhận? | A) ±30ms · B) ±50ms · C) “nghe ổn” không cần log | A | **A** |
+| T4-Q4 | Clip counter hiện là Clash Hit — có trim silence đầu không? | A) Đo rồi trim nếu >10ms · B) chỉ bù `sfxLeadSec` · C) để nguyên | A | **A** — đo được ~46ms silence |
+| T4-Q5 | Thứ tự so với Task 1–3? | A) Làm Task 4 **sau** meta loop (như plan) · B) Ưu tiên Task 4 **trước** Task 1 | A | **A** |
+
+### Task 5 — Floating damage / bar punch
+
+| ID | Câu hỏi | Options | Đề xuất | Chốt |
+|----|---------|---------|---------|------|
+| T5-Q1 | Số bay hiện ở đâu? | A) Trên đầu unit world/UI · B) Chỉ punch party/enemy bar · C) Cả hai | C | **C** |
+| T5-Q2 | Style số? | A) Text TMP · B) chờ sprite · C) màu harmony · **Gen sprite** | A | **Gen sprite** — digits dmg/heal + CRIT badge |
+| T5-Q3 | Làm Task 5 khi nào? | A) Sau Task 4 · B) Song song Task 4 · C) Hoãn P2 | A | **A** |
+
+### Task 6 — Stubs cut/ship
+
+| ID | Câu hỏi | Options | Đề xuất | Chốt |
+|----|---------|---------|---------|------|
+| T6-Q1 | `MoveActionCommand` (UC-06)? | A) **Cut** khỏi UI/docs sprint này · B) Ship swap 1 ô · C) Giữ stub im lặng | A | **A** |
+| T6-Q2 | Positional cover (`GetCoverModifier=1`)? | A) **Cut claim** docs · B) Ship modifier đơn giản front-column · C) Giữ | A | **B** — front: −dmg nhận; back: +dmg gây & +heal potency (số % chốt lúc implement) |
+| T6-Q3 | `CycleShift`? | A) Cut/rename thành damage rõ ràng · B) Implement thật · C) Giữ | A | **A** — chưa design |
+| T6-Q4 | `GuardCharge` perfect? | A) Cut flag · B) Wire vào BlockBarrier · C) Giữ log | A | **B** — Space block beat đỏ chưa chặn; đúng → perfect SFX |
+
+### Task 7 — Prefabs (P2)
+
+| ID | Câu hỏi | Options | Đề xuất | Chốt |
+|----|---------|---------|---------|------|
+| T7-Q1 | Làm trong sprint này? | A) Hoãn sau Task 1–5 · B) Làm ngay sau Task 2 · C) Bỏ khỏi plan | A | **A** |
+| T7-Q2 | Prefab tối thiểu? (khi làm sau) | A) Unit + PartyCard only · B) + Beat slot template · C) Full combat UI | A | **A** |
+
+### Gate toàn plan
+
+| ID | Câu hỏi | Options | Đề xuất | Chốt |
+|----|---------|---------|---------|------|
+| G-Q1 | Scope sprint đầu? | A) Task 1–4 only · B) Task 1–5 · C) Full 1–7 | A | **C** = Task 1–6 (T7 hoãn) |
+| G-Q2 | Commit sau mỗi task? | A) User yêu cầu từng lần · B) Auto commit mỗi task done | A | **A** |
+
+### Tổng kết quyết định (locked)
+
+| Gate | Chốt |
+|------|------|
+| T1 | EN · Continue theo handoff · Defeat Retry+Continue→camp · Stop nhạc · Art `Result/` |
+| T2 | **Boss only → combat** (boss+mini hiện có). Battle/Elite chưa design → toast coming soon. Catalog/SO giữ cho sau. |
+| T3 | Boss Cadence victory · Battle/Elite reward screen · Thua→camp không clear · HP persist, Prep reset |
+| T4 | Hit đầu beat · SFX+resolve cùng · ±30ms · Trim ~46ms silence · sau Task 1–3 |
+| T5 | Số bay + bar punch · sprite digits/CRIT · sau Task 4 |
+| T6 | Cut Move · Ship positional front/back · Cut CycleShift pretend · Guard Space+perfect SFX |
+| T7 | Hoãn · sau này Unit+PartyCard |
+| G | Sprint **Task 1–6** · Commit khi user yêu cầu |
+
+**Thứ tự implement:** `1 → 2 → 3 → 4 → 5 → 6`

@@ -1,20 +1,15 @@
 using FracturedChorus.Audio;
-
+using FracturedChorus.Combat.Bootstrap;
 using FracturedChorus.Combat.Core;
-
 using FracturedChorus.Combat.Grid;
-
 using FracturedChorus.Combat.Presentation;
-
 using FracturedChorus.Combat.Timeline;
-
 using FracturedChorus.Combat.Units;
-
 using FracturedChorus.Data;
-
+using FracturedChorus.RunMap;
 using FracturedChorus.UI;
-
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 
 
@@ -37,10 +32,8 @@ namespace FracturedChorus.Combat.Core
         [SerializeField] private SkillPanelUIView skillPanelView;
 
         [SerializeField] private CombatExecuteOverlayUIView executeOverlay;
-
+        [SerializeField] private CombatResultOverlayUIView resultOverlay;
         [SerializeField] private BlockInputController blockInput;
-
-
 
         private CombatSession _session;
 
@@ -106,8 +99,7 @@ namespace FracturedChorus.Combat.Core
 
 
             WireBlockInput();
-
-
+            EnsureResultOverlay();
 
             _session.OnPhaseChanged += HandlePhaseChanged;
 
@@ -763,22 +755,10 @@ namespace FracturedChorus.Combat.Core
 
 
 
-            if (phase == CombatPhase.Victory)
-
+            if (phase == CombatPhase.Victory || phase == CombatPhase.Defeat)
             {
-
-                Debug.Log("[Combat] Victory!");
-
+                ShowResultOverlay(phase == CombatPhase.Victory);
             }
-
-            else if (phase == CombatPhase.Defeat)
-
-            {
-
-                Debug.Log("[Combat] Defeat!");
-
-            }
-
         }
 
 
@@ -796,29 +776,138 @@ namespace FracturedChorus.Combat.Core
 
 
         private void HandleUnitHpChanged(CombatUnit unit)
-
         {
+            if (unit == null || !unit.LastHpChange.ShouldShowFeedback)
+            {
+                return;
+            }
 
+            var view = UnitView.FindForUnit(unit);
+            if (view != null)
+            {
+                view.PlayHpFeedback(unit.LastHpChange);
+                return;
+            }
+
+            var heal = unit.LastHpChange.Kind == HpChangeKind.Heal;
+            var cam = Camera.main;
+            var fallback = cam != null
+                ? cam.ViewportToWorldPoint(new Vector3(0.5f, 0.55f, 10f))
+                : Vector3.zero;
+            DamageNumberPopupView.Spawn(
+                fallback,
+                unit.LastHpChange.Amount,
+                heal,
+                unit.LastHpChange.IsCritical);
+            Debug.LogWarning(
+                $"[DamageNumbers] No UnitView for {unit.DisplayName} — spawned at fallback.");
         }
 
 
 
         private void HandleEncounterEnded()
-
         {
-
             _planningPaused = false;
-
             _awaitingExecute = false;
-
             StopCoverMusicIfNeeded();
-
             skillPanelView?.Hide();
-
             timelineView?.StopTimelinePlayback();
-
             executeOverlay?.SetVisible(false);
+            _musicController?.StopMusic();
+            var victory = _session != null && _session.Phase == CombatPhase.Victory;
+            if (victory)
+            {
+                CombatEncounterHandoff.SetResult(true);
+            }
 
+            ShowResultOverlay(victory);
+        }
+
+        private void EnsureResultOverlay()
+        {
+            if (resultOverlay != null)
+            {
+                resultOverlay.Bind(OnResultContinue, OnResultRetry);
+                return;
+            }
+
+            resultOverlay = FindAnyObjectByType<CombatResultOverlayUIView>();
+            if (resultOverlay == null)
+            {
+                Canvas canvas = null;
+                if (executeOverlay != null)
+                {
+                    canvas = executeOverlay.GetComponentInParent<Canvas>();
+                }
+
+                if (canvas == null && timelineView != null)
+                {
+                    canvas = timelineView.GetComponentInParent<Canvas>();
+                }
+
+                if (canvas == null)
+                {
+                    canvas = FindAnyObjectByType<Canvas>();
+                }
+
+                if (canvas != null)
+                {
+                    resultOverlay = CombatResultOverlayUIView.EnsureOnCanvas(canvas.transform);
+                }
+            }
+
+            resultOverlay?.Bind(OnResultContinue, OnResultRetry);
+        }
+
+        private void ShowResultOverlay(bool victory)
+        {
+            EnsureResultOverlay();
+            if (resultOverlay == null)
+            {
+                Debug.LogWarning("[Combat] Result overlay missing — cannot show VICTORY/DEFEAT UI.");
+                return;
+            }
+
+            var reward = victory ? CombatEncounterHandoff.PendingRewardSummary : null;
+            if (victory && string.IsNullOrEmpty(reward))
+            {
+                CombatEncounterHandoff.SetResult(true);
+                reward = CombatEncounterHandoff.PendingRewardSummary;
+            }
+
+            resultOverlay.Show(victory, reward);
+        }
+
+        private void OnResultContinue()
+        {
+            var victory = _session != null && _session.Phase == CombatPhase.Victory;
+            if (victory)
+            {
+                PartyRunHpStore.CaptureFromSession(_session);
+            }
+            else
+            {
+                PartyRunHpStore.RestoreFullAtCamp();
+            }
+
+            CombatEncounterHandoff.SetResult(victory);
+            if (victory)
+            {
+                CadenceMapController.MarkBossVictoryPending();
+            }
+
+            var sceneName = string.IsNullOrWhiteSpace(CombatEncounterHandoff.ReturnSceneName)
+                ? RunMapSceneCatalog.RunMapPrototype
+                : CombatEncounterHandoff.ReturnSceneName;
+            if (!RunMapSceneLoader.LoadByName(sceneName))
+            {
+                Debug.LogError($"[Combat] Failed to load return scene '{sceneName}'.");
+            }
+        }
+
+        private void OnResultRetry()
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
 
 

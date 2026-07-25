@@ -70,7 +70,7 @@ namespace FracturedChorus.Combat.Presentation
             ApplyPerfectChipDefaults();
         }
 
-        public void NotifyPerfect(int beatIndex, BeatTimelineEngine timeline)
+        public void NotifyPerfect(int beatIndex, BeatTimelineEngine timeline, double targetDspTime = -1d)
         {
             if (timeline == null || beatIndex < 0)
             {
@@ -83,7 +83,7 @@ namespace FracturedChorus.Combat.Presentation
 
             if (sfx != null)
             {
-                sfx.PlayPerfectCounter();
+                sfx.PlayPerfectCounter(targetDspTime);
             }
 
             CombatCounterResolver.CollectCounteringPlayerUnits(timeline, beatIndex, _playersScratch);

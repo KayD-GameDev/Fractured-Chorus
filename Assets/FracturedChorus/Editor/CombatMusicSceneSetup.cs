@@ -16,12 +16,12 @@ namespace FracturedChorus.Editor
         private const string BeatMapCsvPath = "Assets/FracturedChorus/Audio/Music/EternalSpark_CadenceRemix_beats.csv";
         private const string PlanningClipPath = "Assets/FracturedChorus/Audio/Music/EternalSpark_PlanningSilent.mp3";
         private const string PlanningTransitionPath = "Assets/FracturedChorus/Audio/SFX/Combat_PlanningTransition.wav";
-        private const string PerfectCounterPath = "Assets/FracturedChorus/Audio/SFX/Combat_PerfectCounter.wav";
-        private const string ClashHitPath = "Assets/FracturedChorus/Audio/SFX/Combat_ClashHit.wav";
+        private const string PerfectCounterPath = "Assets/FracturedChorus/Audio/SFX/Perfect sound Game.wav";
+        private const string ClashHitPath = "Assets/FracturedChorus/Audio/SFX/Clash Hit.wav";
         private const string PlanningSourceDownload = @"c:\Users\Asus\Downloads\Eternal Spark - BGM Silent.mp3";
         private const string TransitionSourceDownload = @"d:\Project 1\Transition SFX.wav";
-        private const string PerfectCounterSourceDownload = @"c:\Users\Asus\Downloads\Perfect sound.wav";
-        private const string ClashHitSourceDownload = @"c:\Users\Asus\Downloads\Clash Hit.wav";
+        private const string PerfectCounterSourceDownload = @"d:\Project 1\Clash Hit Game.wav";
+        private const string ClashHitSourceDownload = @"d:\Project 1\Clash Hit Game.wav";
         private const string RenCoverPath = "Assets/FracturedChorus/Audio/Music/EternalSpark_RenCover.mp3";
         private const string RenCoverSourceDownload = @"d:\Project 1\Eternal Spark - Ren cover.mp3";
 

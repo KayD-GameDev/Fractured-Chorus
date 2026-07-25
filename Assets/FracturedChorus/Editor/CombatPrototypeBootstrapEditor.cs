@@ -193,6 +193,7 @@ namespace FracturedChorus.Editor
                     EditorGUILayout.PropertyField(catalog.FindPropertyRelative("BeatFrameWindup"));
                     EditorGUILayout.PropertyField(catalog.FindPropertyRelative("NoteDisplaySize"));
                     EditorGUILayout.PropertyField(catalog.FindPropertyRelative("NoteAlpha"));
+                    EditorGUILayout.PropertyField(catalog.FindPropertyRelative("CoverPerfectAlpha"));
                     EditorGUILayout.PropertyField(catalog.FindPropertyRelative("NoteRedSizeScale"));
                     EditorGUILayout.PropertyField(catalog.FindPropertyRelative("NoteBlueSizeScale"));
                     EditorGUILayout.PropertyField(catalog.FindPropertyRelative("NotePurpleSizeScale"));

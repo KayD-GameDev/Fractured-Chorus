@@ -266,7 +266,7 @@ namespace FracturedChorus.Combat.Actions
                 finalDamage *= ctx.CoverOutgoingMultiplier;
             }
 
-            target.TakeDamage(finalDamage);
+            target.TakeDamage(finalDamage, result.IsCritical);
             Debug.Log($"[SkillAction] {ctx.Source.DisplayName} -> {target.DisplayName} | " +
                       $"rand={result.SkillRandomRoll:F2}×str={ctx.Source.Stats.Strength:F0} " +
                       $"raw={result.RawDamage:F1} en×={result.EnduranceFactor:F2} " +

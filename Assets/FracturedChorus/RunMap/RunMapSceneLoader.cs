@@ -43,6 +43,8 @@ namespace FracturedChorus.RunMap
 
         public static bool LoadCombatPrototype() => LoadByName(RunMapSceneCatalog.CombatPrototype);
 
+        public static bool LoadRunMapPrototype() => LoadByName(RunMapSceneCatalog.RunMapPrototype);
+
         private static string ResolveScenePath(string sceneName)
         {
             if (sceneName == RunMapSceneCatalog.MainMenuStartGame)

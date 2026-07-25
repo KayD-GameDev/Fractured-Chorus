@@ -528,11 +528,12 @@ namespace FracturedChorus.UI
             if (remainingHits <= 0)
             {
                 var cover = _noteVisuals?.CoverPerfect;
-                var coverSize = _noteVisuals != null ? _noteVisuals.CoverDisplaySize : 48f;
+                var coverSize = _noteVisuals != null ? _noteVisuals.CoverDisplaySize : 56f;
+                var coverAlpha = _noteVisuals != null ? _noteVisuals.CoverPerfectAlpha : 1f;
                 if (cover != null)
                 {
                     note.sprite = cover;
-                    note.color = new Color(1f, 1f, 1f, noteAlpha);
+                    note.color = new Color(1f, 1f, 1f, Mathf.Clamp01(coverAlpha));
                     note.preserveAspect = true;
                 }
                 else

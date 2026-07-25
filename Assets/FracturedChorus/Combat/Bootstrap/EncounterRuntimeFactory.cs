@@ -12,24 +12,91 @@ namespace FracturedChorus.Combat.Bootstrap
         {
             var encounter = ScriptableObject.CreateInstance<EncounterDefinitionSO>();
             encounter.encounterId = "demo_encounter_01";
-            encounter.units = new[]
-            {
-                CreateSpawn(GetPresetByKey("tank"), GridSide.Player, 2, 1),
-                CreateSpawn(GetPresetByKey("ren"), GridSide.Player, 2, 2),
-                CreateSpawn(GetPresetByKey("mage"), GridSide.Player, 2, 3),
-                CreateSpawn(GetPresetByKey("grunt_left"), GridSide.Enemy, 2, 1),
-                CreateSpawnInternal(GetPresetByKey("boss_despair"), GridSide.Enemy, 1, 1),
-                CreateSpawn(GetPresetByKey("grunt_right"), GridSide.Enemy, 2, 3)
-            };
+            encounter.units = Merge(
+                CreateDefaultPartySpawns(),
+                CreateBossEnemySpawns());
             return encounter;
+        }
+
+        public static EncounterDefinitionSO CreateById(string encounterId)
+        {
+            return encounterId switch
+            {
+                EncounterCatalog.BattleGrunts => CreateBattleEncounter(),
+                EncounterCatalog.EliteGrunts => CreateEliteEncounter(),
+                EncounterCatalog.BossDespair => CreateBossEncounter(),
+                _ => CreateDemoEncounter()
+            };
+        }
+
+        public static EncounterDefinitionSO CreateBattleEncounter()
+        {
+            var encounter = ScriptableObject.CreateInstance<EncounterDefinitionSO>();
+            encounter.encounterId = EncounterCatalog.BattleGrunts;
+            encounter.units = CreateBattleEnemySpawns();
+            return encounter;
+        }
+
+        public static EncounterDefinitionSO CreateEliteEncounter()
+        {
+            var encounter = ScriptableObject.CreateInstance<EncounterDefinitionSO>();
+            encounter.encounterId = EncounterCatalog.EliteGrunts;
+            encounter.units = CreateEliteEnemySpawns();
+            return encounter;
+        }
+
+        public static EncounterDefinitionSO CreateBossEncounter()
+        {
+            var encounter = ScriptableObject.CreateInstance<EncounterDefinitionSO>();
+            encounter.encounterId = EncounterCatalog.BossDespair;
+            encounter.units = CreateBossEnemySpawns();
+            return encounter;
+        }
+
+        public static EncounterUnitSpawn[] CreateDefaultPartySpawns() => new[]
+        {
+            CreateSpawn(GetPresetByKey("tank"), GridSide.Player, 2, 1),
+            CreateSpawn(GetPresetByKey("ren"), GridSide.Player, 2, 2),
+            CreateSpawn(GetPresetByKey("mage"), GridSide.Player, 2, 3)
+        };
+
+        public static EncounterUnitSpawn[] CreateBattleEnemySpawns() => new[]
+        {
+            CreateSpawn(GetPresetByKey("grunt_left"), GridSide.Enemy, 2, 1),
+            CreateSpawn(GetPresetByKey("grunt_right"), GridSide.Enemy, 2, 3)
+        };
+
+        public static EncounterUnitSpawn[] CreateEliteEnemySpawns() => new[]
+        {
+            CreateSpawn(GetPresetByKey("grunt_left"), GridSide.Enemy, 2, 1),
+            CreateSpawnInternal(GetPresetByKey("grunt"), GridSide.Enemy, 1, 1),
+            CreateSpawn(GetPresetByKey("grunt_right"), GridSide.Enemy, 2, 3)
+        };
+
+        public static EncounterUnitSpawn[] CreateBossEnemySpawns() => new[]
+        {
+            CreateSpawn(GetPresetByKey("grunt_left"), GridSide.Enemy, 2, 1),
+            CreateSpawnInternal(GetPresetByKey("boss_despair"), GridSide.Enemy, 1, 1),
+            CreateSpawn(GetPresetByKey("grunt_right"), GridSide.Enemy, 2, 3)
+        };
+
+        private static EncounterUnitSpawn[] Merge(EncounterUnitSpawn[] a, EncounterUnitSpawn[] b)
+        {
+            var merged = new EncounterUnitSpawn[a.Length + b.Length];
+            System.Array.Copy(a, 0, merged, 0, a.Length);
+            System.Array.Copy(b, 0, merged, a.Length, b.Length);
+            return merged;
         }
 
         public static UnitPresetSO GetPresetByKey(string key)
         {
             var assetKey = key switch
             {
-                "grunt_left" or "grunt_right" => "grunt",
+                "grunt" or "grunt_left" or "grunt_right" => "Grunt",
                 "boss_despair" => "Boss_Despair",
+                "ren" => "Ren",
+                "tank" => "Tank",
+                "mage" => "Mage",
                 _ => key
             };
 

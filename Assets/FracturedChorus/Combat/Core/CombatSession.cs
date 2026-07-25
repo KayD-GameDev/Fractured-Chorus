@@ -582,7 +582,7 @@ namespace FracturedChorus.Combat.Core
                     $"[Block] {timing} @ beat {beatIndex} → dmg {before:F0} → {finalDamage:F0} (-{reduction * 100f:F0}%)");
             }
 
-            target.TakeDamage(finalDamage);
+            target.TakeDamage(finalDamage, damageResult.IsCritical);
             Debug.Log(
                 $"[Enemy] {telegraph.Unit.DisplayName} hits {target.DisplayName} for {finalDamage:F0} @ beat {beatIndex}");
         }

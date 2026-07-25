@@ -1,3 +1,4 @@
+using System.Collections;
 using FracturedChorus.Combat.Damage;
 using FracturedChorus.Combat.Units;
 using FracturedChorus.Data;
@@ -25,6 +26,8 @@ namespace FracturedChorus.UI
         private CombatUnit _unit;
         private PrepPipsView _prepPips;
         private Image _reduceS2BuffIcon;
+        private Coroutine _barPunchRoutine;
+        private Vector3 _barPunchBaseScale = Vector3.one;
 
         public CombatUnit BoundUnit => _unit;
 
@@ -265,6 +268,56 @@ namespace FracturedChorus.UI
         private void HandleHpChanged(CombatUnit unit)
         {
             RefreshHp();
+            if (unit != null && unit.LastHpChange.ShouldShowFeedback)
+            {
+                PunchHealthBar(unit.LastHpChange.IsCritical);
+            }
+        }
+
+        private void PunchHealthBar(bool isCritical)
+        {
+            var target = healthBarBg != null ? healthBarBg.rectTransform : healthBarFillRect;
+            if (target == null)
+            {
+                return;
+            }
+
+            if (_barPunchRoutine != null)
+            {
+                StopCoroutine(_barPunchRoutine);
+                target.localScale = _barPunchBaseScale;
+            }
+            else
+            {
+                _barPunchBaseScale = target.localScale;
+            }
+
+            _barPunchRoutine = StartCoroutine(BarPunchRoutine(target, isCritical));
+        }
+
+        private IEnumerator BarPunchRoutine(RectTransform target, bool isCritical)
+        {
+            var peak = _barPunchBaseScale * (isCritical ? 1.14f : 1.08f);
+            const float up = 0.05f;
+            const float down = 0.12f;
+            var t = 0f;
+            while (t < up)
+            {
+                t += Time.deltaTime;
+                target.localScale = Vector3.Lerp(_barPunchBaseScale, peak, Mathf.Clamp01(t / up));
+                yield return null;
+            }
+
+            t = 0f;
+            while (t < down)
+            {
+                t += Time.deltaTime;
+                target.localScale = Vector3.Lerp(peak, _barPunchBaseScale, Mathf.Clamp01(t / down));
+                yield return null;
+            }
+
+            target.localScale = _barPunchBaseScale;
+            _barPunchRoutine = null;
         }
 
         private void HandlePrepChanged(CombatUnit unit)
