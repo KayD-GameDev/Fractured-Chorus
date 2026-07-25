@@ -155,5 +155,51 @@ namespace FracturedChorus.Audio
             var frac = (audioTimeSec - t0) / span01;
             return low + frac;
         }
+
+        public float MusicalBeatToTime(float musicalBeat)
+        {
+            if (!HasData)
+            {
+                return musicalBeat * (60f / fallbackBpm);
+            }
+
+            if (musicalBeat <= 0f)
+            {
+                if (beatTimesSec.Length < 2 || beatTimesSec[0] <= 0f)
+                {
+                    return 0f;
+                }
+
+                var span = beatTimesSec[1] - beatTimesSec[0];
+                return span > 0f ? musicalBeat * span : 0f;
+            }
+
+            var lastIndex = beatTimesSec.Length - 1;
+            if (musicalBeat >= lastIndex)
+            {
+                var tailSpan = lastIndex > 0
+                    ? beatTimesSec[lastIndex] - beatTimesSec[lastIndex - 1]
+                    : 60f / fallbackBpm;
+                if (tailSpan <= 0f)
+                {
+                    tailSpan = 60f / fallbackBpm;
+                }
+
+                return beatTimesSec[lastIndex] + (musicalBeat - lastIndex) * tailSpan;
+            }
+
+            var low = Mathf.FloorToInt(musicalBeat);
+            var high = low + 1;
+            var frac = musicalBeat - low;
+            var t0 = beatTimesSec[low];
+            var t1 = beatTimesSec[high];
+            var span01 = t1 - t0;
+            if (span01 <= 0.0001f)
+            {
+                return t0;
+            }
+
+            return t0 + frac * span01;
+        }
     }
 }

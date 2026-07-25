@@ -21,8 +21,9 @@ namespace FracturedChorus.Combat.Presentation
 
         public float NoteDisplaySize = 40f;
         public float GhostDisplaySize = 42f;
-        public float CoverDisplaySize = 48f;
+        public float CoverDisplaySize = 56f;
         [Range(0.35f, 1f)] public float NoteAlpha = 0.78f;
+        [Range(0.35f, 1f)] public float CoverPerfectAlpha = 1f;
         public float NoteRedSizeScale = 1f;
         public float NoteBlueSizeScale = 1f;
         public float NotePurpleSizeScale = 1f;
@@ -67,6 +68,16 @@ namespace FracturedChorus.Combat.Presentation
 
         public void EnsureDefaultsLoaded()
         {
+            if (CoverPerfectAlpha < 0.01f)
+            {
+                CoverPerfectAlpha = 1f;
+            }
+
+            if (CoverDisplaySize < 1f)
+            {
+                CoverDisplaySize = 56f;
+            }
+
             if (NoteRed == null)
             {
                 NoteRed = Resources.Load<Sprite>(ResourceRoot + "note_tier_red_v1");

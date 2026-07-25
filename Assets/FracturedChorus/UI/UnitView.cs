@@ -110,6 +110,9 @@ namespace FracturedChorus.UI
         }
 
         private Coroutine _combatAnimRoutine;
+        private Coroutine _hpPunchRoutine;
+        private Vector3 _hpPunchBaseScale = Vector3.one;
+        private bool _hpPunchBaseCaptured;
 
         private void PlayCombatAnimation(AnimationClip clip, string stateName, float normalizedTime, bool scheduleIdle)
         {
@@ -691,6 +694,70 @@ namespace FracturedChorus.UI
             }
         }
 
+        public Vector3 GetDamageNumberAnchor()
+        {
+            if (spriteRenderer != null)
+            {
+                return spriteRenderer.bounds.center + Vector3.up * (spriteRenderer.bounds.extents.y * 0.65f);
+            }
+
+            return transform.position + Vector3.up * 0.6f;
+        }
+
+        public void PlayHpFeedback(HpChangeInfo change)
+        {
+            if (!change.ShouldShowFeedback)
+            {
+                return;
+            }
+
+            var heal = change.Kind == HpChangeKind.Heal;
+            DamageNumberPopupView.Spawn(GetDamageNumberAnchor(), change.Amount, heal, change.IsCritical);
+            PunchBody(change.IsCritical);
+        }
+
+        private void PunchBody(bool isCritical)
+        {
+            if (!_hpPunchBaseCaptured)
+            {
+                _hpPunchBaseScale = transform.localScale;
+                _hpPunchBaseCaptured = true;
+            }
+
+            if (_hpPunchRoutine != null)
+            {
+                StopCoroutine(_hpPunchRoutine);
+                transform.localScale = _hpPunchBaseScale;
+            }
+
+            _hpPunchRoutine = StartCoroutine(HpPunchRoutine(isCritical));
+        }
+
+        private IEnumerator HpPunchRoutine(bool isCritical)
+        {
+            var peak = _hpPunchBaseScale * (isCritical ? 1.12f : 1.07f);
+            const float up = 0.05f;
+            const float down = 0.12f;
+            var t = 0f;
+            while (t < up)
+            {
+                t += Time.deltaTime;
+                transform.localScale = Vector3.Lerp(_hpPunchBaseScale, peak, Mathf.Clamp01(t / up));
+                yield return null;
+            }
+
+            t = 0f;
+            while (t < down)
+            {
+                t += Time.deltaTime;
+                transform.localScale = Vector3.Lerp(peak, _hpPunchBaseScale, Mathf.Clamp01(t / down));
+                yield return null;
+            }
+
+            transform.localScale = _hpPunchBaseScale;
+            _hpPunchRoutine = null;
+        }
+
         private void RefreshHp()
         {
             if (hpLabel != null && Unit != null)
@@ -713,6 +780,16 @@ namespace FracturedChorus.UI
             {
                 StopCoroutine(_combatAnimRoutine);
                 _combatAnimRoutine = null;
+            }
+
+            if (_hpPunchRoutine != null)
+            {
+                StopCoroutine(_hpPunchRoutine);
+                _hpPunchRoutine = null;
+                if (_hpPunchBaseCaptured)
+                {
+                    transform.localScale = _hpPunchBaseScale;
+                }
             }
 
             if (Unit != null)

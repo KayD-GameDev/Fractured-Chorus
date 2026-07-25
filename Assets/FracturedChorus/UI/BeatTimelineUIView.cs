@@ -35,8 +35,8 @@ namespace FracturedChorus.UI
         [SerializeField] private bool autoPlayOnStart;
         [SerializeField] private float autoBeatInterval = 0.405405f;
         [SerializeField] private bool useMusicSync = true;
-        [Tooltip("Vị trí hit trong mỗi slot (0 = đầu nốt, 0.5 = giữa, 1 = cuối). Width slot đã scale theo beat map.")]
-        [SerializeField] [Range(0f, 1f)] private float beatHitAnchorT = 0.5f;
+        [Tooltip("Vị trí hit trong mỗi slot (0 = đầu nốt / downbeat, 0.5 = giữa, 1 = cuối). SFX + resolve dùng cùng anchor.")]
+        [SerializeField] [Range(0f, 1f)] private float beatHitAnchorT = 0f;
         [SerializeField] private CombatMusicController musicController;
         [SerializeField] private CombatSfxController combatSfxController;
         [SerializeField] private CounterPresentationDriver counterPresentation;
@@ -1369,6 +1369,7 @@ namespace FracturedChorus.UI
             _totalScrollPx = GetSegmentStartScrollPx();
             ApplyScrollVisual(_totalScrollPx);
             _lastScanLineContentPos = GetScanLineContentPos();
+            RebuildCounterBeatCache();
         }
 
         private float PxOfAbsoluteBeat(float absoluteBeat)
@@ -1638,9 +1639,32 @@ namespace FracturedChorus.UI
             }
 
             _lastCounterSfxBeat = beatIndex;
+            var musicalBeat = _roundStartMusicalBeat + (beatIndex - _segmentStartBeat);
+            var targetDsp = -1d;
+            if (musicController != null &&
+                musicController.TryGetDspTimeForMusicalBeat(musicalBeat, out var dspTime))
+            {
+                targetDsp = dspTime;
+            }
+
+            if (musicController != null &&
+                musicController.TryGetMusicDeltaMs(musicalBeat, out var deltaMs))
+            {
+                if (Mathf.Abs(deltaMs) > 50f)
+                {
+                    Debug.LogWarning(
+                        $"[CounterSync] hitch beat={beatIndex} musicBeat={musicalBeat:F3} deltaMs={deltaMs:F1}");
+                }
+                else
+                {
+                    Debug.Log(
+                        $"[CounterSync] beat={beatIndex} musicBeat={musicalBeat:F3} deltaMs={deltaMs:F1}");
+                }
+            }
+
             if (counterPresentation != null)
             {
-                counterPresentation.NotifyPerfect(beatIndex, _timeline);
+                counterPresentation.NotifyPerfect(beatIndex, _timeline, targetDsp);
                 return;
             }
 
@@ -1650,7 +1674,7 @@ namespace FracturedChorus.UI
                 return;
             }
 
-            combatSfxController.PlayPerfectCounter();
+            combatSfxController.PlayPerfectCounter(targetDsp);
             PlayCounterAnimations(beatIndex);
         }
 

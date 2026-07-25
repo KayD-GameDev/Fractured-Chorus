@@ -9,5 +9,7 @@ namespace FracturedChorus.Narrative.Vn
         public static bool WasUpPressedThisFrame() => PrologueInput.WasUpPressedThisFrame();
 
         public static bool WasDownPressedThisFrame() => PrologueInput.WasDownPressedThisFrame();
+
+        public static bool WasKeyboardAdvancePressedThisFrame() => PrologueInput.WasKeyboardAdvancePressedThisFrame();
     }
 }

@@ -1,4 +1,5 @@
 using System.Collections;
+using FracturedChorus.Combat.Bootstrap;
 using FracturedChorus.Data;
 using FracturedChorus.RunMap.Core;
 using FracturedChorus.RunMap.UI;
@@ -136,7 +137,15 @@ namespace FracturedChorus.RunMap
             if (s_pendingBossVictory)
             {
                 s_pendingBossVictory = false;
+                CombatEncounterHandoff.ClearResultFlags();
                 HandleBossVictory();
+                return;
+            }
+
+            if (CombatEncounterHandoff.PendingReturnToNearestCamp)
+            {
+                var seed = Progress.RunSeed > 0 ? Progress.RunSeed : Random.Range(1, int.MaxValue);
+                EnterInnerSector(Progress.CurrentSector, seed);
             }
         }
 
@@ -225,6 +234,8 @@ namespace FracturedChorus.RunMap
             }
 
             innerController.Initialize(graph, seed);
+            var defeatReturn = CombatEncounterHandoff.PendingReturnToNearestCamp;
+            innerController.ApplyCombatReturnHandoff();
 
             if (mapView != null)
             {
@@ -238,7 +249,10 @@ namespace FracturedChorus.RunMap
                 ? pinkyVaultConfig.GetSector(sector).title
                 : SectorTitle(sector);
             var mapIndex = SectorMapIndex(sector);
-            SetStatus($"Pinky — Map {mapIndex}/3 · {sectorTitle} · F1 → {bossLabel}");
+            SetStatus(defeatReturn
+                ? $"Returned to nearest camp — set up. ({sectorTitle})"
+                : $"Pinky — Map {mapIndex}/3 · {sectorTitle} · F1 → {bossLabel}");
+
             _innerBootCoroutine = null;
         }
 
@@ -356,10 +370,15 @@ namespace FracturedChorus.RunMap
             }
 
             _loadingBossScene = true;
+            CombatEncounterHandoff.SetPending(
+                encounterId: EncounterCatalog.BossDespair,
+                returnScene: RunMapSceneCatalog.RunMapPrototype,
+                sourceNodeId: -1);
             if (simulateBossVictoryOnReturn)
             {
                 MarkBossVictoryPending();
             }
+
             SetStatus($"Entering battle: {Progress.SectorBossLabel(sector)}…");
 
             if (_bossLoadCoroutine != null)

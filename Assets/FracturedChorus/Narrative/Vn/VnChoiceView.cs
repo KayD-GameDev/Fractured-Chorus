@@ -1,9 +1,6 @@
 using System;
 using UnityEngine;
 using UnityEngine.UI;
-#if ENABLE_INPUT_SYSTEM
-using UnityEngine.InputSystem;
-#endif
 
 namespace FracturedChorus.Narrative.Vn
 {
@@ -92,11 +89,11 @@ namespace FracturedChorus.Narrative.Vn
                 return;
             }
 
-            if (WasUpPressed())
+            if (PrologueInput.WasUpPressedThisFrame())
             {
                 MoveSelection(-1);
             }
-            else if (WasDownPressed())
+            else if (PrologueInput.WasDownPressedThisFrame())
             {
                 MoveSelection(1);
             }
@@ -278,30 +275,6 @@ namespace FracturedChorus.Narrative.Vn
             rect.anchorMax = max;
             rect.offsetMin = Vector2.zero;
             rect.offsetMax = Vector2.zero;
-        }
-
-        private static bool WasUpPressed()
-        {
-#if ENABLE_INPUT_SYSTEM
-            var kb = Keyboard.current;
-            if (kb != null && (kb.upArrowKey.wasPressedThisFrame || kb.wKey.wasPressedThisFrame))
-            {
-                return true;
-            }
-#endif
-            return Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W);
-        }
-
-        private static bool WasDownPressed()
-        {
-#if ENABLE_INPUT_SYSTEM
-            var kb = Keyboard.current;
-            if (kb != null && (kb.downArrowKey.wasPressedThisFrame || kb.sKey.wasPressedThisFrame))
-            {
-                return true;
-            }
-#endif
-            return Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S);
         }
     }
 }

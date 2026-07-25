@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: rich_aroma
   customerLine: They'd like flashy flowers with a rich aroma.
-  thinkPrompt: Flashy and fragrant — which do you pick?
+  thinkPrompt: "Flashy and fragrant \u2014 which do you pick?"
   choices:
   - Scented roses
   - Artificial silk blooms

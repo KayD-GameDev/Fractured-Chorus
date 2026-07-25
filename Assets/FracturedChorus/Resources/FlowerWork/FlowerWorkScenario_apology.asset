@@ -13,12 +13,13 @@ MonoBehaviour:
   m_Name: FlowerWorkScenario_apology
   m_EditorClassIdentifier: 
   id: apology
-  customerLine: I want to apologize to someone important… what flower says 'sincere apology'?
+  customerLine: "I want to apologize to someone important\u2026 what flower says
+    'sincere apology'?"
   thinkPrompt: Which bouquet fits a sincere apology?
   choices:
   - White lilies
   - Scarlet roses
   - Bright sunflowers
   correctIndex: 0
-  correctReply: White lilies — quiet and sincere. Good call.
+  correctReply: "White lilies \u2014 quiet and sincere. Good call."
   wrongReply: That reads too celebratory. White lilies would have been safer.

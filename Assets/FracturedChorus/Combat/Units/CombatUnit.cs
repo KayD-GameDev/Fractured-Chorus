@@ -35,6 +35,8 @@ namespace FracturedChorus.Combat.Units
 
         public bool IsAlive => CurrentHp > 0;
 
+        public HpChangeInfo LastHpChange { get; private set; } = HpChangeInfo.Silent;
+
         public event Action<CombatUnit> OnHpChanged;
         public event Action<CombatUnit> OnPrepChanged;
         public event Action<CombatUnit> OnPendingReduceS2Changed;
@@ -59,14 +61,26 @@ namespace FracturedChorus.Combat.Units
             Side = position.Side;
         }
 
-        public void TakeDamage(float amount)
+        public void SetCurrentHp(int hp)
+        {
+            LastHpChange = HpChangeInfo.Silent;
+            CurrentHp = Mathf.Clamp(hp, 0, Stats.MaxHp);
+            OnHpChanged?.Invoke(this);
+            if (!IsAlive)
+            {
+                OnDied?.Invoke(this);
+            }
+        }
+
+        public void TakeDamage(float amount, bool isCritical = false)
         {
             if (!IsAlive)
             {
                 return;
             }
 
-            var remaining = Mathf.Max(0, Mathf.RoundToInt(amount));
+            var display = Mathf.Max(0, Mathf.RoundToInt(amount));
+            var remaining = display;
             if (Shield > 0 && remaining > 0)
             {
                 var absorbed = Mathf.Min(Shield, remaining);
@@ -74,13 +88,14 @@ namespace FracturedChorus.Combat.Units
                 remaining -= absorbed;
             }
 
-            if (remaining <= 0)
+            if (remaining > 0)
             {
-                OnHpChanged?.Invoke(this);
-                return;
+                CurrentHp = Mathf.Max(0, CurrentHp - remaining);
             }
 
-            CurrentHp = Mathf.Max(0, CurrentHp - remaining);
+            LastHpChange = display > 0
+                ? new HpChangeInfo(HpChangeKind.Damage, display, isCritical)
+                : HpChangeInfo.Silent;
             OnHpChanged?.Invoke(this);
 
             if (!IsAlive)
@@ -105,6 +120,9 @@ namespace FracturedChorus.Combat.Units
             var room = Mathf.Max(0, Stats.MaxHp - CurrentHp);
             var applied = Mathf.Min(room, heal);
             CurrentHp += applied;
+            LastHpChange = applied > 0
+                ? new HpChangeInfo(HpChangeKind.Heal, applied, false)
+                : HpChangeInfo.Silent;
             OnHpChanged?.Invoke(this);
 
             var overheal = heal - applied;
@@ -124,6 +142,7 @@ namespace FracturedChorus.Combat.Units
             }
 
             Shield += amount;
+            LastHpChange = HpChangeInfo.Silent;
             OnHpChanged?.Invoke(this);
         }
 
