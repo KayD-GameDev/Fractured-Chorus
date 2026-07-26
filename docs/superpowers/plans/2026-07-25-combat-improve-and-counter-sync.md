@@ -211,11 +211,11 @@ Battle node → combat grunt pack; Boss → despair; Continue về đúng `Retur
 | `CycleShift` → damage | Rename effect hoặc implement thật |
 | `GuardCharge` perfect log | Wire vào `BlockBarrier` hoặc remove flag |
 
-- [ ] **Step 1:** Chốt bảng Cut vs Ship với designer (1 quyết định/stub).
-- [ ] **Step 2:** Implement hoặc xóa claim + dead code path.
-- [ ] **Step 3:** Cập nhật `docs/combat/*.md` cho khớp.
+- [x] **Step 1:** Chốt bảng Cut vs Ship với designer (1 quyết định/stub).
+- [x] **Step 2:** Implement hoặc xóa claim + dead code path.
+- [x] **Step 3:** Cập nhật `docs/combat/*.md` cho khớp.
 
-**Done when:** Không còn stub “giả có” trong skill tooltips / docs.
+**Done when:** Không còn stub “giả có” trong skill tooltips / docs. ✅
 
 ---
 

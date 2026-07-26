@@ -15,7 +15,7 @@ MonoBehaviour:
   skillId: ren_basic
   displayName: Strike
   icon: {fileID: 5244487998027061712, guid: 84c28b32f692c594396d4e065f864069, type: 3}
-  description: Damage + Cycle Shift
+  description: Damage
   slotKind: 0
   avCost: 0
   delay: 2
@@ -29,7 +29,7 @@ MonoBehaviour:
   standingBeatsAfter: 1
   effectKind: 0
   effectValue: 0
-  grantsCycleShift: 1
+  grantsCycleShift: 0
   usesPrepEmpower: 0
   prepEmpowerThreshold: 1
   prepEmpowerCost: 1

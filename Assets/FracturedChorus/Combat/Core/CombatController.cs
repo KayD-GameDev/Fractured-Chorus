@@ -335,7 +335,18 @@ namespace FracturedChorus.Combat.Core
 
             if (timelineView != null && _session != null && blockInput != null)
             {
-                blockInput.Initialize(timelineView, _session.BlockBarriers);
+                CombatSfxController combatSfx = null;
+                if (_musicController != null)
+                {
+                    combatSfx = _musicController.GetComponent<CombatSfxController>();
+                }
+
+                if (combatSfx == null)
+                {
+                    combatSfx = FindAnyObjectByType<CombatSfxController>();
+                }
+
+                blockInput.Initialize(timelineView, _session.BlockBarriers, _timeline, combatSfx);
             }
         }
 
@@ -426,12 +437,24 @@ namespace FracturedChorus.Combat.Core
                 return;
             }
 
-            if (timelineView != null && timelineView.IsScreenPointInViewport(screenPos))
+            if (!_session.TryAssignPlayerAction(unit, skill, fromBeat))
             {
-                _session.TryAssignPlayerAction(unit, skill, fromBeat);
-                ClearRelocateState();
-                timelineView.RefreshLaneMarkers();
-                return;
+                var fallback = _session.Timeline != null
+                    ? _session.Timeline.FindFirstAssignableBeat(unit, skill)
+                    : -1;
+                if (fallback < 0 || !_session.TryAssignPlayerAction(unit, skill, fallback))
+                {
+                    Debug.LogError(
+                        $"[Combat] Relocate restore failed for {unit?.DisplayName} {skill?.displayName} fromBeat={fromBeat}");
+                }
+                else
+                {
+                    RefreshBeatsForSkillFootprint(unit, skill, fallback);
+                }
+            }
+            else
+            {
+                RefreshBeatsForSkillFootprint(unit, skill, fromBeat);
             }
 
             ClearRelocateState();

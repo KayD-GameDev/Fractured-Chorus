@@ -15,7 +15,7 @@ MonoBehaviour:
   skillId: tank_ult
   displayName: Bulwark
   icon: {fileID: 3153110002831495141, guid: 732df22fe6058604a80eb00e46fc23dc, type: 3}
-  description: Shield 65 + counter dmg
+  description: Shield 65 + counter dmg. Empowered — OnBeat Space block in S grants GuardCharge
   slotKind: 2
   avCost: 50
   delay: 5

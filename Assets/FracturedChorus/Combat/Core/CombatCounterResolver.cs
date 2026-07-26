@@ -185,6 +185,36 @@ namespace FracturedChorus.Combat.Core
             return GetRemainingHits(telegraph, timeline) <= 0;
         }
 
+        public static bool ActiveOverlapsFullyCounteredNote(
+            BeatTimelineEngine timeline,
+            SkillDefinitionSO skill,
+            int placementBeat,
+            CombatUnit unit)
+        {
+            if (timeline == null || skill == null || placementBeat < 0)
+            {
+                return false;
+            }
+
+            foreach (var info in SkillFootprintUtil.EnumerateFootprintBeats(skill, placementBeat, unit))
+            {
+                if (info.Role != FootprintBeatRole.Active)
+                {
+                    continue;
+                }
+
+                foreach (var telegraph in timeline.GetImpactTelegraphsAtBeat(info.BeatIndex))
+                {
+                    if (IsTelegraphFullyCountered(telegraph, timeline))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
         /// <summary>Hits still needed to cancel — spawn HitsRequired minus current Active counters on that beat.</summary>
         public static int GetRemainingHits(EnemyTelegraph telegraph, BeatTimelineEngine timeline)
         {

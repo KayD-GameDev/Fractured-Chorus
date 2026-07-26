@@ -26,6 +26,7 @@ namespace FracturedChorus.Data
         Shield = 2,
         DelayBossNote = 3,
         ReduceS2 = 4,
+        [System.Obsolete("Cut — use Damage. Kept for asset serialization.")]
         CycleShift = 5
     }
 
@@ -57,7 +58,7 @@ namespace FracturedChorus.Data
         [Header("Effect")]
         public SkillEffectKind effectKind = SkillEffectKind.Damage;
         public int effectValue;
-        public bool grantsCycleShift;
+        [HideInInspector] public bool grantsCycleShift;
 
         [Header("Prep empower")]
         public bool usesPrepEmpower;

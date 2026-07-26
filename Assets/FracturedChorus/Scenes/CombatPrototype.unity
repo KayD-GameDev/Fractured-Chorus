@@ -6326,6 +6326,9 @@ MonoBehaviour:
   perfectCounterSource: {fileID: 0}
   perfectCounterClip: {fileID: 8300000, guid: ca3332a67d4ac904b8a6b7e883551a29, type: 3}
   perfectCounterVolume: 1
+  perfectBlockSource: {fileID: 0}
+  perfectBlockClip: {fileID: 8300000, guid: 7e4c9a1b2d8f40c3a5b6e7f8091a2b3c, type: 3}
+  perfectBlockVolume: 1
   sfxLeadSec: 0
   clashHitSource: {fileID: 0}
   clashHitClip: {fileID: 8300000, guid: 55d37665aa0217043a7b0c1c7dbfac36, type: 3}

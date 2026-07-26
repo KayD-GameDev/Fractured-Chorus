@@ -26,9 +26,11 @@ namespace FracturedChorus.Combat.Core
         public event Action<CombatUnit> OnUnitHpChanged;
         public event Action OnEncounterEnded;
         public event Action<int> OnTelegraphsPlanned;
+        public event Action<int, BlockTiming> OnBlockResolved;
 
         private SimpleEnemyAI _enemyAi;
         private readonly HashSet<int> _resolvedBeats = new();
+        private readonly HashSet<string> _bulwarkGuardChargeGranted = new();
         private int _roundSegmentIndex;
         private int _lastScanBeat = -1;
         public PhaseAvTracker PhaseAv { get; } = new();
@@ -155,7 +157,7 @@ namespace FracturedChorus.Combat.Core
 
             if (beatIndex < 0)
             {
-                beatIndex = Timeline.FindNextEmptyBeat();
+                beatIndex = Timeline.FindFirstAssignableBeat(unit, skill);
             }
 
             if (beatIndex < 0 || !Timeline.CanAssignAction(unit, skill, beatIndex))
@@ -330,6 +332,7 @@ namespace FracturedChorus.Combat.Core
             Timeline.ClearPlayerAgenda();
             BlockBarriers.Clear();
             _resolvedBeats.Clear();
+            _bulwarkGuardChargeGranted.Clear();
             _roundSegmentIndex++;
             PrePlanTelegraphsForSegment(_roundSegmentIndex);
             _lastScanBeat = TimelineConstants.GetSegmentStartBeat(_roundSegmentIndex) - 1;
@@ -342,6 +345,7 @@ namespace FracturedChorus.Combat.Core
         {
             _roundSegmentIndex = 0;
             _resolvedBeats.Clear();
+            _bulwarkGuardChargeGranted.Clear();
             _lastScanBeat = -1;
             BlockBarriers.Clear();
             AllowPlayerReposition = true;
@@ -562,29 +566,79 @@ namespace FracturedChorus.Combat.Core
                 return;
             }
 
+            var positionalMod = Grid.GetCoverModifier(
+                telegraph.Unit.GridPosition,
+                target.GridPosition);
             var damageResult = DamageCalculator.Calculate(
                 telegraph.Unit.Stats,
                 target.Stats,
                 telegraph.Skill.skillTier,
                 telegraph.Unit.Stats.StrengthType,
                 BeatTiming.OnBeat,
-                HarmonyElementResolver.GetRelation(telegraph.Unit.Stats.Element, target.Stats.Element));
+                HarmonyElementResolver.GetRelation(telegraph.Unit.Stats.Element, target.Stats.Element),
+                positionalMod);
 
             var finalDamage = damageResult.FinalDamage;
             var blockTiming = BlockBarriers.TryGetBlockTiming(beatIndex, Timeline);
             if (blockTiming.HasValue)
             {
                 var timing = Cover.RemapGuardTiming(blockTiming.Value);
+                timing = BlockBarriers.ConsumeGuardChargeRemap(timing);
                 var reduction = timing.GetDamageReduction();
                 var before = finalDamage;
                 finalDamage *= 1f - reduction;
                 Debug.Log(
-                    $"[Block] {timing} @ beat {beatIndex} → dmg {before:F0} → {finalDamage:F0} (-{reduction * 100f:F0}%)");
+                    $"[Block] {timing} @ beat {beatIndex} → dmg {before:F0} → {finalDamage:F0} (-{reduction * 100f:F0}%)" +
+                    (BlockBarriers.GuardCharges > 0 ? $" · charges={BlockBarriers.GuardCharges}" : string.Empty));
+
+                if (timing == BlockTiming.OnBeat && TryGrantBulwarkGuardCharge(beatIndex))
+                {
+                    BlockBarriers.AddGuardCharge(1);
+                    Debug.Log($"[Block] GuardCharge +1 from Bulwark @ beat {beatIndex} (total {BlockBarriers.GuardCharges})");
+                }
+
+                OnBlockResolved?.Invoke(beatIndex, timing);
             }
 
             target.TakeDamage(finalDamage, damageResult.IsCritical);
             Debug.Log(
-                $"[Enemy] {telegraph.Unit.DisplayName} hits {target.DisplayName} for {finalDamage:F0} @ beat {beatIndex}");
+                $"[Enemy] {telegraph.Unit.DisplayName} hits {target.DisplayName} for {finalDamage:F0} @ beat {beatIndex}" +
+                (Mathf.Approximately(positionalMod, 1f) ? string.Empty : $" pos×={positionalMod:F2}"));
+        }
+
+        private bool TryGrantBulwarkGuardCharge(int beatIndex)
+        {
+            if (Timeline == null)
+            {
+                return false;
+            }
+
+            foreach (var entry in Timeline.Agenda)
+            {
+                if (entry?.Unit == null ||
+                    entry.Skill == null ||
+                    string.IsNullOrEmpty(entry.EntryId) ||
+                    entry.Unit.Side != GridSide.Player ||
+                    !entry.IsEmpowered ||
+                    !entry.Skill.empowerGuardChargeOnPerfect ||
+                    _bulwarkGuardChargeGranted.Contains(entry.EntryId))
+                {
+                    continue;
+                }
+
+                foreach (var info in SkillFootprintUtil.EnumerateFootprintBeats(entry.Skill, entry.BeatIndex))
+                {
+                    if (info.Role != FootprintBeatRole.Active || info.BeatIndex != beatIndex)
+                    {
+                        continue;
+                    }
+
+                    _bulwarkGuardChargeGranted.Add(entry.EntryId);
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private bool TryEndEncounterIfDecided()

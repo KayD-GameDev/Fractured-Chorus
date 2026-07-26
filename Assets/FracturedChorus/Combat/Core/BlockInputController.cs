@@ -1,4 +1,6 @@
+using FracturedChorus.Audio;
 using FracturedChorus.Combat.Block;
+using FracturedChorus.Combat.Timeline;
 using FracturedChorus.UI;
 using UnityEngine;
 #if ENABLE_INPUT_SYSTEM
@@ -7,21 +9,29 @@ using UnityEngine.InputSystem;
 
 namespace FracturedChorus.Combat.Core
 {
-    /// <summary>
-    /// Space (edge) places a block barrier snapped to the current integer beat while timeline scan runs.
-    /// </summary>
     public class BlockInputController : MonoBehaviour
     {
         [SerializeField] private BeatTimelineUIView timelineView;
+        [SerializeField] private CombatSfxController sfx;
 
         private BlockBarrierTracker _barriers;
+        private BeatTimelineEngine _timeline;
 
         public BlockBarrierTracker Barriers => _barriers;
 
-        public void Initialize(BeatTimelineUIView timeline, BlockBarrierTracker barriers)
+        public void Initialize(
+            BeatTimelineUIView timelineUi,
+            BlockBarrierTracker barriers,
+            BeatTimelineEngine timeline = null,
+            CombatSfxController sfxController = null)
         {
-            timelineView = timeline;
+            timelineView = timelineUi;
             _barriers = barriers;
+            _timeline = timeline;
+            if (sfxController != null)
+            {
+                sfx = sfxController;
+            }
         }
 
         private void Update()
@@ -37,7 +47,36 @@ namespace FracturedChorus.Combat.Core
             }
 
             var beatIndex = timelineView.GetCurrentScanBeatIndex();
-            _barriers.TryPlaceBarrier(beatIndex);
+            if (_timeline != null && CombatCounterResolver.HasCounterOnBeat(_timeline, beatIndex))
+            {
+                Debug.Log($"[Block] Space locked — counter owns beat {beatIndex}");
+                return;
+            }
+
+            if (!_barriers.TryPlaceBarrier(beatIndex, _timeline))
+            {
+                Debug.Log($"[Block] Space ignored @ beat {beatIndex} (need impact note ±1, free cell)");
+                return;
+            }
+
+            Debug.Log($"[Block] Barrier placed @ beat {beatIndex}");
+            PlayPlaceSfx();
+        }
+
+        private void PlayPlaceSfx()
+        {
+            if (sfx == null)
+            {
+                sfx = FindAnyObjectByType<CombatSfxController>();
+            }
+
+            if (sfx == null)
+            {
+                Debug.LogWarning("[Block] Perfect SFX — no CombatSfxController");
+                return;
+            }
+
+            sfx.PlayPerfectBlock(-1d);
         }
 
         private static bool ReadSpacePressedThisFrame()
