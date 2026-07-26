@@ -33,12 +33,18 @@ namespace FracturedChorus.UI
         private float _noteBandNormalizedY = 0.72f;
         private Image _beatFrameVisual;
         private Image _noteTierVisual;
+        private bool _suppressActiveImpactGlyph;
 
         public int DisplayBeatIndex => beatIndex;
 
         public void SetNoteVisualCatalog(TimelineNoteVisualCatalog catalog)
         {
             _noteVisuals = catalog;
+        }
+
+        public void SetSuppressActiveImpactGlyph(bool suppress)
+        {
+            _suppressActiveImpactGlyph = suppress;
         }
 
         public void SetNoteBandNormalizedY(float normalizedYFromBottom)
@@ -525,8 +531,25 @@ namespace FracturedChorus.UI
                 noteAlpha = Mathf.Clamp01(_noteVisuals.NoteAlpha);
             }
 
+            if (_suppressActiveImpactGlyph)
+            {
+                HideImpactGlyph(note);
+                if (portrait != null && portrait != note)
+                {
+                    HideImpactGlyph(portrait);
+                }
+
+                if (noteTier != null && noteTier != note && noteTier != portrait)
+                {
+                    HideImpactGlyph(noteTier);
+                }
+
+                return;
+            }
+
             if (remainingHits <= 0)
             {
+                note.enabled = true;
                 var cover = _noteVisuals?.CoverPerfect;
                 var coverSize = _noteVisuals != null ? _noteVisuals.CoverDisplaySize : 56f;
                 var coverAlpha = _noteVisuals != null ? _noteVisuals.CoverPerfectAlpha : 1f;
@@ -546,12 +569,29 @@ namespace FracturedChorus.UI
                 return;
             }
 
+            note.enabled = true;
             if (!CombatCounterResolver.TryGetDisplayTier(remainingHits, out var tier))
             {
                 tier = BossNoteTier.Red;
             }
 
             ApplyImpactNotePortrait(tier);
+        }
+
+        private static void HideImpactGlyph(Image image)
+        {
+            if (image == null)
+            {
+                return;
+            }
+
+            image.enabled = false;
+            image.sprite = null;
+            image.color = new Color(1f, 1f, 1f, 0f);
+            if (image.gameObject.activeSelf)
+            {
+                image.gameObject.SetActive(false);
+            }
         }
 
         private void ApplyImpactNotePortrait(BossNoteTier tier)

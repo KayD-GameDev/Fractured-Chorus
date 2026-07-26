@@ -437,6 +437,14 @@ namespace FracturedChorus.Combat.Core
                 return;
             }
 
+            if (timelineView == null || !timelineView.IsScreenPointInViewport(screenPos))
+            {
+                ClearRelocateState();
+                RefreshBeatsForSkillFootprint(unit, skill, fromBeat);
+                timelineView?.RefreshLaneMarkers();
+                return;
+            }
+
             if (!_session.TryAssignPlayerAction(unit, skill, fromBeat))
             {
                 var fallback = _session.Timeline != null
@@ -699,35 +707,22 @@ namespace FracturedChorus.Combat.Core
 
 
         private void RefreshBeatsForSkillFootprint(CombatUnit unit, SkillDefinitionSO skill, int placementBeat)
-
         {
-
             if (timelineView == null || skill == null)
-
             {
-
                 return;
-
             }
 
-
-
-            timelineView.RefreshBeat(placementBeat);
-
+            var beats = new System.Collections.Generic.HashSet<int> { placementBeat };
             foreach (var info in SkillFootprintUtil.EnumerateFootprintBeats(skill, placementBeat, unit))
-
             {
-
                 if (info.Role == FootprintBeatRole.Active)
-
                 {
-
-                    timelineView.RefreshBeat(info.BeatIndex);
-
+                    beats.Add(info.BeatIndex);
                 }
-
             }
 
+            timelineView.RefreshBeatsAndBossNotes(beats);
         }
 
 

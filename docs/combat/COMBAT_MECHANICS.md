@@ -74,7 +74,7 @@ Dàn trận (kéo unit vào ô) — [Deploy] hiện ngay, chưa có nhạc
 - Active beat (S) trùng beat telegraph quái → counter **đúng quái đó** (không pick cột trước).
 - Boss note **Tím/Xanh/Đỏ** (`HitsRequired` 3/2/1): đủ skill counter active cùng beat → **hủy đòn** (không dmg).
 - **Planning visual:** mỗi counter Active giảm 1 hit hiển thị (Tím→Xanh→Đỏ→`cover_perfect`); resolve vẫn so `CountCountersAtBeat >= HitsRequired`.
-- **Portrait / NoteTier** trên beat slot hiển thị theo hits còn lại. Spawn: Grunt luôn **Đỏ**; Elite **70% Đỏ / 30% Xanh**; Boss roll đủ 3 màu theo phase.
+- **Portrait / NoteTier** → glyph nốt nhạc Neon Cadence (`BossNoteClusterBuilder`): số = remaining; màu Tím/Xanh/Đỏ; **hai nốt spawn HitsRequired=1 kề nhau** → nốt đôi span 2 cột; nốt 2/3 luôn đơn (5 variant hash theo beat). Đủ hit → `cover_perfect` (size ≈ ô số ×1.35, cap `0.72 ×` khoảng beat kề; hold preview ×1.1). Spawn: Grunt luôn **Đỏ**; Elite **70% Đỏ / 30% Xanh**; Boss roll đủ 3 màu theo phase.
 
 ### Resolve đòn quái
 
@@ -203,8 +203,8 @@ Tím(3) ──1 hit──► Xanh(2) ──1 hit──► Đỏ(1) ──1 hit�
 ```
 
 - Mỗi **frame S active** trên beat = **1 counter hit** lên nốt tại beat đó (Perfect timing)
-- Triệt tiêu nốt Tím @ 1 beat → cần **3 hit cùng beat** (3 row chồng hoặc nhiều lượt plan)
-- S dài 3 beat (9–10–11) = 1 hit / beat cho nốt **trên từng beat**, không gom 3 hit vào 1 beat
+- Triệt tiêu nốt Tím @ 1 beat → cần **3 hit cùng beat** (3 row chồng, nhiều lượt plan, hoặc **Finale Prep≥2**: 1+2 extra @ beat note đầu trong S)
+- S dài 3 beat = 1 hit / beat mặc định; Prep empower `empowerExtraHits` cộng thêm trên **beat note đầu** trong cửa S (Crosscut +1 · Finale +2)
 - **Planning UI:** sau mỗi lần đặt skill counter, portrait/`NoteTier` đổi sprite theo **hits còn lại** (3→2→1); đủ hit → hiện `cover_perfect_v1` ngay trên ô beat (`CombatCounterResolver.GetRemainingHits`). `HitsRequired` spawn **không** mutate — chỉ tính remaining = required − counters.
 - **Drag preview:** Active ∩ impact → overlay tier kế hoặc Perfect (không còn luôn hiện Perfect chỉ vì drop hợp lệ).
 

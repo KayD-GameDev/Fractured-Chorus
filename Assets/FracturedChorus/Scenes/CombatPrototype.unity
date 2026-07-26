@@ -9288,6 +9288,25 @@ MonoBehaviour:
     NoteRed: {fileID: 21300000, guid: 6de9890583064f1c8f85927688b027f0, type: 3}
     NoteBlue: {fileID: 21300000, guid: 43965d41b6314ea8b42603ea64685e30, type: 3}
     NotePurple: {fileID: 21300000, guid: 727a3d90319d4fd89967fdf6ecbcf615, type: 3}
+    MusicSinglePurple:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    MusicSingleBlue:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    MusicSingleRed:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    MusicBeamedRed: {fileID: 0}
     DropGhostValid: {fileID: 21300000, guid: 84eb0d7734624b0cb309827b114ba10b, type: 3}
     DropGhostInvalid: {fileID: 21300000, guid: c073f0fbca9842fe9eddf44f4282e122, type: 3}
     CoverPerfect: {fileID: 21300000, guid: f5b1b5ba0ad44164ba68edc0f1afb8d0, type: 3}
@@ -9304,6 +9323,28 @@ MonoBehaviour:
     NoteBlueSizeScale: 1
     NotePurpleSizeScale: 1
   noteBandNormalizedY: 0.72
+  bossNoteNumberLayout:
+    singleScale: 1.5
+    beamedHeightScale: 1.5
+    numberSizeFactor: 0.299
+    perfectMarkScaleVsNumber: 1.35
+    perfectPreviewScale: 1.1
+    perfectMarkMinPx: 36
+    perfectNeighborFill: 0.72
+    numberNudgeSingle: {x: 0, y: 0}
+    numberNudgeBeamed: {x: -4, y: 6}
+    numberNudgeBeamedLeft: {x: 8.24777, y: -9.873767}
+    numberNudgeBeamedRight: {x: -0.20867348, y: -9.837024}
+    variantNudges:
+    - {x: -0.33010912, y: 10.563461}
+    - {x: -0.91296434, y: 11.686081}
+    - {x: 0.000030040741, y: 12.246567}
+    - {x: -2.0622327, y: -2.8355026}
+    - {x: -1.1044621, y: 10.217514}
+    singleHeadNormStemUp: {x: -0.08, y: -0.3}
+    singleHeadNormStemDown: {x: 0.06, y: 0.28}
+    beamedHeadNormLeft: {x: -0.32, y: -0.1}
+    beamedHeadNormRight: {x: 0.28, y: -0.1}
   laneBandMinNormalizedY: 0.16
   laneBandMaxNormalizedY: 0.48
   bossTrackFrameHeight: 56
