@@ -18,9 +18,12 @@ namespace FracturedChorus.Editor
             AssignIcon("StatBlock_Tank", HarmonyElement.Rhythm, "icon_he_nhip.png");
             AssignIcon("StatBlock_Ren", HarmonyElement.Melody, "icon_he_giai_dieu.png");
             AssignIcon("StatBlock_Mage", HarmonyElement.Harmony, "icon_he_hoa_am.png");
+            AssignIcon("StatBlock_Boss_Despair", HarmonyElement.Rhythm, "icon_he_nhip.png");
+            AssignIcon("StatBlock_Grunt", HarmonyElement.Rhythm, "icon_he_nhip.png");
+            AssignIcon("StatBlock_Grunt_Eye", HarmonyElement.Harmony, "icon_he_hoa_am.png");
 
             AssetDatabase.SaveAssets();
-            Debug.Log("[Fractured Chorus] Element badge icons assigned to Tank/Ren/Mage stat blocks.");
+            Debug.Log("[Fractured Chorus] Element badge icons assigned to Tank/Ren/Mage/Boss/Grunt stat blocks.");
         }
 
         private static void EnsureSpriteImportSettings()

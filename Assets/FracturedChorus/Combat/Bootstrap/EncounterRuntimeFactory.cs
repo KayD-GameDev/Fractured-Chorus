@@ -92,7 +92,8 @@ namespace FracturedChorus.Combat.Bootstrap
         {
             var assetKey = key switch
             {
-                "grunt" or "grunt_left" or "grunt_right" => "Grunt",
+                "grunt" or "grunt_left" => "Grunt",
+                "grunt_right" => "Grunt_Eye",
                 "boss_despair" => "Boss_Despair",
                 "ren" => "Ren",
                 "tank" => "Tank",

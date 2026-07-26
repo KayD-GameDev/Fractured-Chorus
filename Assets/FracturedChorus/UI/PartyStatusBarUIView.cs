@@ -42,8 +42,23 @@ namespace FracturedChorus.UI
 
         private void Awake()
         {
+            // Hide authoring template immediately so it never flashes as a ghost card.
+            if (cardTemplate == null)
+            {
+                var templateTransform = transform.Find("CardTemplate");
+                if (templateTransform != null)
+                {
+                    cardTemplate = templateTransform.GetComponent<PartyMemberCardView>();
+                }
+            }
+
+            if (cardTemplate != null)
+            {
+                cardTemplate.gameObject.SetActive(false);
+            }
+
             WireReferences();
-            HideTemplate();
+            DestroySceneCardTemplateAfterClone();
         }
 
         public void WireReferences()
@@ -73,7 +88,6 @@ namespace FracturedChorus.UI
 
             ApplyCardSpacing();
             cardTemplate?.WireReferences();
-            HideTemplate();
         }
 
         /// <summary>Đồng bộ thẻ từ UnitView trên sân (lọc player + đã đặt ô lưới).</summary>
@@ -256,10 +270,9 @@ namespace FracturedChorus.UI
                 }
             }
 
-            var cardSize = GetTemplateCardSize();
             var cardScale = GetTemplateCardScale();
-            var cardStepX = GetCardStepX(cardSize, cardScale);
             var totalCards = activeCards.Count;
+            var widths = new float[totalCards];
             for (var cardIndex = 0; cardIndex < totalCards; cardIndex++)
             {
                 var card = activeCards[cardIndex];
@@ -269,9 +282,24 @@ namespace FracturedChorus.UI
                     continue;
                 }
 
+                var cardSize = card.PreferredCardSize;
+                widths[cardIndex] = cardSize.x * cardScale.x;
                 PrepareCardRectForRowLayout(rect, cardSize, cardScale);
-                rect.anchoredPosition = PartyCardLayout.GetCardAnchoredPosition(cardIndex, totalCards, cardStepX);
                 rect.SetSiblingIndex(cardIndex);
+            }
+
+            // Index 0 = rightmost (C1). Walk left→right assigning X.
+            var x = 0f;
+            for (var visualFromLeft = 0; visualFromLeft < totalCards; visualFromLeft++)
+            {
+                var cardIndex = totalCards - 1 - visualFromLeft;
+                var rect = activeCards[cardIndex].transform as RectTransform;
+                if (rect != null)
+                {
+                    rect.anchoredPosition = new Vector2(x, 0f);
+                }
+
+                x += widths[cardIndex] + cardSpacing;
             }
         }
 
@@ -299,6 +327,8 @@ namespace FracturedChorus.UI
                 GetTemplateCardSize(),
                 GetTemplateCardScale());
             card.WireReferences();
+            // Clone từ CardTemplate — chuẩn hóa badge tròn + PrepPips 3 đoạn (khớp template grammar).
+            card.NormalizeTemplateChrome();
             card.Bind(unit, preset);
             _spawnedCards.Add(card);
         }
@@ -310,15 +340,17 @@ namespace FracturedChorus.UI
                 return;
             }
 
-            if (size.x <= 0f || size.y <= 0f)
-            {
-                size = new Vector2(PartyCardLayout.CardWidth, PartyCardLayout.CardHeight);
-            }
-
+            // Chỉ neo root vào góc trên-trái của CardsRow để thẻ mọc vào trong bar.
+            // Không đụng RectTransform của BarStack / badge / PrepPips (hierarchy-first).
             rect.anchorMin = new Vector2(0f, 1f);
             rect.anchorMax = new Vector2(0f, 1f);
             rect.pivot = new Vector2(0f, 1f);
-            rect.sizeDelta = size;
+
+            if (size.x > 0f && size.y > 0f)
+            {
+                rect.sizeDelta = size;
+            }
+
             rect.localScale = scale;
 
             var layoutElement = rect.GetComponent<LayoutElement>();
@@ -328,8 +360,11 @@ namespace FracturedChorus.UI
             }
 
             layoutElement.ignoreLayout = true;
-            layoutElement.preferredWidth = size.x;
-            layoutElement.preferredHeight = size.y;
+            if (size.x > 0f && size.y > 0f)
+            {
+                layoutElement.preferredWidth = size.x;
+                layoutElement.preferredHeight = size.y;
+            }
         }
 
         private static UnitPresetSO ResolvePresetForUnit(CombatUnit unit)
@@ -351,11 +386,40 @@ namespace FracturedChorus.UI
             return EncounterRuntimeFactory.GetPresetByKey(unit.UnitId);
         }
 
-        private void HideTemplate()
+        // Scene CardTemplate is authoring-only: clone a hidden runtime factory, then destroy the scene object.
+        private void DestroySceneCardTemplateAfterClone()
         {
-            if (cardTemplate != null)
+            if (cardTemplate == null)
+            {
+                return;
+            }
+
+            if (cardTemplate.name == "CardTemplate_Runtime")
             {
                 cardTemplate.gameObject.SetActive(false);
+                return;
+            }
+
+            var sceneTemplate = cardTemplate;
+            sceneTemplate.gameObject.SetActive(false);
+
+            var factoryGo = Instantiate(sceneTemplate.gameObject, transform);
+            factoryGo.name = "CardTemplate_Runtime";
+            factoryGo.SetActive(false);
+
+            cardTemplate = factoryGo.GetComponent<PartyMemberCardView>();
+            if (cardTemplate != null)
+            {
+                cardTemplate.WireReferences();
+            }
+
+            if (Application.isPlaying)
+            {
+                Destroy(sceneTemplate.gameObject);
+            }
+            else
+            {
+                DestroyImmediate(sceneTemplate.gameObject);
             }
         }
 

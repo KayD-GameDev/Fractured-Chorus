@@ -28,7 +28,9 @@ MonoBehaviour:
     BaseSpeed: 12
   skills:
   - {fileID: 11400000, guid: d5c6b7a890e12345678970a1b2c3d4eb, type: 2}
-  placeholderColor: {r: 0.45, g: 0.2, b: 0.55, a: 1}
+  placeholderColor: {r: 0.7803922, g: 0.79215693, b: 0.86666673, a: 1}
   battleSprite: {fileID: 4943192094725736257, guid: 2a25fb408a665924ea76caefa300424e, type: 3}
-  portraitSprite: {fileID: 7965260296592386794, guid: 738a6447a7883104eb48ebcb06626b50, type: 3}
+  combatCardSprite: {fileID: -3835068961708805114, guid: 2de692e4734855845bca3f078c935118, type: 3}
+  barStackAnchoredY: -1
+  healthSlotTop: 2.65
   telegraphAttacksPerPhase: 3

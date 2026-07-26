@@ -94,7 +94,6 @@ namespace FracturedChorus.Editor
                 new[] { coreStrike },
                 new Color(0.45f, 0.2f, 0.55f));
             preset.battleSprite = battleSprite;
-            preset.portraitSprite = battleSprite;
             preset.telegraphAttacksPerPhase = 3;
             EditorUtility.SetDirty(preset);
         }

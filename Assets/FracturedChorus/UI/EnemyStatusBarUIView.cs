@@ -85,13 +85,23 @@ namespace FracturedChorus.UI
 
 
         private void Awake()
-
         {
+            if (cardTemplate == null)
+            {
+                var templateTransform = transform.Find("CardTemplate");
+                if (templateTransform != null)
+                {
+                    cardTemplate = templateTransform.GetComponent<PartyMemberCardView>();
+                }
+            }
+
+            if (cardTemplate != null && cardTemplate.transform.parent == transform)
+            {
+                cardTemplate.gameObject.SetActive(false);
+            }
 
             WireReferences();
-
-            HideTemplate();
-
+            ConsumeSceneCardTemplate();
         }
 
 
@@ -131,9 +141,6 @@ namespace FracturedChorus.UI
             ApplyCardSpacing();
 
             cardTemplate?.WireReferences();
-
-            HideTemplate();
-
         }
 
 
@@ -287,89 +294,70 @@ namespace FracturedChorus.UI
 
 
         private void SpawnCard(CombatUnit unit)
-
         {
-
             var card = Instantiate(cardTemplate, cardsRow);
-
             card.gameObject.SetActive(true);
-
             card.name = $"EnemyCard_{unit.DisplayName}";
-
+            // Khóa Hierarchy theo Enemy CardTemplate trước mọi Wire/Bind.
+            card.UseEnemyTemplateHierarchy(cardTemplate);
+            PrepareCardRectForRowLayout(
+                card.transform as RectTransform,
+                GetTemplateCardSize(),
+                GetTemplateCardScale());
             card.WireReferences();
-
+            card.NormalizeTemplateChrome();
             card.Bind(unit, ResolvePresetForUnit(unit));
-
             _spawnedCards.Add(card);
-
         }
 
-
-
         private void RebuildCardsRowLayout()
-
         {
-
             if (cardsRow == null)
-
             {
-
                 return;
-
             }
-
-
 
             ApplyCardSpacing();
 
-
-
-            var cardSize = GetTemplateCardSize();
-
-            var cardScale = GetTemplateCardScale();
-
-            var step = PartyCardLayout.ComputeCardStepX(cardSize.x * cardScale.x, cardSpacing);
-
-            var count = _spawnedCards.Count;
-
-
-
-            for (var i = 0; i < count; i++)
-
+            var activeCards = new List<PartyMemberCardView>();
+            foreach (var card in _spawnedCards)
             {
-
-                var card = _spawnedCards[i];
-
-                if (card == null || !card.gameObject.activeSelf)
-
+                if (card != null && card.gameObject.activeSelf)
                 {
-
-                    continue;
-
+                    activeCards.Add(card);
                 }
-
-
-
-                var rect = card.transform as RectTransform;
-
-                if (rect == null)
-
-                {
-
-                    continue;
-
-                }
-
-
-
-                PrepareCardRectForRowLayout(rect, cardSize, cardScale);
-
-                rect.anchoredPosition = new Vector2(-i * step, 0f);
-
-                rect.SetSiblingIndex(i);
-
             }
 
+            var cardScale = GetTemplateCardScale();
+            var totalCards = activeCards.Count;
+            var widths = new float[totalCards];
+            for (var cardIndex = 0; cardIndex < totalCards; cardIndex++)
+            {
+                var card = activeCards[cardIndex];
+                var rect = card.transform as RectTransform;
+                if (rect == null)
+                {
+                    continue;
+                }
+
+                var cardSize = card.PreferredCardSize;
+                widths[cardIndex] = cardSize.x * cardScale.x;
+                PrepareCardRectForRowLayout(rect, cardSize, cardScale);
+                rect.SetSiblingIndex(cardIndex);
+            }
+
+            // Index 0 = rightmost (closest to bar's right edge). Walk further left for later cards.
+            var x = 0f;
+            for (var cardIndex = 0; cardIndex < totalCards; cardIndex++)
+            {
+                var rect = activeCards[cardIndex].transform as RectTransform;
+                if (rect != null)
+                {
+                    rect.anchoredPosition = new Vector2(-x, 0f);
+                }
+
+                x += widths[cardIndex] + cardSpacing;
+            }
         }
 
 
@@ -427,79 +415,43 @@ namespace FracturedChorus.UI
 
 
         private Vector3 GetTemplateCardScale()
-
         {
-
-            if (cardTemplate != null)
-
-            {
-
-                return cardTemplate.transform.localScale;
-
-            }
-
-
-
-            return Vector3.one;
-
+            return RectSizeUtil.ResolveScale(cardTemplate != null ? cardTemplate.transform : null);
         }
 
 
 
         private static void PrepareCardRectForRowLayout(RectTransform rect, Vector2 size, Vector3 scale)
-
         {
-
             if (rect == null)
-
             {
-
                 return;
-
             }
 
-
-
-            if (size.x <= 0f || size.y <= 0f)
-
-            {
-
-                size = new Vector2(PartyCardLayout.CardWidth, PartyCardLayout.CardHeight);
-
-            }
-
-
-
+            // Neo root góc trên-phải — thẻ mọc vào trong bar (trái + xuống). Không đụng Rect con.
             rect.anchorMin = new Vector2(1f, 1f);
-
             rect.anchorMax = new Vector2(1f, 1f);
-
             rect.pivot = new Vector2(1f, 1f);
 
-            rect.sizeDelta = size;
+            if (size.x > 0f && size.y > 0f)
+            {
+                rect.sizeDelta = size;
+            }
 
             rect.localScale = scale;
 
-
-
             var layoutElement = rect.GetComponent<LayoutElement>();
-
             if (layoutElement == null)
-
             {
-
                 layoutElement = rect.gameObject.AddComponent<LayoutElement>();
-
             }
 
-
-
             layoutElement.ignoreLayout = true;
-
-            layoutElement.preferredWidth = size.x;
-
-            layoutElement.preferredHeight = size.y;
-
+            if (size.x > 0f && size.y > 0f)
+            {
+                layoutElement.preferredWidth = size.x;
+                layoutElement.preferredHeight = size.y;
+            }
         }
 
 
@@ -542,18 +494,46 @@ namespace FracturedChorus.UI
 
 
 
-        private void HideTemplate()
-
+        private void ConsumeSceneCardTemplate()
         {
-
-            if (cardTemplate != null && cardTemplate.transform.parent == transform)
-
+            if (cardTemplate == null)
             {
-
-                cardTemplate.gameObject.SetActive(false);
-
+                return;
             }
 
+            if (cardTemplate.name == "CardTemplate_Runtime")
+            {
+                cardTemplate.gameObject.SetActive(false);
+                return;
+            }
+
+            // Borrowed party template lives under another bar — only hide, never destroy.
+            if (cardTemplate.transform.parent != transform)
+            {
+                cardTemplate.gameObject.SetActive(false);
+                return;
+            }
+
+            var sceneTemplate = cardTemplate;
+            sceneTemplate.gameObject.SetActive(false);
+
+            var factoryGo = Instantiate(sceneTemplate.gameObject, transform);
+            factoryGo.name = "CardTemplate_Runtime";
+            factoryGo.SetActive(false);
+
+            cardTemplate = factoryGo.GetComponent<PartyMemberCardView>();
+            // Factory cũng khóa enemy hierarchy — WireReferences không chạy EnsureEmbeddedHierarchy party.
+            cardTemplate?.UseEnemyTemplateHierarchy(sceneTemplate);
+            cardTemplate?.WireReferences();
+
+            if (Application.isPlaying)
+            {
+                Destroy(sceneTemplate.gameObject);
+            }
+            else
+            {
+                DestroyImmediate(sceneTemplate.gameObject);
+            }
         }
 
 

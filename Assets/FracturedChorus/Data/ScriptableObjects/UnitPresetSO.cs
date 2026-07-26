@@ -18,14 +18,20 @@ namespace FracturedChorus.Data
         public Color placeholderColor = Color.white;
         [Tooltip("Default combat sprite — used when the scene has none assigned or a 1×1 placeholder.")]
         public Sprite battleSprite;
-        [Tooltip("Party card portrait — if empty, uses battleSprite.")]
-        public Sprite portraitSprite;
+        [Tooltip("Full tilted combat card art (name + HP/Prep slots). Party/enemy card UI displays this on CardArt.")]
+        public Sprite combatCardSprite;
+        [Tooltip("Khi load: chỉ ghi đè BarStack.anchoredPosition.y (Hierarchy). < 0 = giữ Y CardTemplate.")]
+        public float barStackAnchoredY = -1f;
+        [Tooltip("Enemy: Inspector Top của HealthSlot (giữ chiều cao slot). < 0 = giữ CardTemplate.")]
+        public float healthSlotTop = -1f;
         [Tooltip("Impact telegraphs planned per timeline phase for this unit.")]
         [Min(1)] public int telegraphAttacksPerPhase = 1;
 
-        public Sprite ResolvePortraitSprite()
+        public bool HasCombatCardArt => combatCardSprite != null;
+
+        public Sprite ResolveCombatCardSprite()
         {
-            return portraitSprite != null ? portraitSprite : battleSprite;
+            return combatCardSprite;
         }
 
         public UnitStats ResolveStats()

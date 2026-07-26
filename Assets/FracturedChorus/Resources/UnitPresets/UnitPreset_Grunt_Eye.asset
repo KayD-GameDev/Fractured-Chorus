@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ce73a71ac68f23f48a5aad627d27478a, type: 3}
-  m_Name: UnitPreset
+  m_Name: UnitPreset_Grunt_Eye
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.UnitPresetSO
-  unitId: 
-  displayName: 
+  unitId: grunt_right
+  displayName: AstraEye
   role: 3
-  statBlock: {fileID: 0}
+  statBlock: {fileID: 11400000, guid: f39cd923e98749ce8609eea8a803190c, type: 2}
   stats:
-    Element: 1
+    Element: 2
     StrengthType: 0
     Strength: 100
     Endurance: 10
@@ -26,8 +26,11 @@ MonoBehaviour:
     CritMultiplier: 1.2
     MaxHp: 80
     BaseSpeed: 12
-  skills: []
-  placeholderColor: {r: 1, g: 1, b: 1, a: 1}
+  skills:
+  - {fileID: 11400000, guid: 3447135c31f31bf4b86503cedb3ca79c, type: 2}
+  placeholderColor: {r: 0.7803922, g: 0.39215687, b: 0.8666667, a: 1}
   battleSprite: {fileID: 0}
-  portraitSprite: {fileID: 0}
+  combatCardSprite: {fileID: -2504200788843067094, guid: f4b193652aa20d54ab6b81d1c6c085d8, type: 3}
+  barStackAnchoredY: -1
+  healthSlotTop: 4.25
   telegraphAttacksPerPhase: 1
