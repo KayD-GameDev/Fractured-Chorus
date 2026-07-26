@@ -11,6 +11,10 @@ namespace FracturedChorus.Combat.Presentation
         public Sprite NoteRed;
         public Sprite NoteBlue;
         public Sprite NotePurple;
+        public Sprite[] MusicSinglePurple = new Sprite[BossNoteClusterBuilder.SingleVariantCount];
+        public Sprite[] MusicSingleBlue = new Sprite[BossNoteClusterBuilder.SingleVariantCount];
+        public Sprite[] MusicSingleRed = new Sprite[BossNoteClusterBuilder.SingleVariantCount];
+        public Sprite MusicBeamedRed;
         public Sprite DropGhostValid;
         public Sprite DropGhostInvalid;
         public Sprite CoverPerfect;
@@ -19,7 +23,7 @@ namespace FracturedChorus.Combat.Presentation
         public Sprite BeatFrameImpact;
         public Sprite BeatFrameWindup;
 
-        public float NoteDisplaySize = 40f;
+        public float NoteDisplaySize = 52f;
         public float GhostDisplaySize = 42f;
         public float CoverDisplaySize = 56f;
         [Range(0.35f, 1f)] public float NoteAlpha = 0.78f;
@@ -36,6 +40,31 @@ namespace FracturedChorus.Combat.Presentation
                 BossNoteTier.Blue => NoteBlue != null ? NoteBlue : NoteRed,
                 _ => NoteRed
             };
+        }
+
+        public Sprite MusicSingle(int variantIndex, BossNoteTier tier)
+        {
+            EnsureDefaultsLoaded();
+            var i = Mathf.Clamp(variantIndex, 0, BossNoteClusterBuilder.SingleVariantCount - 1);
+            var arr = tier switch
+            {
+                BossNoteTier.Purple => MusicSinglePurple,
+                BossNoteTier.Blue => MusicSingleBlue,
+                _ => MusicSingleRed
+            };
+
+            if (arr != null && i < arr.Length && arr[i] != null)
+            {
+                return arr[i];
+            }
+
+            return NoteForTier(tier);
+        }
+
+        public Sprite MusicBeamedRedSprite()
+        {
+            EnsureDefaultsLoaded();
+            return MusicBeamedRed != null ? MusicBeamedRed : NoteRed;
         }
 
         public float NoteSizeScaleForTier(BossNoteTier tier)
@@ -126,6 +155,32 @@ namespace FracturedChorus.Combat.Presentation
             if (BeatFrameWindup == null)
             {
                 BeatFrameWindup = Resources.Load<Sprite>(ResourceRoot + "beat_frame_windup_v1");
+            }
+
+            EnsureMusicArray(ref MusicSinglePurple, "purple");
+            EnsureMusicArray(ref MusicSingleBlue, "blue");
+            EnsureMusicArray(ref MusicSingleRed, "red");
+            if (MusicBeamedRed == null)
+            {
+                MusicBeamedRed = Resources.Load<Sprite>(ResourceRoot + "note_music_beamed_red_v1");
+            }
+        }
+
+        private static void EnsureMusicArray(ref Sprite[] arr, string colorName)
+        {
+            if (arr == null || arr.Length != BossNoteClusterBuilder.SingleVariantCount)
+            {
+                arr = new Sprite[BossNoteClusterBuilder.SingleVariantCount];
+            }
+
+            for (var i = 0; i < BossNoteClusterBuilder.SingleVariantCount; i++)
+            {
+                if (arr[i] != null)
+                {
+                    continue;
+                }
+
+                arr[i] = Resources.Load<Sprite>($"{ResourceRoot}note_music_single_v{i}_{colorName}_v1");
             }
         }
     }

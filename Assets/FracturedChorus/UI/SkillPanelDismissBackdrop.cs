@@ -1,19 +1,44 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace FracturedChorus.UI
 {
-    /// <summary>
-    /// Full-screen transparent hit area — click closes the skill panel.
-    /// </summary>
     [RequireComponent(typeof(CanvasRenderer))]
-    public class SkillPanelDismissBackdrop : MonoBehaviour, IPointerClickHandler
+    public class SkillPanelDismissBackdrop : MonoBehaviour, IPointerClickHandler, ICanvasRaycastFilter
     {
         [SerializeField] private SkillPanelUIView panel;
+
+        private BeatTimelineUIView _timeline;
 
         public void SetPanel(SkillPanelUIView skillPanel)
         {
             panel = skillPanel;
+        }
+
+        public bool IsRaycastLocationValid(Vector2 sp, Camera eventCamera)
+        {
+            if (panel == null)
+            {
+                return true;
+            }
+
+            if (panel.IsSkillArmed)
+            {
+                return true;
+            }
+
+            if (_timeline == null)
+            {
+                _timeline = FindFirstObjectByType<BeatTimelineUIView>();
+            }
+
+            if (_timeline != null && _timeline.IsScreenPointInViewport(sp))
+            {
+                return false;
+            }
+
+            return true;
         }
 
         public void OnPointerClick(PointerEventData eventData)
@@ -23,8 +48,6 @@ namespace FracturedChorus.UI
                 return;
             }
 
-            // W/A/D (or armed) drop: backdrop sits above the timeline, so lane clicks
-            // hit here first — treat as place attempt instead of dismissing the panel.
             if (panel.TryConsumeArmedSkillDrop(eventData.position))
             {
                 return;

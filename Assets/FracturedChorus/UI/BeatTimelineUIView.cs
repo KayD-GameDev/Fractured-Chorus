@@ -43,6 +43,14 @@ namespace FracturedChorus.UI
         [SerializeField] private TimelineNoteVisualCatalog noteVisuals = new TimelineNoteVisualCatalog();
         [Tooltip("Boss note Y trong beat (0=đáy, 1=đỉnh). Band trên, tách khỏi party lanes.")]
         [SerializeField] [Range(0.55f, 0.92f)] private float noteBandNormalizedY = 0.78f;
+        [Header("Boss Note Number Layout (chỉnh tay vị trí số)")]
+        [SerializeField] private BossNoteNumberLayout bossNoteNumberLayout = new BossNoteNumberLayout();
+
+        public static bool SuppressBossNoteClusterRebuild { get; set; }
+
+        public BossNoteNumberLayout BossNoteNumberLayout => bossNoteNumberLayout;
+
+        public void RebuildBossNoteClustersPublic() => RebuildBossNoteClusters();
         [Tooltip("Party lane band — mép dưới (normalized từ đáy viewport).")]
         [SerializeField] [Range(0.05f, 0.45f)] private float laneBandMinNormalizedY = 0.12f;
         [Tooltip("Party lane band — mép trên (normalized từ đáy viewport). Phải < noteBand.")]
@@ -123,6 +131,8 @@ namespace FracturedChorus.UI
         private RectTransform _blockBarrierLayer;
         private readonly List<Image> _blockBarrierViews = new();
         private BlockBarrierTracker _blockBarriers;
+        private RectTransform _bossNoteClusterLayer;
+        private BossNoteClusterView _bossNoteClusters;
         private readonly List<Image> _dropPreviewDots = new();
         private readonly List<Image> _dropCoverOverlays = new();
 
@@ -1863,6 +1873,11 @@ namespace FracturedChorus.UI
                 _laneLinesLayer.SetAsLastSibling();
             }
 
+            if (_bossNoteClusterLayer != null)
+            {
+                _bossNoteClusterLayer.SetAsLastSibling();
+            }
+
             if (_footprintLayer != null)
             {
                 _footprintLayer.SetAsLastSibling();
@@ -1871,6 +1886,11 @@ namespace FracturedChorus.UI
             if (_laneMarkersLayer != null)
             {
                 _laneMarkersLayer.SetAsLastSibling();
+            }
+
+            if (_blockBarrierLayer != null)
+            {
+                _blockBarrierLayer.SetAsLastSibling();
             }
 
             if (scanBar != null)
@@ -2653,12 +2673,66 @@ namespace FracturedChorus.UI
 
         private void SyncBlockBarrierScroll()
         {
-            if (_blockBarrierLayer == null || slotsRow == null)
+            if (slotsRow == null)
             {
                 return;
             }
 
-            _blockBarrierLayer.anchoredPosition = new Vector2(slotsRow.anchoredPosition.x, 0f);
+            var x = slotsRow.anchoredPosition.x;
+            if (_blockBarrierLayer != null)
+            {
+                _blockBarrierLayer.anchoredPosition = new Vector2(x, 0f);
+            }
+
+            if (_bossNoteClusterLayer != null)
+            {
+                _bossNoteClusterLayer.anchoredPosition = new Vector2(x, 0f);
+            }
+        }
+
+        private void EnsureBossNoteClusterLayer()
+        {
+            if (_bossNoteClusterLayer != null || viewport == null)
+            {
+                return;
+            }
+
+            var go = new GameObject("BossNoteClusterLayer", typeof(RectTransform));
+            _bossNoteClusterLayer = go.GetComponent<RectTransform>();
+            _bossNoteClusterLayer.SetParent(viewport, false);
+            _bossNoteClusterLayer.anchorMin = Vector2.zero;
+            _bossNoteClusterLayer.anchorMax = Vector2.one;
+            _bossNoteClusterLayer.offsetMin = Vector2.zero;
+            _bossNoteClusterLayer.offsetMax = Vector2.zero;
+            _bossNoteClusterLayer.SetAsLastSibling();
+
+            _bossNoteClusters = go.GetComponent<BossNoteClusterView>();
+            if (_bossNoteClusters == null)
+            {
+                _bossNoteClusters = go.AddComponent<BossNoteClusterView>();
+            }
+        }
+
+        private void RebuildBossNoteClusters()
+        {
+            EnsureBossNoteClusterLayer();
+            if (_bossNoteClusters == null || viewport == null)
+            {
+                return;
+            }
+
+            var height = viewport.rect.height;
+            var noteY = GetNoteCoverYFromBottom(height);
+            _bossNoteClusters.Configure(
+                _bossNoteClusterLayer,
+                NoteVisuals,
+                ContentXForBeat,
+                noteY,
+                bossNoteNumberLayout);
+            _bossNoteClusters.Rebuild(_timeline, height);
+            SyncBlockBarrierScroll();
+            OrderViewportLayers();
+            BringResolveFeedbackToFront();
         }
 
         private void SyncLaneMarkersScroll()
@@ -2812,19 +2886,13 @@ namespace FracturedChorus.UI
                     {
                         var remainingAfter = CombatCounterResolver.GetRemainingHitsAfterPending(
                             telegraph, _timeline, skill, beat, unit);
-                        Sprite coverSprite = null;
                         if (remainingAfter <= 0)
                         {
-                            coverSprite = valid ? catalog.CoverPerfect : catalog.CoverMiss;
-                        }
-                        else if (CombatCounterResolver.TryGetDisplayTier(remainingAfter, out var previewTier))
-                        {
-                            coverSprite = catalog.NoteForTier(previewTier);
-                        }
-
-                        if (coverSprite != null)
-                        {
-                            AddDropCoverOverlay(info.BeatIndex, noteCoverY, coverSprite, coverSize);
+                            var coverSprite = valid ? catalog.CoverPerfect : catalog.CoverMiss;
+                            if (coverSprite != null)
+                            {
+                                AddDropCoverOverlay(info.BeatIndex, noteCoverY, coverSprite, coverSize);
+                            }
                         }
                     }
 
@@ -2851,11 +2919,28 @@ namespace FracturedChorus.UI
 
         private void AddDropCoverOverlay(int beat, float noteY, Sprite sprite, float size)
         {
+            if (sprite == null)
+            {
+                return;
+            }
+
+            if (_bossNoteClusters != null &&
+                _bossNoteClusters.TryAttachPerfectPreview(beat, sprite, out var attached) &&
+                attached != null)
+            {
+                _dropCoverOverlays.Add(attached);
+                return;
+            }
+
             EnsureLaneLayers();
             if (_footprintLayer == null)
             {
                 return;
             }
+
+            var markSize = _bossNoteClusters != null
+                ? _bossNoteClusters.GetPerfectMarkSizeForBeat(beat, preview: true)
+                : new Vector2(Mathf.Max(36f, size), Mathf.Max(36f, size));
 
             var go = new GameObject("DropCover", typeof(RectTransform));
             var rect = go.GetComponent<RectTransform>();
@@ -2863,7 +2948,7 @@ namespace FracturedChorus.UI
             rect.anchorMin = new Vector2(0f, 0f);
             rect.anchorMax = new Vector2(0f, 0f);
             rect.pivot = new Vector2(0.5f, 0.5f);
-            rect.sizeDelta = new Vector2(size, size);
+            rect.sizeDelta = markSize;
             rect.anchoredPosition = new Vector2(ContentXForBeat(beat), noteY);
             rect.SetAsLastSibling();
 
@@ -2873,6 +2958,9 @@ namespace FracturedChorus.UI
             img.preserveAspect = true;
             img.raycastTarget = false;
             img.type = Image.Type.Simple;
+            var outline = go.AddComponent<Outline>();
+            outline.effectColor = new Color(0.25f, 0.95f, 1f, 0.85f);
+            outline.effectDistance = new Vector2(1.2f, -1.2f);
             _dropCoverOverlays.Add(img);
         }
 
@@ -2917,6 +3005,7 @@ namespace FracturedChorus.UI
             }
 
             _dropCoverOverlays.Clear();
+            _bossNoteClusters?.EndPerfectPreview();
         }
 
         private Camera GetUiCameraForTimeline()
@@ -3412,7 +3501,7 @@ namespace FracturedChorus.UI
             ApplyScrollVisual(_totalScrollPx);
         }
 
-        public void RefreshBeat(int beatIndex)
+        public void RefreshBeat(int beatIndex, bool rebuildBossNotes = true)
         {
             if (_slots == null || _timeline == null)
             {
@@ -3423,6 +3512,32 @@ namespace FracturedChorus.UI
             {
                 PopulateSlot(_slots[beatIndex], beatIndex);
             }
+
+            if (rebuildBossNotes)
+            {
+                RebuildBossNoteClusters();
+            }
+        }
+
+        public void RefreshBeatsAndBossNotes(IEnumerable<int> beatIndices)
+        {
+            if (_slots == null || _timeline == null)
+            {
+                return;
+            }
+
+            if (beatIndices != null)
+            {
+                foreach (var beatIndex in beatIndices)
+                {
+                    if (beatIndex >= 0 && beatIndex < _slots.Length)
+                    {
+                        PopulateSlot(_slots[beatIndex], beatIndex);
+                    }
+                }
+            }
+
+            RebuildBossNoteClusters();
         }
 
         private void PopulateAllSlots()
@@ -3440,6 +3555,7 @@ namespace FracturedChorus.UI
 
             ReapplySlotRectsFromCache();
             RefreshLaneMarkers();
+            RebuildBossNoteClusters();
         }
 
         private void ReapplySlotRectsFromCache()
@@ -3486,6 +3602,7 @@ namespace FracturedChorus.UI
 
             slot.SetNoteVisualCatalog(NoteVisuals);
             slot.SetNoteBandNormalizedY(noteBandNormalizedY);
+            slot.SetSuppressActiveImpactGlyph(true);
             var telegraph = _timeline.GetImpactTelegraphAtBeat(globalBeat)
                 ?? _timeline.GetTelegraphAtBeat(globalBeat);
             var remainingHits = -1;
@@ -3545,6 +3662,55 @@ namespace FracturedChorus.UI
 
         public void SetAvDisplay(string text)
         {
+        }
+
+        private void OnValidate()
+        {
+            if (bossNoteNumberLayout != null)
+            {
+                if (bossNoteNumberLayout.variantNudges == null ||
+                    bossNoteNumberLayout.variantNudges.Length != 5)
+                {
+                    bossNoteNumberLayout.variantNudges = new Vector2[5];
+                }
+
+                if (bossNoteNumberLayout.perfectMarkScaleVsNumber >= 1.7f)
+                {
+                    bossNoteNumberLayout.perfectMarkScaleVsNumber = 1.35f;
+                }
+
+                if (bossNoteNumberLayout.perfectPreviewScale >= 1.3f)
+                {
+                    bossNoteNumberLayout.perfectPreviewScale = 1.1f;
+                }
+
+                if (bossNoteNumberLayout.perfectMarkMinPx >= 50f ||
+                    bossNoteNumberLayout.perfectMarkMinPx < 24f)
+                {
+                    bossNoteNumberLayout.perfectMarkMinPx = 36f;
+                }
+
+                if (bossNoteNumberLayout.perfectNeighborFill < 0.45f ||
+                    bossNoteNumberLayout.perfectNeighborFill > 0.9f)
+                {
+                    bossNoteNumberLayout.perfectNeighborFill = 0.72f;
+                }
+
+                bossNoteNumberLayout.perfectMarkScaleVsNumber =
+                    Mathf.Clamp(bossNoteNumberLayout.perfectMarkScaleVsNumber, 1f, 2f);
+                bossNoteNumberLayout.perfectPreviewScale =
+                    Mathf.Clamp(bossNoteNumberLayout.perfectPreviewScale, 1f, 1.2f);
+            }
+
+            if (SuppressBossNoteClusterRebuild ||
+                !Application.isPlaying ||
+                _timeline == null ||
+                !_slotsBuilt)
+            {
+                return;
+            }
+
+            RebuildBossNoteClusters();
         }
     }
 }
