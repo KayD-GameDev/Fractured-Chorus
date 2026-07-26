@@ -73,7 +73,6 @@ namespace FracturedChorus.Combat.Actions
                     ApplyDelayBossNote(ctx);
                     break;
                 case SkillEffectKind.Damage:
-                case SkillEffectKind.CycleShift:
                 default:
                     ApplyDamageTargets(ctx);
                     break;
@@ -92,6 +91,11 @@ namespace FracturedChorus.Combat.Actions
             if (ctx.IsEmpowered && ctx.Skill.empowerEffectValue > 0)
             {
                 amount += ctx.Skill.empowerEffectValue;
+            }
+
+            if (ctx.Grid != null)
+            {
+                amount *= ctx.Grid.GetHealPotencyModifier(ctx.Source.GridPosition);
             }
 
             var overheal = ctx.IsEmpowered && ctx.Skill.empowerOverhealToShield;
@@ -121,14 +125,11 @@ namespace FracturedChorus.Combat.Actions
                 ctx.Entry.EffectPayloadApplied = true;
             }
 
-            if (ctx.IsEmpowered && ctx.Skill.empowerGuardChargeOnPerfect)
-            {
-                Debug.Log($"[SkillAction] {ctx.Source.DisplayName} Bulwark GuardCharge stub armed");
-            }
-
             Debug.Log(
                 $"[SkillAction] {ctx.Source.DisplayName} gains Shield {amount}" +
-                (ctx.IsEmpowered ? " (empowered)" : string.Empty));
+                (ctx.IsEmpowered && ctx.Skill.empowerGuardChargeOnPerfect
+                    ? " (empowered · GuardCharge on OnBeat block in S)"
+                    : ctx.IsEmpowered ? " (empowered)" : string.Empty));
         }
 
         private void ApplyDelayBossNote(CombatContext ctx)
@@ -226,7 +227,9 @@ namespace FracturedChorus.Combat.Actions
                 return;
             }
 
-            var coverMod = ctx.Grid.GetCoverModifier(ctx.Source.GridPosition, target.GridPosition);
+            var coverMod = ctx.Grid != null
+                ? ctx.Grid.GetCoverModifier(ctx.Source.GridPosition, target.GridPosition)
+                : 1f;
             var attackerElement = ctx.Source.Stats.Element;
             if (ctx.IsEmpowered && ctx.Skill.empowerForceHarmony)
             {
@@ -270,7 +273,7 @@ namespace FracturedChorus.Combat.Actions
             Debug.Log($"[SkillAction] {ctx.Source.DisplayName} -> {target.DisplayName} | " +
                       $"rand={result.SkillRandomRoll:F2}×str={ctx.Source.Stats.Strength:F0} " +
                       $"raw={result.RawDamage:F1} en×={result.EnduranceFactor:F2} " +
-                      $"final={finalDamage:F1} crit={result.IsCritical} mult={result.CritDamageMultiplier:F2}" +
+                      $"pos×={coverMod:F2} final={finalDamage:F1} crit={result.IsCritical} mult={result.CritDamageMultiplier:F2}" +
                       (ctx.IsEmpowered ? " empowered" : string.Empty));
         }
     }

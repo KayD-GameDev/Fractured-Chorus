@@ -614,7 +614,6 @@ namespace FracturedChorus.UI
                 cardArtImage = existing;
             }
 
-            var createdBarStack = false;
             if (barStack == null)
             {
                 barStack = cardRt.Find("BarStack") as RectTransform;
@@ -624,7 +623,6 @@ namespace FracturedChorus.UI
                     barStack = go.GetComponent<RectTransform>();
                     barStack.SetParent(cardRt, false);
                     go.SetActive(false);
-                    createdBarStack = true;
                     PartyCardLayout.ApplyEmbeddedBarStackRect(barStack);
                 }
             }

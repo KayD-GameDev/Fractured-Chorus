@@ -284,30 +284,9 @@ Advantage ×1.5    Disadvantage ×0.5    Neutral ×1.0
 
 **Harmony chỉ áp dmg lên CORE** (Thân Rhythm). MiniDmg **bỏ qua** Harmony.
 
-### Ren — Cycle Shift (chỉ **Strike** basic)
+### Ren — Cycle Shift (**cut sprint này**)
 
-| | |
-|--|--|
-| **Base element** | Melody (Ren cố định identity) |
-| **Active element** | Hệ **đang dùng** cho mọi skill Ren — bắt đầu Melody |
-| **Trigger** | Mỗi lần **Strike** resolve xong (hết S2) → xoay **Melody → Rhythm → Harmony → Melody** |
-
-```
-Melody ──Strike──► Rhythm ──Strike──► Harmony ──Strike──► Melody …
-         Crosscut / Finale dùng Active element lúc bắt đầu S1 — không xoay
-```
-
-**Arc 1 vs The Pulse (Rhythm CORE):**
-
-| Active | vs CORE | Gợi ý |
-|--------|---------|-------|
-| Melody | ×0.5 | Mở trận / setup |
-| Rhythm | ×1.0 | 1 basic để lên neutral |
-| Harmony | ×1.5 | Dump Crosscut / Finale |
-
-UI: icon hệ nhỏ cạnh portrait Ren + pulse khi Strike xoay.
-
-Charlotte (Rhythm) vs CORE luôn ×1.0 · Coda (Harmony) vs CORE ×1.5 · không xoay.
+Design cũ (xoay Melody→Rhythm→Harmony mỗi Strike) **không ship**. Strike = Damage thuần; element Ren giữ identity Melody. Cycle Shift / Active element rotate = backlog design lại.
 
 ---
 
@@ -339,18 +318,30 @@ MiniDmg    = Raw × 1/(4×√EN_mini) × BeatTiming × 0.85 × CritMult   // kh�
 
 ## 9. Reactive Guard (Space)
 
-**Không còn skill Guard.** Space đặt **barrier 1 beat** (`BlockBarrierTracker`).
+**Không còn skill Guard.** Space đặt **barrier 1 beat** (`BlockBarrierTracker`) trên **impact note** chưa bị counter / chưa có barrier.
 
 | Timing vs impact `E` | Giảm dmg (`BlockTiming.GetDamageReduction`) |
 |----------------------|---------------------------------------------|
-| OnBeat (cùng ô) | **68%** |
-| Early (`E−1`) | **25%** |
-| Late (`E+1`) | **10%** |
+| OnBeat (cùng ô) | **68%** + perfect counter SFX |
+| Early (`E−1`) | **25%** (GuardCharge có thể nâng → OnBeat) |
+| Late (`E+1`) | **10%** (GuardCharge có thể nâng → OnBeat) |
 | OffBeat | **0%** |
 
 Chỉ giảm dmg khi: không counter trên `E`, có standing footprint chạm `E`, và chưa vượt cap block hiệu lực trong phase (xem §1 Block).
 
+**Bulwark GuardCharge:** empower Bulwark + OnBeat block trong cửa **S** → `GuardCharge +1`. Charge kế tiếp remap Early/Late → OnBeat (1 lần).
+
 **Không đỡ / không hợp lệ:** target theo `CombatTargetPicker` (BaseAv cao nhất trong standing / party).
+
+### Positional (column)
+
+| Cột | Dmg nhận | Dmg gây / Heal |
+|-----|----------|----------------|
+| Front C1 | ×0.85 | — |
+| Mid C2 | ×1.0 | ×1.0 |
+| Back C3 | — | ×1.15 |
+
+`MoveActionCommand` (UC-06) **cut** — formation chỉ qua Deploy drag/swap.
 
 ---
 

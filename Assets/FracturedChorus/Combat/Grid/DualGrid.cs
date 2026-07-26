@@ -141,11 +141,11 @@ namespace FracturedChorus.Combat.Grid
             return true;
         }
 
-        public float GetCoverModifier(GridPosition attackerPos, GridPosition targetPos)
-        {
-            // Stub: full cover logic deferred to later phase.
-            return 1f;
-        }
+        public float GetCoverModifier(GridPosition attackerPos, GridPosition targetPos) =>
+            PositionalModifiers.GetDamageModifier(attackerPos, targetPos);
+
+        public float GetHealPotencyModifier(GridPosition healerPos) =>
+            PositionalModifiers.GetHealPotencyModifier(healerPos);
 
         public Vector3 GetWorldPosition(GridPosition position, float cellWidth, float cellHeight, float sideGap)
         {

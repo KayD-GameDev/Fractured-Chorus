@@ -86,6 +86,13 @@ namespace FracturedChorus.Combat.Presentation
                 sfx.PlayPerfectCounter(targetDspTime);
             }
 
+            var tier = BossNoteTier.Red;
+            var telegraphs = timeline.GetImpactTelegraphsAtBeat(beatIndex);
+            if (telegraphs != null && telegraphs.Count > 0 && telegraphs[0] != null)
+            {
+                tier = telegraphs[0].NoteTier;
+            }
+
             CombatCounterResolver.CollectCounteringPlayerUnits(timeline, beatIndex, _playersScratch);
             var burstAssigned = false;
             foreach (var unit in _playersScratch)
@@ -98,6 +105,7 @@ namespace FracturedChorus.Combat.Presentation
 
                 var mode = _policy.DecideUnitBody(unit.UnitId, dspNow, useBurst);
                 PlayPlayerBody(unit, mode);
+                SpawnPerfectAboveUnit(unit, tier);
             }
 
             CombatCounterResolver.CollectCounteredEnemyUnits(timeline, beatIndex, _enemiesScratch);
@@ -107,18 +115,23 @@ namespace FracturedChorus.Combat.Presentation
                 PlayEnemyBody(unit, mode);
             }
 
-            var tier = BossNoteTier.Red;
-            var telegraphs = timeline.GetImpactTelegraphsAtBeat(beatIndex);
-            if (telegraphs != null && telegraphs.Count > 0 && telegraphs[0] != null)
-            {
-                tier = telegraphs[0].NoteTier;
-            }
-
-            timelineView?.SpawnNoteResolveChip(beatIndex, tier, 1);
             if (partyCount >= burstCount)
             {
                 timelineView?.ShowOrRefreshMultiBanner(partyCount);
             }
+        }
+
+        private static void SpawnPerfectAboveUnit(CombatUnit unit, BossNoteTier tier)
+        {
+            var view = UnitView.FindForUnit(unit);
+            if (view == null)
+            {
+                return;
+            }
+
+            CounterNoteResolveChipView.SpawnAboveWorld(
+                view.GetSkillPanelAboveAnchorWorld() + Vector3.up * 0.15f,
+                tier);
         }
 
         private static void PlayPlayerBody(CombatUnit unit, CounterBodyMode mode)

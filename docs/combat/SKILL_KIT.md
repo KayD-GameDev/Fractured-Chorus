@@ -63,11 +63,11 @@ Scan / Execute after activate         →  12 beat window: party dmg ×1.25
 
 ---
 
-## Ren — DPS · Cycle Shift · Physical
+## Ren — DPS · Physical
 
 | # | Tên | S1-S-S2 | Tier | Base | Empower |
 |---|-----|---------|------|------|---------|
-| 1 | **Strike** | 1-1-1 | 1 | Damage + Cycle Shift | — |
+| 1 | **Strike** | 1-1-1 | 1 | Damage | — |
 | 2 | **Crosscut** | 2-2-2 | 2 | Damage · 2 counter hit | ≥1: +1 hit @ beat note đầu trong S; empty S → ×1.15 dmg |
 | 3 | **Finale** | 2-3-3 | 3 | Damage burst · 3 counter hit | ≥2: Force Harmony hits |
 
@@ -93,7 +93,7 @@ Scan / Execute after activate         →  12 beat window: party dmg ×1.25
 |---|-----|---------|------|------|---------|
 | 1 | **Ram** | 1-1-1 | 1 | Damage | — |
 | 2 | **Anchor** | 2-2-2 | 2 | **DelayBossNote +2** — chỉ note **sau S**; note trong S không đẩy | ≥1: Delay **+3** · giữ tier |
-| 3 | **Bulwark** | 2-2-3 | 2 | **Shield 65** + counter dmg | ≥2: Shield **100** · GuardCharge stub |
+| 3 | **Bulwark** | 2-2-3 | 2 | **Shield 65** + counter dmg | ≥2: Shield **100** · OnBeat Space block trong S → **GuardCharge +1** (Early/Late→OnBeat 1 lần) |
 
 **Asset:** `tank_basic` · `tank_skill` · `tank_ult`
 
@@ -128,11 +128,19 @@ Scan / Execute after activate         →  12 beat window: party dmg ×1.25
 | Kind | Mô tả |
 |------|-------|
 | `Damage` | Counter + dmg vs enemy |
-| `Heal` | `effectValue + Ma×0.5` (+ empower) |
+| `Heal` | `effectValue + Ma×0.5` (+ empower) · back column ×1.15 |
 | `Shield` | `effectValue` / empower value HP buffer |
 | `ReduceS2` | `PendingReduceS2` → footprint S2 ngắn hơn 1 lần đặt kế |
 | `DelayBossNote` | Đẩy impact telegraph **sau cửa S** của skill +N beat (note trong S giữ nguyên) |
-| `CycleShift` | Flag Strike (runtime VFX còn mở) |
+| `CycleShift` | **Cut** — enum giữ serialize; không pretend runtime |
+
+### Positional (grid column)
+
+| Cột (display) | Effect |
+|---------------|--------|
+| **C1 front** | −15% dmg nhận (`GetCoverModifier`) |
+| **C2 mid** | 1.0 |
+| **C3 back** | +15% dmg gây · +15% heal potency |
 
 ---
 
@@ -179,15 +187,18 @@ Empty cả 2 S → +2 Prep. Có note @ 10–11 → counter, Prep không tăng. P
 - [ ] Enforce footprint overlap (đã có `SkillFootprintUtil.CanPlace` — verify anti-spam standing)
 - [ ] Counter degrade Tím/Xanh/Đỏ CORE
 - [ ] Note tag CORE / MICRO / EYE
-- [ ] Ren Cycle Shift animation
+- [x] CycleShift pretend cut (Strike = Damage)
+- [x] Positional front/back modifiers
+- [x] Bulwark GuardCharge → OnBeat Space block trong S + perfect SFX
 - [ ] Mini pressure Resonance / Dissonance
 - [ ] Pick ally target Mend / Encore (hiện auto first ally)
-- [ ] Bulwark GuardCharge thật (đang stub)
+- [ ] Ren Cycle Shift (design lại sau — không ship sprint này)
 
 ## Changelog
 
 | Ngày | Nội dung |
 |------|----------|
+| 2026-07-26 | Task 6: cut Move/CycleShift pretend · positional C1/C3 · GuardCharge + perfect SFX |
 | 2026-07-17 | Cover gauge Phase 4: empty S → party gauge · Planning COVER · 12 beat ×1.25 + W1′ |
 | 2026-07-16 | Sync DelayBossNote kind = after S (runtime SoT) |
 | 2026-07-16 | Restore `Resources/UI` sau merge (Prefabs rename làm vỡ Load); Encore gift Prep @ planning; docs handoff |

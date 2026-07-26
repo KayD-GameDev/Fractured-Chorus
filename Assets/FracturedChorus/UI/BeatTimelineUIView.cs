@@ -375,6 +375,14 @@ namespace FracturedChorus.UI
                 _timeline.OnTelegraphsDelayedBatch -= HandleTelegraphsDelayedBatch;
             }
 
+            if (_session != null)
+            {
+                _session.OnScanBeat -= HandleScanBeat;
+                _session.OnTelegraphsPlanned -= HandleTelegraphsPlanned;
+                _session.OnEncounterEnded -= HandleEncounterEnded;
+                _session.OnBlockResolved -= HandleBlockResolved;
+            }
+
             _timeline = timeline;
             _session = session;
             _onPlanningPause = onPlanningPause;
@@ -395,12 +403,10 @@ namespace FracturedChorus.UI
 
             if (_session != null)
             {
-                _session.OnScanBeat -= HandleScanBeat;
                 _session.OnScanBeat += HandleScanBeat;
-                _session.OnTelegraphsPlanned -= HandleTelegraphsPlanned;
                 _session.OnTelegraphsPlanned += HandleTelegraphsPlanned;
-                _session.OnEncounterEnded -= HandleEncounterEnded;
                 _session.OnEncounterEnded += HandleEncounterEnded;
+                _session.OnBlockResolved += HandleBlockResolved;
             }
 
             BuildLanes();
@@ -1678,6 +1684,24 @@ namespace FracturedChorus.UI
             PlayCounterAnimations(beatIndex);
         }
 
+        private void HandleBlockResolved(int beatIndex, BlockTiming timing)
+        {
+            if (timing != BlockTiming.OnBeat)
+            {
+                return;
+            }
+
+            EnsureCombatSfx();
+            if (combatSfxController == null)
+            {
+                Debug.LogWarning($"[Block] Perfect SFX skipped — no CombatSfxController @ beat {beatIndex}");
+                return;
+            }
+
+            combatSfxController.PlayPerfectBlock(-1d);
+            Debug.Log($"[Block] Perfect SFX @ beat {beatIndex}");
+        }
+
         private void PlayCounterAnimations(int beatIndex)
         {
             if (_timeline == null)
@@ -2578,6 +2602,7 @@ namespace FracturedChorus.UI
             _blockBarrierLayer.anchorMax = Vector2.one;
             _blockBarrierLayer.offsetMin = Vector2.zero;
             _blockBarrierLayer.offsetMax = Vector2.zero;
+            _blockBarrierLayer.SetAsLastSibling();
         }
 
         private void RefreshBlockBarriers()
@@ -2587,6 +2612,8 @@ namespace FracturedChorus.UI
             {
                 return;
             }
+
+            _blockBarrierLayer.SetAsLastSibling();
 
             foreach (var img in _blockBarrierViews)
             {
@@ -2612,11 +2639,11 @@ namespace FracturedChorus.UI
                 rect.anchorMin = new Vector2(0f, 0f);
                 rect.anchorMax = new Vector2(0f, 1f);
                 rect.pivot = new Vector2(0.5f, 0.5f);
-                rect.sizeDelta = new Vector2(8f, height * 0.85f);
+                rect.sizeDelta = new Vector2(14f, height * 0.95f);
                 rect.anchoredPosition = new Vector2(ContentXForBeat(barrier.BeatIndex), height * 0.5f);
 
                 var img = go.AddComponent<Image>();
-                img.color = new Color(0.3f, 0.75f, 1f, 0.75f);
+                img.color = new Color(0.15f, 1f, 0.35f, 0.95f);
                 img.raycastTarget = false;
                 _blockBarrierViews.Add(img);
             }
@@ -3244,6 +3271,7 @@ namespace FracturedChorus.UI
                 _session.OnScanBeat -= HandleScanBeat;
                 _session.OnTelegraphsPlanned -= HandleTelegraphsPlanned;
                 _session.OnEncounterEnded -= HandleEncounterEnded;
+                _session.OnBlockResolved -= HandleBlockResolved;
             }
         }
 

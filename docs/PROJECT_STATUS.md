@@ -44,7 +44,8 @@
 | Boss 3-target / note degrade / Cycle Shift / mini pressure | 🔲 P0 design |
 | **Cover gauge** (empty S → party gauge · Planning COVER · 12 beat ×1.25) | ✅ |
 | Empty-beat catalog (**#4**) | ✅ Cover gauge (không dedicated buff skills) |
-| Ally pick Mend / Encore · GuardCharge thật · Cycle Shift VFX | 🔲 backlog |
+| Bulwark GuardCharge + positional front/back · CycleShift pretend cut | ✅ Task 6 |
+| Ally pick Mend / Encore · Cycle Shift redesign | 🔲 backlog |
 | Run map → Combat (boss node) | 🟡 MVP |
 
 **Combat flow:** [`combat/COMBAT_MECHANICS.md`](combat/COMBAT_MECHANICS.md) §1 · **Kit:** [`combat/SKILL_KIT.md`](combat/SKILL_KIT.md)
@@ -72,5 +73,6 @@
 
 1. **Playtest Cover:** farm 8 empty S → COVER → 12 beat ×1.25; Prep/intro-pause không regress.
 2. P0 boss: CORE / MICRO / EYE tags · note degrade.
-3. Ally pick Mend/Encore · Bulwark GuardCharge · Ren Cycle Shift VFX.
-4. **Thiên:** Story P1-1.
+3. Ally pick Mend/Encore · Ren Cycle Shift redesign (sau).
+4. Task 7 prefabs Unit + PartyCard (P2).
+5. **Thiên:** Story P1-1.

@@ -323,7 +323,12 @@ namespace FracturedChorus.Combat.Timeline
                 return false;
             }
 
-            return SkillFootprintUtil.CanPlace(_agenda, unit, skill, beatIndex, PlanningHorizonBeat);
+            if (!SkillFootprintUtil.CanPlace(_agenda, unit, skill, beatIndex, PlanningHorizonBeat))
+            {
+                return false;
+            }
+
+            return !CombatCounterResolver.ActiveOverlapsFullyCounteredNote(this, skill, beatIndex, unit);
         }
 
         public void ClearPlayerAgenda()
@@ -353,6 +358,24 @@ namespace FracturedChorus.Combat.Timeline
             for (var i = startIndex; i < BeatCount; i++)
             {
                 if (_agenda.All(a => a.BeatIndex != i))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        public int FindFirstAssignableBeat(CombatUnit unit, SkillDefinitionSO skill, int startIndex = 0)
+        {
+            if (unit == null || skill == null)
+            {
+                return -1;
+            }
+
+            for (var i = startIndex; i < BeatCount; i++)
+            {
+                if (CanAssignAction(unit, skill, i))
                 {
                     return i;
                 }

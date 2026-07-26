@@ -24,11 +24,12 @@ namespace FracturedChorus.Combat.Timeline
         }
     }
 
-    /// <summary>
-    /// S1 · S · S2 footprint helpers — placement beat = start of Using (S) phase.
-    /// </summary>
     public static class SkillFootprintUtil
     {
+        private static readonly List<int> ScratchNew = new();
+        private static readonly List<int> ScratchOccupied = new();
+        private static readonly List<int> ScratchEntry = new();
+
         public static int GetStandingBefore(SkillDefinitionSO skill) =>
             skill != null ? Mathf.Max(0, skill.standingBeatsBefore) : 0;
 
@@ -69,7 +70,6 @@ namespace FracturedChorus.Combat.Timeline
             return s2;
         }
 
-        /// <summary>Earliest placement beat (start of S phase) — needs room for S1 standing beats before.</summary>
         public static int GetMinimumPlacementBeat(SkillDefinitionSO skill, int planningHorizonBeat = 0)
         {
             var s1 = GetStandingBefore(skill);
@@ -94,7 +94,24 @@ namespace FracturedChorus.Combat.Timeline
             return false;
         }
 
-        /// <summary>Every beat index occupied by this skill when placed at placementBeat.</summary>
+        public static bool FootprintInBounds(SkillDefinitionSO skill, int placementBeat, CombatUnit unit = null)
+        {
+            if (skill == null)
+            {
+                return false;
+            }
+
+            foreach (var info in EnumerateFootprintBeats(skill, placementBeat, unit))
+            {
+                if (info.BeatIndex < 0 || info.BeatIndex >= TimelineConstants.TotalBeats)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         public static void CollectOccupiedBeats(SkillDefinitionSO skill, int placementBeat, List<int> results) =>
             CollectOccupiedBeats(skill, placementBeat, results, null);
 
@@ -159,7 +176,6 @@ namespace FracturedChorus.Combat.Timeline
             }
         }
 
-        /// <summary>All beats already occupied by agenda entries for the same unit.</summary>
         public static void CollectUnitOccupiedBeats(IReadOnlyList<AgendaEntry> agenda, CombatUnit unit, List<int> results)
         {
             results.Clear();
@@ -175,21 +191,18 @@ namespace FracturedChorus.Combat.Timeline
                     continue;
                 }
 
-                _scratchBeats.Clear();
-                foreach (var info in EnumerateFootprintBeats(entry.Skill, entry.BeatIndex, null, entry))
+                ScratchEntry.Clear();
+                foreach (var info in EnumerateFootprintBeats(entry.Skill, entry.BeatIndex, entry.Unit, entry))
                 {
                     if (info.BeatIndex >= 0 && info.BeatIndex < TimelineConstants.TotalBeats)
                     {
-                        _scratchBeats.Add(info.BeatIndex);
+                        ScratchEntry.Add(info.BeatIndex);
                     }
                 }
 
-                results.AddRange(_scratchBeats);
+                results.AddRange(ScratchEntry);
             }
         }
-
-        private static readonly List<int> _scratchBeats = new();
-        private static readonly List<int> _scratchNew = new();
 
         public static bool CanPlace(
             IReadOnlyList<AgendaEntry> agenda,
@@ -213,16 +226,21 @@ namespace FracturedChorus.Combat.Timeline
                 return false;
             }
 
-            CollectOccupiedBeats(skill, placementBeat, _scratchNew, unit);
-            if (_scratchNew.Count == 0)
+            if (!FootprintInBounds(skill, placementBeat, unit))
             {
                 return false;
             }
 
-            CollectUnitOccupiedBeats(agenda, unit, _scratchBeats);
-            foreach (var beat in _scratchNew)
+            CollectOccupiedBeats(skill, placementBeat, ScratchNew, unit);
+            if (ScratchNew.Count == 0)
             {
-                if (_scratchBeats.Contains(beat))
+                return false;
+            }
+
+            CollectUnitOccupiedBeats(agenda, unit, ScratchOccupied);
+            foreach (var beat in ScratchNew)
+            {
+                if (ScratchOccupied.Contains(beat))
                 {
                     return false;
                 }
@@ -231,7 +249,6 @@ namespace FracturedChorus.Combat.Timeline
             return true;
         }
 
-        /// <summary>Impact beat for enemy telegraph (start of Using / S phase).</summary>
         public static int GetImpactBeat(SkillDefinitionSO skill, int telegraphBeatIndex, bool isWindup)
         {
             if (!isWindup)
