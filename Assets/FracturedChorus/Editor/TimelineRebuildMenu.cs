@@ -175,6 +175,44 @@ namespace FracturedChorus.Editor
             CombatUiHierarchy.UpgradePartyCardTemplatesInScene();
         }
 
+        [MenuItem("Fractured Chorus/Restore Clear Card Templates (Hierarchy)")]
+        public static void RestoreClearCardTemplates()
+        {
+            CombatUiHierarchy.RestoreClearCardTemplatesInScene();
+            ElementBadgeIconSetup.ApplyToStatBlocks();
+        }
+
+        /// <summary>BatchMode: restore CardTemplate clear-card Hierarchy then save active scene.</summary>
+        public static void BatchRestoreClearCardTemplatesAndSave()
+        {
+            var scenePath = "Assets/FracturedChorus/Scenes/CombatPrototype.unity";
+            var scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+            CombatUiHierarchy.RestoreClearCardTemplatesInScene();
+            ElementBadgeIconSetup.ApplyToStatBlocks();
+            EditorSceneManager.SaveScene(scene);
+            Debug.Log($"[Fractured Chorus] Batch restored clear-card templates and saved {scenePath}.");
+        }
+
+        [MenuItem("Fractured Chorus/Ensure Embedded Party Card Slots (Hierarchy)")]
+        public static void EnsureEmbeddedPartyCardSlots()
+        {
+            var cards = UnityEngine.Object.FindObjectsByType<PartyMemberCardView>(FindObjectsInactive.Include);
+            foreach (var card in cards)
+            {
+                CombatUiHierarchy.EnsureEmbeddedCardHierarchy(card.transform, forceRestore: true);
+                card.WireReferences();
+                EditorUtility.SetDirty(card);
+            }
+
+            var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+            if (scene.IsValid() && scene.isLoaded)
+            {
+                EditorSceneManager.MarkSceneDirty(scene);
+            }
+
+            Debug.Log($"[Fractured Chorus] Ensured Embedded CardArt/BarStack on {cards.Length} card(s). Save scene (Ctrl+S).");
+        }
+
         [MenuItem("Fractured Chorus/Fix Party Status Bar (Move to CombatCanvas)")]
         public static void FixPartyStatusBarPlacement()
         {

@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: UnitPreset_Grunt
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.UnitPresetSO
   unitId: grunt
-  displayName: Grunt
+  displayName: AstraMic
   role: 3
   statBlock: {fileID: 11400000, guid: 24edfe883f004844297d30f4e2b77ec5, type: 2}
   stats:
-    Element: 1
+    Element: 0
+    StrengthType: 0
     Strength: 100
-    Magic: 100
     Endurance: 10
     HeartBeat: 160
     BaseLuck: 15
@@ -28,4 +28,9 @@ MonoBehaviour:
     BaseSpeed: 12
   skills:
   - {fileID: 11400000, guid: 3447135c31f31bf4b86503cedb3ca79c, type: 2}
-  placeholderColor: {r: 0.85, g: 0.25, b: 0.2, a: 1}
+  placeholderColor: {r: 0.28627452, g: 0.54901963, b: 0.7568628, a: 1}
+  battleSprite: {fileID: 0}
+  combatCardSprite: {fileID: 8768233953303040916, guid: 2acc6e7675b4d364fb917fb7b8ef80c7, type: 3}
+  barStackAnchoredY: -1
+  healthSlotTop: 3.25
+  telegraphAttacksPerPhase: 1

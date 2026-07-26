@@ -10,15 +10,20 @@ namespace FracturedChorus.UI
     public static class RectSizeUtil
     {
         /// <summary>
-        /// Object đã được tác giả chỉnh kích thước trong scene chưa?
-        /// True khi sizeDelta cả 2 chiều &gt; 0, hoặc object stretch nhưng rect hiển thị &gt; 0.
-        /// Dùng để runtime KHÔNG ghi đè hình học đã set trong Hierarchy.
+        /// Object đã được tác giả chỉnh trong Hierarchy chưa?
+        /// Stretch (anchorMin ≠ anchorMax) luôn coi là đã author — kể cả sizeDelta 0×0 khi inactive.
         /// </summary>
         public static bool IsAuthored(RectTransform rect)
         {
             if (rect == null)
             {
                 return false;
+            }
+
+            // Stretch / split anchors = layout từ scene, không phải point-default chưa chỉnh.
+            if (rect.anchorMin != rect.anchorMax)
+            {
+                return true;
             }
 
             var size = rect.sizeDelta;

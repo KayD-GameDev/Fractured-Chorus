@@ -133,6 +133,14 @@ namespace FracturedChorus.Editor
 
         public static void UpgradePartyCardTemplatesInScene()
         {
+            RestoreClearCardTemplatesInScene();
+        }
+
+        /// <summary>
+        /// Khôi phục CardTemplate clear-card (CardArt + BarStack + badge) sau khi scene bị mất Hierarchy.
+        /// </summary>
+        public static void RestoreClearCardTemplatesInScene()
+        {
             var cards = Object.FindObjectsByType<PartyMemberCardView>(FindObjectsInactive.Include);
             if (cards.Length == 0)
             {
@@ -142,7 +150,7 @@ namespace FracturedChorus.Editor
 
             foreach (var card in cards)
             {
-                UpgradePartyCardTemplate(card);
+                UpgradePartyCardTemplate(card, forceRestoreClearCard: true);
             }
 
             var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
@@ -151,21 +159,108 @@ namespace FracturedChorus.Editor
                 EditorSceneManager.MarkSceneDirty(scene);
             }
 
-            Debug.Log($"[Fractured Chorus] Upgraded {cards.Length} party card template(s). Save scene (Ctrl+S).");
+            Debug.Log(
+                $"[Fractured Chorus] Restored clear-card Hierarchy on {cards.Length} CardTemplate(s). " +
+                "Save scene (Ctrl+S).");
         }
 
-        private static void UpgradePartyCardTemplate(PartyMemberCardView card)
+        private static void UpgradePartyCardTemplate(PartyMemberCardView card, bool forceRestoreClearCard = false)
         {
+            if (card == null)
+            {
+                return;
+            }
+
+            Undo.RegisterFullObjectHierarchyUndo(card.gameObject, "Restore Clear Card Template");
+
             var roleBadge = card.transform.Find("RoleBadge");
             if (roleBadge != null)
             {
                 Undo.DestroyObjectImmediate(roleBadge.gameObject);
             }
 
-            var badgeTransform = card.transform.Find("ElementBadge");
-            if (badgeTransform == null)
+            // Clear-card: không dùng Border/Avatar — chỉ CardArt.
+            DisableLegacyChrome(card.transform.Find("Border")?.gameObject);
+            DisableLegacyChrome(card.transform.Find("Avatar")?.gameObject);
+
+            EnsureElementBadge(card.transform, IsEnemyCardTemplate(card));
+            UpgradeHealthBar(card.transform);
+            EnsureEmbeddedCardHierarchy(card.transform, forceRestoreClearCard);
+
+            ApplyClearCardRootSize(card.transform as RectTransform);
+            ReparentHealthAndPrepIntoBarStack(card.transform);
+            EnsurePrepPipsSegmentStrip(card.transform);
+            RestoreCardSiblingOrder(card.transform);
+            WireCardViewFields(card);
+
+            card.WireReferences();
+            EditorUtility.SetDirty(card);
+        }
+
+        private static bool IsEnemyCardTemplate(PartyMemberCardView card)
+        {
+            return card != null && card.GetComponentInParent<EnemyStatusBarUIView>(true) != null;
+        }
+
+        private static void DisableLegacyChrome(GameObject go)
+        {
+            if (go == null)
             {
                 return;
+            }
+
+            Undo.RecordObject(go, "Disable legacy card chrome");
+            go.SetActive(false);
+        }
+
+        private static void ApplyClearCardRootSize(RectTransform cardRt)
+        {
+            if (cardRt == null)
+            {
+                return;
+            }
+
+            Undo.RecordObject(cardRt, "Clear card size");
+            cardRt.sizeDelta = new Vector2(PartyCardLayout.CardWidth, PartyCardLayout.CardHeight);
+
+            var layout = cardRt.GetComponent<LayoutElement>();
+            if (layout == null)
+            {
+                layout = Undo.AddComponent<LayoutElement>(cardRt.gameObject);
+            }
+
+            Undo.RecordObject(layout, "Clear card LayoutElement");
+            layout.preferredWidth = PartyCardLayout.CardWidth;
+            layout.preferredHeight = PartyCardLayout.CardHeight;
+        }
+
+        private static void EnsureElementBadge(Transform cardRoot, bool enemySide)
+        {
+            var badgeTransform = cardRoot.Find("ElementBadge") as RectTransform;
+            if (badgeTransform == null)
+            {
+                var go = new GameObject("ElementBadge", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                Undo.RegisterCreatedObjectUndo(go, "Create ElementBadge");
+                badgeTransform = go.GetComponent<RectTransform>();
+                badgeTransform.SetParent(cardRoot, false);
+            }
+
+            Undo.RecordObject(badgeTransform, "ElementBadge rect");
+            badgeTransform.sizeDelta = new Vector2(PartyCardLayout.EmbeddedBadgeSize, PartyCardLayout.EmbeddedBadgeSize);
+            badgeTransform.pivot = new Vector2(0.5f, 0.5f);
+            if (enemySide)
+            {
+                // Góc trên-phải (mép ngoài bar quái).
+                badgeTransform.anchorMin = new Vector2(1f, 1f);
+                badgeTransform.anchorMax = new Vector2(1f, 1f);
+                badgeTransform.anchoredPosition = new Vector2(-18f, -18f);
+            }
+            else
+            {
+                // Góc trên-trái (mép ngoài bar party) — khớp author gần nhất.
+                badgeTransform.anchorMin = new Vector2(0f, 1f);
+                badgeTransform.anchorMax = new Vector2(0f, 1f);
+                badgeTransform.anchoredPosition = new Vector2(25f, -25f);
             }
 
             var ring = badgeTransform.GetComponent<Image>();
@@ -174,14 +269,18 @@ namespace FracturedChorus.Editor
                 ring = Undo.AddComponent<Image>(badgeTransform.gameObject);
             }
 
+            Undo.RecordObject(ring, "ElementBadge circle ring");
             ring.sprite = UiCircleSpriteUtil.Circle;
+            ring.type = Image.Type.Simple;
+            ring.preserveAspect = true;
+            ring.color = HarmonyElementPalette.GetBadgeRingColor(Combat.Damage.HarmonyElement.Melody);
             ring.raycastTarget = false;
 
             var iconTransform = badgeTransform.Find("ElementIcon");
             Image iconImage;
             if (iconTransform == null)
             {
-                var iconGo = new GameObject("ElementIcon", typeof(RectTransform));
+                var iconGo = new GameObject("ElementIcon", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
                 Undo.RegisterCreatedObjectUndo(iconGo, "Create ElementIcon");
                 iconGo.transform.SetParent(badgeTransform, false);
                 var iconRect = iconGo.GetComponent<RectTransform>();
@@ -189,7 +288,7 @@ namespace FracturedChorus.Editor
                 iconRect.anchorMax = Vector2.one;
                 iconRect.offsetMin = new Vector2(4f, 4f);
                 iconRect.offsetMax = new Vector2(-4f, -4f);
-                iconImage = Undo.AddComponent<Image>(iconGo);
+                iconImage = iconGo.GetComponent<Image>();
             }
             else
             {
@@ -200,20 +299,293 @@ namespace FracturedChorus.Editor
                 }
             }
 
+            Undo.RecordObject(iconImage, "ElementIcon circle");
             iconImage.sprite = UiCircleSpriteUtil.Circle;
+            iconImage.type = Image.Type.Simple;
             iconImage.preserveAspect = true;
             iconImage.raycastTarget = false;
+        }
 
-            UpgradeHealthBar(card.transform);
-
-            var badgeRect = badgeTransform as RectTransform;
-            if (badgeRect != null)
+        /// <summary>Hierarchy: PrepPips = 3 đoạn chữ nhật (Pip_0..2), không còn pip tròn.</summary>
+        private static void EnsurePrepPipsSegmentStrip(Transform cardRoot)
+        {
+            if (cardRoot == null)
             {
-                PartyCardLayout.ApplyElementBadgeRect(badgeRect);
+                return;
             }
 
-            card.WireReferences();
-            EditorUtility.SetDirty(card);
+            var prep = cardRoot.Find("BarStack/GaugeSlot/PrepPips") as RectTransform
+                       ?? cardRoot.Find("PrepPips") as RectTransform;
+            if (prep == null)
+            {
+                var gauge = cardRoot.Find("BarStack/GaugeSlot") as RectTransform ?? cardRoot as RectTransform;
+                var go = new GameObject("PrepPips", typeof(RectTransform));
+                Undo.RegisterCreatedObjectUndo(go, "Create PrepPips");
+                prep = go.GetComponent<RectTransform>();
+                prep.SetParent(gauge, false);
+                prep.anchorMin = Vector2.zero;
+                prep.anchorMax = Vector2.one;
+                prep.offsetMin = Vector2.zero;
+                prep.offsetMax = Vector2.zero;
+            }
+
+            if (prep.GetComponent<PrepPipsView>() == null)
+            {
+                Undo.AddComponent<PrepPipsView>(prep.gameObject);
+            }
+
+            const int cap = 3;
+            const float gap = 1.5f;
+            for (var i = 0; i < cap; i++)
+            {
+                var pip = prep.Find($"Pip_{i}") as RectTransform;
+                if (pip == null)
+                {
+                    var pipGo = new GameObject($"Pip_{i}", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                    Undo.RegisterCreatedObjectUndo(pipGo, "Create Prep Pip");
+                    pip = pipGo.GetComponent<RectTransform>();
+                    pip.SetParent(prep, false);
+                }
+
+                Undo.RecordObject(pip, "Prep pip segment rect");
+                var unit = 1f / cap;
+                pip.anchorMin = new Vector2(i * unit, 0f);
+                pip.anchorMax = new Vector2((i + 1) * unit, 1f);
+                pip.pivot = new Vector2(0.5f, 0.5f);
+                pip.anchoredPosition = Vector2.zero;
+                pip.sizeDelta = Vector2.zero;
+                pip.offsetMin = new Vector2(i > 0 ? gap * 0.5f : 0f, 0f);
+                pip.offsetMax = new Vector2(i < cap - 1 ? -gap * 0.5f : 0f, 0f);
+                pip.localScale = Vector3.one;
+                pip.localRotation = Quaternion.identity;
+
+                var img = pip.GetComponent<Image>();
+                if (img == null)
+                {
+                    img = Undo.AddComponent<Image>(pip.gameObject);
+                }
+
+                Undo.RecordObject(img, "Prep pip rect sprite");
+                img.sprite = UiCircleSpriteUtil.White;
+                img.type = Image.Type.Simple;
+                img.preserveAspect = false;
+                img.raycastTarget = false;
+                img.color = new Color(0.12f, 0.14f, 0.18f, 0.75f);
+            }
+
+            // Xóa pip thừa Pip_3+
+            for (var i = prep.childCount - 1; i >= 0; i--)
+            {
+                var child = prep.GetChild(i);
+                if (child == null || !child.name.StartsWith("Pip_"))
+                {
+                    continue;
+                }
+
+                if (!int.TryParse(child.name.Substring(4), out var index) || index < 0 || index >= cap)
+                {
+                    Undo.DestroyObjectImmediate(child.gameObject);
+                }
+            }
+
+            EditorUtility.SetDirty(prep.gameObject);
+        }
+
+        /// <summary>
+        /// Ensures CardArt + BarStack/HealthSlot/GaugeSlot exist on CardTemplate for EmbeddedBars skin.
+        /// </summary>
+        public static void EnsureEmbeddedCardHierarchy(Transform cardRoot)
+        {
+            EnsureEmbeddedCardHierarchy(cardRoot, forceRestore: false);
+        }
+
+        public static void EnsureEmbeddedCardHierarchy(Transform cardRoot, bool forceRestore)
+        {
+            if (cardRoot == null)
+            {
+                return;
+            }
+
+            var isEnemy = cardRoot.GetComponentInParent<EnemyStatusBarUIView>(true) != null;
+
+            var cardArt = cardRoot.Find("CardArt");
+            if (cardArt == null)
+            {
+                var go = new GameObject("CardArt", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                Undo.RegisterCreatedObjectUndo(go, "Create CardArt");
+                var rt = go.GetComponent<RectTransform>();
+                rt.SetParent(cardRoot, false);
+                rt.anchorMin = Vector2.zero;
+                rt.anchorMax = Vector2.one;
+                rt.offsetMin = Vector2.zero;
+                rt.offsetMax = Vector2.zero;
+                var image = go.GetComponent<Image>();
+                image.raycastTarget = false;
+                image.preserveAspect = false;
+                go.SetActive(true);
+                cardArt = go.transform;
+            }
+            else if (forceRestore)
+            {
+                var rt = cardArt as RectTransform;
+                Undo.RecordObject(rt, "CardArt stretch");
+                rt.anchorMin = Vector2.zero;
+                rt.anchorMax = Vector2.one;
+                rt.offsetMin = Vector2.zero;
+                rt.offsetMax = Vector2.zero;
+                cardArt.gameObject.SetActive(true);
+            }
+
+            var barStack = cardRoot.Find("BarStack") as RectTransform;
+            var createdBarStack = false;
+            if (barStack == null)
+            {
+                var go = new GameObject("BarStack", typeof(RectTransform));
+                Undo.RegisterCreatedObjectUndo(go, "Create BarStack");
+                barStack = go.GetComponent<RectTransform>();
+                barStack.SetParent(cardRoot, false);
+                createdBarStack = true;
+            }
+
+            if (createdBarStack || forceRestore)
+            {
+                ApplyAuthoredBarStackRect(barStack, isEnemy);
+                barStack.gameObject.SetActive(true);
+            }
+
+            var healthSlot = barStack.Find("HealthSlot") as RectTransform;
+            var createdHealth = false;
+            if (healthSlot == null)
+            {
+                var go = new GameObject("HealthSlot", typeof(RectTransform));
+                Undo.RegisterCreatedObjectUndo(go, "Create HealthSlot");
+                healthSlot = go.GetComponent<RectTransform>();
+                healthSlot.SetParent(barStack, false);
+                createdHealth = true;
+            }
+
+            var gaugeSlot = barStack.Find("GaugeSlot") as RectTransform;
+            var createdGauge = false;
+            if (gaugeSlot == null)
+            {
+                var go = new GameObject("GaugeSlot", typeof(RectTransform));
+                Undo.RegisterCreatedObjectUndo(go, "Create GaugeSlot");
+                gaugeSlot = go.GetComponent<RectTransform>();
+                gaugeSlot.SetParent(barStack, false);
+                createdGauge = true;
+            }
+
+            if (createdHealth || createdGauge || forceRestore)
+            {
+                PartyCardLayout.ApplyEmbeddedHealthSlotRect(healthSlot, gaugeSlot);
+            }
+        }
+
+        /// <summary>BarStack geometry từ author gần nhất trước khi scene bị restore.</summary>
+        private static void ApplyAuthoredBarStackRect(RectTransform barStack, bool enemySide)
+        {
+            if (barStack == null)
+            {
+                return;
+            }
+
+            Undo.RecordObject(barStack, "BarStack authored rect");
+            barStack.anchorMin = new Vector2(0f, 0f);
+            barStack.anchorMax = new Vector2(0f, 0f);
+            barStack.pivot = new Vector2(0.5f, 0.5f);
+            barStack.localScale = Vector3.one;
+
+            if (enemySide)
+            {
+                barStack.anchoredPosition = new Vector2(73.41f, 28.1f);
+                barStack.sizeDelta = new Vector2(124.53f, 32.98f);
+                barStack.localRotation = Quaternion.Euler(0f, 0f, -10.141f);
+            }
+            else
+            {
+                barStack.anchoredPosition = new Vector2(75.51f, 41.75f);
+                barStack.sizeDelta = new Vector2(124.59f, 37.09f);
+                barStack.localRotation = Quaternion.Euler(0f, 0f, -12.07f);
+            }
+        }
+
+        private static void ReparentHealthAndPrepIntoBarStack(Transform cardRoot)
+        {
+            var healthSlot = cardRoot.Find("BarStack/HealthSlot") as RectTransform;
+            var gaugeSlot = cardRoot.Find("BarStack/GaugeSlot") as RectTransform;
+
+            var healthBg = cardRoot.Find("HealthBarBg") as RectTransform
+                           ?? cardRoot.Find("BarStack/HealthSlot/HealthBarBg") as RectTransform;
+            if (healthBg != null && healthSlot != null && healthBg.parent != healthSlot)
+            {
+                Undo.SetTransformParent(healthBg, healthSlot, "HealthBar into HealthSlot");
+                StretchFull(healthBg);
+            }
+
+            var prep = cardRoot.Find("PrepPips") as RectTransform
+                       ?? cardRoot.Find("BarStack/GaugeSlot/PrepPips") as RectTransform;
+            if (prep != null && gaugeSlot != null && prep.parent != gaugeSlot)
+            {
+                Undo.SetTransformParent(prep, gaugeSlot, "PrepPips into GaugeSlot");
+                StretchFull(prep);
+            }
+        }
+
+        private static void RestoreCardSiblingOrder(Transform cardRoot)
+        {
+            // BarStack trên CardArt trong Hierarchy; ElementBadge cuối để không bị art che.
+            cardRoot.Find("BarStack")?.SetAsFirstSibling();
+            var cardArt = cardRoot.Find("CardArt");
+            if (cardArt != null)
+            {
+                cardArt.SetSiblingIndex(1);
+            }
+
+            cardRoot.Find("ElementBadge")?.SetAsLastSibling();
+        }
+
+        private static void WireCardViewFields(PartyMemberCardView card)
+        {
+            var so = new SerializedObject(card);
+            SetObjectRef(so, "cardArtImage", card.transform.Find("CardArt")?.GetComponent<Image>());
+            SetObjectRef(so, "barStack", card.transform.Find("BarStack") as RectTransform);
+            SetObjectRef(so, "healthSlot", card.transform.Find("BarStack/HealthSlot") as RectTransform);
+            SetObjectRef(so, "gaugeSlot", card.transform.Find("BarStack/GaugeSlot") as RectTransform);
+            SetObjectRef(so, "elementBadgeRing", card.transform.Find("ElementBadge")?.GetComponent<Image>());
+            SetObjectRef(so, "elementIcon", card.transform.Find("ElementBadge/ElementIcon")?.GetComponent<Image>());
+            SetObjectRef(so, "healthBarBg",
+                card.transform.Find("BarStack/HealthSlot/HealthBarBg")?.GetComponent<Image>()
+                ?? card.transform.Find("HealthBarBg")?.GetComponent<Image>());
+            var fill = card.transform.Find("BarStack/HealthSlot/HealthBarBg/HealthBarFill")?.GetComponent<Image>()
+                       ?? card.transform.Find("HealthBarBg/HealthBarFill")?.GetComponent<Image>();
+            SetObjectRef(so, "healthBarFill", fill);
+            SetObjectRef(so, "healthBarFillRect", fill != null ? fill.rectTransform : null);
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static void SetObjectRef(SerializedObject so, string field, Object value)
+        {
+            var prop = so.FindProperty(field);
+            if (prop != null)
+            {
+                prop.objectReferenceValue = value;
+            }
+        }
+
+        private static void StretchFull(RectTransform rt)
+        {
+            if (rt == null)
+            {
+                return;
+            }
+
+            Undo.RecordObject(rt, "Stretch full");
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = Vector2.zero;
+            rt.localScale = Vector3.one;
+            rt.localRotation = Quaternion.identity;
         }
 
         private static void UpgradeHealthBar(Transform cardRoot)
@@ -418,7 +790,7 @@ namespace FracturedChorus.Editor
             var template = partyBar.transform.Find("CardTemplate")?.GetComponent<PartyMemberCardView>();
             if (template != null)
             {
-                UpgradePartyCardTemplate(template);
+                UpgradePartyCardTemplate(template, forceRestoreClearCard: true);
                 template.gameObject.SetActive(false);
             }
 
@@ -464,7 +836,7 @@ namespace FracturedChorus.Editor
             var template = enemyBar.transform.Find("CardTemplate")?.GetComponent<PartyMemberCardView>();
             if (template != null)
             {
-                UpgradePartyCardTemplate(template);
+                UpgradePartyCardTemplate(template, forceRestoreClearCard: true);
                 template.gameObject.SetActive(false);
             }
 

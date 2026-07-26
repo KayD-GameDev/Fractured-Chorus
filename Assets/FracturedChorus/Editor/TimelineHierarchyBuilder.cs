@@ -141,21 +141,13 @@ namespace FracturedChorus.Editor
             cardGo.AddComponent<LayoutElement>().preferredWidth = PartyCardWidth;
             cardGo.GetComponent<LayoutElement>().preferredHeight = PartyCardHeight;
 
-            var borderGo = CreateUiObject("Border", cardGo.transform);
-            StretchFull(borderGo.GetComponent<RectTransform>());
-            var borderImage = borderGo.AddComponent<Image>();
-            borderImage.color = HarmonyElementPalette.GetBorderColor(Combat.Damage.HarmonyElement.Melody);
-            borderImage.raycastTarget = false;
-
-            var avatarGo = CreateUiObject("Avatar", cardGo.transform);
-            var avatarRect = avatarGo.GetComponent<RectTransform>();
-            StretchWithPadding(avatarRect, 0f, 0f, 1f, 1f);
-            avatarRect.offsetMin = new Vector2(3f, 10f);
-            avatarRect.offsetMax = new Vector2(-3f, -3f);
-            var avatarImage = avatarGo.AddComponent<Image>();
-            avatarImage.color = new Color(0.35f, 0.35f, 0.42f, 1f);
-            avatarImage.preserveAspect = true;
-            avatarImage.raycastTarget = false;
+            var cardArtGo = CreateUiObject("CardArt", cardGo.transform);
+            StretchFull(cardArtGo.GetComponent<RectTransform>());
+            var cardArtImage = cardArtGo.AddComponent<Image>();
+            cardArtImage.color = Color.white;
+            cardArtImage.preserveAspect = false;
+            cardArtImage.raycastTarget = false;
+            cardArtGo.transform.SetAsFirstSibling();
 
             var healthBgGo = CreateUiObject("HealthBarBg", cardGo.transform);
             var healthBgRect = healthBgGo.GetComponent<RectTransform>();
@@ -207,8 +199,7 @@ namespace FracturedChorus.Editor
             elementIconImage.raycastTarget = false;
 
             var cardView = cardGo.AddComponent<PartyMemberCardView>();
-            SetField(cardView, "borderImage", borderImage);
-            SetField(cardView, "avatarImage", avatarImage);
+            SetField(cardView, "cardArtImage", cardArtImage);
             SetField(cardView, "healthBarBg", healthBgImage);
             SetField(cardView, "healthBarFill", healthFillImage);
             SetField(cardView, "healthBarFillRect", healthFillRect);
