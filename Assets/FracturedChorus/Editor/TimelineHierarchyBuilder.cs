@@ -248,6 +248,7 @@ namespace FracturedChorus.Editor
             var slotTop = CreateRadialSkillSlot(radialRect, "SkillSlot_Top", new Vector2(0f, RadialSlotTopY), slotSize);
             var slotLeft = CreateRadialSkillSlot(radialRect, "SkillSlot_Left", new Vector2(-RadialSlotSideX, RadialSlotBottomY), slotSize);
             var slotRight = CreateRadialSkillSlot(radialRect, "SkillSlot_Right", new Vector2(RadialSlotSideX, RadialSlotBottomY), slotSize);
+            var slotTemplate = EnsureSkillSlotTemplate(radialRect, slotTop);
 
             panelGo.SetActive(false);
 
@@ -257,10 +258,60 @@ namespace FracturedChorus.Editor
             SetField(ui, "slotTop", slotTop);
             SetField(ui, "slotLeft", slotLeft);
             SetField(ui, "slotRight", slotRight);
+            SetField(ui, "skillSlotTemplate", slotTemplate);
             SetField(ui, "titleLabel", title);
             SetField(ui, "preserveSceneLayout", true);
             ui.WireReferences();
             return ui;
+        }
+
+        /// <summary>
+        /// Chỉ thêm SkillSlot_Template + đưa Frame lên trên art — không reset vị trí/size ô đã author.
+        /// </summary>
+        public static void EnsureSkillChromeTemplateOnPanel(SkillPanelUIView panel)
+        {
+            if (panel == null)
+            {
+                return;
+            }
+
+            var radialTransform = panel.transform.Find("Radial") as RectTransform;
+            if (radialTransform == null)
+            {
+                return;
+            }
+
+            var slotTop = radialTransform.Find("SkillSlot_Top")?.GetComponent<SkillRadialSlotView>();
+            var slotLeft = radialTransform.Find("SkillSlot_Left")?.GetComponent<SkillRadialSlotView>();
+            var slotRight = radialTransform.Find("SkillSlot_Right")?.GetComponent<SkillRadialSlotView>();
+
+            void UpgradeSlotChrome(Transform slotTransform)
+            {
+                if (slotTransform == null)
+                {
+                    return;
+                }
+
+                EnsureRadialSlotIcon(slotTransform);
+                EnsureSkillSlotFrame(slotTransform);
+                if (slotTransform is RectTransform slotRt)
+                {
+                    SkillSlotChromeSync.ApplySiblingOrder(slotRt);
+                }
+            }
+
+            UpgradeSlotChrome(slotTop != null ? slotTop.transform : null);
+            UpgradeSlotChrome(slotLeft != null ? slotLeft.transform : null);
+            UpgradeSlotChrome(slotRight != null ? slotRight.transform : null);
+
+            var slotTemplate = EnsureSkillSlotTemplate(radialTransform, slotTop);
+            SetField(panel, "radialRoot", radialTransform);
+            SetField(panel, "slotTop", slotTop);
+            SetField(panel, "slotLeft", slotLeft);
+            SetField(panel, "slotRight", slotRight);
+            SetField(panel, "skillSlotTemplate", slotTemplate);
+            SetField(panel, "preserveSceneLayout", true);
+            panel.WireReferences();
         }
 
         /// <summary>
@@ -297,6 +348,7 @@ namespace FracturedChorus.Editor
             var slotTop = EnsureRadialSkillSlot(radialTransform, "SkillSlot_Top", new Vector2(0f, RadialSlotTopY), slotSize);
             var slotLeft = EnsureRadialSkillSlot(radialTransform, "SkillSlot_Left", new Vector2(-RadialSlotSideX, RadialSlotBottomY), slotSize);
             var slotRight = EnsureRadialSkillSlot(radialTransform, "SkillSlot_Right", new Vector2(RadialSlotSideX, RadialSlotBottomY), slotSize);
+            var slotTemplate = EnsureSkillSlotTemplate(radialTransform, slotTop);
 
             var panelRect = panelTransform as RectTransform;
             var panelBg = panelRect != null ? panelRect.GetComponent<Image>() : null;
@@ -306,6 +358,7 @@ namespace FracturedChorus.Editor
             SetField(panel, "slotTop", slotTop);
             SetField(panel, "slotLeft", slotLeft);
             SetField(panel, "slotRight", slotRight);
+            SetField(panel, "skillSlotTemplate", slotTemplate);
             SetField(panel, "preserveSceneLayout", true);
 
             var title = panelTransform.Find("Title")?.GetComponent<Text>();
@@ -334,6 +387,55 @@ namespace FracturedChorus.Editor
             }
 
             return CreateRadialSkillSlot(parent, name, pos, size);
+        }
+
+        /// <summary>
+        /// Inactive SkillSlot_Template — nguồn chrome cho Top/Left/Right khi mở skill panel.
+        /// </summary>
+        private static RectTransform EnsureSkillSlotTemplate(RectTransform radial, SkillRadialSlotView sourceSlot)
+        {
+            if (radial == null)
+            {
+                return null;
+            }
+
+            var existing = radial.Find(SkillSlotChromeSync.TemplateName) as RectTransform;
+            if (existing != null)
+            {
+                EnsureSkillSlotFrame(existing);
+                SkillSlotChromeSync.ApplySiblingOrder(existing);
+                existing.gameObject.SetActive(false);
+                return existing;
+            }
+
+            if (sourceSlot == null)
+            {
+                return null;
+            }
+
+            var clone = Object.Instantiate(sourceSlot.gameObject, radial);
+            Undo.RegisterCreatedObjectUndo(clone, "Create SkillSlot_Template");
+            clone.name = SkillSlotChromeSync.TemplateName;
+            clone.SetActive(false);
+
+            var slotView = clone.GetComponent<SkillRadialSlotView>();
+            if (slotView != null)
+            {
+                Object.DestroyImmediate(slotView);
+            }
+
+            var button = clone.GetComponent<Button>();
+            if (button != null)
+            {
+                Object.DestroyImmediate(button);
+            }
+
+            var templateRt = clone.GetComponent<RectTransform>();
+            templateRt.anchoredPosition = Vector2.zero;
+            EnsureSkillSlotFrame(clone.transform);
+            SkillSlotChromeSync.ApplySiblingOrder(templateRt);
+            clone.transform.SetAsFirstSibling();
+            return templateRt;
         }
 
         private static SkillRadialDirection DirectionFromSlotName(string name)
@@ -411,6 +513,7 @@ namespace FracturedChorus.Editor
                 ring.type = Image.Type.Simple;
             }
 
+            EnsureRadialSlotIcon(slotTransform);
             EnsureSkillSlotFrame(slotTransform);
 
             var label = slotTransform.Find("Label")?.GetComponent<Text>();
@@ -421,7 +524,10 @@ namespace FracturedChorus.Editor
                 label.color = Color.black;
             }
 
-            EnsureRadialSlotIcon(slotTransform);
+            if (slotTransform is RectTransform slotRt)
+            {
+                SkillSlotChromeSync.ApplySiblingOrder(slotRt);
+            }
         }
 
         private static void EnsureSkillSlotFrame(Transform slotTransform)
@@ -432,33 +538,43 @@ namespace FracturedChorus.Editor
             }
 
             var frameTransform = slotTransform.Find("Frame") as RectTransform;
+            var created = false;
             if (frameTransform == null)
             {
                 var frameGo = CreateUiObject("Frame", slotTransform);
                 frameTransform = frameGo.GetComponent<RectTransform>();
                 Undo.RegisterCreatedObjectUndo(frameGo, "Add Skill Slot Frame");
+                created = true;
             }
-
-            frameTransform.SetAsFirstSibling();
-            StretchWithPadding(frameTransform, 0f, 0f, 1f, 1f);
-            frameTransform.offsetMin = new Vector2(-6f, -6f);
-            frameTransform.offsetMax = new Vector2(6f, 6f);
 
             var frameImg = frameTransform.GetComponent<Image>();
             if (frameImg == null)
             {
                 frameImg = frameTransform.gameObject.AddComponent<Image>();
+                created = true;
             }
 
-            frameImg.sprite = UiCircleSpriteUtil.Circle;
-            frameImg.type = Image.Type.Simple;
-            frameImg.color = new Color(0.92f, 0.78f, 0.42f, 0.95f);
+            // Chỉ ghi default khi mới tạo — giữ Frame đã author trên SkillSlot_Template.
+            if (created)
+            {
+                StretchWithPadding(frameTransform, 0f, 0f, 1f, 1f);
+                frameTransform.offsetMin = new Vector2(-6f, -6f);
+                frameTransform.offsetMax = new Vector2(6f, 6f);
+                frameImg.sprite = UiCircleSpriteUtil.Circle;
+                frameImg.type = Image.Type.Simple;
+                frameImg.color = new Color(0.92f, 0.78f, 0.42f, 0.95f);
+            }
+            else if (frameImg.sprite == null)
+            {
+                frameImg.sprite = UiCircleSpriteUtil.Circle;
+                frameImg.type = Image.Type.Simple;
+            }
+
             frameImg.raycastTarget = false;
 
-            var ring = slotTransform.Find("Ring");
-            if (ring != null)
+            if (slotTransform is RectTransform slotRt)
             {
-                ring.SetSiblingIndex(1);
+                SkillSlotChromeSync.ApplySiblingOrder(slotRt);
             }
         }
 
@@ -515,6 +631,11 @@ namespace FracturedChorus.Editor
             slotRect.anchoredPosition = pos;
             slotRect.sizeDelta = new Vector2(size, size);
 
+            var bg = slotGo.AddComponent<Image>();
+            bg.sprite = UiCircleSpriteUtil.Circle;
+            bg.type = Image.Type.Simple;
+            bg.color = new Color(0.16f, 0.16f, 0.22f, 0.96f);
+
             var ringGo = CreateUiObject("Ring", slotGo.transform);
             var ringRect = ringGo.GetComponent<RectTransform>();
             StretchWithPadding(ringRect, 0f, 0f, 1f, 1f);
@@ -526,12 +647,8 @@ namespace FracturedChorus.Editor
             ringImg.color = new Color(0.75f, 0.8f, 0.95f, 1f);
             ringImg.raycastTarget = false;
 
+            EnsureRadialSlotIcon(slotGo.transform);
             EnsureSkillSlotFrame(slotGo.transform);
-
-            var bg = slotGo.AddComponent<Image>();
-            bg.sprite = UiCircleSpriteUtil.Circle;
-            bg.type = Image.Type.Simple;
-            bg.color = new Color(0.16f, 0.16f, 0.22f, 0.96f);
 
             var labelGo = CreateUiObject("Label", slotGo.transform);
             var labelRect = labelGo.GetComponent<RectTransform>();
@@ -548,13 +665,7 @@ namespace FracturedChorus.Editor
             label.color = Color.black;
             label.text = "—";
 
-            var iconGo = CreateUiObject("Icon", slotGo.transform);
-            var iconRect = iconGo.GetComponent<RectTransform>();
-            StretchWithPadding(iconRect, 0.1f, 0.1f, 0.9f, 0.9f);
-            var iconImg = iconGo.AddComponent<Image>();
-            iconImg.raycastTarget = false;
-            iconImg.preserveAspect = true;
-            iconImg.enabled = false;
+            SkillSlotChromeSync.ApplySiblingOrder(slotRect);
 
             var slot = slotGo.AddComponent<SkillRadialSlotView>();
             slot.WireFromScene(DirectionFromSlotName(name));
@@ -853,10 +964,7 @@ namespace FracturedChorus.Editor
             clefRect.anchorMax = new Vector2(0f, 0.5f);
             clefRect.anchoredPosition = new Vector2(12f, 0f);
             clefRect.sizeDelta = new Vector2(24f, 48f);
-            var clefText = clefGo.AddComponent<Text>();
-            ApplyText(clefText);
-            clefText.text = "\u266A";
-            clefText.fontSize = 28;
+            ApplyClefSprite(clefGo);
 
             var budgetGo = CreateUiObject("Budget", headerGo.transform);
             var budgetRect = budgetGo.GetComponent<RectTransform>();
@@ -927,6 +1035,43 @@ namespace FracturedChorus.Editor
             text.fontSize = 14;
             text.alignment = TextAnchor.MiddleCenter;
             text.color = Color.white;
+        }
+
+        /// <summary>G-clef sprite (Unity Text không render SMP 𝄞).</summary>
+        private static void ApplyClefSprite(GameObject clefGo)
+        {
+            if (clefGo == null)
+            {
+                return;
+            }
+
+            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(
+                "Assets/FracturedChorus/Resources/UI/clef_g_v1.png");
+            if (sprite == null)
+            {
+                sprite = Resources.Load<Sprite>("UI/clef_g_v1");
+            }
+
+            var image = clefGo.GetComponent<Image>();
+            if (image == null)
+            {
+                image = clefGo.AddComponent<Image>();
+            }
+
+            if (image == null)
+            {
+                return;
+            }
+
+            if (sprite != null)
+            {
+                image.sprite = sprite;
+            }
+
+            image.type = Image.Type.Simple;
+            image.preserveAspect = true;
+            image.color = Color.white;
+            image.raycastTarget = false;
         }
 
         private static void SetField(Object target, string fieldName, Object value)

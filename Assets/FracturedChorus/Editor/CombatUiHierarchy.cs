@@ -1047,7 +1047,29 @@ namespace FracturedChorus.Editor
                 EditorSceneManager.MarkSceneDirty(scene);
             }
 
-            Debug.Log("[Fractured Chorus] Skill panel hierarchy wired (Radial + 3 slots). Save scene.");
+            Debug.Log("[Fractured Chorus] Skill panel hierarchy wired (Radial + SkillSlot_Template + 3 slots, Frame above art). Save scene.");
+        }
+
+        /// <summary>
+        /// Batch/menu: mở CombatPrototype, thêm SkillSlot_Template + Frame trên art, save scene.
+        /// </summary>
+        [MenuItem("Fractured Chorus/Migrate Skill Slot Template (CombatPrototype)")]
+        public static void MigrateSkillSlotTemplateCombatPrototype()
+        {
+            const string scenePath = "Assets/FracturedChorus/Scenes/CombatPrototype.unity";
+            var scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+            var panel = Object.FindAnyObjectByType<SkillPanelUIView>(FindObjectsInactive.Include);
+            if (panel == null)
+            {
+                Debug.LogWarning("[Fractured Chorus] SkillPanelUIView not found in CombatPrototype.");
+                return;
+            }
+
+            TimelineHierarchyBuilder.EnsureSkillChromeTemplateOnPanel(panel);
+            EditorUtility.SetDirty(panel);
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            Debug.Log("[Fractured Chorus] Migrated SkillSlot_Template + Frame-above-art on CombatPrototype. Scene saved.");
         }
     }
 }

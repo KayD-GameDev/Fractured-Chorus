@@ -10,35 +10,36 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0b5af890d5136be45963d7a087535053, type: 3}
-  m_Name: tank_skill
+  m_Name: Coda_skill
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.SkillDefinitionSO
-  skillId: tank_skill
-  displayName: Anchor
-  icon: {fileID: -5753427032079542060, guid: b0a8d36b9d6bfe24cb92aa0cec8dd8e9, type: 3}
-  description: DelayBossNote +2 (CORE only)
+  skillId: mage_skill
+  displayName: Mend
+  icon: {fileID: -1625588433954014855, guid: 989b059a87103c749af00649326b2179, type: 3}
+  frame: {fileID: -1754395884984550665, guid: 1bc43a708ade4bd4495251698ff61bbe, type: 3}
+  description: "Heal 25 + Ma\xD70.5"
   slotKind: 1
   avCost: 25
   delay: 3
   skillTier: 2
-  damageType: 0
-  targetType: 0
-  glowType: 0
+  damageType: 1
+  targetType: 1
+  glowType: 2
   baseDamage: 0
   standingBeatsBefore: 2
-  activeBeats: 2
+  activeBeats: 1
   standingBeatsAfter: 2
-  effectKind: 3
-  effectValue: 2
+  effectKind: 1
+  effectValue: 25
   grantsCycleShift: 0
   usesPrepEmpower: 1
   prepEmpowerThreshold: 1
   prepEmpowerCost: 1
-  empowerEffectValue: 3
+  empowerEffectValue: 15
   empowerDamageMultiplier: 1
   empowerExtraHits: 0
   empowerForceHarmony: 0
-  empowerKeepDelayTier: 1
-  empowerOverhealToShield: 0
+  empowerKeepDelayTier: 0
+  empowerOverhealToShield: 1
   empowerOverhealShieldCap: 30
   empowerPartyReduceS2: 0
   empowerGiftPrepToTarget: 0

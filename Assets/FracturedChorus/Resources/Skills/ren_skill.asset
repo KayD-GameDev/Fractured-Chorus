@@ -15,6 +15,7 @@ MonoBehaviour:
   skillId: ren_skill
   displayName: Crosscut
   icon: {fileID: 1758091737259792074, guid: a0637abc3427eb84fb3a8796342063d7, type: 3}
+  frame: {fileID: 2349914598454534598, guid: f4eb11cad7ee3294ba7e08025624d798, type: 3}
   description: "Damage \xB7 2 counter hit"
   slotKind: 1
   avCost: 25

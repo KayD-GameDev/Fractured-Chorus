@@ -5,15 +5,29 @@ namespace FracturedChorus.UI
 {
     /// <summary>
     /// Full-screen transparent hit area — click closes the skill panel.
+    /// Không chắn raycast lên BeatTimelineUI để vẫn kéo skill trên lane khi panel đang mở.
     /// </summary>
     [RequireComponent(typeof(CanvasRenderer))]
-    public class SkillPanelDismissBackdrop : MonoBehaviour, IPointerClickHandler
+    public class SkillPanelDismissBackdrop : MonoBehaviour, IPointerClickHandler, ICanvasRaycastFilter
     {
         [SerializeField] private SkillPanelUIView panel;
+
+        private BeatTimelineUIView _timeline;
 
         public void SetPanel(SkillPanelUIView skillPanel)
         {
             panel = skillPanel;
+        }
+
+        public bool IsRaycastLocationValid(Vector2 screenPoint, Camera eventCamera)
+        {
+            // Cho phép event xuyên xuống timeline (kéo/relocateskill trên lane).
+            if (IsOverBeatTimeline(screenPoint, eventCamera))
+            {
+                return false;
+            }
+
+            return true;
         }
 
         public void OnPointerClick(PointerEventData eventData)
@@ -36,6 +50,27 @@ namespace FracturedChorus.UI
             }
 
             panel.Hide();
+        }
+
+        private bool IsOverBeatTimeline(Vector2 screenPoint, Camera eventCamera)
+        {
+            if (_timeline == null)
+            {
+                _timeline = FindAnyObjectByType<BeatTimelineUIView>();
+            }
+
+            if (_timeline == null)
+            {
+                return false;
+            }
+
+            var timelineRect = _timeline.transform as RectTransform;
+            if (timelineRect == null)
+            {
+                return false;
+            }
+
+            return RectTransformUtility.RectangleContainsScreenPoint(timelineRect, screenPoint, eventCamera);
         }
     }
 }

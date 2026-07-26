@@ -36,6 +36,7 @@ namespace FracturedChorus.UI
         private bool _dragPointerActive;
         private Action<CombatUnit, UnitView> _onUnitClicked;
         private Action _onFormationChanged;
+        private Func<bool> _canOpenSkillPanel;
 
         private void Awake()
         {
@@ -81,6 +82,12 @@ namespace FracturedChorus.UI
         public void SetFormationChangedHandler(Action onFormationChanged)
         {
             _onFormationChanged = onFormationChanged;
+        }
+
+        /// <summary>Optional extra gate (timeline playback, etc.). Null = only session deploy check.</summary>
+        public void SetSkillPanelOpenPredicate(Func<bool> canOpen)
+        {
+            _canOpenSkillPanel = canOpen;
         }
 
         public bool CanDragUnit(UnitView view)
@@ -171,12 +178,23 @@ namespace FracturedChorus.UI
 
         private bool CanOpenSkillPanelFor(UnitView view)
         {
-            return view != null
-                   && view.Unit != null
-                   && view.Unit.IsAlive
-                   && view.Side == GridSide.Player
-                   && _session != null
-                   && !IsPreExecuteRepositionPhase;
+            if (view == null
+                || view.Unit == null
+                || !view.Unit.IsAlive
+                || view.Side != GridSide.Player
+                || _session == null
+                || _session.Phase != CombatPhase.Planning
+                || IsPreExecuteRepositionPhase)
+            {
+                return false;
+            }
+
+            if (_canOpenSkillPanel != null && !_canOpenSkillPanel())
+            {
+                return false;
+            }
+
+            return true;
         }
 
         public void CancelActiveDrag()

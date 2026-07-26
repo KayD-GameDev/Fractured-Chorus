@@ -10,36 +10,37 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0b5af890d5136be45963d7a087535053, type: 3}
-  m_Name: tank_basic
+  m_Name: Coda_ult
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.SkillDefinitionSO
-  skillId: Charlott_basic
-  displayName: Ram
-  icon: {fileID: 8712927547302482697, guid: 59196dc1d28948547a3c82f348757c6d, type: 3}
-  description: Damage
-  slotKind: 0
-  avCost: 0
-  delay: 2
-  skillTier: 1
-  damageType: 0
-  targetType: 0
-  glowType: 0
+  skillId: mage_ult
+  displayName: Encore
+  icon: {fileID: -5856550698811768098, guid: ff5c0a175cb8b0e48afa1020819e4ae0, type: 3}
+  frame: {fileID: -2465092249997041119, guid: 326f8ba7e3f137d47b31e494b7fbf450, type: 3}
+  description: "ReduceS2 \u22121 (ally)"
+  slotKind: 2
+  avCost: 50
+  delay: 5
+  skillTier: 2
+  damageType: 1
+  targetType: 1
+  glowType: 2
   baseDamage: 0
   standingBeatsBefore: 1
   activeBeats: 1
   standingBeatsAfter: 1
-  effectKind: 0
-  effectValue: 0
+  effectKind: 4
+  effectValue: 1
   grantsCycleShift: 0
-  usesPrepEmpower: 0
-  prepEmpowerThreshold: 1
-  prepEmpowerCost: 1
-  empowerEffectValue: 0
+  usesPrepEmpower: 1
+  prepEmpowerThreshold: 2
+  prepEmpowerCost: 2
+  empowerEffectValue: 1
   empowerDamageMultiplier: 1
   empowerExtraHits: 0
   empowerForceHarmony: 0
   empowerKeepDelayTier: 0
   empowerOverhealToShield: 0
   empowerOverhealShieldCap: 30
-  empowerPartyReduceS2: 0
-  empowerGiftPrepToTarget: 0
+  empowerPartyReduceS2: 1
+  empowerGiftPrepToTarget: 1
   empowerGuardChargeOnPerfect: 0

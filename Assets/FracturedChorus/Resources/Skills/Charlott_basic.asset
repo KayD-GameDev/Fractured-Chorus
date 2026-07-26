@@ -10,35 +10,36 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0b5af890d5136be45963d7a087535053, type: 3}
-  m_Name: mage_skill
+  m_Name: Charlott_basic
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.SkillDefinitionSO
-  skillId: mage_skill
-  displayName: Mend
-  icon: {fileID: -1625588433954014855, guid: 989b059a87103c749af00649326b2179, type: 3}
-  description: "Heal 25 + Ma\xD70.5"
-  slotKind: 1
-  avCost: 25
-  delay: 3
-  skillTier: 2
-  damageType: 1
-  targetType: 1
-  glowType: 2
+  skillId: Charlott_basic
+  displayName: Ram
+  icon: {fileID: 8712927547302482697, guid: 59196dc1d28948547a3c82f348757c6d, type: 3}
+  frame: {fileID: -8981320499329970081, guid: da828e71f04e2f642a123b5cb184084e, type: 3}
+  description: Damage
+  slotKind: 0
+  avCost: 0
+  delay: 2
+  skillTier: 1
+  damageType: 0
+  targetType: 0
+  glowType: 0
   baseDamage: 0
-  standingBeatsBefore: 2
+  standingBeatsBefore: 1
   activeBeats: 1
-  standingBeatsAfter: 2
-  effectKind: 1
-  effectValue: 25
+  standingBeatsAfter: 1
+  effectKind: 0
+  effectValue: 0
   grantsCycleShift: 0
-  usesPrepEmpower: 1
+  usesPrepEmpower: 0
   prepEmpowerThreshold: 1
   prepEmpowerCost: 1
-  empowerEffectValue: 15
+  empowerEffectValue: 0
   empowerDamageMultiplier: 1
   empowerExtraHits: 0
   empowerForceHarmony: 0
   empowerKeepDelayTier: 0
-  empowerOverhealToShield: 1
+  empowerOverhealToShield: 0
   empowerOverhealShieldCap: 30
   empowerPartyReduceS2: 0
   empowerGiftPrepToTarget: 0

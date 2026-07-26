@@ -186,6 +186,15 @@ namespace FracturedChorus.UI
             if (_hitTarget != null)
             {
                 _hitTarget.raycastTarget = canRelocate;
+                _hitTarget.enabled = true;
+                // Luôn trên cùng trong marker để nhận drag.
+                _hitTarget.transform.SetAsLastSibling();
+            }
+
+            // Marker layer phải nhận event — background không chắn.
+            if (_background != null)
+            {
+                _background.raycastTarget = false;
             }
         }
 

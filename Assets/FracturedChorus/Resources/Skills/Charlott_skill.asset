@@ -10,36 +10,37 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0b5af890d5136be45963d7a087535053, type: 3}
-  m_Name: mage_ult
+  m_Name: Charlott_skill
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.SkillDefinitionSO
-  skillId: mage_ult
-  displayName: Encore
-  icon: {fileID: -5856550698811768098, guid: ff5c0a175cb8b0e48afa1020819e4ae0, type: 3}
-  description: "ReduceS2 \u22121 (ally)"
-  slotKind: 2
-  avCost: 50
-  delay: 5
+  skillId: tank_skill
+  displayName: Anchor
+  icon: {fileID: -5753427032079542060, guid: b0a8d36b9d6bfe24cb92aa0cec8dd8e9, type: 3}
+  frame: {fileID: -98039248251742522, guid: 3c6055300f4a51b4f8a077e52e8ffa9c, type: 3}
+  description: DelayBossNote +2 (CORE only)
+  slotKind: 1
+  avCost: 25
+  delay: 3
   skillTier: 2
-  damageType: 1
-  targetType: 1
-  glowType: 2
+  damageType: 0
+  targetType: 0
+  glowType: 0
   baseDamage: 0
-  standingBeatsBefore: 1
-  activeBeats: 1
-  standingBeatsAfter: 1
-  effectKind: 4
-  effectValue: 1
+  standingBeatsBefore: 2
+  activeBeats: 2
+  standingBeatsAfter: 2
+  effectKind: 3
+  effectValue: 2
   grantsCycleShift: 0
   usesPrepEmpower: 1
-  prepEmpowerThreshold: 2
-  prepEmpowerCost: 2
-  empowerEffectValue: 1
+  prepEmpowerThreshold: 1
+  prepEmpowerCost: 1
+  empowerEffectValue: 3
   empowerDamageMultiplier: 1
   empowerExtraHits: 0
   empowerForceHarmony: 0
-  empowerKeepDelayTier: 0
+  empowerKeepDelayTier: 1
   empowerOverhealToShield: 0
   empowerOverhealShieldCap: 30
-  empowerPartyReduceS2: 1
-  empowerGiftPrepToTarget: 1
+  empowerPartyReduceS2: 0
+  empowerGiftPrepToTarget: 0
   empowerGuardChargeOnPerfect: 0

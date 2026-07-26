@@ -185,6 +185,16 @@ namespace FracturedChorus.UI
                 scanBar = transform.Find("Viewport/ScanBar") as RectTransform;
             }
 
+            // ScanBar nằm trên LaneMarkers — tắt raycast để không chặn kéo skill trên lane.
+            if (scanBar != null)
+            {
+                var scanImage = scanBar.GetComponent<Image>();
+                if (scanImage != null)
+                {
+                    scanImage.raycastTarget = false;
+                }
+            }
+
             if (trackLine == null && viewport != null)
             {
                 trackLine = viewport.Find("TrackLine") as RectTransform;
@@ -204,6 +214,8 @@ namespace FracturedChorus.UI
                 phaseLabel = transform.Find("Header/PhaseLabel")?.GetComponent<Text>()
                     ?? transform.Find("ConfirmButton/PhaseLabel")?.GetComponent<Text>();
             }
+
+            EnsureClefGlyph();
 
             if (budgetLabel == null)
             {
@@ -249,6 +261,68 @@ namespace FracturedChorus.UI
             }
 
             noteVisuals.EnsureDefaultsLoaded();
+        }
+
+        /// <summary>
+        /// Clef dùng sprite (Unity UI Text không render 𝄞 / SMP).
+        /// Scene nên đã là Image; runtime chỉ gán sprite / migrate Text→Image nếu còn legacy.
+        /// </summary>
+        private void EnsureClefGlyph()
+        {
+            var clef = transform.Find("Header/Clef");
+            if (clef == null)
+            {
+                return;
+            }
+
+            var sprite = Resources.Load<Sprite>("UI/clef_g_v1");
+            if (sprite == null)
+            {
+                return;
+            }
+
+            var image = clef.GetComponent<Image>();
+            if (image == null)
+            {
+                // Text and Image cannot share a GameObject — migrate via child if Text remains.
+                var legacyText = clef.GetComponent<Text>();
+                if (legacyText != null)
+                {
+                    legacyText.enabled = false;
+                    legacyText.text = string.Empty;
+
+                    var child = clef.Find("ClefSprite");
+                    if (child == null)
+                    {
+                        var go = new GameObject("ClefSprite", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                        child = go.transform;
+                        child.SetParent(clef, false);
+                        var rt = (RectTransform)child;
+                        rt.anchorMin = Vector2.zero;
+                        rt.anchorMax = Vector2.one;
+                        rt.offsetMin = Vector2.zero;
+                        rt.offsetMax = Vector2.zero;
+                    }
+
+                    image = child.GetComponent<Image>();
+                }
+                else
+                {
+                    image = clef.gameObject.AddComponent<Image>();
+                }
+            }
+
+            if (image == null)
+            {
+                return;
+            }
+
+            image.sprite = sprite;
+            image.type = Image.Type.Simple;
+            image.preserveAspect = true;
+            image.color = Color.white;
+            image.raycastTarget = false;
+            image.enabled = true;
         }
 
         private void ConfigureAvLabelLayout()
@@ -850,9 +924,15 @@ namespace FracturedChorus.UI
             RefreshLaneMarkerDragWiring();
         }
 
+        /// <summary>
+        /// Cho kéo lại skill trên lane khi đang Planning (sau Deploy) — cùng cửa sổ với gán skill.
+        /// Không khóa theo playback: vẫn kéo được lúc intro-pause / timeline đứng.
+        /// </summary>
         public bool CanRelocateLaneMarker()
         {
-            return _session != null && _session.Phase == CombatPhase.Planning && !_session.AllowPlayerReposition;
+            return _session != null
+                   && _session.Phase == CombatPhase.Planning
+                   && !_session.AllowPlayerReposition;
         }
 
         public bool TryBeginLaneMarkerRelocate(CombatUnit unit, int beatIndex)
@@ -903,7 +983,15 @@ namespace FracturedChorus.UI
 
         public void ClearLaneMarkerRelocatePrepare()
         {
+            if (_relocatePendingKey.HasValue
+                && _laneMarkers.TryGetValue(_relocatePendingKey.Value, out var marker)
+                && marker != null)
+            {
+                marker.SetRelocateVisualHidden(false);
+            }
+
             _relocatePendingKey = null;
+            RefreshLaneMarkerDragWiring();
         }
 
         public bool IsScreenPointInViewport(Vector2 screen)
@@ -1868,14 +1956,15 @@ namespace FracturedChorus.UI
                 _footprintLayer.SetAsLastSibling();
             }
 
-            if (_laneMarkersLayer != null)
-            {
-                _laneMarkersLayer.SetAsLastSibling();
-            }
-
             if (scanBar != null)
             {
                 scanBar.SetAsLastSibling();
+            }
+
+            // Markers trên ScanBar để kéo skill trên lane không bị che.
+            if (_laneMarkersLayer != null)
+            {
+                _laneMarkersLayer.SetAsLastSibling();
             }
         }
 
@@ -2167,12 +2256,10 @@ namespace FracturedChorus.UI
                 var go = new GameObject("LaneAvatarGutter", typeof(RectTransform));
                 laneAvatarGutter = go.GetComponent<RectTransform>();
                 laneAvatarGutter.SetParent(transform, false);
-                laneAvatarGutter.anchorMin = new Vector2(0f, 0f);
-                laneAvatarGutter.anchorMax = new Vector2(0f, 1f);
-                laneAvatarGutter.pivot = new Vector2(0f, 0.5f);
-                laneAvatarGutter.sizeDelta = new Vector2(LaneAvatarGutterWidth, 0f);
-                laneAvatarGutter.anchoredPosition = Vector2.zero;
             }
+
+            // Chỉ di chuyển gutter — không đổi Viewport. Sát mép trái Viewport, cùng chiều cao.
+            LayoutLaneAvatarGutterFlushToViewport();
 
             foreach (var slot in _laneAvatarSlots)
             {
@@ -2204,6 +2291,54 @@ namespace FracturedChorus.UI
                 slotView.SetSelected(unit == _selectedLaneUnit);
                 _laneAvatarSlots.Add(slotView);
             }
+        }
+
+        /// <summary>
+        /// Neo LaneAvatarGutter sát trái Viewport (pivot phải chạm mép trái VP), cùng Y/height.
+        /// Không chỉnh position/size của Viewport.
+        /// </summary>
+        private void LayoutLaneAvatarGutterFlushToViewport()
+        {
+            if (laneAvatarGutter == null)
+            {
+                return;
+            }
+
+            laneAvatarGutter.SetParent(transform, false);
+            laneAvatarGutter.localScale = Vector3.one;
+            laneAvatarGutter.localRotation = Quaternion.identity;
+
+            if (viewport == null)
+            {
+                laneAvatarGutter.anchorMin = new Vector2(0f, 0f);
+                laneAvatarGutter.anchorMax = new Vector2(0f, 1f);
+                laneAvatarGutter.pivot = new Vector2(1f, 0.5f);
+                laneAvatarGutter.sizeDelta = new Vector2(LaneAvatarGutterWidth, 0f);
+                laneAvatarGutter.anchoredPosition = Vector2.zero;
+                return;
+            }
+
+            // Force viewport layout so rect is current before measuring left edge.
+            Canvas.ForceUpdateCanvases();
+
+            var parent = transform as RectTransform;
+            var vpLocal = parent != null
+                ? (Vector2)parent.InverseTransformPoint(viewport.TransformPoint(viewport.rect.min))
+                : new Vector2(viewport.anchoredPosition.x - viewport.rect.width * viewport.pivot.x, 0f);
+            var vpLocalMax = parent != null
+                ? (Vector2)parent.InverseTransformPoint(viewport.TransformPoint(viewport.rect.max))
+                : vpLocal + viewport.rect.size;
+
+            var vpLeft = vpLocal.x;
+            var vpBottom = vpLocal.y;
+            var vpHeight = Mathf.Max(1f, vpLocalMax.y - vpLocal.y);
+
+            // Anchor bottom-left of parent, position by left edge of viewport.
+            laneAvatarGutter.anchorMin = new Vector2(0f, 0f);
+            laneAvatarGutter.anchorMax = new Vector2(0f, 0f);
+            laneAvatarGutter.pivot = new Vector2(1f, 0f);
+            laneAvatarGutter.sizeDelta = new Vector2(LaneAvatarGutterWidth, vpHeight);
+            laneAvatarGutter.anchoredPosition = new Vector2(vpLeft, vpBottom);
         }
 
         private float GetLaneYFromBottom(int laneIndex, float height)

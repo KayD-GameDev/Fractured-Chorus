@@ -25,6 +25,8 @@ namespace FracturedChorus.UI
         [SerializeField] private SkillRadialSlotView slotTop;
         [SerializeField] private SkillRadialSlotView slotLeft;
         [SerializeField] private SkillRadialSlotView slotRight;
+        [Tooltip("Inactive chrome template under Radial. Empty → dùng SkillSlot_Top.")]
+        [SerializeField] private RectTransform skillSlotTemplate;
         [SerializeField] private Text titleLabel;
         [SerializeField] private Camera worldCamera;
         [SerializeField] private GameObject dismissBackdrop;
@@ -39,11 +41,13 @@ namespace FracturedChorus.UI
         private Func<CombatUnit, SkillDefinitionSO, Vector2, bool> _onSkillDroppedAtScreen;
         private Action<CombatUnit, SkillDefinitionSO, Vector2> _onSkillDragPreview;
         private Action _onSkillDragEnd;
+        private Func<bool> _isTimelinePlaybackActive;
         private Coroutine _enableBackdropRoutine;
         private float _backdropDismissUnlockTime;
         private SkillDefinitionSO _draggingSkill;
         private GameObject _dragGhost;
         private Image _dragGhostIcon;
+        private Image _dragGhostFrame;
         private Text _dragGhostLabel;
         private bool _keyboardDragActive;
 
@@ -86,6 +90,13 @@ namespace FracturedChorus.UI
                 slotRight = radialRoot?.Find("SkillSlot_Right")?.GetComponent<SkillRadialSlotView>();
             }
 
+            if (skillSlotTemplate == null)
+            {
+                skillSlotTemplate = SkillSlotChromeSync.ResolveTemplate(
+                    radialRoot,
+                    slotTop != null ? slotTop.transform as RectTransform : null);
+            }
+
             if (titleLabel == null)
             {
                 titleLabel = transform.Find("Title")?.GetComponent<Text>();
@@ -121,12 +132,33 @@ namespace FracturedChorus.UI
         public void Bind(CombatSession session,
             Func<CombatUnit, SkillDefinitionSO, Vector2, bool> onSkillDroppedAtScreen = null,
             Action<CombatUnit, SkillDefinitionSO, Vector2> onSkillDragPreview = null,
-            Action onSkillDragEnd = null)
+            Action onSkillDragEnd = null,
+            Func<bool> isTimelinePlaybackActive = null)
         {
             _session = session;
             _onSkillDroppedAtScreen = onSkillDroppedAtScreen;
             _onSkillDragPreview = onSkillDragPreview;
             _onSkillDragEnd = onSkillDragEnd;
+            _isTimelinePlaybackActive = isTimelinePlaybackActive;
+        }
+
+        /// <summary>
+        /// Deploy / không Planning / timeline đang playback (intro·execute) → không mở skill UI.
+        /// Intro-pause (IsPlaybackActive=false) vẫn cho mở.
+        /// </summary>
+        public bool CanOpenSkillPanelNow()
+        {
+            if (_session == null || _session.Phase != CombatPhase.Planning || _session.AllowPlayerReposition)
+            {
+                return false;
+            }
+
+            if (_isTimelinePlaybackActive != null && _isTimelinePlaybackActive())
+            {
+                return false;
+            }
+
+            return true;
         }
 
         public void ToggleForUnit(CombatUnit unit, UnitView unitView)
@@ -136,7 +168,7 @@ namespace FracturedChorus.UI
                 return;
             }
 
-            if (_session != null && _session.AllowPlayerReposition)
+            if (!CanOpenSkillPanelNow())
             {
                 return;
             }
@@ -153,6 +185,11 @@ namespace FracturedChorus.UI
         public void ShowForUnit(CombatUnit unit, UnitView unitView)
         {
             if (unit == null || unitView == null || _session == null || panelRect == null)
+            {
+                return;
+            }
+
+            if (!CanOpenSkillPanelNow())
             {
                 return;
             }
@@ -237,6 +274,7 @@ namespace FracturedChorus.UI
         {
             var skills = CollectUsableSkills();
             WireReferences();
+            SyncSlotsFromTemplate();
 
             if (_slots.Count < 3)
             {
@@ -248,6 +286,83 @@ namespace FracturedChorus.UI
             BindSlot(slotTop, SkillRadialDirection.Top, "W", skills, 0);
             BindSlot(slotLeft, SkillRadialDirection.Left, "A", skills, 1);
             BindSlot(slotRight, SkillRadialDirection.Right, "D", skills, 2);
+        }
+
+        /// <summary>
+        /// Áp chrome từ SkillSlot_Template lên 3 ô — mọi nhân vật (Ren/Coda/…) dùng cùng layout.
+        /// </summary>
+        private void SyncSlotsFromTemplate()
+        {
+            EnsureSkillSlotTemplateExists();
+
+            skillSlotTemplate = SkillSlotChromeSync.ResolveTemplate(
+                radialRoot,
+                slotTop != null ? slotTop.transform as RectTransform : null);
+
+            var template = skillSlotTemplate;
+            if (template == null)
+            {
+                return;
+            }
+
+            // Chỉ tắt SkillSlot_Template riêng — không tắt Top khi đang fallback.
+            if (template.name == SkillSlotChromeSync.TemplateName)
+            {
+                template.gameObject.SetActive(false);
+            }
+
+            ApplyTemplateToSlot(template, slotTop);
+            ApplyTemplateToSlot(template, slotLeft);
+            ApplyTemplateToSlot(template, slotRight);
+        }
+
+        /// <summary>Tạo inactive SkillSlot_Template từ Top nếu Hierarchy chưa có.</summary>
+        private void EnsureSkillSlotTemplateExists()
+        {
+            if (radialRoot == null || slotTop == null)
+            {
+                return;
+            }
+
+            var existing = radialRoot.Find(SkillSlotChromeSync.TemplateName) as RectTransform;
+            if (existing != null)
+            {
+                skillSlotTemplate = existing;
+                existing.gameObject.SetActive(false);
+                return;
+            }
+
+            var clone = Instantiate(slotTop.gameObject, radialRoot);
+            clone.name = SkillSlotChromeSync.TemplateName;
+            clone.SetActive(false);
+
+            var slotView = clone.GetComponent<SkillRadialSlotView>();
+            if (slotView != null)
+            {
+                Destroy(slotView);
+            }
+
+            var button = clone.GetComponent<Button>();
+            if (button != null)
+            {
+                Destroy(button);
+            }
+
+            var templateRt = clone.GetComponent<RectTransform>();
+            templateRt.anchoredPosition = Vector2.zero;
+            SkillSlotChromeSync.ApplySiblingOrder(templateRt);
+            clone.transform.SetAsFirstSibling();
+            skillSlotTemplate = templateRt;
+        }
+
+        private static void ApplyTemplateToSlot(RectTransform template, SkillRadialSlotView slot)
+        {
+            if (slot == null)
+            {
+                return;
+            }
+
+            SkillSlotChromeSync.ApplyFromTemplate(template, slot.transform as RectTransform);
         }
 
         private void BindSlot(SkillRadialSlotView slot, SkillRadialDirection dir, string keyHint,
@@ -304,6 +419,7 @@ namespace FracturedChorus.UI
         public void BeginSkillDrag(SkillDefinitionSO skill)
         {
             _draggingSkill = skill;
+            SetDismissBackdropRaycast(false);
             EnsureDragGhost(skill);
         }
 
@@ -321,6 +437,7 @@ namespace FracturedChorus.UI
             DestroyDragGhost();
             _draggingSkill = null;
             _keyboardDragActive = false;
+            SetDismissBackdropRaycast(true);
             _onSkillDragEnd?.Invoke();
 
             var consumed = _onSkillDroppedAtScreen?.Invoke(_currentUnit, skill, screenPos) ?? false;
@@ -330,6 +447,20 @@ namespace FracturedChorus.UI
             }
 
             return consumed;
+        }
+
+        private void SetDismissBackdropRaycast(bool enabled)
+        {
+            if (dismissBackdrop == null)
+            {
+                return;
+            }
+
+            var image = dismissBackdrop.GetComponent<Image>();
+            if (image != null)
+            {
+                image.raycastTarget = enabled;
+            }
         }
 
         /// <summary>
@@ -396,6 +527,19 @@ namespace FracturedChorus.UI
                 _dragGhostIcon.raycastTarget = false;
                 _dragGhostIcon.preserveAspect = true;
 
+                var frameGo = new GameObject("Frame", typeof(RectTransform));
+                var frameRect = frameGo.GetComponent<RectTransform>();
+                frameRect.SetParent(rect, false);
+                frameRect.anchorMin = Vector2.zero;
+                frameRect.anchorMax = Vector2.one;
+                frameRect.offsetMin = new Vector2(-6f, -6f);
+                frameRect.offsetMax = new Vector2(6f, 6f);
+                _dragGhostFrame = frameGo.AddComponent<Image>();
+                _dragGhostFrame.sprite = UiCircleSpriteUtil.Circle;
+                _dragGhostFrame.type = Image.Type.Simple;
+                _dragGhostFrame.color = new Color(0.92f, 0.78f, 0.42f, 0.95f);
+                _dragGhostFrame.raycastTarget = false;
+
                 var labelGo = new GameObject("Label", typeof(RectTransform));
                 var labelRect = labelGo.GetComponent<RectTransform>();
                 labelRect.SetParent(rect, false);
@@ -412,6 +556,11 @@ namespace FracturedChorus.UI
                 _dragGhostLabel.verticalOverflow = VerticalWrapMode.Overflow;
                 _dragGhostLabel.color = Color.white;
                 _dragGhostLabel.raycastTarget = false;
+
+                // Icon → Frame → Label
+                iconGo.transform.SetSiblingIndex(0);
+                frameGo.transform.SetSiblingIndex(1);
+                labelGo.transform.SetSiblingIndex(2);
             }
 
             if (_dragGhostIcon == null)
@@ -421,12 +570,18 @@ namespace FracturedChorus.UI
                     ?? iconRoot?.GetComponent<Image>();
             }
 
+            if (_dragGhostFrame == null)
+            {
+                _dragGhostFrame = _dragGhost.transform.Find("Frame")?.GetComponent<Image>();
+            }
+
             if (_dragGhostLabel == null)
             {
                 _dragGhostLabel = _dragGhost.GetComponentInChildren<Text>();
             }
 
             var hasIcon = skill != null && skill.icon != null;
+            var hasFrame = skill != null && skill.frame != null;
             var bg = _dragGhost.GetComponent<Image>();
             if (bg != null)
             {
@@ -437,6 +592,29 @@ namespace FracturedChorus.UI
             {
                 _dragGhostIcon.sprite = hasIcon ? skill.icon : null;
                 _dragGhostIcon.enabled = hasIcon;
+            }
+
+            if (_dragGhostFrame != null)
+            {
+                if (hasFrame)
+                {
+                    _dragGhostFrame.sprite = skill.frame;
+                    _dragGhostFrame.color = Color.white;
+                    _dragGhostFrame.enabled = true;
+                }
+                else
+                {
+                    _dragGhostFrame.enabled = _dragGhostFrame.sprite != null;
+                }
+
+                var ghostRect = _dragGhost.transform as RectTransform;
+                var kind = skill != null ? skill.slotKind : SkillSlotKind.BasicAttack;
+                SkillRadialSlotView.FitFrameRectToKind(
+                    _dragGhostFrame.rectTransform,
+                    ghostRect,
+                    kind);
+                _dragGhostFrame.preserveAspect = true;
+                _dragGhostFrame.raycastTarget = false;
             }
 
             if (_dragGhostLabel != null)
@@ -798,6 +976,7 @@ namespace FracturedChorus.UI
                 DestroyDragGhost();
                 _draggingSkill = null;
                 _keyboardDragActive = false;
+                SetDismissBackdropRaycast(true);
                 _onSkillDragEnd?.Invoke();
             }
             else
@@ -805,6 +984,7 @@ namespace FracturedChorus.UI
                 DestroyDragGhost();
             }
 
+            SetDismissBackdropRaycast(true);
             HideDismissBackdrop();
 
             if (panelRect != null && panelRect.gameObject.activeSelf)

@@ -36,6 +36,8 @@ namespace FracturedChorus.Data
         public string skillId;
         public string displayName;
         public Sprite icon;
+        [Tooltip("Khung vẽ trên art skill (Frame Image). Null = dùng Frame từ SkillSlot_Template.")]
+        public Sprite frame;
         [TextArea] public string description;
         public SkillSlotKind slotKind = SkillSlotKind.BasicAttack;
         public int avCost;

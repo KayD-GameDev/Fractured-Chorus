@@ -718,6 +718,11 @@ namespace FracturedChorus.Combat.Bootstrap
 
         private void HandleUnitSelected(CombatUnit unit, UnitView view)
         {
+            if (skillPanelView != null && !skillPanelView.CanOpenSkillPanelNow())
+            {
+                return;
+            }
+
             if (_session != null && _session.AllowPlayerReposition)
             {
                 return;
