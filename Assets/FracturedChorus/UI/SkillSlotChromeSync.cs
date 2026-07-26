@@ -60,8 +60,16 @@ namespace FracturedChorus.UI
                 SyncNamedChild(templateIcon, slotIcon, "Art", copyImageFully: false, copySprite: false);
             }
 
-            // Frame layout/fallback từ template; sprite có thể bị SkillDefinitionSO.frame ghi đè sau Bind.
-            SyncNamedChild(templateRoot, slotRoot, "Frame", copyImageFully: true);
+            // Frame: chỉ sync Image (sprite/color) — size/aspect do FitFrameRectToKind theo slotKind
+            // (Basic 315×328 · Skill 322×325 · Ult 329×359), không copy stretch layout từ template.
+            SyncNamedChild(
+                templateRoot,
+                slotRoot,
+                "Frame",
+                copyImageFully: true,
+                copySprite: true,
+                copyTextStyle: false,
+                copyRectLayout: false);
             SyncNamedChild(templateRoot, slotRoot, "Label", copyImageFully: false, copySprite: false, copyTextStyle: true);
 
             ApplySiblingOrder(slotRoot);
@@ -112,7 +120,8 @@ namespace FracturedChorus.UI
             string childName,
             bool copyImageFully,
             bool copySprite = true,
-            bool copyTextStyle = false)
+            bool copyTextStyle = false,
+            bool copyRectLayout = true)
         {
             var templateChild = templateParent.Find(childName) as RectTransform;
             if (templateChild == null)
@@ -129,7 +138,10 @@ namespace FracturedChorus.UI
                 CopyComponentsShallow(templateChild.gameObject, go);
             }
 
-            CopyRectLayout(templateChild, slotChild);
+            if (copyRectLayout)
+            {
+                CopyRectLayout(templateChild, slotChild);
+            }
 
             if (copyImageFully || copySprite)
             {

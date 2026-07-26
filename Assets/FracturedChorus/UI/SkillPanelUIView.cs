@@ -613,7 +613,7 @@ namespace FracturedChorus.UI
                     _dragGhostFrame.rectTransform,
                     ghostRect,
                     kind);
-                _dragGhostFrame.preserveAspect = true;
+                _dragGhostFrame.preserveAspect = false;
                 _dragGhostFrame.raycastTarget = false;
             }
 

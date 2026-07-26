@@ -22,10 +22,16 @@ namespace FracturedChorus.UI
         private const int LabelFontSize = 12;
         private const int FallbackLabelFontSize = 20;
 
-        /// <summary>Tỷ lệ art khung theo loại skill (pixel design).</summary>
-        private static readonly Vector2 FrameDesignBasic = new Vector2(315f, 328f);
-        private static readonly Vector2 FrameDesignSkill = new Vector2(322f, 325f);
-        private static readonly Vector2 FrameDesignUltimate = new Vector2(329f, 359f);
+        /// <summary>
+        /// Pixel design khung skill (W×H):
+        /// Basic 315×328 · Skill 322×325 · Ultimate 329×359.
+        /// </summary>
+        public static readonly Vector2 FrameDesignBasic = new Vector2(315f, 328f);
+        public static readonly Vector2 FrameDesignSkill = new Vector2(322f, 325f);
+        public static readonly Vector2 FrameDesignUltimate = new Vector2(329f, 359f);
+
+        /// <summary>Hộp design chuẩn để scale đồng nhất (lấy max W/H của 3 khung).</summary>
+        private static readonly Vector2 FrameDesignRef = new Vector2(329f, 359f);
 
         private static readonly Color IdleColor = new Color(0.16f, 0.16f, 0.22f, 0.96f);
         private static readonly Color HighlightColor = new Color(0.95f, 0.62f, 0.25f, 1f);
@@ -458,7 +464,8 @@ namespace FracturedChorus.UI
         }
 
         /// <summary>
-        /// Fit Frame vào slot với đúng aspect design (không méo vuông).
+        /// Fit Frame vào slot theo pixel design của <paramref name="kind"/>.
+        /// Scale đồng nhất so với Ultimate (329×359) để Basic/Skill/Ult giữ đúng tỷ lệ tương đối.
         /// </summary>
         public static void FitFrameRectToKind(RectTransform frameRect, RectTransform slotRect, SkillSlotKind kind)
         {
@@ -468,7 +475,6 @@ namespace FracturedChorus.UI
             }
 
             var design = GetFrameDesignSize(kind);
-            var aspect = design.x / Mathf.Max(0.01f, design.y);
 
             Canvas.ForceUpdateCanvases();
             var slotSize = slotRect != null ? slotRect.rect.size : Vector2.zero;
@@ -477,20 +483,18 @@ namespace FracturedChorus.UI
                 slotSize = slotRect != null ? slotRect.sizeDelta : new Vector2(96f, 96f);
             }
 
-            // Fit-inside slot, giữ tỷ lệ khung; cho phép hơi lớn hơn slot (~6px) giống bleed cũ.
+            if (slotSize.x < 1f || slotSize.y < 1f)
+            {
+                slotSize = new Vector2(96f, 96f);
+            }
+
+            // Bleed nhẹ quanh slot (~6px mỗi cạnh); scale theo hộp design max (Ult).
             var fitBox = slotSize + new Vector2(12f, 12f);
-            float width;
-            float height;
-            if (fitBox.x / fitBox.y > aspect)
-            {
-                height = fitBox.y;
-                width = height * aspect;
-            }
-            else
-            {
-                width = fitBox.x;
-                height = width / aspect;
-            }
+            var scale = Mathf.Min(
+                fitBox.x / Mathf.Max(0.01f, FrameDesignRef.x),
+                fitBox.y / Mathf.Max(0.01f, FrameDesignRef.y));
+            var width = design.x * scale;
+            var height = design.y * scale;
 
             frameRect.anchorMin = new Vector2(0.5f, 0.5f);
             frameRect.anchorMax = new Vector2(0.5f, 0.5f);
@@ -510,7 +514,8 @@ namespace FracturedChorus.UI
             }
 
             FitFrameRectToKind(_frame.rectTransform, _rect != null ? _rect : transform as RectTransform, kind);
-            _frame.preserveAspect = true;
+            // Fill đúng hộp design (315×328 / 322×325 / 329×359) — không letterbox theo sprite.
+            _frame.preserveAspect = false;
             _frame.type = Image.Type.Simple;
         }
 
