@@ -36,7 +36,7 @@ MonoBehaviour:
   prepEmpowerCost: 2
   empowerEffectValue: 0
   empowerDamageMultiplier: 1
-  empowerExtraHits: 0
+  empowerExtraHits: 2
   empowerForceHarmony: 1
   empowerKeepDelayTier: 0
   empowerOverhealToShield: 0

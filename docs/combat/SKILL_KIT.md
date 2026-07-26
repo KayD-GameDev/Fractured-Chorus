@@ -69,7 +69,7 @@ Scan / Execute after activate         →  12 beat window: party dmg ×1.25
 |---|-----|---------|------|------|---------|
 | 1 | **Strike** | 1-1-1 | 1 | Damage | — |
 | 2 | **Crosscut** | 2-2-2 | 2 | Damage · 2 counter hit | ≥1: +1 hit @ beat note đầu trong S; empty S → ×1.15 dmg |
-| 3 | **Finale** | 2-3-3 | 3 | Damage burst · 3 counter hit | ≥2: Force Harmony hits |
+| 3 | **Finale** | 2-3-3 | 3 | Damage burst · 3 counter hit (1/beat S; Prep≥2: +2 hit @ beat note đầu trong S → clear nốt 3) | ≥2: Force Harmony + extra hits |
 
 **Asset:** `ren_basic` · `ren_skill` · `ren_ult`
 

@@ -53,6 +53,26 @@ namespace FracturedChorus.Combat.Core
             return count;
         }
 
+        public static bool IsEmpowerActiveForCounters(AgendaEntry entry)
+        {
+            if (entry?.Skill == null || entry.Unit == null || !entry.Skill.usesPrepEmpower)
+            {
+                return false;
+            }
+
+            if (entry.IsEmpowered)
+            {
+                return true;
+            }
+
+            if (entry.EmpowerResolved)
+            {
+                return false;
+            }
+
+            return entry.Unit.Prep >= Mathf.Max(1, entry.Skill.prepEmpowerThreshold);
+        }
+
         public static int GetCounterHitContribution(
             AgendaEntry entry,
             int beatIndex,
@@ -63,19 +83,68 @@ namespace FracturedChorus.Combat.Core
                 return 0;
             }
 
+            return ResolveHitContribution(
+                entry.Skill,
+                entry.BeatIndex,
+                beatIndex,
+                timeline,
+                IsEmpowerActiveForCounters(entry));
+        }
+
+        public static int ResolveHitContribution(
+            SkillDefinitionSO skill,
+            int placementBeat,
+            int beatIndex,
+            BeatTimelineEngine timeline,
+            bool empowerActive)
+        {
+            if (skill == null || placementBeat < 0 || beatIndex < 0)
+            {
+                return 0;
+            }
+
+            var active = SkillFootprintUtil.GetActiveBeats(skill);
+            if (beatIndex < placementBeat || beatIndex >= placementBeat + active)
+            {
+                return 0;
+            }
+
             var hits = 1;
-            if (!entry.IsEmpowered || entry.Skill.empowerExtraHits <= 0 || timeline == null)
+            if (!empowerActive || skill.empowerExtraHits <= 0 || timeline == null)
             {
                 return hits;
             }
 
-            var firstNoteBeat = FindFirstActiveImpactBeat(entry, timeline);
+            var firstNoteBeat = FindFirstActiveImpactBeatForPlacement(skill, placementBeat, timeline);
             if (firstNoteBeat == beatIndex)
             {
-                hits += entry.Skill.empowerExtraHits;
+                hits += skill.empowerExtraHits;
             }
 
             return hits;
+        }
+
+        public static int FindFirstActiveImpactBeatForPlacement(
+            SkillDefinitionSO skill,
+            int placementBeat,
+            BeatTimelineEngine timeline)
+        {
+            if (skill == null || timeline == null || placementBeat < 0)
+            {
+                return -1;
+            }
+
+            var active = SkillFootprintUtil.GetActiveBeats(skill);
+            for (var i = 0; i < active; i++)
+            {
+                var beat = placementBeat + i;
+                if (timeline.GetImpactTelegraphsAtBeat(beat).Count > 0)
+                {
+                    return beat;
+                }
+            }
+
+            return -1;
         }
 
         public static bool ActiveWindowHasImpactNote(AgendaEntry entry, BeatTimelineEngine timeline)
@@ -85,20 +154,12 @@ namespace FracturedChorus.Combat.Core
 
         public static int FindFirstActiveImpactBeat(AgendaEntry entry, BeatTimelineEngine timeline)
         {
-            if (entry?.Skill == null || timeline == null)
+            if (entry?.Skill == null)
             {
                 return -1;
             }
 
-            foreach (var activeBeat in GetActiveBeatIndices(entry))
-            {
-                if (timeline.GetImpactTelegraphsAtBeat(activeBeat).Count > 0)
-                {
-                    return activeBeat;
-                }
-            }
-
-            return -1;
+            return FindFirstActiveImpactBeatForPlacement(entry.Skill, entry.BeatIndex, timeline);
         }
 
         public static bool HasCounterOnBeat(BeatTimelineEngine timeline, int beatIndex) =>
@@ -223,7 +284,9 @@ namespace FracturedChorus.Combat.Core
                 return 0;
             }
 
-            var required = telegraph.HitsRequired > 0 ? telegraph.HitsRequired : 1;
+            var required = telegraph.HitsRequired > 0
+                ? telegraph.HitsRequired
+                : Mathf.Max(1, (int)telegraph.NoteTier);
             if (timeline == null)
             {
                 return required;
@@ -246,15 +309,16 @@ namespace FracturedChorus.Combat.Core
                 return remaining;
             }
 
-            foreach (var info in SkillFootprintUtil.EnumerateFootprintBeats(pendingSkill, pendingPlacementBeat, pendingUnit))
-            {
-                if (info.Role == FootprintBeatRole.Active && info.BeatIndex == telegraph.BeatIndex)
-                {
-                    return Mathf.Max(0, remaining - 1);
-                }
-            }
-
-            return remaining;
+            var empower = pendingSkill.usesPrepEmpower
+                && pendingUnit != null
+                && pendingUnit.Prep >= Mathf.Max(1, pendingSkill.prepEmpowerThreshold);
+            var contrib = ResolveHitContribution(
+                pendingSkill,
+                pendingPlacementBeat,
+                telegraph.BeatIndex,
+                timeline,
+                empower);
+            return Mathf.Max(0, remaining - contrib);
         }
 
         /// <summary>

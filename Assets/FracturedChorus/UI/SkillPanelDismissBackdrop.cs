@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace FracturedChorus.UI
 {
@@ -21,8 +22,24 @@ namespace FracturedChorus.UI
 
         public bool IsRaycastLocationValid(Vector2 screenPoint, Camera eventCamera)
         {
-            // Cho phép event xuyên xuống timeline (kéo/relocateskill trên lane).
-            if (IsOverBeatTimeline(screenPoint, eventCamera))
+            if (panel == null)
+            {
+                return true;
+            }
+
+            // Armed drop: backdrop vẫn nhận click để consume drop.
+            if (panel.IsSkillArmed)
+            {
+                return true;
+            }
+
+            if (_timeline == null)
+            {
+                _timeline = FindAnyObjectByType<BeatTimelineUIView>();
+            }
+
+            // Cho phép event xuyên xuống timeline viewport (kéo/relocate trên lane).
+            if (_timeline != null && _timeline.IsScreenPointInViewport(screenPoint))
             {
                 return false;
             }
@@ -37,8 +54,6 @@ namespace FracturedChorus.UI
                 return;
             }
 
-            // W/A/D (or armed) drop: backdrop sits above the timeline, so lane clicks
-            // hit here first — treat as place attempt instead of dismissing the panel.
             if (panel.TryConsumeArmedSkillDrop(eventData.position))
             {
                 return;
@@ -50,27 +65,6 @@ namespace FracturedChorus.UI
             }
 
             panel.Hide();
-        }
-
-        private bool IsOverBeatTimeline(Vector2 screenPoint, Camera eventCamera)
-        {
-            if (_timeline == null)
-            {
-                _timeline = FindAnyObjectByType<BeatTimelineUIView>();
-            }
-
-            if (_timeline == null)
-            {
-                return false;
-            }
-
-            var timelineRect = _timeline.transform as RectTransform;
-            if (timelineRect == null)
-            {
-                return false;
-            }
-
-            return RectTransformUtility.RectangleContainsScreenPoint(timelineRect, screenPoint, eventCamera);
         }
     }
 }

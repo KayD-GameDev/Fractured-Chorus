@@ -729,35 +729,22 @@ namespace FracturedChorus.Combat.Core
 
 
         private void RefreshBeatsForSkillFootprint(CombatUnit unit, SkillDefinitionSO skill, int placementBeat)
-
         {
-
             if (timelineView == null || skill == null)
-
             {
-
                 return;
-
             }
 
-
-
-            timelineView.RefreshBeat(placementBeat);
-
+            var beats = new System.Collections.Generic.HashSet<int> { placementBeat };
             foreach (var info in SkillFootprintUtil.EnumerateFootprintBeats(skill, placementBeat, unit))
-
             {
-
                 if (info.Role == FootprintBeatRole.Active)
-
                 {
-
-                    timelineView.RefreshBeat(info.BeatIndex);
-
+                    beats.Add(info.BeatIndex);
                 }
-
             }
 
+            timelineView.RefreshBeatsAndBossNotes(beats);
         }
 
 
