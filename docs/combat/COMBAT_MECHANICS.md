@@ -108,6 +108,7 @@ Timeline giữ **một hàng cột beat duy nhất**. Trên đó overlay **N dò
 - **Boss notes** vẫn nằm trên hàng beat chung như cũ (không có lane riêng).
 - **Cùng beat, khác lane** → hợp lệ (nhiều unit hành động cùng beat).
 - Nốt **CORE** vs **MICRO** / **EYE** dùng chung hàng beat nhưng **icon + viền màu** khác nhau (xem §5–§6).
+- **LeftRail (Clef Column):** `Header` (~211×358 @1080p) — `left_rail_bg` + `treble_clef` + PHASE/AV + avatar ring; **sợi dây lane** chỉ sống trong `Viewport/LaneLines` (không bake vào art LeftRail).
 
 ### Đặt skill — kéo-thả + highlight phím
 

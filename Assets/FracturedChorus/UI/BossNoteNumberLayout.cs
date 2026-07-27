@@ -15,17 +15,23 @@ namespace FracturedChorus.UI
         [Tooltip("Cỡ số = headSize × hệ số này.")]
         [Range(0.2f, 0.55f)] public float numberSizeFactor = 0.36f;
 
-        [Tooltip("✓ so với ô số (1 = bằng ô NoteNum).")]
+        [Tooltip("✓ = cỡ cố định (px). Mọi nốt dùng cùng một size.")]
+        public float perfectMarkFixedPx = 24f;
+
+        [Tooltip("Legacy — không còn dùng để scale ✓.")]
         [Range(1f, 2f)] public float perfectMarkScaleVsNumber = 1.35f;
+
+        [Tooltip("Legacy — không còn dùng để scale ✓.")]
+        [Range(0.55f, 1.05f)] public float perfectBeatWidthFill = 0.82f;
 
         [Tooltip("Nhân thêm khi hold / drop preview (≤1.15).")]
         [Range(1f, 1.2f)] public float perfectPreviewScale = 1.1f;
 
-        [Tooltip("Floor size ✓ (px). Neighbor cap thắng nếu gap hẹp.")]
-        public float perfectMarkMinPx = 36f;
+        [Tooltip("Legacy — không còn dùng để scale ✓.")]
+        public float perfectMarkMinPx = 16f;
 
-        [Tooltip("Max đường kính ✓ = fill × min khoảng beat kề.")]
-        [Range(0.45f, 0.9f)] public float perfectNeighborFill = 0.72f;
+        [Tooltip("Legacy — không còn dùng để scale ✓.")]
+        [Range(0.45f, 0.95f)] public float perfectNeighborFill = 0.85f;
 
         [Header("Số — offset px (cộng thêm sau neo đầu nốt)")]
         [Tooltip("Nudge tất cả nốt đơn (px). +X phải, +Y lên.")]

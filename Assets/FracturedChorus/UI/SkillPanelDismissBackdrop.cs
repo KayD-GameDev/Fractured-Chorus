@@ -30,7 +30,7 @@ namespace FracturedChorus.UI
 
             if (_timeline == null)
             {
-                _timeline = FindFirstObjectByType<BeatTimelineUIView>();
+                _timeline = FindAnyObjectByType<BeatTimelineUIView>();
             }
 
             if (_timeline != null && _timeline.IsScreenPointInViewport(sp))

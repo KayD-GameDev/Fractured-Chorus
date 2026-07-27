@@ -3,6 +3,7 @@ using FracturedChorus.UI;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace FracturedChorus.Editor
 {
@@ -66,9 +67,58 @@ namespace FracturedChorus.Editor
         private static bool _dragging;
         private static bool _foldLayoutHelp = true;
 
+        private static bool _foldLeftRail = true;
+
         public override void OnInspectorGUI()
         {
             DrawDefaultInspector();
+
+            EditorGUILayout.Space(6f);
+            _foldLeftRail = EditorGUILayout.Foldout(_foldLeftRail, "Left Rail — chỉnh trên Scene", true);
+            if (_foldLeftRail)
+            {
+                EditorGUILayout.HelpBox(
+                    "Edit Mode — Hierarchy:\n" +
+                    "• Header/PhaseLabel (+ PhaseArt) → chữ PHASE\n" +
+                    "• Header/Budget (+ BudgetText) → khung 0/10\n" +
+                    "• Header/Clef/ClefIcon → khóa sol\n" +
+                    "• Header/LeftRailBackground → nền cột\n" +
+                    "Kéo Rect trên Scene · Preserve Scene Rects = on · Ctrl+S",
+                    MessageType.Info);
+
+                var view = (BeatTimelineUIView)target;
+                if (GUILayout.Button("Ensure LeftRail hierarchy (Scene)"))
+                {
+                    serializedObject.ApplyModifiedProperties();
+                    Undo.RecordObject(view, "Ensure LeftRail");
+                    view.ApplyLeftRailPublic();
+                    AssignLeftRailRefs(view);
+                    EditorUtility.SetDirty(view);
+                    if (view.gameObject.scene.IsValid())
+                    {
+                        EditorSceneManager.MarkSceneDirty(view.gameObject.scene);
+                    }
+
+                    serializedObject.Update();
+                    Debug.Log("[LeftRail] Hierarchy sẵn sàng — kéo Clef / Background trên Scene rồi Ctrl+S.");
+                }
+
+                if (GUILayout.Button("Apply LeftRail (sprites / alpha / layout)"))
+                {
+                    serializedObject.ApplyModifiedProperties();
+                    Undo.RecordObject(view, "Apply LeftRail");
+                    view.ApplyLeftRailPublic();
+                    EditorUtility.SetDirty(view);
+                    serializedObject.Update();
+                }
+
+                if (GUILayout.Button("Bake Clef Rect → LeftRailLayout"))
+                {
+                    serializedObject.ApplyModifiedProperties();
+                    BakeClefToLayout(view);
+                    serializedObject.Update();
+                }
+            }
 
             EditorGUILayout.Space(6f);
             _foldLayoutHelp = EditorGUILayout.Foldout(_foldLayoutHelp, "Boss Note — kéo tay trên Scene", true);
@@ -109,6 +159,58 @@ namespace FracturedChorus.Editor
             }
         }
 
+        private static void AssignLeftRailRefs(BeatTimelineUIView view)
+        {
+            var so = new SerializedObject(view);
+            var header = view.transform.Find("Header");
+            if (header == null)
+            {
+                return;
+            }
+
+            var bg = header.Find("LeftRailBackground")?.GetComponent<Image>();
+            var clef = header.Find("Clef") as RectTransform;
+            var clefIcon = clef != null ? clef.Find("ClefIcon")?.GetComponent<Image>() : null;
+            var phaseArt = header.Find("PhaseLabel/PhaseArt")?.GetComponent<Image>();
+            var budgetImg = header.Find("Budget")?.GetComponent<Image>();
+
+            so.FindProperty("leftRailBackgroundImage").objectReferenceValue = bg;
+            so.FindProperty("leftRailClefRoot").objectReferenceValue = clef;
+            so.FindProperty("trebleClefImage").objectReferenceValue = clefIcon;
+            so.FindProperty("phaseLabelImage").objectReferenceValue = phaseArt;
+            so.FindProperty("avBudgetFrameImage").objectReferenceValue = budgetImg;
+            so.ApplyModifiedProperties();
+        }
+
+        private static void BakeClefToLayout(BeatTimelineUIView view)
+        {
+            var clef = view.transform.Find("Header/Clef") as RectTransform;
+            if (clef == null)
+            {
+                EditorUtility.DisplayDialog("Left Rail", "Không thấy Header/Clef trên Hierarchy.", "OK");
+                return;
+            }
+
+            Undo.RecordObject(view, "Bake Clef → LeftRailLayout");
+            var layout = view.LeftRailLayout;
+            if (layout == null)
+            {
+                return;
+            }
+
+            layout.clefSize = clef.sizeDelta;
+            layout.clefAnchoredPosition = clef.anchoredPosition;
+            layout.preserveSceneRects = true;
+            EditorUtility.SetDirty(view);
+            if (view.gameObject.scene.IsValid())
+            {
+                EditorSceneManager.MarkSceneDirty(view.gameObject.scene);
+            }
+
+            Debug.Log(
+                $"[LeftRail] Bake clef size={layout.clefSize} pos={layout.clefAnchoredPosition}. Ctrl+S.");
+        }
+
         private void BakeSelected(BeatTimelineUIView view)
         {
             var go = Selection.activeGameObject;
@@ -145,8 +247,7 @@ namespace FracturedChorus.Editor
             }
 
             var handles = Object.FindObjectsByType<BossNoteNumberHandle>(
-                FindObjectsInactive.Exclude,
-                FindObjectsSortMode.None);
+                FindObjectsInactive.Exclude);
             if (handles == null || handles.Length == 0)
             {
                 return;
