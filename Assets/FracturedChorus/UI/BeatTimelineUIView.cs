@@ -62,6 +62,21 @@ namespace FracturedChorus.UI
         [SerializeField] private float bossTrackFrameBorderThickness = 2f;
         [SerializeField] private Sprite timelineStaffBackground;
         [SerializeField] [Range(0.15f, 1f)] private float timelineStaffBackgroundAlpha = 1f;
+        [Header("Left Rail (Clef Column)")]
+        [SerializeField] private Sprite leftRailBackground;
+        [SerializeField] private Sprite trebleClefSprite;
+        [SerializeField] private Sprite laneAvatarRingSprite;
+        [SerializeField] private Sprite laneAvatarBossFrameSprite;
+        [SerializeField] private Sprite avatarColumnBackground;
+        [SerializeField] private Sprite phaseLabelSprite;
+        [SerializeField] private Sprite avBudgetFrameSprite;
+        [SerializeField] private Image leftRailBackgroundImage;
+        [SerializeField] private Image trebleClefImage;
+        [SerializeField] private Image phaseLabelImage;
+        [SerializeField] private Image avBudgetFrameImage;
+        [SerializeField] private Image avatarColumnBackgroundImage;
+        [SerializeField] private RectTransform leftRailClefRoot;
+        [SerializeField] private LeftRailLayout leftRailLayout = new LeftRailLayout();
         [Tooltip("Keep Header / outer BeatTimeline frame position. Internal layout (TrackLine, ScrollContent, ScanBar) still auto-layouts.")]
         [SerializeField] private bool preserveSceneLayout = true;
 
@@ -118,8 +133,13 @@ namespace FracturedChorus.UI
         private Action<CombatUnit> _onLaneAvatarClicked;
         private CombatUnit _selectedLaneUnit;
 
-        private const float LaneAvatarSlotSize = 40f;
-        private const float LaneAvatarGutterWidth = 44f;
+        private const string LeftRailResourceRoot = "UI/Combat/Timeline/LeftRail/";
+        private const int PhaseChipFontSize = 22;
+        private static readonly Color PhaseChipTextColor = new Color(0.918f, 0.984f, 1f, 1f);
+
+        public LeftRailLayout LeftRailLayout => leftRailLayout;
+
+        public void ApplyLeftRailPublic() => EnsureLeftRailVisuals();
         private readonly List<RectTransform> _laneLines = new();
         private readonly Dictionary<(CombatUnit unit, int beat), Image> _footprintDots = new();
         private readonly Dictionary<(CombatUnit unit, int beat), TimelineLaneMarkerView> _laneMarkers = new();
@@ -214,6 +234,15 @@ namespace FracturedChorus.UI
             EnsureViewportMask();
             EnsureStaffBackground();
 
+            try
+            {
+                EnsureLeftRailVisuals();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[LeftRail] Bỏ qua visual cột trái: {ex.Message}");
+            }
+
             if (confirmButton == null)
             {
                 confirmButton = transform.Find("ConfirmButton")?.GetComponent<Button>();
@@ -240,6 +269,12 @@ namespace FracturedChorus.UI
             if (avLabel != null)
             {
                 avLabel.gameObject.SetActive(false);
+            }
+
+            if (phaseLabel != null &&
+                string.Equals(phaseLabel.text, "PHARSE", System.StringComparison.OrdinalIgnoreCase))
+            {
+                phaseLabel.text = "PHASE";
             }
 
             ConfigureAvLabelLayout();
@@ -431,6 +466,324 @@ namespace FracturedChorus.UI
             }
 
             OrderViewportLayers();
+        }
+
+        private void EnsureLeftRailVisuals()
+        {
+            leftRailLayout ??= new LeftRailLayout();
+            LoadLeftRailSpritesIfNeeded();
+
+            var header = transform.Find("Header") as RectTransform;
+            if (header == null)
+            {
+                return;
+            }
+
+            if (leftRailBackgroundImage == null)
+            {
+                leftRailBackgroundImage = header.Find("LeftRailBackground")?.GetComponent<Image>();
+            }
+
+            if (leftRailBackgroundImage == null)
+            {
+                var go = new GameObject("LeftRailBackground", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                var rect = go.GetComponent<RectTransform>();
+                rect.SetParent(header, false);
+                rect.anchorMin = Vector2.zero;
+                rect.anchorMax = Vector2.one;
+                rect.offsetMin = Vector2.zero;
+                rect.offsetMax = Vector2.zero;
+                leftRailBackgroundImage = go.GetComponent<Image>();
+                leftRailBackgroundImage.raycastTarget = false;
+                leftRailBackgroundImage.type = Image.Type.Simple;
+                leftRailBackgroundImage.preserveAspect = false;
+            }
+
+            leftRailBackgroundImage.transform.SetAsFirstSibling();
+            if (leftRailBackground != null)
+            {
+                leftRailBackgroundImage.sprite = leftRailBackground;
+                leftRailBackgroundImage.color = new Color(1f, 1f, 1f, Mathf.Clamp01(leftRailLayout.backgroundAlpha));
+                leftRailBackgroundImage.enabled = true;
+            }
+            else
+            {
+                leftRailBackgroundImage.enabled = false;
+            }
+
+            if (leftRailClefRoot == null)
+            {
+                leftRailClefRoot = header.Find("Clef") as RectTransform;
+            }
+
+            if (leftRailClefRoot == null)
+            {
+                var clefGo = new GameObject("Clef", typeof(RectTransform));
+                leftRailClefRoot = clefGo.GetComponent<RectTransform>();
+                leftRailClefRoot.SetParent(header, false);
+                leftRailClefRoot.anchorMin = new Vector2(0f, 0.5f);
+                leftRailClefRoot.anchorMax = new Vector2(0f, 0.5f);
+                leftRailClefRoot.pivot = new Vector2(0.5f, 0.5f);
+            }
+
+            if (!leftRailLayout.preserveSceneRects)
+            {
+                leftRailClefRoot.sizeDelta = leftRailLayout.clefSize;
+                leftRailClefRoot.anchoredPosition = leftRailLayout.clefAnchoredPosition;
+            }
+
+            if (trebleClefImage == null)
+            {
+                trebleClefImage = leftRailClefRoot.Find("ClefIcon")?.GetComponent<Image>();
+            }
+
+            if (trebleClefImage == null)
+            {
+                trebleClefImage = GetOrCreateChildImage(leftRailClefRoot, "ClefIcon");
+            }
+
+            if (trebleClefImage == null)
+            {
+                return;
+            }
+
+            trebleClefImage.preserveAspect = true;
+            if (trebleClefSprite != null)
+            {
+                trebleClefImage.sprite = trebleClefSprite;
+                trebleClefImage.color = new Color(1f, 1f, 1f, Mathf.Clamp01(leftRailLayout.clefAlpha));
+                trebleClefImage.enabled = true;
+            }
+            else
+            {
+                trebleClefImage.enabled = false;
+            }
+
+            var clefText = leftRailClefRoot.GetComponent<Text>();
+            if (clefText != null)
+            {
+                clefText.enabled = trebleClefSprite == null;
+            }
+
+            ApplyPhaseAndBudgetArt(header);
+            EnsureAvatarColumnShell();
+        }
+
+        private void EnsureAvatarColumnShell()
+        {
+            EnsureAvatarColumnRoot();
+            if (laneAvatarGutter == null)
+            {
+                return;
+            }
+
+            leftRailLayout ??= new LeftRailLayout();
+            var gutterW = Mathf.Max(24f, leftRailLayout.avatarGutterWidth);
+
+            if (leftRailLayout.forceAvatarLayout ||
+                !leftRailLayout.preserveSceneRects ||
+                laneAvatarGutter.sizeDelta.x < 1f)
+            {
+                laneAvatarGutter.anchorMin = new Vector2(0f, 0f);
+                laneAvatarGutter.anchorMax = new Vector2(0f, 1f);
+                laneAvatarGutter.pivot = new Vector2(0f, 0.5f);
+                laneAvatarGutter.sizeDelta = new Vector2(gutterW, 0f);
+                laneAvatarGutter.anchoredPosition = new Vector2(ResolveAvatarGutterOffsetX(), 0f);
+            }
+
+            ApplyAvatarColumnBackground();
+            if (leftRailLayout.forceAvatarLayout)
+            {
+                laneAvatarGutter.SetAsLastSibling();
+            }
+        }
+
+        private float ResolveAvatarGutterOffsetX()
+        {
+            leftRailLayout ??= new LeftRailLayout();
+            var gutterW = Mathf.Max(24f, leftRailLayout.avatarGutterWidth);
+
+            if (!leftRailLayout.forceAvatarLayout)
+            {
+                return leftRailLayout.avatarGutterOffsetX;
+            }
+
+            var viewportLeft = leftRailLayout.avatarGutterOffsetX + gutterW;
+            if (viewport != null)
+            {
+                var worldLeft = viewport.TransformPoint(new Vector3(viewport.rect.xMin, 0f, 0f));
+                viewportLeft = transform.InverseTransformPoint(worldLeft).x;
+            }
+            else
+            {
+                var header = transform.Find("Header") as RectTransform;
+                if (header != null)
+                {
+                    viewportLeft = header.rect.xMax;
+                }
+            }
+
+            return Mathf.Max(0f, viewportLeft - gutterW);
+        }
+
+        private void ApplyPhaseAndBudgetArt(RectTransform header)
+        {
+            if (header == null)
+            {
+                return;
+            }
+
+            if (phaseLabel == null)
+            {
+                phaseLabel = header.Find("PhaseLabel")?.GetComponent<Text>();
+            }
+
+            if (phaseLabel != null)
+            {
+                phaseLabel.gameObject.SetActive(true);
+                phaseLabel.enabled = phaseLabelSprite == null;
+                if (phaseLabelSprite != null)
+                {
+                    phaseLabel.text = string.Empty;
+                }
+                else if (string.IsNullOrEmpty(phaseLabel.text) ||
+                         string.Equals(phaseLabel.text, "PHARSE", StringComparison.OrdinalIgnoreCase))
+                {
+                    phaseLabel.text = "PHASE";
+                }
+
+                if (phaseLabelImage == null)
+                {
+                    phaseLabelImage = phaseLabel.transform.Find("PhaseArt")?.GetComponent<Image>();
+                }
+
+                if (phaseLabelImage == null && phaseLabelSprite != null)
+                {
+                    phaseLabelImage = GetOrCreateChildImage(phaseLabel.rectTransform, "PhaseArt");
+                }
+
+                if (phaseLabelImage != null)
+                {
+                    phaseLabelImage.preserveAspect = true;
+                    if (phaseLabelSprite != null)
+                    {
+                        phaseLabelImage.sprite = phaseLabelSprite;
+                        phaseLabelImage.color = Color.white;
+                        phaseLabelImage.enabled = true;
+                    }
+                    else
+                    {
+                        phaseLabelImage.enabled = false;
+                    }
+                }
+
+                phaseLabel.transform.SetAsLastSibling();
+            }
+
+            var budgetRt = header.Find("Budget") as RectTransform;
+            if (budgetRt != null)
+            {
+                budgetRt.gameObject.SetActive(true);
+                if (avBudgetFrameImage == null)
+                {
+                    avBudgetFrameImage = budgetRt.GetComponent<Image>();
+                }
+
+                if (avBudgetFrameImage != null && avBudgetFrameSprite != null)
+                {
+                    avBudgetFrameImage.sprite = avBudgetFrameSprite;
+                    avBudgetFrameImage.type = Image.Type.Simple;
+                    avBudgetFrameImage.preserveAspect = true;
+                    avBudgetFrameImage.color = Color.white;
+                    avBudgetFrameImage.enabled = true;
+                }
+
+                if (budgetLabel == null)
+                {
+                    budgetLabel = budgetRt.Find("BudgetText")?.GetComponent<Text>();
+                }
+
+                if (budgetLabel != null)
+                {
+                    budgetLabel.enabled = true;
+                    budgetLabel.color = PhaseChipTextColor;
+                    budgetLabel.fontStyle = FontStyle.Bold;
+                    budgetLabel.fontSize = PhaseChipFontSize;
+                    budgetLabel.transform.SetAsLastSibling();
+                }
+
+                budgetRt.SetAsLastSibling();
+            }
+        }
+
+        private void LoadLeftRailSpritesIfNeeded()
+        {
+            if (leftRailBackground == null)
+            {
+                leftRailBackground = Resources.Load<Sprite>(LeftRailResourceRoot + "left_rail_bg_v1");
+            }
+
+            if (trebleClefSprite == null)
+            {
+                trebleClefSprite = Resources.Load<Sprite>(LeftRailResourceRoot + "treble_clef_v4");
+            }
+
+            if (laneAvatarRingSprite == null)
+            {
+                laneAvatarRingSprite = Resources.Load<Sprite>(LeftRailResourceRoot + "lane_avatar_frame_pc_v1");
+            }
+
+            if (laneAvatarRingSprite == null)
+            {
+                laneAvatarRingSprite = Resources.Load<Sprite>(LeftRailResourceRoot + "lane_avatar_ring_v1");
+            }
+
+            if (laneAvatarBossFrameSprite == null)
+            {
+                laneAvatarBossFrameSprite = Resources.Load<Sprite>(LeftRailResourceRoot + "lane_avatar_frame_boss_v1");
+            }
+
+            if (avatarColumnBackground == null)
+            {
+                avatarColumnBackground = Resources.Load<Sprite>(LeftRailResourceRoot + "avatar_column_bg_v1");
+            }
+
+            if (phaseLabelSprite == null)
+            {
+                phaseLabelSprite = Resources.Load<Sprite>(LeftRailResourceRoot + "phase_label_v4");
+            }
+
+            if (avBudgetFrameSprite == null)
+            {
+                avBudgetFrameSprite = Resources.Load<Sprite>(LeftRailResourceRoot + "phase_chip_v3");
+            }
+        }
+
+        private static Image GetOrCreateChildImage(RectTransform parent, string childName)
+        {
+            if (parent == null)
+            {
+                return null;
+            }
+
+            var existing = parent.Find(childName)?.GetComponent<Image>();
+            if (existing != null)
+            {
+                return existing;
+            }
+
+            var go = new GameObject(childName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            var rect = go.GetComponent<RectTransform>();
+            rect.SetParent(parent, false);
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+
+            var image = go.GetComponent<Image>();
+            image.raycastTarget = false;
+            image.type = Image.Type.Simple;
+            return image;
         }
 
         public void Bind(BeatTimelineEngine timeline, CombatSession session,
@@ -2261,25 +2614,20 @@ namespace FracturedChorus.UI
 
         private void EnsureLaneAvatarColumn()
         {
-            if (_laneUnits.Count == 0)
+            EnsureAvatarColumnShell();
+            if (laneAvatarGutter == null)
             {
                 return;
             }
 
-            if (laneAvatarGutter == null)
-            {
-                laneAvatarGutter = transform.Find("LaneAvatarGutter") as RectTransform;
-            }
+            leftRailLayout ??= new LeftRailLayout();
+            var slotSize = Mathf.Max(24f, leftRailLayout.avatarSlotSize);
+            LoadLeftRailSpritesIfNeeded();
 
-            if (laneAvatarGutter == null)
+            if (leftRailLayout.forceAvatarLayout)
             {
-                var go = new GameObject("LaneAvatarGutter", typeof(RectTransform));
-                laneAvatarGutter = go.GetComponent<RectTransform>();
-                laneAvatarGutter.SetParent(transform, false);
+                LayoutLaneAvatarGutterFlushToViewport();
             }
-
-            // Chỉ di chuyển gutter — không đổi Viewport. Sát mép trái Viewport, cùng chiều cao.
-            LayoutLaneAvatarGutterFlushToViewport();
 
             foreach (var slot in _laneAvatarSlots)
             {
@@ -2290,6 +2638,11 @@ namespace FracturedChorus.UI
             }
 
             _laneAvatarSlots.Clear();
+
+            if (_laneUnits.Count == 0)
+            {
+                return;
+            }
 
             var viewportHeight = viewport != null ? viewport.rect.height : 100f;
             for (var i = 0; i < _laneUnits.Count; i++)
@@ -2304,25 +2657,101 @@ namespace FracturedChorus.UI
                 slotRect.anchorMax = new Vector2(0.5f, 0f);
                 slotRect.pivot = new Vector2(0.5f, 0.5f);
                 slotRect.anchoredPosition = new Vector2(0f, laneY);
-                slotRect.sizeDelta = new Vector2(LaneAvatarSlotSize, LaneAvatarSlotSize);
+                slotRect.sizeDelta = new Vector2(slotSize, slotSize);
 
                 var slotView = slotGo.AddComponent<TimelineLaneAvatarSlotView>();
+                slotView.SetRingSprite(ResolveLaneAvatarFrame(unit));
                 slotView.Bind(unit, _onLaneAvatarClicked);
                 slotView.SetSelected(unit == _selectedLaneUnit);
                 _laneAvatarSlots.Add(slotView);
             }
         }
 
-        /// <summary>
-        /// Neo LaneAvatarGutter sát trái Viewport (pivot phải chạm mép trái VP), cùng Y/height.
-        /// Không chỉnh position/size của Viewport.
-        /// </summary>
+        private void EnsureAvatarColumnRoot()
+        {
+            if (laneAvatarGutter == null)
+            {
+                laneAvatarGutter = transform.Find("LaneAvatarGutter") as RectTransform;
+            }
+
+            if (laneAvatarGutter == null)
+            {
+                var go = new GameObject("LaneAvatarGutter", typeof(RectTransform));
+                laneAvatarGutter = go.GetComponent<RectTransform>();
+                laneAvatarGutter.SetParent(transform, false);
+            }
+        }
+
+        private void ApplyAvatarColumnBackground()
+        {
+            if (laneAvatarGutter == null)
+            {
+                return;
+            }
+
+            LoadLeftRailSpritesIfNeeded();
+
+            if (avatarColumnBackgroundImage == null)
+            {
+                avatarColumnBackgroundImage = laneAvatarGutter.Find("AvatarColumnBackground")?.GetComponent<Image>();
+            }
+
+            if (avatarColumnBackgroundImage == null)
+            {
+                avatarColumnBackgroundImage = GetOrCreateChildImage(laneAvatarGutter, "AvatarColumnBackground");
+                if (avatarColumnBackgroundImage != null)
+                {
+                    avatarColumnBackgroundImage.raycastTarget = false;
+                    avatarColumnBackgroundImage.type = Image.Type.Simple;
+                    avatarColumnBackgroundImage.preserveAspect = false;
+                    var rt = avatarColumnBackgroundImage.rectTransform;
+                    rt.anchorMin = Vector2.zero;
+                    rt.anchorMax = Vector2.one;
+                    rt.offsetMin = Vector2.zero;
+                    rt.offsetMax = Vector2.zero;
+                }
+            }
+
+            if (avatarColumnBackgroundImage == null)
+            {
+                return;
+            }
+
+            avatarColumnBackgroundImage.transform.SetAsFirstSibling();
+            if (avatarColumnBackground != null)
+            {
+                avatarColumnBackgroundImage.sprite = avatarColumnBackground;
+                avatarColumnBackgroundImage.color = new Color(
+                    1f, 1f, 1f, Mathf.Clamp01(leftRailLayout.avatarColumnBackgroundAlpha));
+                avatarColumnBackgroundImage.enabled = true;
+            }
+            else
+            {
+                avatarColumnBackgroundImage.enabled = false;
+            }
+        }
+
+        private Sprite ResolveLaneAvatarFrame(CombatUnit unit)
+        {
+            var useBossFrame = unit != null &&
+                               (unit.Role == UnitRole.Boss || unit.Side == GridSide.Enemy);
+            if (useBossFrame && laneAvatarBossFrameSprite != null)
+            {
+                return laneAvatarBossFrameSprite;
+            }
+
+            return laneAvatarRingSprite;
+        }
+
         private void LayoutLaneAvatarGutterFlushToViewport()
         {
             if (laneAvatarGutter == null)
             {
                 return;
             }
+
+            leftRailLayout ??= new LeftRailLayout();
+            var gutterW = Mathf.Max(24f, leftRailLayout.avatarGutterWidth);
 
             laneAvatarGutter.SetParent(transform, false);
             laneAvatarGutter.localScale = Vector3.one;
@@ -2333,12 +2762,11 @@ namespace FracturedChorus.UI
                 laneAvatarGutter.anchorMin = new Vector2(0f, 0f);
                 laneAvatarGutter.anchorMax = new Vector2(0f, 1f);
                 laneAvatarGutter.pivot = new Vector2(1f, 0.5f);
-                laneAvatarGutter.sizeDelta = new Vector2(LaneAvatarGutterWidth, 0f);
+                laneAvatarGutter.sizeDelta = new Vector2(gutterW, 0f);
                 laneAvatarGutter.anchoredPosition = Vector2.zero;
                 return;
             }
 
-            // Force viewport layout so rect is current before measuring left edge.
             Canvas.ForceUpdateCanvases();
 
             var parent = transform as RectTransform;
@@ -2353,11 +2781,10 @@ namespace FracturedChorus.UI
             var vpBottom = vpLocal.y;
             var vpHeight = Mathf.Max(1f, vpLocalMax.y - vpLocal.y);
 
-            // Anchor bottom-left of parent, position by left edge of viewport.
             laneAvatarGutter.anchorMin = new Vector2(0f, 0f);
             laneAvatarGutter.anchorMax = new Vector2(0f, 0f);
             laneAvatarGutter.pivot = new Vector2(1f, 0f);
-            laneAvatarGutter.sizeDelta = new Vector2(LaneAvatarGutterWidth, vpHeight);
+            laneAvatarGutter.sizeDelta = new Vector2(gutterW, vpHeight);
             laneAvatarGutter.anchoredPosition = new Vector2(vpLeft, vpBottom);
         }
 
@@ -2392,6 +2819,16 @@ namespace FracturedChorus.UI
             }
 
             return _slotOffsetPx[beat] + _slotWidths[beat] * 0.5f;
+        }
+
+        private float BeatWidthForBeat(int beat)
+        {
+            if (_slotWidths == null || beat < 0 || beat >= TotalBeats)
+            {
+                return 0f;
+            }
+
+            return _slotWidths[beat];
         }
 
         private float ContentXForBeatFloat(float beat)
@@ -2863,7 +3300,8 @@ namespace FracturedChorus.UI
                 NoteVisuals,
                 ContentXForBeat,
                 noteY,
-                bossNoteNumberLayout);
+                bossNoteNumberLayout,
+                BeatWidthForBeat);
             _bossNoteClusters.Rebuild(_timeline, height);
             SyncBlockBarrierScroll();
             OrderViewportLayers();
@@ -3093,9 +3531,6 @@ namespace FracturedChorus.UI
             img.preserveAspect = true;
             img.raycastTarget = false;
             img.type = Image.Type.Simple;
-            var outline = go.AddComponent<Outline>();
-            outline.effectColor = new Color(0.25f, 0.95f, 1f, 0.85f);
-            outline.effectDistance = new Vector2(1.2f, -1.2f);
             _dropCoverOverlays.Add(img);
         }
 
@@ -3801,6 +4236,8 @@ namespace FracturedChorus.UI
 
         private void OnValidate()
         {
+            leftRailLayout ??= new LeftRailLayout();
+
             if (bossNoteNumberLayout != null)
             {
                 if (bossNoteNumberLayout.variantNudges == null ||
@@ -3819,22 +4256,38 @@ namespace FracturedChorus.UI
                     bossNoteNumberLayout.perfectPreviewScale = 1.1f;
                 }
 
-                if (bossNoteNumberLayout.perfectMarkMinPx >= 50f ||
-                    bossNoteNumberLayout.perfectMarkMinPx < 24f)
+                if (bossNoteNumberLayout.perfectMarkFixedPx < 12f ||
+                    bossNoteNumberLayout.perfectMarkFixedPx > 36f)
                 {
-                    bossNoteNumberLayout.perfectMarkMinPx = 36f;
+                    bossNoteNumberLayout.perfectMarkFixedPx = 24f;
+                }
+
+                if (bossNoteNumberLayout.perfectMarkMinPx >= 50f ||
+                    bossNoteNumberLayout.perfectMarkMinPx < 10f)
+                {
+                    bossNoteNumberLayout.perfectMarkMinPx = 16f;
                 }
 
                 if (bossNoteNumberLayout.perfectNeighborFill < 0.45f ||
-                    bossNoteNumberLayout.perfectNeighborFill > 0.9f)
+                    bossNoteNumberLayout.perfectNeighborFill > 0.95f)
                 {
-                    bossNoteNumberLayout.perfectNeighborFill = 0.72f;
+                    bossNoteNumberLayout.perfectNeighborFill = 0.85f;
+                }
+
+                if (bossNoteNumberLayout.perfectBeatWidthFill < 0.55f ||
+                    bossNoteNumberLayout.perfectBeatWidthFill > 1.05f)
+                {
+                    bossNoteNumberLayout.perfectBeatWidthFill = 0.82f;
                 }
 
                 bossNoteNumberLayout.perfectMarkScaleVsNumber =
                     Mathf.Clamp(bossNoteNumberLayout.perfectMarkScaleVsNumber, 1f, 2f);
                 bossNoteNumberLayout.perfectPreviewScale =
                     Mathf.Clamp(bossNoteNumberLayout.perfectPreviewScale, 1f, 1.2f);
+                bossNoteNumberLayout.perfectBeatWidthFill =
+                    Mathf.Clamp(bossNoteNumberLayout.perfectBeatWidthFill, 0.55f, 1.05f);
+                bossNoteNumberLayout.perfectMarkFixedPx =
+                    Mathf.Clamp(bossNoteNumberLayout.perfectMarkFixedPx, 12f, 36f);
             }
 
             if (SuppressBossNoteClusterRebuild ||

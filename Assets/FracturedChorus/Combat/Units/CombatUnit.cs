@@ -15,6 +15,7 @@ namespace FracturedChorus.Combat.Units
         public UnitStats Stats { get; }
         public SkillDefinitionSO[] Skills { get; }
         public Color PlaceholderColor { get; }
+        public Sprite TimelineAvatarSprite { get; }
         public const int PrepCap = 3;
 
         public int CurrentHp { get; private set; }
@@ -51,6 +52,7 @@ namespace FracturedChorus.Combat.Units
             Stats = preset.ResolveStats();
             Skills = preset.skills ?? Array.Empty<SkillDefinitionSO>();
             PlaceholderColor = preset.placeholderColor;
+            TimelineAvatarSprite = preset.timelineAvatarSprite;
             TelegraphAttacksPerPhase = Mathf.Max(1, preset.telegraphAttacksPerPhase);
             CurrentHp = Stats.MaxHp;
         }

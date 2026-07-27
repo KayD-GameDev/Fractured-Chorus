@@ -18,6 +18,8 @@ namespace FracturedChorus.Data
         public Color placeholderColor = Color.white;
         [Tooltip("Default combat sprite — used when the scene has none assigned or a 1×1 placeholder.")]
         public Sprite battleSprite;
+        [Tooltip("Circular chibi bust for timeline lane avatar gutter. Falls back to PlaceholderColor when null.")]
+        public Sprite timelineAvatarSprite;
         [Tooltip("Full tilted combat card art (name + HP/Prep slots). Party/enemy card UI displays this on CardArt.")]
         public Sprite combatCardSprite;
         [Tooltip("Khi load: chỉ ghi đè BarStack.anchoredPosition.y (Hierarchy). < 0 = giữ Y CardTemplate.")]

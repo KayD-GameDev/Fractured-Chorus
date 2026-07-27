@@ -16,8 +16,6 @@ namespace FracturedChorus.UI
         private readonly List<GameObject> _spawned = new();
         private readonly List<GameObject> _livingNoteRoots = new();
         private readonly Dictionary<int, RectTransform> _numberSlots = new();
-        private readonly HashSet<int> _occupiedBeats = new();
-        private readonly Dictionary<int, float> _beamedHeadGapByBeat = new();
         private RectTransform _layer;
         private TimelineNoteVisualCatalog _catalog;
         private System.Func<int, float> _contentXForBeat;
@@ -29,7 +27,8 @@ namespace FracturedChorus.UI
             TimelineNoteVisualCatalog catalog,
             System.Func<int, float> contentXForBeat,
             float noteYFromBottom,
-            BossNoteNumberLayout layout = null)
+            BossNoteNumberLayout layout = null,
+            System.Func<int, float> beatWidthForBeat = null)
         {
             _layer = layer;
             _catalog = catalog;
@@ -55,15 +54,11 @@ namespace FracturedChorus.UI
             _spawned.Clear();
             _livingNoteRoots.Clear();
             _numberSlots.Clear();
-            _occupiedBeats.Clear();
-            _beamedHeadGapByBeat.Clear();
         }
 
         public Vector2 GetPerfectMarkSizeForBeat(int beatIndex, bool preview)
         {
-            _numberSlots.TryGetValue(beatIndex, out var slot);
-            _beamedHeadGapByBeat.TryGetValue(beatIndex, out var headGap);
-            return ResolvePerfectMarkSize(slot, beatIndex, preview, headGap);
+            return ResolvePerfectMarkSize(preview);
         }
 
         public bool TryAttachPerfectPreview(int beatIndex, Sprite sprite, out Image image)
@@ -82,8 +77,7 @@ namespace FracturedChorus.UI
                 text.enabled = false;
             }
 
-            _beamedHeadGapByBeat.TryGetValue(beatIndex, out var headGap);
-            image = SpawnPerfectOnSlot(slot, beatIndex, sprite, preview: true, headGap);
+            image = SpawnPerfectOnSlot(slot, beatIndex, sprite, preview: true);
             return image != null;
         }
 
@@ -114,14 +108,6 @@ namespace FracturedChorus.UI
 
             _catalog?.EnsureDefaultsLoaded();
             var clusters = BossNoteClusterBuilder.Build(timeline);
-            foreach (var cluster in clusters)
-            {
-                _occupiedBeats.Add(cluster.Left.BeatIndex);
-                if (cluster.Kind == BossNoteGlyphKind.Beamed)
-                {
-                    _occupiedBeats.Add(cluster.Right.BeatIndex);
-                }
-            }
 
             var y = _noteYFromBottom;
             if (viewportHeight > 1f)
@@ -165,7 +151,8 @@ namespace FracturedChorus.UI
 
             if (head.IsCleared)
             {
-                var anchor = Mathf.Max(48f, w * _layout.numberSizeFactor * 1.6f);
+                var markSide = ResolvePerfectMarkSize(preview: false).x;
+                var anchor = Mathf.Max(markSide, 24f);
                 var noteImg = CreateImage(
                     $"NoteSingle_{head.BeatIndex}",
                     null,
@@ -178,7 +165,7 @@ namespace FracturedChorus.UI
                     head.BeatIndex,
                     noteImg.rectTransform,
                     Vector2.zero,
-                    anchor * 0.72f,
+                    anchor / 1.45f,
                     BossNoteNumberRole.Single,
                     Vector2.zero,
                     head.VariantIndex);
@@ -186,8 +173,7 @@ namespace FracturedChorus.UI
                     slot,
                     head.BeatIndex,
                     _catalog != null ? _catalog.CoverPerfect : null,
-                    preview: false,
-                    beamedHeadGapPx: 0f);
+                    preview: false);
                 return;
             }
 
@@ -241,14 +227,9 @@ namespace FracturedChorus.UI
 
             var font = height * _layout.numberSizeFactor;
             var size = new Vector2(width, height);
-            var leftLocal = FittedLocalFromNorm(_layout.beamedHeadNormLeft, size, sprite);
-            var rightLocal = FittedLocalFromNorm(_layout.beamedHeadNormRight, size, sprite);
-            var headGap = Mathf.Abs(rightLocal.x - leftLocal.x);
-            _beamedHeadGapByBeat[left.BeatIndex] = headGap;
-            _beamedHeadGapByBeat[right.BeatIndex] = headGap;
 
-            PlaceBeamedHead(left, noteImg.rectTransform, size, sprite, font, true, headGap);
-            PlaceBeamedHead(right, noteImg.rectTransform, size, sprite, font, false, headGap);
+            PlaceBeamedHead(left, noteImg.rectTransform, size, sprite, font, true);
+            PlaceBeamedHead(right, noteImg.rectTransform, size, sprite, font, false);
         }
 
         private void PlaceBeamedHead(
@@ -257,8 +238,7 @@ namespace FracturedChorus.UI
             Vector2 noteSize,
             Sprite sprite,
             float fontSize,
-            bool isLeft,
-            float headGap)
+            bool isLeft)
         {
             var norm = isLeft ? _layout.beamedHeadNormLeft : _layout.beamedHeadNormRight;
             var role = isLeft ? BossNoteNumberRole.BeamedLeft : BossNoteNumberRole.BeamedRight;
@@ -281,8 +261,7 @@ namespace FracturedChorus.UI
                     slot,
                     head.BeatIndex,
                     _catalog != null ? _catalog.CoverPerfect : null,
-                    preview: false,
-                    headGap);
+                    preview: false);
             }
             else
             {
@@ -290,41 +269,9 @@ namespace FracturedChorus.UI
             }
         }
 
-        private Vector2 ResolvePerfectMarkSize(
-            RectTransform slot,
-            int beatIndex,
-            bool preview,
-            float beamedHeadGapPx)
+        private Vector2 ResolvePerfectMarkSize(bool preview)
         {
-            var slotSide = slot != null
-                ? Mathf.Max(slot.sizeDelta.x, slot.sizeDelta.y)
-                : 40f;
-            var vsNumber = _layout != null ? Mathf.Max(1f, _layout.perfectMarkScaleVsNumber) : 1.35f;
-            var minPx = _layout != null ? Mathf.Max(24f, _layout.perfectMarkMinPx) : 36f;
-            var fill = _layout != null ? Mathf.Clamp(_layout.perfectNeighborFill, 0.45f, 0.9f) : 0.72f;
-
-            var desired = slotSide * vsNumber;
-            var neighborCap = ResolveNeighborCap(beatIndex, fill);
-            if (beamedHeadGapPx > 1f)
-            {
-                neighborCap = Mathf.Min(neighborCap, beamedHeadGapPx * fill);
-            }
-
-            float side;
-            if (neighborCap < float.PositiveInfinity && neighborCap > 1f)
-            {
-                side = Mathf.Min(desired, neighborCap);
-                if (side < minPx && neighborCap >= minPx)
-                {
-                    side = minPx;
-                }
-            }
-            else
-            {
-                side = Mathf.Max(desired, minPx);
-            }
-
-            side = Mathf.Max(18f, side);
+            var side = _layout != null ? Mathf.Max(12f, _layout.perfectMarkFixedPx) : 24f;
 
             if (preview)
             {
@@ -335,34 +282,6 @@ namespace FracturedChorus.UI
             }
 
             return new Vector2(side, side);
-        }
-
-        private float ResolveNeighborCap(int beatIndex, float fill)
-        {
-            if (_contentXForBeat == null)
-            {
-                return float.PositiveInfinity;
-            }
-
-            var x = _contentXForBeat(beatIndex);
-            var gap = float.PositiveInfinity;
-
-            if (_occupiedBeats.Contains(beatIndex - 1))
-            {
-                gap = Mathf.Min(gap, Mathf.Abs(x - _contentXForBeat(beatIndex - 1)));
-            }
-
-            if (_occupiedBeats.Contains(beatIndex + 1))
-            {
-                gap = Mathf.Min(gap, Mathf.Abs(_contentXForBeat(beatIndex + 1) - x));
-            }
-
-            if (float.IsPositiveInfinity(gap) || gap < 1f)
-            {
-                return float.PositiveInfinity;
-            }
-
-            return gap * fill;
         }
 
         private RectTransform CreateNumberSlot(
@@ -438,8 +357,7 @@ namespace FracturedChorus.UI
             RectTransform slot,
             int beatIndex,
             Sprite sprite,
-            bool preview,
-            float beamedHeadGapPx)
+            bool preview)
         {
             if (slot == null)
             {
@@ -458,7 +376,7 @@ namespace FracturedChorus.UI
                 return null;
             }
 
-            var size = ResolvePerfectMarkSize(slot, beatIndex, preview, beamedHeadGapPx);
+            var size = ResolvePerfectMarkSize(preview);
             var go = new GameObject(
                 preview ? $"NotePerfectPreview_{beatIndex}" : $"NotePerfect_{beatIndex}",
                 typeof(RectTransform));
@@ -478,12 +396,6 @@ namespace FracturedChorus.UI
             img.raycastTarget = false;
             img.enabled = true;
             img.color = Color.white;
-
-            var outline = go.AddComponent<Outline>();
-            outline.effectColor = preview
-                ? new Color(0.25f, 0.95f, 1f, 0.85f)
-                : new Color(0.2f, 0.9f, 1f, 0.7f);
-            outline.effectDistance = preview ? new Vector2(1.2f, -1.2f) : new Vector2(1f, -1f);
 
             _spawned.Add(go);
             return img;

@@ -32,5 +32,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 176f90a046cefbd478cd7fa62b23b107, type: 2}
   placeholderColor: {r: 0, g: 0.007843138, b: 0.03137255, a: 1}
   battleSprite: {fileID: 7369638930748108147, guid: 9a437a3dfde73224686f2d2a81ee930e, type: 3}
+  timelineAvatarSprite: {fileID: 21300000, guid: 424a93ede08c4c48a1dedc407c30abd7, type: 3}
   combatCardSprite: {fileID: -3077632730411130755, guid: d78403423dceda24ab0eddbe5088a71f, type: 3}
   telegraphAttacksPerPhase: 1
