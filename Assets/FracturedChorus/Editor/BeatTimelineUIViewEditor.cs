@@ -246,9 +246,8 @@ namespace FracturedChorus.Editor
                 return;
             }
 
-            // Unity 6.4+: avoid obsolete FindObjectsSortMode overload.
-            var handles = Object.FindObjectsByType<BossNoteNumberHandle>(
-                FindObjectsInactive.Exclude);
+            // Unity 6.4+: parameterless overload — avoid obsolete FindObjectsSortMode.
+            var handles = Object.FindObjectsByType<BossNoteNumberHandle>();
             if (handles == null || handles.Length == 0)
             {
                 return;
