@@ -35,8 +35,8 @@ namespace FracturedChorus.Editor
                 return;
             }
 
-            var canvas = GameObject.Find("RunMapCanvas");
-            if (canvas == null)
+            var runMapCanvas = GameObject.Find("RunMapCanvas");
+            if (runMapCanvas == null)
             {
                 EditorUtility.DisplayDialog("Cadence Macro Map", "Không tìm thấy RunMapCanvas.", "OK");
                 return;
@@ -51,14 +51,14 @@ namespace FracturedChorus.Editor
             var innerRoot = GameObject.Find("InnerMapLayer");
             if (innerRoot == null)
             {
-                innerRoot = CreateUiObject("InnerMapLayer", canvas.transform);
+                innerRoot = CreateUiObject("InnerMapLayer", runMapCanvas.transform);
                 StretchRect(innerRoot, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             }
 
             ReparentIfExists("MapScrollView", innerRoot.transform);
             ReparentIfExists("LegendPanel", innerRoot.transform);
 
-            foreach (Transform child in canvas.transform)
+            foreach (Transform child in runMapCanvas.transform)
             {
                 if (child.gameObject == innerRoot || child.name == "MacroMapLayer")
                 {
@@ -76,7 +76,7 @@ namespace FracturedChorus.Editor
             var macroRoot = GameObject.Find("MacroMapLayer");
             if (macroRoot == null)
             {
-                macroRoot = CreateUiObject("MacroMapLayer", canvas.transform);
+                macroRoot = CreateUiObject("MacroMapLayer", runMapCanvas.transform);
                 StretchRect(macroRoot, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
                 macroRoot.transform.SetAsFirstSibling();
             }
@@ -188,6 +188,11 @@ namespace FracturedChorus.Editor
                 SetSerializedField(cadence, "statusLabel", status);
             }
 
+            if (runMapCanvas != null)
+            {
+                WireCampusHubHotkeyInScene(runMapCanvas.transform, cadence);
+            }
+
             EditorUtility.SetDirty(root);
             EditorSceneManager.MarkSceneDirty(root.scene);
             Selection.activeGameObject = macroRoot;
@@ -245,6 +250,82 @@ namespace FracturedChorus.Editor
             AssetDatabase.CreateAsset(asset, PinkyVaultConfigPath);
             AssetDatabase.SaveAssets();
             return asset;
+        }
+
+        [MenuItem("Fractured Chorus/Run Map/Wire Campus Hub Hotkey", false, 25)]
+        public static void WireCampusHubHotkey()
+        {
+            var root = GameObject.Find("RunMapRoot");
+            var runMapCanvas = GameObject.Find("RunMapCanvas");
+            if (root == null || runMapCanvas == null)
+            {
+                EditorUtility.DisplayDialog("Wire Campus Hub Hotkey", "Không tìm thấy RunMapRoot/RunMapCanvas.", "OK");
+                return;
+            }
+
+            var cadence = root.GetComponent<CadenceMapController>();
+            if (cadence == null)
+            {
+                EditorUtility.DisplayDialog("Wire Campus Hub Hotkey", "Không tìm thấy CadenceMapController.", "OK");
+                return;
+            }
+
+            WireCampusHubHotkeyInScene(runMapCanvas.transform, cadence);
+            EditorUtility.SetDirty(root);
+            EditorSceneManager.MarkSceneDirty(root.scene);
+            Debug.Log("[Fractured Chorus] Wired Run Map Campus Hub hotkey overlay — Save scene.");
+        }
+
+        public static void BatchWireCampusHubHotkey()
+        {
+            if (!System.IO.File.Exists(ScenePath))
+            {
+                Debug.LogError($"[Fractured Chorus] Scene not found: {ScenePath}");
+                EditorApplication.Exit(1);
+                return;
+            }
+
+            var scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            var root = GameObject.Find("RunMapRoot");
+            var runMapCanvas = GameObject.Find("RunMapCanvas");
+            if (root == null || runMapCanvas == null)
+            {
+                Debug.LogError("[Fractured Chorus] Batch wire Campus Hub hotkey failed — scene objects missing.");
+                EditorApplication.Exit(1);
+                return;
+            }
+
+            var cadence = root.GetComponent<CadenceMapController>();
+            if (cadence == null)
+            {
+                Debug.LogError("[Fractured Chorus] Batch wire Campus Hub hotkey failed — CadenceMapController missing.");
+                EditorApplication.Exit(1);
+                return;
+            }
+
+            WireCampusHubHotkeyInScene(runMapCanvas.transform, cadence);
+            EditorUtility.SetDirty(root);
+            EditorSceneManager.SaveScene(scene);
+            AssetDatabase.SaveAssets();
+            Debug.Log("[Fractured Chorus] RunMapPrototype Campus Hub hotkey saved.");
+            EditorApplication.Exit(0);
+        }
+
+        private static void WireCampusHubHotkeyInScene(Transform runMapCanvas, CadenceMapController cadence)
+        {
+            var innerMapLayer = runMapCanvas.Find("InnerMapLayer");
+            var overlay = SceneLinkHotkeyUI.EnsureSceneLinkOverlay(runMapCanvas, innerMapLayer);
+            var hubHotkey = SceneLinkHotkeyUI.Ensure(
+                overlay != null ? overlay : runMapCanvas,
+                "Campus Hub",
+                null,
+                placement: SceneLinkHotkeyPlacement.BottomLeft,
+                persistInScene: true);
+            if (hubHotkey != null)
+            {
+                SetSerializedField(cadence, "campusHubHotkey", hubHotkey);
+                SetSerializedField(cadence, "returnToHubButton", hubHotkey.GetComponent<Button>());
+            }
         }
 
         [MenuItem("Fractured Chorus/Run Map/Upgrade Legend Panel", false, 40)]

@@ -79,15 +79,10 @@ namespace FracturedChorus.Combat.Bootstrap
 
             if (HasSceneUnits())
             {
-                if (handoffEncounter != null)
-                {
-                    ClearSceneEnemyUnits();
-                }
-
                 RegisterSceneUnits();
                 if (handoffEncounter != null)
                 {
-                    SpawnUnitsFromEncounter(handoffEncounter, enemiesOnly: true);
+                    ApplyHandoffToSceneEnemies(handoffEncounter);
                 }
             }
             else
@@ -604,24 +599,109 @@ namespace FracturedChorus.Combat.Bootstrap
             }
         }
 
-        private void ClearSceneEnemyUnits()
+        private void ApplyHandoffToSceneEnemies(EncounterDefinitionSO handoff)
         {
-            if (unitViews == null)
+            if (handoff?.units == null || unitViews == null)
             {
                 return;
             }
 
-            for (var i = 0; i < unitViews.Length; i++)
+            var enemySpawns = new List<EncounterUnitSpawn>();
+            foreach (var spawn in handoff.units)
             {
-                var view = unitViews[i];
+                if (spawn.preset != null && spawn.side == GridSide.Enemy)
+                {
+                    enemySpawns.Add(spawn);
+                }
+            }
+
+            var usedSpawns = new HashSet<int>();
+
+            foreach (var view in unitViews)
+            {
                 if (view == null || view.Side != GridSide.Enemy)
                 {
                     continue;
                 }
 
-                Destroy(view.gameObject);
-                unitViews[i] = null;
+                var matchIndex = FindMatchingHandoffSpawn(view, enemySpawns, usedSpawns);
+                if (matchIndex < 0)
+                {
+                    Debug.LogWarning($"[Bootstrap] Scene enemy {view.name} has no matching handoff spawn.");
+                    continue;
+                }
+
+                usedSpawns.Add(matchIndex);
+                var spawn = enemySpawns[matchIndex];
+                var handoffPreset = spawn.preset;
+                var pos = view.IsPlacedOnGrid
+                    ? view.GridPosition
+                    : new GridPosition(spawn.side, spawn.row, spawn.column);
+
+                if (view.Unit != null)
+                {
+                    _grid.TryReleaseUnit(view.Unit);
+                }
+
+                var unit = new CombatUnit(handoffPreset, GridSide.Enemy);
+                if (!_grid.TryPlaceUnit(unit, pos))
+                {
+                    Debug.LogWarning(
+                        $"[Bootstrap] Could not place handoff enemy {handoffPreset.displayName} at {pos}");
+                    continue;
+                }
+
+                view.PlaceOnGrid(pos);
+                view.Bind(unit);
             }
+
+            for (var i = 0; i < enemySpawns.Count; i++)
+            {
+                if (usedSpawns.Contains(i))
+                {
+                    continue;
+                }
+
+                Debug.LogWarning(
+                    $"[Bootstrap] Handoff enemy {enemySpawns[i].preset.displayName} has no scene unit; not spawning.");
+            }
+        }
+
+        private static int FindMatchingHandoffSpawn(
+            UnitView view,
+            List<EncounterUnitSpawn> spawns,
+            HashSet<int> used)
+        {
+            var scenePreset = view.ResolvePreset();
+            var sceneKey = view.DemoUnitKey;
+
+            for (var i = 0; i < spawns.Count; i++)
+            {
+                if (used.Contains(i))
+                {
+                    continue;
+                }
+
+                var spawn = spawns[i];
+                if (spawn.preset == scenePreset)
+                {
+                    return i;
+                }
+
+                if (!string.IsNullOrEmpty(sceneKey) && spawn.preset?.unitId == sceneKey)
+                {
+                    return i;
+                }
+
+                if (scenePreset != null
+                    && !string.IsNullOrEmpty(scenePreset.unitId)
+                    && spawn.preset?.unitId == scenePreset.unitId)
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         private void RefreshUnitViewsCache()
@@ -707,13 +787,45 @@ namespace FracturedChorus.Combat.Bootstrap
                 var unitGo = new GameObject($"Unit_{unit.DisplayName}");
                 unitGo.transform.SetParent(unitsRoot, false);
                 unitGo.transform.position = worldPos;
-                unitGo.transform.localScale = Vector3.one * 0.9f;
+                unitGo.transform.localScale = ResolveSpawnScale(spawn.preset);
+
+                EnsureSpawnSpriteRenderer(unitGo, spawn.preset, pos.Row);
 
                 var view = unitGo.AddComponent<UnitView>();
                 view.ConfigureDemo(spawn.preset?.unitId ?? "grunt", spawn.side);
                 view.PlaceOnGrid(pos);
                 view.Bind(unit);
+                view.RefitBodyColliderToSprite();
             }
+        }
+
+        private static Vector3 ResolveSpawnScale(UnitPresetSO preset)
+        {
+            if (preset != null && preset.role == UnitRole.Boss)
+            {
+                return Vector3.one * 0.2f;
+            }
+
+            return Vector3.one * 0.15f;
+        }
+
+        private static void EnsureSpawnSpriteRenderer(GameObject unitGo, UnitPresetSO preset, int row)
+        {
+            var sr = unitGo.GetComponent<SpriteRenderer>();
+            if (sr == null)
+            {
+                sr = unitGo.AddComponent<SpriteRenderer>();
+            }
+
+            sr.sortingOrder = 10 + row;
+            if (preset?.battleSprite != null)
+            {
+                sr.sprite = preset.battleSprite;
+                sr.color = Color.white;
+                return;
+            }
+
+            sr.color = preset != null ? preset.placeholderColor : Color.white;
         }
 
         private void HandleUnitSelected(CombatUnit unit, UnitView view)

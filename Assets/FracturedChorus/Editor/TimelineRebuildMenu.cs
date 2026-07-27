@@ -231,6 +231,19 @@ namespace FracturedChorus.Editor
             CombatUiHierarchy.RemoveMissingScriptsInActiveScene();
         }
 
+        [MenuItem("Fractured Chorus/Remove Missing Scripts (All Hub Scenes)")]
+        public static void RemoveMissingScriptsInHubScenes()
+        {
+            CombatUiHierarchy.RemoveMissingScriptsInScenes(
+                "Assets/FracturedChorus/Scenes/CampusHub.unity",
+                "Assets/FracturedChorus/Scenes/RunMapPrototype.unity",
+                "Assets/FracturedChorus/Scenes/MainMenuStartGame.unity",
+                "Assets/FracturedChorus/Scenes/CombatPrototype.unity",
+                "Assets/FracturedChorus/Scenes/PrologueVN.unity",
+                "Assets/FracturedChorus/Scenes/FlowerShopWork.unity",
+                "Assets/FracturedChorus/Scenes/OpeningInvestigation.unity");
+        }
+
         [MenuItem("Fractured Chorus/Add Party Status Bar (Hierarchy)")]
         public static void AddPartyStatusBarToScene()
         {

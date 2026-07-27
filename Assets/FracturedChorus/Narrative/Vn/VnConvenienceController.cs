@@ -263,12 +263,6 @@ namespace FracturedChorus.Narrative.Vn
                 return;
             }
 
-            if (!CanSkipCurrentLine())
-            {
-                HaltSkipOnUnread();
-                return;
-            }
-
             if (InvokeBool(_bindings.IsTransitionBusy))
             {
                 _bindings.RequestSkipTransition?.Invoke();
@@ -281,7 +275,7 @@ namespace FracturedChorus.Narrative.Vn
                 _skipTimer = 0f;
                 if (InvokeBool(_bindings.IsWaitingAdvance))
                 {
-                    _bindings.RequestAdvance?.Invoke();
+                    TryAdvanceSkip();
                 }
 
                 return;
@@ -299,7 +293,7 @@ namespace FracturedChorus.Narrative.Vn
             }
 
             _skipTimer = 0f;
-            _bindings.RequestAdvance?.Invoke();
+            TryAdvanceSkip();
         }
 
         private void TrySkipStep()
@@ -316,12 +310,6 @@ namespace FracturedChorus.Narrative.Vn
                 return;
             }
 
-            if (!CanSkipCurrentLine())
-            {
-                HaltSkipOnUnread();
-                return;
-            }
-
             if (InvokeBool(_bindings.IsTransitionBusy))
             {
                 _bindings.RequestSkipTransition?.Invoke();
@@ -333,7 +321,7 @@ namespace FracturedChorus.Narrative.Vn
                 _bindings.SkipTyping?.Invoke();
                 if (InvokeBool(_bindings.IsWaitingAdvance))
                 {
-                    _bindings.RequestAdvance?.Invoke();
+                    TryAdvanceSkip();
                 }
 
                 return;
@@ -341,13 +329,24 @@ namespace FracturedChorus.Narrative.Vn
 
             if (InvokeBool(_bindings.IsWaitingAdvance))
             {
-                _bindings.RequestAdvance?.Invoke();
+                TryAdvanceSkip();
             }
+        }
+
+        private void TryAdvanceSkip()
+        {
+            if (!CanSkipCurrentLine())
+            {
+                HaltSkipOnUnread();
+                return;
+            }
+
+            _bindings?.RequestAdvance?.Invoke();
         }
 
         private bool CanSkipCurrentLine()
         {
-            if (MainMenuGameSettings.SkipUnreadText)
+            if (_skipEnabled || MainMenuGameSettings.SkipUnreadText)
             {
                 return true;
             }

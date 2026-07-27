@@ -547,7 +547,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 268818516}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0c41636548415a94b9308f2146fcf86a, type: 3}
+  m_Script: {fileID: 11500000, guid: fc75112ea62a49d9b31ceec307e82968, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Narrative.Vn.VnChoiceView
   root: {fileID: 268818518}
@@ -3407,7 +3407,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1838241916}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ded442ebb437d0e43a86f7345a5dca21, type: 3}
+  m_Script: {fileID: 11500000, guid: 383e6f19338348aaaa15d8e1b62c95fd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Hub.FlowerWork.FlowerWorkEventController
   runtime: {fileID: 1838241919}

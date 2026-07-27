@@ -717,6 +717,50 @@ namespace FracturedChorus.Editor
             return removed;
         }
 
+        public static int RemoveMissingScriptsInScenes(params string[] scenePaths)
+        {
+            if (scenePaths == null || scenePaths.Length == 0)
+            {
+                return 0;
+            }
+
+            var restorePath = UnityEngine.SceneManagement.SceneManager.GetActiveScene().path;
+            var totalRemoved = 0;
+            foreach (var scenePath in scenePaths)
+            {
+                if (string.IsNullOrEmpty(scenePath) || !System.IO.File.Exists(scenePath))
+                {
+                    continue;
+                }
+
+                var scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+                var removed = 0;
+                foreach (var root in scene.GetRootGameObjects())
+                {
+                    removed += RemoveMissingScriptsRecursive(root.transform);
+                }
+
+                if (removed > 0)
+                {
+                    EditorSceneManager.MarkSceneDirty(scene);
+                    EditorSceneManager.SaveScene(scene);
+                    Debug.Log($"[Fractured Chorus] Removed {removed} missing script(s) from {scenePath}.");
+                }
+
+                totalRemoved += removed;
+            }
+
+            if (!string.IsNullOrEmpty(restorePath) && System.IO.File.Exists(restorePath))
+            {
+                EditorSceneManager.OpenScene(restorePath, OpenSceneMode.Single);
+            }
+
+            Debug.Log(totalRemoved > 0
+                ? $"[Fractured Chorus] Removed {totalRemoved} missing script slot(s) across hub scenes."
+                : "[Fractured Chorus] No missing scripts found in hub scenes.");
+            return totalRemoved;
+        }
+
         private static void LogMissingScriptsRecursive(Transform transform, ref int count)
         {
             var components = transform.GetComponents<Component>();

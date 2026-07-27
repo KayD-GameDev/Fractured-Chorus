@@ -29,7 +29,7 @@ MonoBehaviour:
   skills:
   - {fileID: 11400000, guid: 3447135c31f31bf4b86503cedb3ca79c, type: 2}
   placeholderColor: {r: 0.28627452, g: 0.54901963, b: 0.7568628, a: 1}
-  battleSprite: {fileID: 0}
+  battleSprite: {fileID: -4680049790024911439, guid: 6e10946eaa8b3c4429b2ff46186d7869, type: 3}
   combatCardSprite: {fileID: 8768233953303040916, guid: 2acc6e7675b4d364fb917fb7b8ef80c7, type: 3}
   barStackAnchoredY: -1
   healthSlotTop: 3.25
