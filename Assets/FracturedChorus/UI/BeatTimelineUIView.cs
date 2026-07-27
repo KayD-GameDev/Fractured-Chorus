@@ -309,14 +309,26 @@ namespace FracturedChorus.UI
         }
 
         /// <summary>
-        /// Clef dùng sprite (Unity UI Text không render 𝄞 / SMP).
-        /// Scene nên đã là Image; runtime chỉ gán sprite / migrate Text→Image nếu còn legacy.
+        /// Legacy fallback when scene has no LeftRail/ClefIcon.
+        /// If ClefIcon or trebleClefSprite exists, do not inject clef_g_v1.
         /// </summary>
         private void EnsureClefGlyph()
         {
             var clef = transform.Find("Header/Clef");
             if (clef == null)
             {
+                return;
+            }
+
+            if (clef.Find("ClefIcon") != null || trebleClefImage != null || trebleClefSprite != null)
+            {
+                var rootImage = clef.GetComponent<Image>();
+                if (rootImage != null)
+                {
+                    rootImage.enabled = false;
+                    rootImage.sprite = null;
+                }
+
                 return;
             }
 
@@ -329,7 +341,6 @@ namespace FracturedChorus.UI
             var image = clef.GetComponent<Image>();
             if (image == null)
             {
-                // Text and Image cannot share a GameObject — migrate via child if Text remains.
                 var legacyText = clef.GetComponent<Text>();
                 if (legacyText != null)
                 {
@@ -545,6 +556,13 @@ namespace FracturedChorus.UI
             if (trebleClefImage == null)
             {
                 return;
+            }
+
+            var rootClefImage = leftRailClefRoot.GetComponent<Image>();
+            if (rootClefImage != null && rootClefImage != trebleClefImage)
+            {
+                rootClefImage.enabled = false;
+                rootClefImage.sprite = null;
             }
 
             trebleClefImage.preserveAspect = true;
