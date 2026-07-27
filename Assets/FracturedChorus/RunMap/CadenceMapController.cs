@@ -3,6 +3,7 @@ using FracturedChorus.Combat.Bootstrap;
 using FracturedChorus.Data;
 using FracturedChorus.RunMap.Core;
 using FracturedChorus.RunMap.UI;
+using FracturedChorus.UI;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -24,6 +25,7 @@ namespace FracturedChorus.RunMap
         [SerializeField] private Text statusLabel;
         [SerializeField] private Button backToMacroButton;
         [SerializeField] private Button returnToHubButton;
+        [SerializeField] private SceneLinkHotkeyUI campusHubHotkey;
 
         [Header("Combat")]
         [SerializeField] private string bossCombatSceneName = RunMapSceneCatalog.CombatPrototype;
@@ -56,12 +58,14 @@ namespace FracturedChorus.RunMap
                 backToMacroButton.onClick.AddListener(ShowMacroMap);
             }
 
-            if (returnToHubButton != null)
+            ResolveLayerReferences();
+            EnsureCampusHubHotkey();
+
+            if (returnToHubButton != null
+                && (campusHubHotkey == null || returnToHubButton.gameObject != campusHubHotkey.gameObject))
             {
                 returnToHubButton.onClick.AddListener(ReturnToCampusHub);
             }
-
-            ResolveLayerReferences();
         }
 
         private void Update()
@@ -76,6 +80,43 @@ namespace FracturedChorus.RunMap
                 UnityEngine.InputSystem.Keyboard.current.escapeKey.wasPressedThisFrame)
             {
                 ReturnToCampusHub();
+            }
+        }
+
+        private void EnsureCampusHubHotkey()
+        {
+            ResolveLayerReferences();
+
+            if (campusHubHotkey != null)
+            {
+                campusHubHotkey.Bind(ReturnToCampusHub);
+                campusHubHotkey.gameObject.SetActive(true);
+                if (returnToHubButton == null)
+                {
+                    returnToHubButton = campusHubHotkey.GetComponent<Button>();
+                }
+
+                return;
+            }
+
+            var canvas = GetComponentInChildren<Canvas>(true);
+            if (canvas == null)
+            {
+                return;
+            }
+
+            var layerAnchor = innerMapRoot != null ? innerMapRoot.transform : null;
+            var overlay = SceneLinkHotkeyUI.EnsureSceneLinkOverlay(canvas.transform, layerAnchor);
+            campusHubHotkey = SceneLinkHotkeyUI.Ensure(
+                overlay != null ? overlay : canvas.transform,
+                "Campus Hub",
+                ReturnToCampusHub,
+                placement: SceneLinkHotkeyPlacement.BottomLeft,
+                persistInScene: true);
+
+            if (returnToHubButton == null && campusHubHotkey != null)
+            {
+                returnToHubButton = campusHubHotkey.GetComponent<Button>();
             }
         }
 

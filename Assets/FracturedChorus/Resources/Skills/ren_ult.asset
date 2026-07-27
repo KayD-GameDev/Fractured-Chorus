@@ -15,6 +15,7 @@ MonoBehaviour:
   skillId: ren_ult
   displayName: Finale
   icon: {fileID: -8925720143848478694, guid: f092df159eb620f439a1d72249254bc6, type: 3}
+  frame: {fileID: -2257382500047295303, guid: 6a9d31d312d4330498aa4b490599190e, type: 3}
   description: "Damage burst \xB7 3 counter hit"
   slotKind: 2
   avCost: 50

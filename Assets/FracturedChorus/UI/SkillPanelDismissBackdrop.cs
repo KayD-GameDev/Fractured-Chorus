@@ -4,6 +4,10 @@ using UnityEngine.UI;
 
 namespace FracturedChorus.UI
 {
+    /// <summary>
+    /// Full-screen transparent hit area — click closes the skill panel.
+    /// Không chắn raycast lên BeatTimelineUI để vẫn kéo skill trên lane khi panel đang mở.
+    /// </summary>
     [RequireComponent(typeof(CanvasRenderer))]
     public class SkillPanelDismissBackdrop : MonoBehaviour, IPointerClickHandler, ICanvasRaycastFilter
     {
@@ -16,13 +20,14 @@ namespace FracturedChorus.UI
             panel = skillPanel;
         }
 
-        public bool IsRaycastLocationValid(Vector2 sp, Camera eventCamera)
+        public bool IsRaycastLocationValid(Vector2 screenPoint, Camera eventCamera)
         {
             if (panel == null)
             {
                 return true;
             }
 
+            // Armed drop: backdrop vẫn nhận click để consume drop.
             if (panel.IsSkillArmed)
             {
                 return true;
@@ -33,7 +38,8 @@ namespace FracturedChorus.UI
                 _timeline = FindAnyObjectByType<BeatTimelineUIView>();
             }
 
-            if (_timeline != null && _timeline.IsScreenPointInViewport(sp))
+            // Cho phép event xuyên xuống timeline viewport (kéo/relocate trên lane).
+            if (_timeline != null && _timeline.IsScreenPointInViewport(screenPoint))
             {
                 return false;
             }

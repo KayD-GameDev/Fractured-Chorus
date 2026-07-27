@@ -145,9 +145,17 @@ namespace FracturedChorus.Combat.Core
 
             {
 
-                skillPanelView.Bind(_session, AssignSkillAtScreenPoint, PreviewSkillDrop, HideSkillDropPreview);
+                skillPanelView.Bind(
+                    _session,
+                    AssignSkillAtScreenPoint,
+                    PreviewSkillDrop,
+                    HideSkillDropPreview,
+                    () => timelineView != null && timelineView.IsPlaybackActive);
 
             }
+
+            _boardDrag?.SetSkillPanelOpenPredicate(
+                () => skillPanelView == null || skillPanelView.CanOpenSkillPanelNow());
 
 
 
@@ -352,7 +360,7 @@ namespace FracturedChorus.Combat.Core
 
         private void OnLaneAvatarClicked(CombatUnit unit)
         {
-            FocusPlayerUnit(unit);
+            FocusPlayerUnit(unit, UnitView.FindForUnit(unit));
         }
 
         public void FocusPlayerUnit(CombatUnit unit, UnitView view = null)
@@ -360,6 +368,16 @@ namespace FracturedChorus.Combat.Core
             if (_session == null || _session.Phase != CombatPhase.Planning || _session.AllowPlayerReposition)
             {
                 return;
+            }
+
+            if (timelineView != null && timelineView.IsPlaybackActive)
+            {
+                return;
+            }
+
+            if (view == null)
+            {
+                view = UnitView.FindForUnit(unit);
             }
 
             timelineView?.SetSelectedLaneUnit(unit);
@@ -427,6 +445,7 @@ namespace FracturedChorus.Combat.Core
             timelineView?.HideDropGhost();
             timelineView?.ClearLaneMarkerRelocatePrepare();
 
+            // Thả trong viewport + beat hợp lệ → đặt lại vị trí mới.
             if (timelineView != null && timelineView.IsScreenPointInViewport(screenPos)
                 && timelineView.TryGetPlacementBeatAtScreenPoint(screenPos, skill, out var beat)
                 && _session.TryAssignPlayerAction(unit, skill, beat))
@@ -437,14 +456,17 @@ namespace FracturedChorus.Combat.Core
                 return;
             }
 
+            // Kéo ra ngoài timeline → xóa skill (đã remove lúc BeginRelocate).
             if (timelineView == null || !timelineView.IsScreenPointInViewport(screenPos))
             {
                 ClearRelocateState();
                 RefreshBeatsForSkillFootprint(unit, skill, fromBeat);
+                timelineView?.RefreshAll();
                 timelineView?.RefreshLaneMarkers();
                 return;
             }
 
+            // Trong viewport nhưng không đặt được → trả về beat cũ.
             if (!_session.TryAssignPlayerAction(unit, skill, fromBeat))
             {
                 var fallback = _session.Timeline != null

@@ -693,10 +693,18 @@ namespace FracturedChorus.Editor
             clefRect.anchorMax = new Vector2(0f, 0.5f);
             clefRect.anchoredPosition = new Vector2(12f, 0f);
             clefRect.sizeDelta = new Vector2(24f, 48f);
-            var clefText = clefGo.AddComponent<Text>();
-            ApplyTextDefaults(clefText);
-            clefText.text = "\u266A";
-            clefText.fontSize = 28;
+            var clefImage = clefGo.AddComponent<Image>();
+            var clefSprite = AssetDatabase.LoadAssetAtPath<Sprite>(
+                "Assets/FracturedChorus/Resources/UI/clef_g_v1.png");
+            if (clefSprite != null)
+            {
+                clefImage.sprite = clefSprite;
+            }
+
+            clefImage.type = Image.Type.Simple;
+            clefImage.preserveAspect = true;
+            clefImage.color = Color.white;
+            clefImage.raycastTarget = false;
 
             var budgetGo = CreateUiObject("Budget", headerGo.transform);
             var budgetRect = budgetGo.GetComponent<RectTransform>();

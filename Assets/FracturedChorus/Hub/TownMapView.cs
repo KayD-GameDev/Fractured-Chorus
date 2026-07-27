@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using FracturedChorus.Meta;
+using FracturedChorus.RunMap;
+using FracturedChorus.UI;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -23,6 +25,7 @@ namespace FracturedChorus.Hub
         [SerializeField] private TownMapSfxController sfx;
         [SerializeField] private Button menuButton;
         [SerializeField] private MetaStatusMenuUI statusMenu;
+        [SerializeField] private SceneLinkHotkeyUI runMapHotkey;
 
         [Header("P0 Sprites")]
         [SerializeField] private Sprite pinIdle;
@@ -65,6 +68,12 @@ namespace FracturedChorus.Hub
             if (!isActiveAndEnabled || _state == null)
             {
                 return;
+            }
+
+            if (runMapHotkey != null)
+            {
+                var allowHotkey = statusMenu == null || !statusMenu.IsOpen;
+                runMapHotkey.SetListening(allowHotkey);
             }
 
             if (statusMenu != null && statusMenu.IsOpen)
@@ -127,6 +136,7 @@ namespace FracturedChorus.Hub
             }
 
             promptBar?.ApplyDefaultLabels();
+            EnsureRunMapHotkey();
 
             EnsurePins();
             RefreshPinVisibility();
@@ -138,7 +148,38 @@ namespace FracturedChorus.Hub
         {
             statusMenu?.Hide();
             districtPanel?.Hide();
+            if (runMapHotkey != null)
+            {
+                runMapHotkey.SetListening(false);
+                runMapHotkey.gameObject.SetActive(false);
+            }
+
             gameObject.SetActive(false);
+        }
+
+        private void EnsureRunMapHotkey()
+        {
+            var barParent = promptBar != null ? promptBar.transform : transform;
+            runMapHotkey = SceneLinkHotkeyUI.Ensure(
+                barParent,
+                "Run Map",
+                GoToRunMapPrototype,
+                placement: SceneLinkHotkeyPlacement.PromptBarInline,
+                persistInScene: true);
+        }
+
+        private void GoToRunMapPrototype()
+        {
+            if (statusMenu != null && statusMenu.IsOpen)
+            {
+                return;
+            }
+
+            sfx?.PlaySelect();
+            if (!RunMapSceneLoader.LoadRunMapPrototype())
+            {
+                Debug.LogError("[Fractured Chorus] Không load được RunMapPrototype từ Town Map (phím B).");
+            }
         }
 
         public void RefreshCalendar(GameMetaState state)

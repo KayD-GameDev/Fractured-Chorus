@@ -246,6 +246,7 @@ namespace FracturedChorus.Editor
                 return;
             }
 
+            // Unity 6.4+: avoid obsolete FindObjectsSortMode overload.
             var handles = Object.FindObjectsByType<BossNoteNumberHandle>(
                 FindObjectsInactive.Exclude);
             if (handles == null || handles.Length == 0)
@@ -378,3 +379,4 @@ namespace FracturedChorus.Editor
     }
 }
 #endif
+

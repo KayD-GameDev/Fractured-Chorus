@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using FracturedChorus.Combat.Bootstrap;
 using FracturedChorus.Hub;
+using FracturedChorus.UI;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -108,6 +109,77 @@ namespace FracturedChorus.Editor
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
             Debug.Log("[Fractured Chorus] Wired Town Map MENU button + Status panel (v6 art). Save the scene.");
+        }
+
+        [MenuItem("Fractured Chorus/Wire Run Map Hotkey")]
+        public static void WireRunMapHotkey()
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+            {
+                EditorUtility.DisplayDialog(
+                    "Wire Run Map Hotkey",
+                    "Không thể wire khi đang Play Mode.\nExit Play Mode rồi chạy lại.",
+                    "OK");
+                return;
+            }
+
+            if (!WireRunMapHotkeyInActiveScene())
+            {
+                EditorUtility.DisplayDialog("Wire Run Map Hotkey", "Không tìm thấy TownMapView/PromptBar trong scene.", "OK");
+                return;
+            }
+
+            EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
+            Debug.Log("[Fractured Chorus] Wired PromptBar Run Map hotkey. Save the scene.");
+        }
+
+        public static void BatchWireRunMapHotkey()
+        {
+            if (!System.IO.File.Exists(ScenePath))
+            {
+                Debug.LogError($"[Fractured Chorus] Scene not found: {ScenePath}");
+                EditorApplication.Exit(1);
+                return;
+            }
+
+            var scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            if (!WireRunMapHotkeyInActiveScene())
+            {
+                Debug.LogError("[Fractured Chorus] Batch wire Run Map hotkey failed — TownMapView/PromptBar missing.");
+                EditorApplication.Exit(1);
+                return;
+            }
+
+            EditorSceneManager.SaveScene(scene);
+            AssetDatabase.SaveAssets();
+            Debug.Log("[Fractured Chorus] CampusHub Run Map hotkey saved.");
+            EditorApplication.Exit(0);
+        }
+
+        private static bool WireRunMapHotkeyInActiveScene()
+        {
+            var townMap = UnityEngine.Object.FindAnyObjectByType<TownMapView>();
+            if (townMap == null)
+            {
+                return false;
+            }
+
+            var so = new SerializedObject(townMap);
+            var promptBar = so.FindProperty("promptBar").objectReferenceValue as MonoBehaviour;
+            if (promptBar == null)
+            {
+                return false;
+            }
+
+            var runMapHotkey = SceneLinkHotkeyUI.Ensure(
+                promptBar.transform,
+                "Run Map",
+                null,
+                placement: SceneLinkHotkeyPlacement.PromptBarInline,
+                persistInScene: true);
+            so.FindProperty("runMapHotkey").objectReferenceValue = runMapHotkey;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            return runMapHotkey != null;
         }
 
         [MenuItem("Fractured Chorus/Wire Social Stats Overlay")]
@@ -310,6 +382,14 @@ namespace FracturedChorus.Editor
             townSo.FindProperty("iconShrine").objectReferenceValue = LoadSprite(UiRoot + "townmap_icon_shrine.png");
             townSo.FindProperty("iconVault").objectReferenceValue = LoadSprite(UiRoot + "townmap_icon_vault.png");
             townSo.FindProperty("wordmarkSprite").objectReferenceValue = LoadSprite(UiRoot + "townmap_wordmark.png");
+
+            var runMapHotkey = SceneLinkHotkeyUI.Ensure(
+                promptBar.transform,
+                "Run Map",
+                null,
+                placement: SceneLinkHotkeyPlacement.PromptBarInline,
+                persistInScene: true);
+            townSo.FindProperty("runMapHotkey").objectReferenceValue = runMapHotkey;
             townSo.ApplyModifiedPropertiesWithoutUndo();
 
             var districtSo = new SerializedObject(district.Panel);

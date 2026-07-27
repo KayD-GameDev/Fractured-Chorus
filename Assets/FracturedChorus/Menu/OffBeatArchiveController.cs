@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using FracturedChorus.UI;
 using UnityEngine;
 using UnityEngine.UI;
 #if ENABLE_INPUT_SYSTEM
@@ -52,11 +53,11 @@ namespace FracturedChorus.Menu
         [SerializeField] private Image syncPodBackground;
         [SerializeField] private OffBeatDiscSwipeZone discSwipeZone;
         [SerializeField] private OffBeatVolumeArcView volumeArcView;
-        [SerializeField] [Range(0f, 1f)] private float archiveDuckMultiplier = 0.12f;
-
         private float _archiveVolume = 0.85f;
         private bool _swipeWired;
         private bool _volumeWired;
+        private MarqueeTextUI _songTitleMarquee;
+        private Text _songTitleDisplayLabel;
 
         private readonly List<OffBeatTrackRowView> _rows = new List<OffBeatTrackRowView>();
         private readonly List<OffBeatTrackSO> _tracks = new List<OffBeatTrackSO>();
@@ -254,6 +255,7 @@ namespace FracturedChorus.Menu
 
                 RelocateWaveformToFace(playerRoot, discFace);
                 RelocateTransportToFace(playerRoot, discFace);
+                ApplySongTitleLayout(discFace);
             }
 
             if (volumeArcView == null)
@@ -549,6 +551,124 @@ namespace FracturedChorus.Menu
             }
         }
 
+        private void ApplySongTitleLayout(Transform discFace)
+        {
+            if (songTitleLabel == null || discFace == null)
+            {
+                return;
+            }
+
+            var viewportTransform = songTitleLabel.transform;
+            if (viewportTransform.parent != discFace)
+            {
+                viewportTransform.SetParent(discFace, false);
+            }
+
+            if (viewportTransform is not RectTransform viewport)
+            {
+                return;
+            }
+
+            viewport.anchorMin = new Vector2(0f, 0.5f);
+            viewport.anchorMax = new Vector2(1f, 0.5f);
+            viewport.pivot = new Vector2(0.5f, 0.5f);
+            viewport.anchoredPosition = Vector2.zero;
+            viewport.offsetMin = new Vector2(20.1f, -36f);
+            viewport.offsetMax = new Vector2(-19.28f, 36f);
+
+            if (viewport.GetComponent<RectMask2D>() == null)
+            {
+                viewport.gameObject.AddComponent<RectMask2D>();
+            }
+
+            _songTitleDisplayLabel = EnsureSongTitleLabelChild(viewportTransform);
+            _songTitleDisplayLabel.resizeTextForBestFit = false;
+            _songTitleDisplayLabel.fontStyle = FontStyle.Bold;
+            _songTitleDisplayLabel.alignment = TextAnchor.MiddleCenter;
+            _songTitleDisplayLabel.color = Cyan;
+            if (_songTitleDisplayLabel.fontSize < 20)
+            {
+                _songTitleDisplayLabel.fontSize = 22;
+            }
+
+            _songTitleMarquee = viewport.GetComponent<MarqueeTextUI>();
+            if (_songTitleMarquee == null)
+            {
+                _songTitleMarquee = viewport.gameObject.AddComponent<MarqueeTextUI>();
+            }
+
+            _songTitleMarquee.BindLabel(_songTitleDisplayLabel);
+
+            if (songTitleLabel.transform == viewportTransform && _songTitleDisplayLabel != songTitleLabel)
+            {
+                songTitleLabel.enabled = false;
+            }
+
+            var controls = discFace.Find("Controls");
+            var wave = discFace.Find("Waveform");
+            var insertBefore = controls != null ? controls : wave;
+            if (insertBefore != null)
+            {
+                viewportTransform.SetSiblingIndex(insertBefore.GetSiblingIndex());
+            }
+        }
+
+        private Text EnsureSongTitleLabelChild(Transform viewportTransform)
+        {
+            var existing = viewportTransform.Find("Label")?.GetComponent<Text>();
+            if (existing != null)
+            {
+                return existing;
+            }
+
+            if (songTitleLabel.transform != viewportTransform)
+            {
+                return songTitleLabel;
+            }
+
+            var labelGo = new GameObject("Label", typeof(RectTransform));
+            labelGo.transform.SetParent(viewportTransform, false);
+            var label = labelGo.AddComponent<Text>();
+            CopyTextStyle(songTitleLabel, label);
+            songTitleLabel.enabled = false;
+            return label;
+        }
+
+        private static void CopyTextStyle(Text from, Text to)
+        {
+            to.font = from.font;
+            to.fontSize = from.fontSize;
+            to.fontStyle = from.fontStyle;
+            to.color = from.color;
+            to.alignment = from.alignment;
+            to.supportRichText = from.supportRichText;
+            to.lineSpacing = from.lineSpacing;
+            to.horizontalOverflow = HorizontalWrapMode.Overflow;
+            to.verticalOverflow = VerticalWrapMode.Truncate;
+            to.text = from.text;
+            to.raycastTarget = false;
+        }
+
+        private void SetSongTitle(string title)
+        {
+            if (_songTitleMarquee != null)
+            {
+                _songTitleMarquee.SetText(title);
+                return;
+            }
+
+            if (_songTitleDisplayLabel != null)
+            {
+                _songTitleDisplayLabel.text = title;
+                return;
+            }
+
+            if (songTitleLabel != null)
+            {
+                songTitleLabel.text = title;
+            }
+        }
+
         private void WireSwipeAndVolume()
         {
             if (!_swipeWired && discSwipeZone != null)
@@ -572,7 +692,7 @@ namespace FracturedChorus.Menu
             musicPlayer?.Next();
             if (musicPlayer != null && musicPlayer.IsPlaying)
             {
-                DuckMenuBgm();
+                StopMenuBgm();
             }
 
             RefreshAll();
@@ -583,7 +703,7 @@ namespace FracturedChorus.Menu
             musicPlayer?.Previous();
             if (musicPlayer != null && musicPlayer.IsPlaying)
             {
-                DuckMenuBgm();
+                StopMenuBgm();
             }
 
             RefreshAll();
@@ -904,7 +1024,7 @@ namespace FracturedChorus.Menu
         {
             _focusIndex = index;
             musicPlayer?.SelectIndex(index, autoPlay: true);
-            DuckMenuBgm();
+            StopMenuBgm();
             RefreshAll();
         }
 
@@ -924,7 +1044,7 @@ namespace FracturedChorus.Menu
             musicPlayer.TogglePlayPause();
             if (musicPlayer.IsPlaying)
             {
-                DuckMenuBgm();
+                StopMenuBgm();
             }
             else
             {
@@ -939,7 +1059,7 @@ namespace FracturedChorus.Menu
             _focusIndex = musicPlayer != null ? musicPlayer.CurrentIndex : _focusIndex;
             if (musicPlayer != null && musicPlayer.IsPlaying)
             {
-                DuckMenuBgm();
+                StopMenuBgm();
             }
 
             RefreshAll();
@@ -949,7 +1069,7 @@ namespace FracturedChorus.Menu
         {
             if (musicPlayer != null && musicPlayer.IsPlaying)
             {
-                DuckMenuBgm();
+                StopMenuBgm();
             }
             else
             {
@@ -971,7 +1091,7 @@ namespace FracturedChorus.Menu
             musicPlayer?.EndSeek();
             if (musicPlayer != null && musicPlayer.IsPlaying)
             {
-                DuckMenuBgm();
+                StopMenuBgm();
             }
         }
 
@@ -997,10 +1117,7 @@ namespace FracturedChorus.Menu
         private void RefreshNowPlaying()
         {
             var track = musicPlayer != null ? musicPlayer.CurrentTrack : null;
-            if (songTitleLabel != null)
-            {
-                songTitleLabel.text = track != null ? track.title : "No track";
-            }
+            SetSongTitle(track != null ? track.title : "No track");
 
             if (artistLabel != null)
             {
@@ -1425,14 +1542,19 @@ namespace FracturedChorus.Menu
             return PlayerPrefs.GetInt(FavoriteKeyPrefix + trackId, 0) == 1;
         }
 
-        private void DuckMenuBgm()
+        private void StopMenuBgm()
         {
-            menuBgm?.Duck(archiveDuckMultiplier);
+            menuBgm?.StopLoop();
         }
 
         private void RestoreMenuBgm()
         {
-            menuBgm?.ApplyMasterVolume(MainMenuGameSettings.MasterVolume);
+            if (musicPlayer != null && musicPlayer.IsPlaying)
+            {
+                return;
+            }
+
+            menuBgm?.StartLoop();
         }
 
         private void HandleArchiveInput()

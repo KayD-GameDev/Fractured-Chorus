@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using FracturedChorus.Combat.Bootstrap;
 using FracturedChorus.Menu;
+using FracturedChorus.UI;
 using UnityEditor;
 using UnityEditor.Events;
 using UnityEditor.SceneManagement;
@@ -1193,12 +1194,25 @@ namespace FracturedChorus.Editor
             songTitle.fontStyle = FontStyle.Bold;
             songTitle.color = cyan;
             songTitle.raycastTarget = false;
-            songTitle.resizeTextForBestFit = true;
-            songTitle.resizeTextMinSize = 12;
-            songTitle.resizeTextMaxSize = 22;
-            StretchRect(songTitle.gameObject, new Vector2(0.12f, 0.52f), new Vector2(0.88f, 0.66f), Vector2.zero, Vector2.zero);
-            var songTitleRt = songTitle.GetComponent<RectTransform>();
-            songTitleRt.anchoredPosition = new Vector2(3.8f, 13.5f);
+            songTitle.resizeTextForBestFit = false;
+            songTitle.horizontalOverflow = HorizontalWrapMode.Overflow;
+            var songTitleRect = songTitle.rectTransform;
+            songTitleRect.anchorMin = new Vector2(0f, 0.5f);
+            songTitleRect.anchorMax = new Vector2(1f, 0.5f);
+            songTitleRect.pivot = new Vector2(0.5f, 0.5f);
+            songTitleRect.anchoredPosition = Vector2.zero;
+            songTitleRect.offsetMin = new Vector2(20.1f, -36f);
+            songTitleRect.offsetMax = new Vector2(-19.28f, 36f);
+            songTitle.gameObject.AddComponent<RectMask2D>();
+            var songTitleLabel = CreateText("Label", songTitle.transform, "Song title", 22, TextAnchor.MiddleCenter);
+            songTitleLabel.fontStyle = FontStyle.Bold;
+            songTitleLabel.color = cyan;
+            songTitleLabel.raycastTarget = false;
+            songTitleLabel.resizeTextForBestFit = false;
+            songTitleLabel.horizontalOverflow = HorizontalWrapMode.Overflow;
+            StretchRect(songTitleLabel.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            songTitle.gameObject.AddComponent<MarqueeTextUI>().BindLabel(songTitleLabel);
+            songTitle.enabled = false;
 
             var artist = CreateText("ArtistName", discFace.transform, string.Empty, 14, TextAnchor.MiddleCenter);
             artist.color = new Color(0.7f, 0.85f, 1f, 0.75f);

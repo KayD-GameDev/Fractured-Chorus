@@ -717,6 +717,50 @@ namespace FracturedChorus.Editor
             return removed;
         }
 
+        public static int RemoveMissingScriptsInScenes(params string[] scenePaths)
+        {
+            if (scenePaths == null || scenePaths.Length == 0)
+            {
+                return 0;
+            }
+
+            var restorePath = UnityEngine.SceneManagement.SceneManager.GetActiveScene().path;
+            var totalRemoved = 0;
+            foreach (var scenePath in scenePaths)
+            {
+                if (string.IsNullOrEmpty(scenePath) || !System.IO.File.Exists(scenePath))
+                {
+                    continue;
+                }
+
+                var scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+                var removed = 0;
+                foreach (var root in scene.GetRootGameObjects())
+                {
+                    removed += RemoveMissingScriptsRecursive(root.transform);
+                }
+
+                if (removed > 0)
+                {
+                    EditorSceneManager.MarkSceneDirty(scene);
+                    EditorSceneManager.SaveScene(scene);
+                    Debug.Log($"[Fractured Chorus] Removed {removed} missing script(s) from {scenePath}.");
+                }
+
+                totalRemoved += removed;
+            }
+
+            if (!string.IsNullOrEmpty(restorePath) && System.IO.File.Exists(restorePath))
+            {
+                EditorSceneManager.OpenScene(restorePath, OpenSceneMode.Single);
+            }
+
+            Debug.Log(totalRemoved > 0
+                ? $"[Fractured Chorus] Removed {totalRemoved} missing script slot(s) across hub scenes."
+                : "[Fractured Chorus] No missing scripts found in hub scenes.");
+            return totalRemoved;
+        }
+
         private static void LogMissingScriptsRecursive(Transform transform, ref int count)
         {
             var components = transform.GetComponents<Component>();
@@ -1047,7 +1091,29 @@ namespace FracturedChorus.Editor
                 EditorSceneManager.MarkSceneDirty(scene);
             }
 
-            Debug.Log("[Fractured Chorus] Skill panel hierarchy wired (Radial + 3 slots). Save scene.");
+            Debug.Log("[Fractured Chorus] Skill panel hierarchy wired (Radial + SkillSlot_Template + 3 slots, Frame above art). Save scene.");
+        }
+
+        /// <summary>
+        /// Batch/menu: mở CombatPrototype, thêm SkillSlot_Template + Frame trên art, save scene.
+        /// </summary>
+        [MenuItem("Fractured Chorus/Migrate Skill Slot Template (CombatPrototype)")]
+        public static void MigrateSkillSlotTemplateCombatPrototype()
+        {
+            const string scenePath = "Assets/FracturedChorus/Scenes/CombatPrototype.unity";
+            var scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+            var panel = Object.FindAnyObjectByType<SkillPanelUIView>(FindObjectsInactive.Include);
+            if (panel == null)
+            {
+                Debug.LogWarning("[Fractured Chorus] SkillPanelUIView not found in CombatPrototype.");
+                return;
+            }
+
+            TimelineHierarchyBuilder.EnsureSkillChromeTemplateOnPanel(panel);
+            EditorUtility.SetDirty(panel);
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            Debug.Log("[Fractured Chorus] Migrated SkillSlot_Template + Frame-above-art on CombatPrototype. Scene saved.");
         }
     }
 }
