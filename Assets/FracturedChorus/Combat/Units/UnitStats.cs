@@ -126,6 +126,22 @@ namespace FracturedChorus.Combat.Units
             };
         }
 
+        public static UnitStats CreateKikiUedaLv1Preset()
+        {
+            return new UnitStats
+            {
+                Element = HarmonyElement.Rhythm,
+                StrengthType = DamageType.Physical,
+                Strength = 28f,
+                Endurance = 6f,
+                HeartBeat = 128,
+                BaseLuck = 7f,
+                CritMultiplier = 1.18f,
+                MaxHp = 260,
+                BaseSpeed = 10
+            };
+        }
+
         public UnitStats Clone()
         {
             return (UnitStats)MemberwiseClone();

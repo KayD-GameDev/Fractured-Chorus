@@ -61,6 +61,22 @@ Main Camera
 
 ---
 
+## CombatTutorial — scene riêng (BG + enemy authoring)
+
+Clone của CombatPrototype để chỉnh tutorial Cadence **không đụng** boss scene.
+
+| Mục | Cách chỉnh |
+|-----|------------|
+| Scene | `Assets/FracturedChorus/Scenes/CombatTutorial.unity` |
+| Mở | Menu **Fractured Chorus → Open Combat Tutorial Scene** |
+| BG | `Background canvas/Image` — smoke-war front (`cadence_smoke_war_front_bg_v1`) |
+| Quái | `World/Units/Unit_Kiki_Ueda` — Kiki Lv1 Elite; grunts inactive |
+| Party | Ren + Mage (Coda) active; Tank + Boss inactive mặc định |
+| Runtime | `tutorialSceneMode` = true → **không** overwrite BG/enemy từ handoff; vẫn ép basic skills + coach Coda |
+| Test | CampusHub → **Tutorial Fight**, hoặc Play trực tiếp scene |
+
+---
+
 ## Chỉnh layout trong Editor
 
 | Object | Chỉnh gì |

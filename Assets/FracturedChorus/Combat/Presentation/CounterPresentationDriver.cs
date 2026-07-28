@@ -158,6 +158,11 @@ namespace FracturedChorus.Combat.Presentation
 
         private static void PlayEnemyBody(CombatUnit unit, CounterBodyMode mode)
         {
+            if (EnemyStrikeChoreographer.IsChoreographing(unit))
+            {
+                return;
+            }
+
             var view = UnitView.FindForUnit(unit);
             if (view == null)
             {
