@@ -1,3 +1,4 @@
+using FracturedChorus.UI;
 using System;
 using UnityEngine;
 using UnityEngine.UI;
@@ -60,7 +61,7 @@ namespace FracturedChorus.Narrative.Vn
         {
             if (text != null)
             {
-                VnUiFont.ApplyAssetOnly(text);
+                UiFontCatalog.Apply(text, UiFontRole.Display);
             }
         }
     }

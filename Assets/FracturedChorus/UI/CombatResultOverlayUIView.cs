@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.UI;
+using FracturedChorus.UI;
 
 namespace FracturedChorus.UI
 {
@@ -10,7 +11,7 @@ namespace FracturedChorus.UI
         private const string DefeatSpritePath = "UI/Combat/Result/combat_result_defeat_v1";
         private const string ContinueSpritePath = "UI/Combat/Result/combat_btn_continue_v1";
         private const string RetrySpritePath = "UI/Combat/Result/combat_btn_retry_v1";
-        private const int OverlaySortOrder = 500;
+        private const int OverlaySortOrder = UiCanvasLayers.Popup;
 
         private static readonly Vector2 TitleAnchor = new Vector2(0.5f, 0.62f);
         private static readonly Vector2 TitlePos = new Vector2(-3f, 48.67f);
@@ -107,6 +108,16 @@ namespace FracturedChorus.UI
             if (retryImage == null && retryButton != null)
             {
                 retryImage = retryButton.GetComponent<Image>();
+            }
+
+            if (continueButton != null)
+            {
+                UiButtonHoverFeedback.Ensure(continueButton.gameObject);
+            }
+
+            if (retryButton != null)
+            {
+                UiButtonHoverFeedback.Ensure(retryButton.gameObject);
             }
 
             if (rewardLabel == null)
@@ -221,6 +232,9 @@ namespace FracturedChorus.UI
             retryButton = CreateSpriteButton("RetryButton", root, out retryImage);
             ApplyRect(retryButton.transform as RectTransform, RetryAnchor, RetryPos, RetrySize);
 
+            UiButtonHoverFeedback.Ensure(continueButton.gameObject);
+            UiButtonHoverFeedback.Ensure(retryButton.gameObject);
+
             EnsureRewardLabel();
             EnsureOverlayCanvas();
         }
@@ -245,7 +259,7 @@ namespace FracturedChorus.UI
             var go = new GameObject("RewardLabel", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
             go.transform.SetParent(transform, false);
             rewardLabel = go.GetComponent<Text>();
-            rewardLabel.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            rewardLabel.font = UiFontCatalog.Body;
             if (rewardLabel.font == null)
             {
                 rewardLabel.font = Resources.GetBuiltinResource<Font>("Arial.ttf");

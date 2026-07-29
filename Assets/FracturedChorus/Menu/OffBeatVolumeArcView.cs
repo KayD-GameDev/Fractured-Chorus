@@ -1,3 +1,4 @@
+using FracturedChorus.UI;
 using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -199,7 +200,7 @@ namespace FracturedChorus.Menu
             var ring = GetOrCreateRingSprite(ringThickness);
             var arc = Mathf.Clamp01(sweepAngleDeg / 360f);
             ConfigureRingImage(trackImage, ring, new Color(0.3f, 0.36f, 0.44f, 0.85f), arc);
-            ConfigureRingImage(fillImage, ring, new Color(0f, 0.831f, 1f, 1f), 0f);
+            ConfigureRingImage(fillImage, ring, FcColorTokens.Brand.Cyan, 0f);
             var hit = GetComponent<Image>();
             if (hit != null)
             {
@@ -424,7 +425,7 @@ namespace FracturedChorus.Menu
             var arc = Mathf.Clamp01(sweepAngleDeg / 360f);
             fillImage.fillAmount = Mathf.Lerp(0.04f, arc, volume);
             fillImage.fillClockwise = fillClockwise;
-            fillImage.color = new Color(0f, 0.831f, 1f, 1f);
+            fillImage.color = FcColorTokens.Brand.Cyan;
             if (trackImage != null)
             {
                 trackImage.fillAmount = arc;

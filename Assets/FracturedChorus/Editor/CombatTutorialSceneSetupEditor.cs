@@ -106,6 +106,12 @@ namespace FracturedChorus.Editor
                 {
                     WireKikiView(view, kikiPreset, kikiSprite, kikiController);
                     wiredKiki = true;
+                    continue;
+                }
+
+                if (view.Side == GridSide.Player)
+                {
+                    WirePartyAnimatorStates(view);
                 }
             }
 
@@ -288,6 +294,34 @@ namespace FracturedChorus.Editor
 
             EditorUtility.SetDirty(view);
             EditorUtility.SetDirty(view.gameObject);
+        }
+
+        private static void WirePartyAnimatorStates(UnitView view)
+        {
+            var key = view.DemoUnitKey?.ToLowerInvariant() ?? string.Empty;
+            var so = new SerializedObject(view);
+
+            if (key.Contains("ren"))
+            {
+                so.FindProperty("idleStateName").stringValue = "Ren Idle";
+                so.FindProperty("counterStateName").stringValue = "Ren Counter";
+                so.FindProperty("beCounteredStateName").stringValue = "Ren Hurt";
+                so.FindProperty("movingStateName").stringValue = "Ren Moving";
+            }
+            else if (key.Contains("mage") || key.Contains("coda"))
+            {
+                so.FindProperty("idleStateName").stringValue = "Coda - Idle";
+                so.FindProperty("counterStateName").stringValue = "Coda - Counter";
+                so.FindProperty("beCounteredStateName").stringValue = "Coda - Hurt";
+                so.FindProperty("movingStateName").stringValue = "Coda - Moving";
+            }
+            else
+            {
+                return;
+            }
+
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(view);
         }
 
         private static void ApplyBackgroundSprite()

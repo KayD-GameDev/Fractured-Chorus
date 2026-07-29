@@ -2,6 +2,7 @@ using FracturedChorus.Combat.Units;
 using FracturedChorus.Data;
 using UnityEngine;
 using UnityEngine.UI;
+using FracturedChorus.UI;
 
 namespace FracturedChorus.UI
 {
@@ -82,7 +83,7 @@ namespace FracturedChorus.UI
             labelRect.anchoredPosition = new Vector2(0f, -1f);
             labelRect.sizeDelta = new Vector2(64f, 14f);
             _label = labelGo.AddComponent<Text>();
-            _label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            _label.font = UiFontCatalog.Body;
             _label.fontSize = 10;
             _label.alignment = TextAnchor.UpperCenter;
             _label.horizontalOverflow = HorizontalWrapMode.Overflow;

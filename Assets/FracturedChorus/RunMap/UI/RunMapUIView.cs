@@ -354,7 +354,7 @@ namespace FracturedChorus.RunMap.UI
             label.fontSize = fontSize;
             label.color = FloorLabelColor;
             label.alignment = TextAnchor.MiddleRight;
-            label.font = s_floorLabelFont ??= Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            label.font = s_floorLabelFont ??= UiFontCatalog.Body;
             label.raycastTarget = false;
             _floorLabels.Add(label);
         }

@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using FracturedChorus.UI;
 
 namespace FracturedChorus.UI
 {
@@ -386,7 +387,7 @@ namespace FracturedChorus.UI
             var keyLabelGo = new GameObject("Label", typeof(RectTransform));
             keyLabelGo.transform.SetParent(keyRoot.transform, false);
             var keyLabel = keyLabelGo.AddComponent<Text>();
-            keyLabel.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            keyLabel.font = UiFontCatalog.Body;
             keyLabel.text = "B";
             keyLabel.fontSize = 22;
             keyLabel.fontStyle = FontStyle.Bold;
@@ -398,7 +399,7 @@ namespace FracturedChorus.UI
             var actionGo = new GameObject("ActionLabel", typeof(RectTransform));
             actionGo.transform.SetParent(go.transform, false);
             var action = actionGo.AddComponent<Text>();
-            action.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            action.font = UiFontCatalog.Body;
             action.text = actionText;
             action.fontSize = 18;
             action.alignment = TextAnchor.MiddleLeft;

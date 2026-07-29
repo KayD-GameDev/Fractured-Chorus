@@ -276,6 +276,7 @@ namespace FracturedChorus.UI
 
             executeButton.onClick.RemoveListener(HandleClick);
             executeButton.onClick.AddListener(HandleClick);
+            UiButtonHoverFeedback.Ensure(executeButton.gameObject);
         }
 
         public void OnExecutePressed()

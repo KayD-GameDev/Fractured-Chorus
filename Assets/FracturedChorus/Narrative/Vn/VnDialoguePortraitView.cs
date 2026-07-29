@@ -111,6 +111,14 @@ namespace FracturedChorus.Narrative.Vn
             Hide();
         }
 
+        public void ApplyStandardLayout()
+        {
+            leftAnchoredPosition = VnDialoguePortraitLayout.LeftAnchoredPosition;
+            rightAnchoredPosition = VnDialoguePortraitLayout.RightAnchoredPosition;
+            slotSizeDelta = VnDialoguePortraitLayout.SizeDelta;
+            ApplyFixedSlotLayout();
+        }
+
         public void CaptureLayoutFromSlots()
         {
             if (leftRoot != null)

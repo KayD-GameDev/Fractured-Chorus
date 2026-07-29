@@ -3,6 +3,7 @@ using FracturedChorus.Combat.Bootstrap;
 using FracturedChorus.Data;
 using FracturedChorus.RunMap.Core;
 using FracturedChorus.RunMap.UI;
+using FracturedChorus.Tutorial;
 using FracturedChorus.UI;
 using UnityEngine;
 using UnityEngine.UI;
@@ -174,6 +175,7 @@ namespace FracturedChorus.RunMap
             ShowMacroMap();
             macroView.Build(layout);
             macroView.SetVaultUnlocked(VaultFingerId.Pinky, true);
+            TutorialDirector.Ensure().StartMapTrack();
 
             if (s_pendingBossVictory)
             {

@@ -1,6 +1,9 @@
 using System.Collections.Generic;
 using System.Text;
+using FracturedChorus.Menu;
 using FracturedChorus.Meta;
+using FracturedChorus.Meta.Economy;
+using FracturedChorus.UI;
 using UnityEngine;
 using UnityEngine.UI;
 #if UNITY_EDITOR
@@ -56,14 +59,12 @@ namespace FracturedChorus.Hub
         [SerializeField] private Sprite systemSelected;
         [SerializeField] private CalendarOverlayUI calendarOverlay;
         [SerializeField] private SocialStatsOverlayUI socialStatsOverlay;
+        [SerializeField] private PartyStatusMenuUI partyStatusMenu;
         [SerializeField] private TownMapSfxController sfx;
 
         private Tab _tab = Tab.Stats;
         private GameMetaState _state;
         private bool _wired;
-
-        private static readonly Color Cyan = new Color(0f, 0.831f, 1f, 1f);
-        private static readonly Color DetailPanel = new Color(0.039f, 0.039f, 0.18f, 0.72f);
 
         private void Awake()
         {
@@ -91,9 +92,21 @@ namespace FracturedChorus.Hub
                 return;
             }
 
+            if (partyStatusMenu != null && partyStatusMenu.IsOpen)
+            {
+                return;
+            }
+
             if (TownMapInput.CancelPressed())
             {
                 Hide();
+            }
+
+            if (_tab == Tab.System && Input.GetKeyDown(KeyCode.H))
+            {
+                var hub = Object.FindAnyObjectByType<CampusHubController>();
+                hub?.TryHubHealService();
+                Refresh();
             }
         }
 
@@ -102,6 +115,8 @@ namespace FracturedChorus.Hub
         public bool IsCalendarOpen => calendarOverlay != null && calendarOverlay.IsOpen;
 
         public bool IsSocialStatsOpen => socialStatsOverlay != null && socialStatsOverlay.IsOpen;
+
+        public bool IsPartyStatusOpen => partyStatusMenu != null && partyStatusMenu.IsOpen;
 
         public void BindSfx(TownMapSfxController controller)
         {
@@ -135,6 +150,11 @@ namespace FracturedChorus.Hub
             if (socialStatsOverlay != null && socialStatsOverlay.IsOpen)
             {
                 socialStatsOverlay.Hide();
+            }
+
+            if (partyStatusMenu != null && partyStatusMenu.IsOpen)
+            {
+                partyStatusMenu.Hide();
             }
 
             if (IsOpen)
@@ -209,6 +229,7 @@ namespace FracturedChorus.Hub
                 menu.EnsureSpritesAssigned();
                 menu.EnsureCalendarOverlay(parent);
                 menu.EnsureSocialStatsOverlay(parent);
+                menu.EnsurePartyStatusMenu(parent);
                 menu.Rewire();
                 return new BuildResult(menuButton, menu);
             }
@@ -225,6 +246,7 @@ namespace FracturedChorus.Hub
 
             menu.EnsureCalendarOverlay(parent);
             menu.EnsureSocialStatsOverlay(parent);
+            menu.EnsurePartyStatusMenu(parent);
             return new BuildResult(menuButton, menu);
         }
 
@@ -238,6 +260,16 @@ namespace FracturedChorus.Hub
 
             calendarOverlay = CalendarOverlayUI.Build(townMapRoot).Overlay;
             calendarOverlay.BindSfx(sfx);
+        }
+
+        public void EnsurePartyStatusMenu(Transform townMapRoot)
+        {
+            if (partyStatusMenu != null)
+            {
+                return;
+            }
+
+            partyStatusMenu = PartyStatusMenuUI.Ensure(townMapRoot);
         }
 
         public void EnsureSocialStatsOverlay(Transform townMapRoot)
@@ -268,7 +300,7 @@ namespace FracturedChorus.Hub
             menuButton.targetGraphic = menuButtonImage;
             var menuButtonLabel = CreateText(menuButtonGo.transform, "Label", "MENU", 22, TextAnchor.MiddleCenter);
             Stretch(menuButtonLabel.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-            menuButtonLabel.color = Cyan;
+            menuButtonLabel.color = FcColorTokens.Brand.Cyan;
             menuButtonLabel.fontStyle = FontStyle.Bold | FontStyle.Italic;
             return menuButton;
         }
@@ -293,7 +325,7 @@ namespace FracturedChorus.Hub
             var dateChip = CreateText(rootGo.transform, "DateChip", "01/09", 22, TextAnchor.MiddleLeft);
             Stretch(dateChip.rectTransform, new Vector2(0.02f, 0.9f), new Vector2(0.28f, 0.98f), Vector2.zero, Vector2.zero);
             dateChip.fontStyle = FontStyle.Bold;
-            dateChip.color = Cyan;
+            dateChip.color = FcColorTokens.Brand.Cyan;
 
             var listRoot = new GameObject("MenuList", typeof(RectTransform));
             listRoot.transform.SetParent(rootGo.transform, false);
@@ -308,7 +340,7 @@ namespace FracturedChorus.Hub
             detail.transform.SetParent(rootGo.transform, false);
             Stretch(detail.GetComponent<RectTransform>(), new Vector2(0.08f, 0.08f), new Vector2(0.48f, 0.42f), Vector2.zero, Vector2.zero);
             var detailBg = detail.GetComponent<Image>();
-            detailBg.color = DetailPanel;
+            detailBg.color = FcColorTokens.Surface.Detail;
             detailBg.raycastTarget = false;
 
             var detailBody = CreateText(detail.transform, "DetailBody", string.Empty, 20, TextAnchor.UpperLeft);
@@ -319,7 +351,7 @@ namespace FracturedChorus.Hub
 
             var tooltip = CreateText(rootGo.transform, "Tooltip", "View Social Stats", 18, TextAnchor.MiddleRight);
             Stretch(tooltip.rectTransform, new Vector2(0.55f, 0.08f), new Vector2(0.92f, 0.14f), Vector2.zero, Vector2.zero);
-            tooltip.color = Cyan;
+            tooltip.color = FcColorTokens.Brand.Cyan;
             tooltip.fontStyle = FontStyle.Italic;
 
             var prompts = new GameObject("Prompts", typeof(RectTransform));
@@ -422,24 +454,21 @@ namespace FracturedChorus.Hub
                 return;
             }
 
-            BindTab(statsButton, Tab.Stats, openSocialStats: true);
-            BindTab(bondsButton, Tab.Bonds);
+            BindTab(statsButton, Tab.Stats, openPartyStatus: true);
+            BindTab(bondsButton, Tab.Bonds, openSocialStats: true);
             BindTab(calendarButton, Tab.Calendar, openCalendar: true);
-
-            if (systemButton != null)
-            {
-                systemButton.onClick.RemoveAllListeners();
-                systemButton.onClick.AddListener(() =>
-                {
-                    sfx?.PlaySelect();
-                    Hide();
-                });
-            }
+            BindTab(systemButton, Tab.System, openSaveSlots: true);
 
             _wired = true;
         }
 
-        private void BindTab(Button button, Tab tab, bool openCalendar = false, bool openSocialStats = false)
+        private void BindTab(
+            Button button,
+            Tab tab,
+            bool openCalendar = false,
+            bool openSocialStats = false,
+            bool openPartyStatus = false,
+            bool openSaveSlots = false)
         {
             if (button == null)
             {
@@ -456,11 +485,42 @@ namespace FracturedChorus.Hub
                 {
                     OpenCalendarOverlay();
                 }
+                else if (openPartyStatus)
+                {
+                    OpenPartyStatusMenu();
+                }
                 else if (openSocialStats)
                 {
                     OpenSocialStatsOverlay();
                 }
+                else if (openSaveSlots)
+                {
+                    OpenSaveSlots();
+                }
             });
+        }
+
+        private void OpenPartyStatusMenu()
+        {
+            var host = transform.parent != null ? transform.parent : transform;
+            EnsurePartyStatusMenu(host);
+            if (partyStatusMenu == null)
+            {
+                return;
+            }
+
+            partyStatusMenu.transform.SetAsLastSibling();
+            partyStatusMenu.Show(_state ?? GameMetaSession.Current);
+        }
+
+        private void OpenSaveSlots()
+        {
+            var host = transform.parent != null ? transform.parent : transform;
+            SaveLoadSlotListView.Show(
+                host,
+                SaveLoadSlotListView.Mode.Save,
+                onSave: slot => GameMetaSession.SaveToSlot(slot));
+            Hide();
         }
 
         private void OpenCalendarOverlay()
@@ -502,9 +562,10 @@ namespace FracturedChorus.Hub
             {
                 tooltipLabel.text = _tab switch
                 {
-                    Tab.Stats => "View Social Stats",
-                    Tab.Bonds => "View Echo Bonds",
+                    Tab.Stats => "View Party Status",
+                    Tab.Bonds => "View Social Stats",
                     Tab.Calendar => "Open Calendar",
+                    Tab.System => "Save Game",
                     _ => string.Empty
                 };
             }
@@ -515,7 +576,11 @@ namespace FracturedChorus.Hub
                 {
                     detailBodyLabel.text = "Opening calendar…";
                 }
-                else if (_tab == Tab.Stats && socialStatsOverlay != null && socialStatsOverlay.IsOpen)
+                else if (_tab == Tab.Stats && partyStatusMenu != null && partyStatusMenu.IsOpen)
+                {
+                    detailBodyLabel.text = "Opening party status…";
+                }
+                else if (_tab == Tab.Bonds && socialStatsOverlay != null && socialStatsOverlay.IsOpen)
                 {
                     detailBodyLabel.text = "Opening Resonance Field…";
                 }
@@ -528,7 +593,7 @@ namespace FracturedChorus.Hub
             ApplyRow(statsImage, statsNormal, statsSelected, _tab == Tab.Stats);
             ApplyRow(bondsImage, bondsNormal, bondsSelected, _tab == Tab.Bonds);
             ApplyRow(calendarImage, calendarNormal, calendarSelected, _tab == Tab.Calendar);
-            ApplyRow(systemImage, systemNormal, systemSelected, false);
+            ApplyRow(systemImage, systemNormal, systemSelected, _tab == Tab.System);
         }
 
         private static void ApplyRow(Image image, Sprite normal, Sprite selected, bool isSelected)
@@ -542,7 +607,7 @@ namespace FracturedChorus.Hub
             if (sprite != null)
             {
                 image.sprite = sprite;
-                image.color = Color.white;
+                image.color = isSelected ? FcColorTokens.Selection.TabIconTint : Color.white;
                 image.preserveAspect = true;
             }
         }
@@ -554,8 +619,20 @@ namespace FracturedChorus.Hub
                 Tab.Calendar => BuildCalendar(state),
                 Tab.Stats => BuildStats(state),
                 Tab.Bonds => BuildBonds(state),
+                Tab.System => BuildSystem(state),
                 _ => string.Empty
             };
+        }
+
+        private static string BuildSystem(GameMetaState state)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine($"Slot {GameMetaSession.ActiveSlotIndex + 1:00}");
+            sb.AppendLine($"Notes: {state.Wallet.Notes}");
+            sb.AppendLine($"Difficulty: {state.Difficulty}");
+            sb.AppendLine("Select System to open save slots.");
+            sb.AppendLine($"Press H — clinic heal (−{EconomyTable.HubHealCost} Notes).");
+            return sb.ToString();
         }
 
         private static string BuildCalendar(GameMetaState state)
@@ -672,12 +749,12 @@ namespace FracturedChorus.Hub
             var go = new GameObject(name, typeof(RectTransform), typeof(Text));
             go.transform.SetParent(parent, false);
             var text = go.GetComponent<Text>();
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             text.text = content;
             text.fontSize = fontSize;
             text.alignment = anchor;
             text.color = Color.white;
             text.raycastTarget = false;
+            UiFontCatalog.ApplyAutomatic(text);
             return text;
         }
 

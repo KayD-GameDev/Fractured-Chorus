@@ -622,7 +622,7 @@ namespace FracturedChorus.Editor
 
             fillImage.sprite = UiCircleSpriteUtil.White;
             fillImage.type = Image.Type.Simple;
-            fillImage.color = new Color(0.18f, 0.92f, 0.28f, 1f);
+            fillImage.color = FcColorTokens.Brand.CyanSoft;
             fillImage.raycastTarget = false;
 
             if (fillRect != null)

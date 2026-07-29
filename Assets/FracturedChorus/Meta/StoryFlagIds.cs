@@ -24,5 +24,9 @@ namespace FracturedChorus.Meta
         public const string InvestigationStarted = "investigation_started";
         public const string MissedRyo1209 = "missed_ryo_12_09";
         public const string FlowerJobIntroDone = "flower_job_intro_done";
+        public const string TutorialHubDone = "tutorial_hub_done";
+        public const string TutorialMapDone = "tutorial_map_done";
+        public const string TutorialCombatDone = "tutorial_combat_done";
+        public const string TutorialCadenceIntroDone = "tutorial_cadence_intro_done";
     }
 }

@@ -142,6 +142,8 @@ Scan / Execute after activate         →  12 beat window: party dmg ×1.25
 | **C2 mid** | 1.0 |
 | **C3 back** | +15% dmg gây · +15% heal potency |
 
+Boss pressure overlays (FrontBias / BackPierce / ColumnSlam / Disrupt): [BOSS_FORMATION_DESIGN.md](./BOSS_FORMATION_DESIGN.md).
+
 ---
 
 ## Unlock (SoT — đồng bộ progression)

@@ -1031,10 +1031,10 @@ namespace FracturedChorus.Editor
 
         private static void ApplyText(Text text)
         {
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             text.fontSize = 14;
             text.alignment = TextAnchor.MiddleCenter;
             text.color = Color.white;
+            SceneFontSetupEditor.ApplyAutomatic(text);
         }
 
         /// <summary>G-clef sprite (Unity Text không render SMP 𝄞).</summary>

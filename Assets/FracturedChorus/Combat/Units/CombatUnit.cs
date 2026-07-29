@@ -13,7 +13,7 @@ namespace FracturedChorus.Combat.Units
         public GridSide Side { get; private set; }
         public GridPosition GridPosition { get; private set; }
         public UnitStats Stats { get; }
-        public SkillDefinitionSO[] Skills { get; }
+        public SkillDefinitionSO[] Skills { get; private set; }
         public Color PlaceholderColor { get; }
         public Sprite TimelineAvatarSprite { get; }
         public const int PrepCap = 3;
@@ -61,6 +61,11 @@ namespace FracturedChorus.Combat.Units
         {
             GridPosition = position;
             Side = position.Side;
+        }
+
+        public void ReplaceSkills(SkillDefinitionSO[] skills)
+        {
+            Skills = skills ?? Array.Empty<SkillDefinitionSO>();
         }
 
         public void SetCurrentHp(int hp)

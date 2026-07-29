@@ -344,6 +344,8 @@ Chỉ giảm dmg khi: không counter trên `E`, có standing footprint chạm `E
 
 `MoveActionCommand` (UC-06) **cut** — formation chỉ qua Deploy drag/swap.
 
+**Boss → formation:** weighted Front bias, Back pierce, column slam splash, optional ForceSwapAdjacent disrupt. Deploy UI shows column badges + pressure summary. SoT: [`BOSS_FORMATION_DESIGN.md`](./BOSS_FORMATION_DESIGN.md) · runtime `BossFormationProfileSO` / `BossFormationRuntime`.
+
 ---
 
 ## 10. Heartbeat (HB) — 4 vai trò

@@ -81,11 +81,11 @@ namespace FracturedChorus.RunMap.UI
             }
             else if (current)
             {
-                stroke = new Color(0.9f, 0.49f, 0.13f);
+                stroke = FcColorTokens.Brand.CyanNeonBody;
             }
             else if (onPath)
             {
-                stroke = new Color(0.9f, 0.49f, 0.13f);
+                stroke = FcColorTokens.WithAlpha(FcColorTokens.Brand.CyanNeonCore, 0.85f);
             }
             else if (!reachable)
             {

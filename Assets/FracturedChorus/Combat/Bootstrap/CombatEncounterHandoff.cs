@@ -32,9 +32,16 @@ namespace FracturedChorus.Combat.Bootstrap
             LastVictory = victory;
             HasResult = true;
             PendingReturnToNearestCamp = !victory;
-            PendingRewardSummary = victory
-                ? BuildRewardStub(LastFoughtEncounterId)
-                : null;
+            if (!victory)
+            {
+                PendingRewardSummary = null;
+                return;
+            }
+
+            if (string.IsNullOrEmpty(PendingRewardSummary))
+            {
+                PendingRewardSummary = CombatRewardService.GrantVictoryNotes(LastFoughtEncounterId);
+            }
         }
 
         public static void ConsumePendingEncounter()
@@ -61,26 +68,5 @@ namespace FracturedChorus.Combat.Bootstrap
             PendingRewardSummary = null;
         }
 
-        private static string BuildRewardStub(string encounterId)
-        {
-            if (string.IsNullOrEmpty(encounterId))
-            {
-                return "REWARD (stub): Run progress updated · Loot TBD";
-            }
-
-            if (encounterId == EncounterCatalog.BossDespair ||
-                encounterId.IndexOf("Boss", System.StringComparison.OrdinalIgnoreCase) >= 0)
-            {
-                return "REWARD (stub): Boss cleared · Sector progress · Loot TBD";
-            }
-
-            if (encounterId == EncounterCatalog.EliteGrunts ||
-                encounterId.IndexOf("Elite", System.StringComparison.OrdinalIgnoreCase) >= 0)
-            {
-                return "REWARD (stub): Elite cleared · Bonus loot TBD";
-            }
-
-            return "REWARD (stub): Battle cleared · Loot TBD";
-        }
     }
 }

@@ -1,4 +1,5 @@
 using FracturedChorus.Meta;
+using FracturedChorus.UI;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,6 +16,19 @@ namespace FracturedChorus.Hub
         [SerializeField] private Sprite sunSprite;
         [SerializeField] private Sprite moonSprite;
         [SerializeField] private Sprite dawnSprite;
+
+        private void Awake()
+        {
+            ApplyFonts();
+        }
+
+        public void ApplyFonts()
+        {
+            UiFontCatalog.Apply(dateLabel, UiFontRole.Display);
+            UiFontCatalog.Apply(phaseLabel, UiFontRole.DisplaySecondary);
+            UiFontCatalog.Apply(slotLabel, UiFontRole.DisplaySecondary);
+            UiFontCatalog.Apply(deadlineLabel, UiFontRole.DisplaySecondary);
+        }
 
         public void Refresh(GameMetaState state)
         {

@@ -241,6 +241,7 @@ MonoBehaviour:
   guardStateName: 
   beCounteredStateName: Kiki-Hurt
   idleStateName: Kiki-Idle
+  movingStateName: Kiki-Moving
   hitRetriggerNormalizedTime: 0.35
   preserveSceneVisuals: 1
   preserveSceneCollider: 1
@@ -2856,6 +2857,7 @@ MonoBehaviour:
   guardStateName: 
   beCounteredStateName: 
   idleStateName: 
+  movingStateName: 
   hitRetriggerNormalizedTime: 0.35
   preserveSceneVisuals: 1
   preserveSceneCollider: 1
@@ -3238,6 +3240,7 @@ MonoBehaviour:
   guardStateName: 
   beCounteredStateName: 
   idleStateName: 
+  movingStateName: 
   hitRetriggerNormalizedTime: 0.35
   preserveSceneVisuals: 1
   preserveSceneCollider: 1
@@ -3983,10 +3986,11 @@ MonoBehaviour:
   bodyCollider: {fileID: 487667176}
   feetAnchor: {fileID: 1279832177}
   animator: {fileID: 0}
-  counterStateName: 
+  counterStateName: Ren Counter
   guardStateName: 
-  beCounteredStateName: 
-  idleStateName: 
+  beCounteredStateName: Ren Hurt
+  idleStateName: Ren Idle
+  movingStateName: Ren Moving
   hitRetriggerNormalizedTime: 0.35
   preserveSceneVisuals: 1
   preserveSceneCollider: 1
@@ -5228,6 +5232,7 @@ MonoBehaviour:
   musicController: {fileID: 888001004}
   combatSfxController: {fileID: 888001005}
   counterPresentation: {fileID: 0}
+  enemyStrikeChoreographer: {fileID: 0}
   sideGap: 3.5
   applyStartResourcesOnPlay: 1
   startCoverGauge: 8
@@ -8886,10 +8891,11 @@ MonoBehaviour:
   bodyCollider: {fileID: 1144376354}
   feetAnchor: {fileID: 956599416}
   animator: {fileID: 0}
-  counterStateName: 
+  counterStateName: Coda - Counter
   guardStateName: 
-  beCounteredStateName: 
-  idleStateName: 
+  beCounteredStateName: Coda - Hurt
+  idleStateName: Coda - Idle
+  movingStateName: Coda - Moving
   hitRetriggerNormalizedTime: 0.35
   preserveSceneVisuals: 1
   preserveSceneCollider: 1
@@ -9083,6 +9089,7 @@ MonoBehaviour:
   guardStateName: 
   beCounteredStateName: 
   idleStateName: 
+  movingStateName: 
   hitRetriggerNormalizedTime: 0.35
   preserveSceneVisuals: 1
   preserveSceneCollider: 1

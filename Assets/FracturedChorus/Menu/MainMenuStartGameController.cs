@@ -1,5 +1,6 @@
 using System.Collections;
 using FracturedChorus.Combat.Bootstrap;
+using FracturedChorus.Meta;
 using FracturedChorus.RunMap;
 using UnityEngine;
 using UnityEngine.Events;
@@ -118,6 +119,17 @@ namespace FracturedChorus.Menu
             }
 
             StartCoroutine(BeginNewGameRoutine());
+            return true;
+        }
+
+        public bool LoadGame(int slot)
+        {
+            if (_transitioning || !_attractDismissed)
+            {
+                return false;
+            }
+
+            StartCoroutine(LoadGameRoutine(slot));
             return true;
         }
 
@@ -591,6 +603,62 @@ namespace FracturedChorus.Menu
             }
 
             RunMapSceneLoader.LoadByName(RunMapSceneCatalog.PrologueVN);
+        }
+
+        private IEnumerator LoadGameRoutine(int slot)
+        {
+            _transitioning = true;
+            menuController?.SetEnabled(false);
+            HideSettingsImmediate();
+            HideOffBeatArchiveImmediate();
+
+            PlayAttractTransitionSfx();
+            _bgmController?.Duck(bgmDuckMultiplier);
+
+            EnsureSceneFadeOverlay();
+            if (sceneFadeOverlay != null)
+            {
+                sceneFadeOverlay.gameObject.SetActive(true);
+                sceneFadeOverlay.blocksRaycasts = true;
+                sceneFadeOverlay.interactable = false;
+            }
+
+            var sfxDuration = _transitionSfxController != null
+                ? _transitionSfxController.GetChangeMenuDuration()
+                : newGameFadeDuration;
+            var fadeDuration = Mathf.Max(newGameFadeDuration, sfxDuration * menuTransitionFadeScale);
+
+            yield return FadeSceneOverlayTo(1f, fadeDuration);
+
+            if (_transitionSfxController != null)
+            {
+                yield return _transitionSfxController.WaitUntilFinishedRoutine();
+            }
+
+            if (newGameFadeHoldSeconds > 0f)
+            {
+                yield return new WaitForSecondsRealtime(newGameFadeHoldSeconds);
+            }
+
+            GameMetaSession.LoadSlot(slot);
+            var state = GameMetaSession.Current;
+            var sceneName = ResolveLoadScene(state);
+            RunMapSceneLoader.LoadByName(sceneName);
+        }
+
+        private static string ResolveLoadScene(GameMetaState state)
+        {
+            if (state.RunSnapshot.HasActiveRun)
+            {
+                return RunMapSceneCatalog.RunMapPrototype;
+            }
+
+            if (state.HasFlag(StoryFlagIds.OpeningInvestigationDone) || state.HasFlag(StoryFlagIds.RenArrivedHima))
+            {
+                return RunMapSceneCatalog.CampusHub;
+            }
+
+            return RunMapSceneCatalog.PrologueVN;
         }
 
         private IEnumerator TransitionToAttract()

@@ -1,4 +1,6 @@
 using System;
+using FracturedChorus.Narrative.Vn;
+using FracturedChorus.UI;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
@@ -7,6 +9,13 @@ namespace FracturedChorus.Narrative
 {
     public class PrologueChoiceView : MonoBehaviour
     {
+        private const float RowMinX = 0.28f;
+        private const float RowMaxX = 0.72f;
+        private const float AgreeRowYMin = 0.3f;
+        private const float AgreeRowYMax = 0.41f;
+        private const float DisagreeRowYMin = 0.15f;
+        private const float DisagreeRowYMax = 0.26f;
+
         [SerializeField] private CanvasGroup root;
         [SerializeField] private Text promptText;
         [SerializeField] private Text agreeLabel;
@@ -14,11 +23,13 @@ namespace FracturedChorus.Narrative
         [SerializeField] private Image agreeHighlight;
         [SerializeField] private Image disagreeHighlight;
         [FormerlySerializedAs("agreeSelectedColor")]
-        [SerializeField] private Color selectedColor = new Color(0.35f, 0.72f, 1f, 0.92f);
+        [SerializeField] private Color selectedColor;
         [FormerlySerializedAs("agreeIdleColor")]
-        [SerializeField] private Color idleColor = new Color(0.04f, 0.04f, 0.06f, 0.94f);
+        [SerializeField] private Color idleColor;
+        [SerializeField] private Color hoverColor;
 
-        private int _selectedIndex;
+        private int _selectedIndex = -1;
+        private int _hoverIndex = -1;
         private bool _active;
         private int _ignoreInputUntilFrame = -1;
         private Action<bool> _onChosen;
@@ -40,6 +51,7 @@ namespace FracturedChorus.Narrative
             _active = false;
             _ignoreInputUntilFrame = -1;
             _onChosen = null;
+            _hoverIndex = -1;
             if (root != null)
             {
                 root.alpha = 0f;
@@ -60,6 +72,7 @@ namespace FracturedChorus.Narrative
             EnsureChoiceUi();
             _onChosen = onChosen;
             _selectedIndex = -1;
+            _hoverIndex = -1;
             _ignoreInputUntilFrame = Time.frameCount + 1;
             _active = true;
 
@@ -110,24 +123,24 @@ namespace FracturedChorus.Narrative
             }
 
             var nextIndex = Mathf.Clamp(optionIndex, 0, 1);
-            if (nextIndex == _selectedIndex)
+            if (nextIndex == _hoverIndex)
             {
                 return;
             }
 
-            _selectedIndex = nextIndex;
+            _hoverIndex = nextIndex;
             _audio?.PlayButtonPress();
             RefreshSelectionVisuals();
         }
 
         public void HoverExitOption(int optionIndex)
         {
-            if (!_active || !CanAcceptInput() || _selectedIndex != optionIndex)
+            if (!_active || !CanAcceptInput() || _hoverIndex != optionIndex)
             {
                 return;
             }
 
-            _selectedIndex = -1;
+            _hoverIndex = -1;
             RefreshSelectionVisuals();
         }
 
@@ -162,16 +175,30 @@ namespace FracturedChorus.Narrative
 
             if (PrologueInput.WasUpPressedThisFrame())
             {
-                HoverOption(_selectedIndex < 0 ? 1 : _selectedIndex == 0 ? 1 : 0);
+                MoveKeyboardSelection(-1);
             }
             else if (PrologueInput.WasDownPressedThisFrame())
             {
-                HoverOption(_selectedIndex < 0 ? 0 : _selectedIndex == 0 ? 1 : 0);
+                MoveKeyboardSelection(1);
             }
             else if (PrologueInput.WasAdvancePressedThisFrame() && _selectedIndex >= 0)
             {
                 ConfirmSelection();
             }
+        }
+
+        private void MoveKeyboardSelection(int delta)
+        {
+            var next = _selectedIndex < 0 ? (delta > 0 ? 0 : 1) : (_selectedIndex + delta + 2) % 2;
+            if (next == _selectedIndex)
+            {
+                return;
+            }
+
+            _selectedIndex = next;
+            _hoverIndex = -1;
+            _audio?.PlayButtonPress();
+            RefreshSelectionVisuals();
         }
 
         private void ConfirmSelection()
@@ -222,6 +249,7 @@ namespace FracturedChorus.Narrative
             }
 
             _selectedIndex = -1;
+            _hoverIndex = -1;
             RefreshSelectionVisuals();
 
             if (root != null)
@@ -233,38 +261,72 @@ namespace FracturedChorus.Narrative
             }
         }
 
+        public void ApplyChoiceLayout()
+        {
+            if (root == null)
+            {
+                return;
+            }
+
+            ApplyRowAnchors(root.transform.Find("AgreeRow"), AgreeRowYMin, AgreeRowYMax);
+            ApplyRowAnchors(root.transform.Find("DisagreeRow"), DisagreeRowYMin, DisagreeRowYMax);
+        }
+
         private void RefreshSelectionVisuals()
         {
-            ApplyHighlight(agreeHighlight, _selectedIndex == 0);
-            ApplyHighlight(disagreeHighlight, _selectedIndex == 1);
+            ApplyHighlight(agreeHighlight, ResolveHighlightState(0));
+            ApplyHighlight(disagreeHighlight, ResolveHighlightState(1));
 
             if (agreeLabel != null)
             {
-                agreeLabel.fontStyle = _selectedIndex == 0 ? FontStyle.Bold : FontStyle.Normal;
+                UiFontCatalog.Apply(agreeLabel, UiFontRole.Display);
                 agreeLabel.color = Color.white;
             }
 
             if (disagreeLabel != null)
             {
-                disagreeLabel.fontStyle = _selectedIndex == 1 ? FontStyle.Bold : FontStyle.Normal;
+                UiFontCatalog.Apply(disagreeLabel, UiFontRole.DisplaySecondary);
                 disagreeLabel.color = Color.white;
             }
         }
 
-        private void ApplyHighlight(Image highlight, bool selected)
+        private HighlightState ResolveHighlightState(int optionIndex)
+        {
+            if (_selectedIndex == optionIndex)
+            {
+                return HighlightState.Selected;
+            }
+
+            if (_hoverIndex == optionIndex)
+            {
+                return HighlightState.Hover;
+            }
+
+            return HighlightState.Idle;
+        }
+
+        private void ApplyHighlight(Image highlight, HighlightState state)
         {
             if (highlight == null)
             {
                 return;
             }
 
-            highlight.color = selected ? selectedColor : idleColor;
+            highlight.color = state switch
+            {
+                HighlightState.Selected => selectedColor,
+                HighlightState.Hover => hoverColor,
+                _ => idleColor
+            };
             highlight.gameObject.SetActive(true);
         }
 
         private void EnsureChoiceUi()
         {
-            EnsureDisagreeRow();
+            EnsureOptionRow(agreeLabel, "AgreeRow");
+            EnsureOptionRow(disagreeLabel, "DisagreeRow");
+            ApplyChoiceLayout();
+            RebindRowHighlights();
 
             if (agreeLabel != null)
             {
@@ -278,12 +340,12 @@ namespace FracturedChorus.Narrative
 
             if (agreeHighlight == null && agreeLabel != null)
             {
-                agreeHighlight = CreateHighlight("AgreeHighlight", GetRowTransform(agreeLabel.transform), -4f);
+                agreeHighlight = CreateHighlight("AgreeHighlight", GetRowTransform(agreeLabel.transform), -2f);
             }
 
             if (disagreeHighlight == null && disagreeLabel != null)
             {
-                disagreeHighlight = CreateHighlight("DisagreeHighlight", GetRowTransform(disagreeLabel.transform), 4f);
+                disagreeHighlight = CreateHighlight("DisagreeHighlight", GetRowTransform(disagreeLabel.transform), 2f);
             }
 
             if (agreeLabel != null)
@@ -297,16 +359,31 @@ namespace FracturedChorus.Narrative
             }
         }
 
-        private void EnsureDisagreeRow()
+        private void RebindRowHighlights()
         {
-            if (disagreeLabel == null)
+            if (agreeHighlight == null && agreeLabel != null)
+            {
+                var row = GetRowTransform(agreeLabel.transform);
+                agreeHighlight = row?.Find("AgreeHighlight")?.GetComponent<Image>();
+            }
+
+            if (disagreeHighlight == null && disagreeLabel != null)
+            {
+                var row = GetRowTransform(disagreeLabel.transform);
+                disagreeHighlight = row?.Find("DisagreeHighlight")?.GetComponent<Image>();
+            }
+        }
+
+        private static void EnsureOptionRow(Text label, string rowName)
+        {
+            if (label == null)
             {
                 return;
             }
 
-            var labelTransform = disagreeLabel.transform;
+            var labelTransform = label.transform;
             var parent = labelTransform.parent;
-            if (parent != null && parent.name == "DisagreeRow")
+            if (parent != null && parent.name == rowName)
             {
                 return;
             }
@@ -322,7 +399,7 @@ namespace FracturedChorus.Narrative
                 return;
             }
 
-            var rowGo = new GameObject("DisagreeRow", typeof(RectTransform));
+            var rowGo = new GameObject(rowName, typeof(RectTransform));
             rowGo.transform.SetParent(parent, false);
             rowGo.transform.SetSiblingIndex(labelTransform.GetSiblingIndex());
 
@@ -343,16 +420,33 @@ namespace FracturedChorus.Narrative
             labelRect.offsetMax = Vector2.zero;
             labelRect.localRotation = Quaternion.identity;
 
-            var legacyHighlight = labelTransform.Find("DisagreeHighlight");
+            var legacyHighlight = labelTransform.Find($"{rowName.Replace("Row", "Highlight")}");
+            if (legacyHighlight == null)
+            {
+                legacyHighlight = labelTransform.Find(rowName == "AgreeRow" ? "AgreeHighlight" : "DisagreeHighlight");
+            }
+
             if (legacyHighlight != null)
             {
                 legacyHighlight.SetParent(rowGo.transform, false);
                 legacyHighlight.SetAsFirstSibling();
-                if (legacyHighlight.TryGetComponent<Image>(out var legacyImage))
-                {
-                    disagreeHighlight = legacyImage;
-                }
             }
+        }
+
+        private static void ApplyRowAnchors(Transform row, float yMin, float yMax)
+        {
+            if (row == null || row is not RectTransform rect)
+            {
+                return;
+            }
+
+            rect.anchorMin = new Vector2(RowMinX, yMin);
+            rect.anchorMax = new Vector2(RowMaxX, yMax);
+            rect.anchoredPosition = Vector2.zero;
+            rect.sizeDelta = Vector2.zero;
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+            rect.localRotation = Quaternion.identity;
         }
 
         private static Transform GetRowTransform(Transform labelTransform)
@@ -393,8 +487,8 @@ namespace FracturedChorus.Narrative
             var rect = go.GetComponent<RectTransform>();
             rect.anchorMin = Vector2.zero;
             rect.anchorMax = Vector2.one;
-            rect.offsetMin = Vector2.zero;
-            rect.offsetMax = Vector2.zero;
+            rect.offsetMin = new Vector2(8f, 6f);
+            rect.offsetMax = new Vector2(-8f, -6f);
             rect.localRotation = Quaternion.Euler(0f, 0f, zRotation);
             var image = go.GetComponent<Image>();
             image.raycastTarget = false;
@@ -454,10 +548,9 @@ namespace FracturedChorus.Narrative
 
         private void NormalizeLegacyColors()
         {
-            if (idleColor.a < 0.5f)
-            {
-                idleColor = new Color(0.04f, 0.04f, 0.06f, 0.94f);
-            }
+            selectedColor = FcColorTokens.Selection.VnChoiceHighlight;
+            hoverColor = FcColorTokens.WithAlpha(FcColorTokens.Brand.CyanHover, 0.88f);
+            idleColor = FcColorTokens.WithAlpha(FcColorTokens.Surface.Panel, 0f);
         }
 
         private static void DestroyHitArea(GameObject hitArea)
@@ -475,6 +568,13 @@ namespace FracturedChorus.Narrative
             {
                 DestroyImmediate(hitArea);
             }
+        }
+
+        private enum HighlightState
+        {
+            Idle,
+            Hover,
+            Selected
         }
 
 #if UNITY_EDITOR

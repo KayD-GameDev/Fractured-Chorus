@@ -429,6 +429,7 @@ namespace FracturedChorus.Editor
 
             controller.SetEditorPreview(CampusHubController.CampusHubEditorPreview.TownDay);
             EditorUtility.SetDirty(controller);
+            SceneFontSetupEditor.FinalizeSceneCanvas(canvasGo);
         }
 
         private static TownMapPinView CreatePinTemplate(Transform parent)
@@ -455,12 +456,12 @@ namespace FracturedChorus.Editor
             var labelGo = new GameObject("Label");
             labelGo.transform.SetParent(go.transform, false);
             var label = labelGo.AddComponent<Text>();
-            label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             label.fontSize = 16;
             label.alignment = TextAnchor.UpperCenter;
             label.color = Color.white;
             label.raycastTarget = false;
             Stretch(label.rectTransform, new Vector2(-0.4f, -0.55f), new Vector2(1.4f, 0f), Vector2.zero, Vector2.zero);
+            SceneFontSetupEditor.ApplyAutomatic(label);
 
             var pin = go.AddComponent<TownMapPinView>();
             var so = new SerializedObject(pin);
@@ -709,17 +710,7 @@ namespace FracturedChorus.Editor
 
         private static Text CreateText(string name, Transform parent, string content, int fontSize, TextAnchor anchor)
         {
-            var go = new GameObject(name);
-            go.transform.SetParent(parent, false);
-            var text = go.AddComponent<Text>();
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            text.text = content;
-            text.fontSize = fontSize;
-            text.alignment = anchor;
-            text.color = Color.white;
-            text.horizontalOverflow = HorizontalWrapMode.Wrap;
-            text.verticalOverflow = VerticalWrapMode.Overflow;
-            return text;
+            return SceneFontSetupEditor.CreateUiText(name, parent, content, fontSize, anchor);
         }
 
         private static Button CreateButton(string name, Transform parent, string label, Sprite background = null)

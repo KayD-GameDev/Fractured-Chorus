@@ -132,11 +132,11 @@ namespace FracturedChorus.Editor
                 hintGo = CreateUiObject("MacroHint", macroRoot.transform);
                 StretchRect(hintGo, new Vector2(0.08f, 0.04f), new Vector2(0.92f, 0.12f), Vector2.zero, Vector2.zero);
                 hintLabel = hintGo.AddComponent<Text>();
-                hintLabel.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
                 hintLabel.fontSize = 22;
                 hintLabel.alignment = TextAnchor.MiddleCenter;
                 hintLabel.color = new Color(0.92f, 0.94f, 0.96f);
                 hintLabel.text = "Select a Vault to Resonance Dive.";
+                SceneFontSetupEditor.ApplyAutomatic(hintLabel);
             }
             else
             {
@@ -471,6 +471,7 @@ namespace FracturedChorus.Editor
             WireController(controller, mapView, topBar.status, topBar.seed);
             SetupCadenceMacroMapLayer();
             EnsureRunMapBgm(root.transform);
+            SceneFontSetupEditor.FinalizeSceneCanvas(canvas.gameObject);
 
             EditorSceneManager.MarkSceneDirty(root.scene);
             Selection.activeGameObject = root;
@@ -979,16 +980,9 @@ namespace FracturedChorus.Editor
 
         private static Text CreateText(string name, Transform parent, string content, int fontSize, TextAnchor anchor)
         {
-            var go = CreateUiObject(name, parent);
-            var text = go.AddComponent<Text>();
-            text.text = content;
-            text.fontSize = fontSize;
-            text.alignment = anchor;
+            var text = SceneFontSetupEditor.CreateUiText(name, parent, content, fontSize, anchor);
             text.color = new Color(0.88f, 0.9f, 0.92f);
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            text.horizontalOverflow = HorizontalWrapMode.Wrap;
             text.verticalOverflow = VerticalWrapMode.Truncate;
-            text.raycastTarget = false;
             return text;
         }
 

@@ -19,7 +19,6 @@ namespace FracturedChorus.Editor
         private const string CatalogPath =
             "Assets/FracturedChorus/Data/ScriptableObjects/Narrative/VnSpeakerCatalog.asset";
         private const string TypingPath = "Assets/FracturedChorus/Audio/SFX/Prologue_Typing.mp3";
-        private const string TownMapUiRoot = "Assets/FracturedChorus/Art/UI/TownMap/";
         private const string FlowerArtRoot = "Assets/FracturedChorus/Art/Narrative/Events/FlowerShop/";
         private const string ScenarioResourcesPath = "Assets/FracturedChorus/Resources/FlowerWork";
 
@@ -271,7 +270,7 @@ namespace FracturedChorus.Editor
                 rightRect.Find("Portrait")?.GetComponent<Image>());
 
             var dialogueRoot = CreateUiObject("DialoguePanel", canvasGo.transform);
-            StretchRect(dialogueRoot, new Vector2(0.04f, 0.03f), new Vector2(0.96f, 0.36f), Vector2.zero, Vector2.zero);
+            StretchRect(dialogueRoot, VnDialoguePanelLayout.DialoguePanelAnchorMin, VnDialoguePanelLayout.DialoguePanelAnchorMax, Vector2.zero, Vector2.zero);
             var dialogueGroup = dialogueRoot.AddComponent<CanvasGroup>();
             var dialogueFrame = CreateImage("DialogueFrame", dialogueRoot.transform, LoadSprite(DialogueFramePath), Color.white);
             StretchRect(dialogueFrame.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
@@ -280,20 +279,21 @@ namespace FracturedChorus.Editor
             dialogueFrame.fillCenter = true;
             dialogueFrame.raycastTarget = false;
 
+            var bodyBacking = CreateImage("DialogueBodyBacking", dialogueRoot.transform, null, VnDialoguePanelLayout.BodyBackingColor);
+            StretchRect(bodyBacking.gameObject, VnDialoguePanelLayout.BodyBackingAnchorMin, VnDialoguePanelLayout.BodyBackingAnchorMax, Vector2.zero, Vector2.zero);
+            bodyBacking.raycastTarget = false;
+
             var nameplateGo = CreateUiObject("Nameplate", dialogueRoot.transform);
-            StretchRect(nameplateGo, new Vector2(0.018f, 0.90f), new Vector2(0.195f, 1.06f), Vector2.zero, Vector2.zero);
+            StretchRect(nameplateGo, VnDialoguePanelLayout.NameplateAnchorMin, VnDialoguePanelLayout.NameplateAnchorMax, Vector2.zero, Vector2.zero);
             var nameplateText = nameplateGo.AddComponent<Text>();
-            VnUiFont.Apply(nameplateText, 26, FontStyle.Bold);
-            nameplateText.alignment = TextAnchor.MiddleCenter;
-            nameplateText.color = Color.white;
+            VnUiFont.ApplyReadableNameplate(nameplateText);
             nameplateText.raycastTarget = false;
 
             var bodyGo = CreateUiObject("DialogueBody", dialogueRoot.transform);
-            StretchRect(bodyGo, new Vector2(0.07f, 0.12f), new Vector2(0.93f, 0.74f), Vector2.zero, Vector2.zero);
+            StretchRect(bodyGo, VnDialoguePanelLayout.BodyAnchorMin, VnDialoguePanelLayout.BodyAnchorMax, Vector2.zero, Vector2.zero);
             var bodyText = bodyGo.AddComponent<Text>();
-            VnUiFont.Apply(bodyText, 30, FontStyle.Normal);
+            VnUiFont.ApplyReadableBody(bodyText);
             bodyText.alignment = TextAnchor.UpperLeft;
-            bodyText.color = new Color(0.92f, 0.97f, 1f, 1f);
             bodyText.raycastTarget = false;
             var typewriter = dialogueRoot.AddComponent<PrologueTypewriterView>();
             SetSerializedField(typewriter, "bodyText", bodyText);
@@ -303,19 +303,19 @@ namespace FracturedChorus.Editor
             var textCardGroup = textCardRoot.AddComponent<CanvasGroup>();
             textCardGroup.alpha = 0f;
             textCardRoot.SetActive(false);
-            var textCardBg = CreateImage("TextCardDim", textCardRoot.transform, null, new Color(0f, 0f, 0f, 0.72f));
+            var textCardBg = CreateImage("TextCardDim", textCardRoot.transform, null, VnDialoguePanelLayout.TextCardDimColor);
             StretchRect(textCardBg.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-            var textCardBody = CreateText("TextCardBody", textCardRoot.transform, string.Empty, 40, TextAnchor.MiddleCenter);
-            StretchRect(textCardBody.gameObject, new Vector2(0.15f, 0.35f), new Vector2(0.85f, 0.65f), Vector2.zero, Vector2.zero);
-            textCardBody.color = new Color(0.9f, 0.95f, 1f, 1f);
+            var textCardBody = CreateText("TextCardBody", textCardRoot.transform, string.Empty, VnDialoguePanelLayout.TextCardFontSize, TextAnchor.MiddleCenter);
+            StretchRect(textCardBody.gameObject, VnDialoguePanelLayout.TextCardBodyAnchorMin, VnDialoguePanelLayout.TextCardBodyAnchorMax, Vector2.zero, Vector2.zero);
+            VnUiFont.ApplyReadableBody(textCardBody, VnDialoguePanelLayout.TextCardFontSize);
 
             var choiceGo = CreateUiObject("ChoicePanel", canvasGo.transform);
-            StretchRect(choiceGo, new Vector2(0.52f, 0.22f), new Vector2(0.96f, 0.78f), Vector2.zero, Vector2.zero);
+            StretchRect(choiceGo, VnDialoguePanelLayout.ChoicePanelAnchorMin, VnDialoguePanelLayout.ChoicePanelAnchorMax, Vector2.zero, Vector2.zero);
             var choiceGroup = choiceGo.AddComponent<CanvasGroup>();
             var choiceView = choiceGo.AddComponent<VnChoiceView>();
             SetSerializedField(choiceView, "root", choiceGroup);
 
-            var dateHud = EnsureStoryDateHud(canvasGo.transform);
+            var dateHud = VnSceneUiSetupEditor.EnsureStoryDateHud(canvasGo.transform);
 
             var fadeGo = CreateUiObject("FadeOverlay", canvasGo.transform);
             StretchRect(fadeGo, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
@@ -375,6 +375,7 @@ namespace FracturedChorus.Editor
             }
 
             eventSo.ApplyModifiedPropertiesWithoutUndo();
+            SceneFontSetupEditor.FinalizeSceneCanvas(canvasGo);
         }
 
         private static void BindFlowerBackgroundCues(VnCueResolver cueResolver)
@@ -395,47 +396,7 @@ namespace FracturedChorus.Editor
 
         private static VnStoryDateHud EnsureStoryDateHud(Transform canvas)
         {
-            if (canvas == null)
-            {
-                return null;
-            }
-
-            var existing = canvas.Find("StoryDateHud");
-            if (existing != null)
-            {
-                return existing.GetComponent<VnStoryDateHud>();
-            }
-
-            var go = CreateUiObject("StoryDateHud", canvas);
-            StretchRect(go, new Vector2(0.01f, 0.82f), new Vector2(0.28f, 0.98f), Vector2.zero, Vector2.zero);
-            var image = go.AddComponent<Image>();
-            image.color = new Color(0.05f, 0.08f, 0.12f, 0.75f);
-            image.raycastTarget = false;
-
-            var date = CreateText("DateLabel", go.transform, "01/09", 34, TextAnchor.MiddleLeft);
-            StretchRect(date.gameObject, new Vector2(0.08f, 0.45f), new Vector2(0.78f, 0.92f), Vector2.zero, Vector2.zero);
-            date.raycastTarget = false;
-
-            var phaseIcon = CreateImage("PhaseIcon", go.transform, LoadSprite(TownMapUiRoot + "townmap_icon_sun.png"), Color.white);
-            StretchRect(phaseIcon.gameObject, new Vector2(0.8f, 0.35f), new Vector2(0.96f, 0.9f), Vector2.zero, Vector2.zero);
-            phaseIcon.preserveAspect = true;
-            phaseIcon.raycastTarget = false;
-
-            var phase = CreateText("PhaseLabel", go.transform, "After School", 22, TextAnchor.MiddleLeft);
-            StretchRect(phase.gameObject, new Vector2(0.08f, 0.12f), new Vector2(0.78f, 0.45f), Vector2.zero, Vector2.zero);
-            phase.color = new Color(0.55f, 0.9f, 0.95f);
-            phase.raycastTarget = false;
-
-            var hud = go.AddComponent<VnStoryDateHud>();
-            SetSerializedField(hud, "bannerImage", image);
-            SetSerializedField(hud, "dateLabel", date);
-            SetSerializedField(hud, "phaseLabel", phase);
-            SetSerializedField(hud, "phaseIcon", phaseIcon);
-            SetSerializedField(hud, "sunSprite", LoadSprite(TownMapUiRoot + "townmap_icon_sun.png"));
-            SetSerializedField(hud, "moonSprite", LoadSprite(TownMapUiRoot + "townmap_icon_moon.png"));
-            SetSerializedField(hud, "dawnSprite", LoadSprite(TownMapUiRoot + "townmap_icon_dawn.png"));
-            go.SetActive(false);
-            return hud;
+            return VnSceneUiSetupEditor.EnsureStoryDateHud(canvas);
         }
 
         private static void EnsureBuildSettings()

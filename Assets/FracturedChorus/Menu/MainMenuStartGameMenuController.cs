@@ -1,3 +1,4 @@
+using FracturedChorus.Meta;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -16,6 +17,7 @@ namespace FracturedChorus.Menu
 
         private int _selectedIndex;
         private bool _enabled;
+        private SaveLoadSlotListView _saveLoadView;
 
         [System.Serializable]
         private class MenuOption
@@ -44,7 +46,25 @@ namespace FracturedChorus.Menu
             {
                 _selectedIndex = -1;
                 EventSystem.current?.SetSelectedGameObject(null);
+                RefreshLoadGameInteractable();
                 RefreshHighlight();
+            }
+        }
+
+        private void RefreshLoadGameInteractable()
+        {
+            if (options == null)
+            {
+                return;
+            }
+
+            var hasSave = GameMetaSaveLoad.HasAnySave();
+            for (var i = 0; i < options.Length; i++)
+            {
+                if (ResolveAction(options[i]) == MenuAction.LoadGame)
+                {
+                    options[i].interactable = hasSave;
+                }
             }
         }
 
@@ -243,7 +263,7 @@ namespace FracturedChorus.Menu
                     }
                     break;
                 case MenuAction.LoadGame:
-                    SetStatus("No save data found.");
+                    OpenLoadGameSlots();
                     break;
                 case MenuAction.OffBeatArchive:
                     screenController?.ShowOffBeatArchive();
@@ -419,6 +439,27 @@ namespace FracturedChorus.Menu
                 default:
                     return option.action;
             }
+        }
+
+        private void OpenLoadGameSlots()
+        {
+            if (!GameMetaSaveLoad.HasAnySave())
+            {
+                SetStatus("No save data found.");
+                return;
+            }
+
+            var host = transform.root;
+            _saveLoadView = SaveLoadSlotListView.Show(
+                host,
+                SaveLoadSlotListView.Mode.Load,
+                onLoad: slot =>
+                {
+                    if (screenController != null && screenController.LoadGame(slot))
+                    {
+                        SetStatus($"Loading slot {slot + 1:00}…");
+                    }
+                });
         }
 
         private void SetStatus(string message)

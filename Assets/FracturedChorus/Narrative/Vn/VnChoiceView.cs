@@ -1,4 +1,5 @@
 using System;
+using FracturedChorus.UI;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,20 +10,24 @@ namespace FracturedChorus.Narrative.Vn
         [SerializeField] private CanvasGroup root;
         [SerializeField] private Text promptText;
         [SerializeField] private RectTransform optionsRoot;
-        [SerializeField] private Color selectedColor = new Color(0.2f, 0.72f, 0.95f, 0.95f);
-        [SerializeField] private Color idleColor = new Color(0.06f, 0.08f, 0.12f, 0.92f);
 
         private readonly Text[] _labels = new Text[3];
         private readonly Image[] _backgrounds = new Image[3];
         private readonly Button[] _buttons = new Button[3];
         private string[] _options = Array.Empty<string>();
-        private int _selectedIndex;
+        private int _selectedIndex = -1;
+        private int _hoverIndex = -1;
         private bool _active;
         private int _ignoreInputUntilFrame = -1;
         private Action<int> _onChosen;
 
+        private Color _selectedColor;
+        private Color _hoverColor;
+        private Color _idleColor;
+
         private void Awake()
         {
+            NormalizeColors();
             EnsureUi();
             Hide();
         }
@@ -32,6 +37,7 @@ namespace FracturedChorus.Narrative.Vn
             _active = false;
             _onChosen = null;
             _ignoreInputUntilFrame = -1;
+            _hoverIndex = -1;
             if (root != null)
             {
                 root.alpha = 0f;
@@ -43,10 +49,12 @@ namespace FracturedChorus.Narrative.Vn
 
         public void Show(string prompt, string[] options, Action<int> onChosen)
         {
+            NormalizeColors();
             EnsureUi();
             _options = options ?? Array.Empty<string>();
             _onChosen = onChosen;
-            _selectedIndex = 0;
+            _selectedIndex = VisibleCount() > 0 ? 0 : -1;
+            _hoverIndex = -1;
             _ignoreInputUntilFrame = Time.frameCount + 1;
             _active = true;
 
@@ -71,6 +79,7 @@ namespace FracturedChorus.Narrative.Vn
                 }
             }
 
+            LayoutVisibleOptions();
             RefreshVisuals();
 
             if (root != null)
@@ -80,6 +89,33 @@ namespace FracturedChorus.Narrative.Vn
                 root.interactable = true;
                 root.blocksRaycasts = true;
             }
+        }
+
+        public void SetPointerHover(int optionIndex)
+        {
+            if (!_active || Time.frameCount <= _ignoreInputUntilFrame)
+            {
+                return;
+            }
+
+            if (optionIndex < 0 || optionIndex >= VisibleCount() || optionIndex == _hoverIndex)
+            {
+                return;
+            }
+
+            _hoverIndex = optionIndex;
+            RefreshVisuals();
+        }
+
+        public void ClearPointerHover(int optionIndex)
+        {
+            if (!_active || _hoverIndex != optionIndex)
+            {
+                return;
+            }
+
+            _hoverIndex = -1;
+            RefreshVisuals();
         }
 
         private void Update()
@@ -111,7 +147,16 @@ namespace FracturedChorus.Narrative.Vn
                 return;
             }
 
-            _selectedIndex = (_selectedIndex + delta + count) % count;
+            if (_selectedIndex < 0)
+            {
+                _selectedIndex = delta > 0 ? 0 : count - 1;
+            }
+            else
+            {
+                _selectedIndex = (_selectedIndex + delta + count) % count;
+            }
+
+            _hoverIndex = -1;
             RefreshVisuals();
         }
 
@@ -123,12 +168,12 @@ namespace FracturedChorus.Narrative.Vn
             }
 
             var count = VisibleCount();
-            if (count <= 0 || _selectedIndex < 0 || _selectedIndex >= count)
+            var chosen = _hoverIndex >= 0 && _hoverIndex < count ? _hoverIndex : _selectedIndex;
+            if (count <= 0 || chosen < 0 || chosen >= count)
             {
                 return;
             }
 
-            var chosen = _selectedIndex;
             var callback = _onChosen;
             Hide();
             callback?.Invoke(chosen);
@@ -150,6 +195,7 @@ namespace FracturedChorus.Narrative.Vn
 
         private void RefreshVisuals()
         {
+            var count = VisibleCount();
             for (var i = 0; i < _backgrounds.Length; i++)
             {
                 if (_backgrounds[i] == null)
@@ -157,8 +203,70 @@ namespace FracturedChorus.Narrative.Vn
                     continue;
                 }
 
-                _backgrounds[i].color = i == _selectedIndex ? selectedColor : idleColor;
+                if (i >= count)
+                {
+                    continue;
+                }
+
+                if (_selectedIndex == i)
+                {
+                    _backgrounds[i].color = _selectedColor;
+                }
+                else if (_hoverIndex == i)
+                {
+                    _backgrounds[i].color = _hoverColor;
+                }
+                else
+                {
+                    _backgrounds[i].color = _idleColor;
+                }
             }
+        }
+
+        private void LayoutVisibleOptions()
+        {
+            if (optionsRoot == null)
+            {
+                return;
+            }
+
+            var count = VisibleCount();
+            if (count <= 0)
+            {
+                return;
+            }
+
+            const float bottom = 0.04f;
+            const float top = 0.96f;
+            const float gap = 0.04f;
+            var rowHeight = (top - bottom - gap * (count - 1)) / count;
+
+            var slot = 0;
+            for (var i = 0; i < _buttons.Length; i++)
+            {
+                if (_buttons[i] == null)
+                {
+                    continue;
+                }
+
+                var visible = i < _options.Length && !string.IsNullOrWhiteSpace(_options[i]);
+                if (!visible)
+                {
+                    continue;
+                }
+
+                var yMax = top - slot * (rowHeight + gap);
+                var yMin = yMax - rowHeight;
+                Stretch(_buttons[i].GetComponent<RectTransform>(), new Vector2(0.02f, yMin), new Vector2(0.98f, yMax));
+                slot++;
+            }
+        }
+
+        private void NormalizeColors()
+        {
+            _selectedColor = FcColorTokens.Selection.VnChoiceHighlight;
+            _hoverColor = FcColorTokens.WithAlpha(FcColorTokens.Brand.CyanHover, 0.88f);
+            _idleColor = FcColorTokens.WithAlpha(FcColorTokens.Surface.Panel, 0f);
         }
 
         private void EnsureUi()
@@ -195,7 +303,7 @@ namespace FracturedChorus.Narrative.Vn
                 var optionsGo = new GameObject("Options", typeof(RectTransform));
                 optionsGo.transform.SetParent(transform, false);
                 optionsRoot = optionsGo.GetComponent<RectTransform>();
-                Stretch(optionsRoot, new Vector2(0.55f, 0.28f), new Vector2(0.96f, 0.72f));
+                Stretch(optionsRoot, new Vector2(0.04f, 0.08f), new Vector2(0.96f, 0.92f));
             }
 
             if (promptText == null)
@@ -203,9 +311,9 @@ namespace FracturedChorus.Narrative.Vn
                 var promptGo = new GameObject("Prompt", typeof(RectTransform));
                 promptGo.transform.SetParent(transform, false);
                 var promptRect = promptGo.GetComponent<RectTransform>();
-                Stretch(promptRect, new Vector2(0.55f, 0.74f), new Vector2(0.96f, 0.9f));
+                Stretch(promptRect, new Vector2(0.04f, 0.74f), new Vector2(0.96f, 0.96f));
                 promptText = promptGo.AddComponent<Text>();
-                VnUiFont.Apply(promptText, 26, FontStyle.Bold);
+                UiFontCatalog.Apply(promptText, UiFontRole.Display, 26);
                 promptText.alignment = TextAnchor.MiddleLeft;
                 promptText.color = Color.white;
                 promptText.raycastTarget = false;
@@ -215,6 +323,7 @@ namespace FracturedChorus.Narrative.Vn
             {
                 if (_buttons[i] != null)
                 {
+                    EnsureRowPointer(_buttons[i].gameObject, i);
                     continue;
                 }
 
@@ -223,19 +332,15 @@ namespace FracturedChorus.Narrative.Vn
                 {
                     var rowGo = new GameObject($"Option_{i}", typeof(RectTransform), typeof(Image), typeof(Button));
                     rowGo.transform.SetParent(optionsRoot, false);
-                    var rowRect = rowGo.GetComponent<RectTransform>();
-                    var yMax = 1f - (i * 0.34f);
-                    var yMin = yMax - 0.3f;
-                    Stretch(rowRect, new Vector2(0f, yMin), new Vector2(1f, yMax));
 
                     var bg = rowGo.GetComponent<Image>();
-                    bg.color = idleColor;
+                    bg.color = _idleColor;
 
                     var labelGo = new GameObject("Label", typeof(RectTransform));
                     labelGo.transform.SetParent(rowGo.transform, false);
-                    Stretch(labelGo.GetComponent<RectTransform>(), new Vector2(0.06f, 0.1f), new Vector2(0.94f, 0.9f));
+                    Stretch(labelGo.GetComponent<RectTransform>(), new Vector2(0.06f, 0.08f), new Vector2(0.94f, 0.92f));
                     var label = labelGo.AddComponent<Text>();
-                    VnUiFont.Apply(label, 28, FontStyle.Normal);
+                    UiFontCatalog.Apply(label, UiFontRole.DisplaySecondary, 28);
                     label.alignment = TextAnchor.MiddleLeft;
                     label.color = Color.white;
                     label.raycastTarget = false;
@@ -251,6 +356,8 @@ namespace FracturedChorus.Narrative.Vn
                     _labels[i] = row.Find("Label")?.GetComponent<Text>();
                 }
 
+                EnsureRowPointer(_buttons[i].gameObject, i);
+
                 var index = i;
                 if (_buttons[i] != null)
                 {
@@ -263,10 +370,28 @@ namespace FracturedChorus.Narrative.Vn
                         }
 
                         _selectedIndex = index;
+                        _hoverIndex = -1;
                         Confirm();
                     });
                 }
             }
+        }
+
+        private static void EnsureRowPointer(GameObject rowGo, int optionIndex)
+        {
+            if (rowGo == null)
+            {
+                return;
+            }
+
+            var view = rowGo.GetComponentInParent<VnChoiceView>();
+            var pointer = rowGo.GetComponent<VnChoiceRowPointer>();
+            if (pointer == null)
+            {
+                pointer = rowGo.AddComponent<VnChoiceRowPointer>();
+            }
+
+            pointer.Initialize(view, optionIndex);
         }
 
         private static void Stretch(RectTransform rect, Vector2 min, Vector2 max)

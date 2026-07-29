@@ -1,3 +1,4 @@
+using FracturedChorus.Audio;
 using FracturedChorus.Combat.Bootstrap;
 using FracturedChorus.Combat.Grid;
 using FracturedChorus.Combat.Units;
@@ -36,11 +37,13 @@ namespace FracturedChorus.UI
         [SerializeField] private string guardStateName;
         [SerializeField] private string beCounteredStateName;
         [SerializeField] private string idleStateName;
+        [SerializeField] private string movingStateName;
         [SerializeField] [Range(0f, 1f)] private float hitRetriggerNormalizedTime = 0.35f;
         [Tooltip("Keep sprite/color/Transform scale authored in the scene.")]
         [SerializeField] private bool preserveSceneVisuals = true;
         [Tooltip("Keep BoxCollider2D size/offset authored in the scene — used as click + drag area.")]
         [SerializeField] private bool preserveSceneCollider = true;
+        [SerializeField] private bool showWorldHpLabel;
 
         public CombatUnit Unit { get; private set; }
         public UnitPresetSO Preset => preset;
@@ -69,6 +72,16 @@ namespace FracturedChorus.UI
 
         public void PlayCounterRestart()
         {
+            PlayCounterInternal(0f, scheduleIdle: true);
+        }
+
+        public void PlayCounterHold()
+        {
+            PlayCounterInternal(0f, scheduleIdle: false);
+        }
+
+        private void PlayCounterInternal(float normalizedTime, bool scheduleIdle)
+        {
             ResolveAnimatorReference();
             var clip = ResolveCounterClip(out var stateName);
             if (clip == null)
@@ -76,7 +89,7 @@ namespace FracturedChorus.UI
                 clip = ResolveGuardClip(out stateName);
             }
 
-            PlayCombatAnimation(clip, stateName, 0f, scheduleIdle: true);
+            PlayCombatAnimation(clip, stateName, normalizedTime, scheduleIdle);
         }
 
         public void PlayCounterHitRetrigger()
@@ -97,9 +110,19 @@ namespace FracturedChorus.UI
 
         public void PlayBeCounteredRestart()
         {
+            PlayBeCounteredInternal(0f, scheduleIdle: true);
+        }
+
+        public void PlayBeCounteredHold()
+        {
+            PlayBeCounteredInternal(0f, scheduleIdle: false);
+        }
+
+        private void PlayBeCounteredInternal(float normalizedTime, bool scheduleIdle)
+        {
             ResolveAnimatorReference();
             var clip = ResolveBeCounteredClip(out var stateName);
-            PlayCombatAnimation(clip, stateName, 0f, scheduleIdle: true);
+            PlayCombatAnimation(clip, stateName, normalizedTime, scheduleIdle);
         }
 
         public void PlayBeCounteredHitRetrigger()
@@ -113,6 +136,11 @@ namespace FracturedChorus.UI
         private Coroutine _hpPunchRoutine;
         private Vector3 _hpPunchBaseScale = Vector3.one;
         private bool _hpPunchBaseCaptured;
+        private Vector3 _anchorPosition;
+        private bool _anchorCaptured;
+        private Color _baseSpriteColor = Color.white;
+        private bool _baseColorCaptured;
+        private float _dimFactor = 1f;
 
         private void PlayCombatAnimation(AnimationClip clip, string stateName, float normalizedTime, bool scheduleIdle)
         {
@@ -189,28 +217,223 @@ namespace FracturedChorus.UI
             return ResolveClipByKeyword(null, "Hurt", out stateName);
         }
 
-        public void PlayAttackAnimation(SkillDefinitionSO skill = null)
+        private AnimationClip ResolveMovingClip(out string stateName)
+        {
+            var clip = ResolveClipByKeyword(movingStateName, "Moving", out stateName);
+            if (clip != null)
+            {
+                return clip;
+            }
+
+            return ResolveClipByKeyword(null, "Move", out stateName);
+        }
+
+        /// <summary>Loop the locomotion clip until another combat animation or idle takes over.</summary>
+        public void PlayMovingLoop()
         {
             ResolveAnimatorReference();
-            AnimationClip clip = null;
-            string stateName = null;
+            var clip = ResolveMovingClip(out var stateName);
+            PlayCombatAnimation(clip, stateName, 0f, scheduleIdle: false);
+        }
 
-            if (skill != null && !string.IsNullOrEmpty(skill.displayName))
+        public void PlayIdleState()
+        {
+            ResolveAnimatorReference();
+            if (_combatAnimRoutine != null)
             {
-                clip = ResolveClipByKeyword(skill.displayName, skill.displayName, out stateName);
+                StopCoroutine(_combatAnimRoutine);
+                _combatAnimRoutine = null;
             }
 
-            if (clip == null)
+            var idleState = ResolveIdleStateName();
+            if (animator != null && !string.IsNullOrEmpty(idleState))
             {
-                clip = ResolveClipByKeyword(null, "Skill", out stateName);
+                animator.Play(idleState, 0, 0f);
+            }
+        }
+
+        public Vector3 AnchorPosition => _anchorCaptured ? _anchorPosition : transform.position;
+
+        public void CaptureAnchor()
+        {
+            _anchorPosition = transform.position;
+            _anchorCaptured = true;
+        }
+
+        public void SnapToAnchor()
+        {
+            if (_anchorCaptured)
+            {
+                transform.position = _anchorPosition;
+            }
+        }
+
+        /// <summary>Slide the unit so its feet reach <paramref name="feetWorld"/>; keeps the current depth.</summary>
+        public IEnumerator MoveFeetToRoutine(Vector3 feetWorld, float seconds)
+        {
+            var rootToFeet = transform.position - FeetWorldPosition;
+            var from = transform.position;
+            var to = new Vector3(feetWorld.x + rootToFeet.x, feetWorld.y + rootToFeet.y, from.z);
+            yield return MoveToRoutine(to, seconds);
+        }
+
+        public IEnumerator MoveToRoutine(Vector3 worldPosition, float seconds)
+        {
+            var from = transform.position;
+            var to = new Vector3(worldPosition.x, worldPosition.y, from.z);
+            if (seconds <= 0f)
+            {
+                transform.position = to;
+                yield break;
             }
 
+            var t = 0f;
+            while (t < seconds)
+            {
+                t += Time.deltaTime;
+                var p = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t / seconds));
+                transform.position = Vector3.Lerp(from, to, p);
+                yield return null;
+            }
+
+            transform.position = to;
+        }
+
+        /// <summary>1 = full brightness. Multiplies the authored sprite color for focus-dim effects.</summary>
+        public void SetVisualDimFactor(float factor)
+        {
+            _dimFactor = Mathf.Clamp01(factor);
+            ApplySpriteTint();
+        }
+
+        private void CaptureBaseSpriteColor()
+        {
+            ResolveSpriteRendererReference();
+            if (spriteRenderer == null || _baseColorCaptured)
+            {
+                return;
+            }
+
+            _baseSpriteColor = spriteRenderer.color;
+            _baseColorCaptured = true;
+        }
+
+        private void ApplySpriteTint()
+        {
+            ResolveSpriteRendererReference();
+            if (spriteRenderer == null)
+            {
+                return;
+            }
+
+            CaptureBaseSpriteColor();
+            var tinted = _baseSpriteColor;
+            tinted.r *= _dimFactor;
+            tinted.g *= _dimFactor;
+            tinted.b *= _dimFactor;
+            spriteRenderer.color = tinted;
+        }
+
+        public void PlayAttackAnimation(SkillDefinitionSO skill = null)
+        {
+            PlayAttackAnimationInternal(skill, scheduleIdle: true);
+        }
+
+        public void PlayAttackAnimationHold(SkillDefinitionSO skill = null)
+        {
+            PlayAttackAnimationInternal(skill, scheduleIdle: false);
+        }
+
+        private void PlayAttackAnimationInternal(SkillDefinitionSO skill, bool scheduleIdle)
+        {
+            ResolveAnimatorReference();
+            var clip = ResolveSkillClip(skill, out var stateName);
             if (clip == null)
             {
                 clip = ResolveClipByKeyword(null, "Attack", out stateName);
             }
 
-            PlayCombatAnimation(clip, stateName, 0f, scheduleIdle: true);
+            PlayCombatAnimation(clip, stateName, 0f, scheduleIdle);
+            ScheduleSkillSfx(skill, clip);
+        }
+
+        private static void ScheduleSkillSfx(SkillDefinitionSO skill, AnimationClip clip)
+        {
+            if (skill == null || clip == null)
+            {
+                return;
+            }
+
+            var sfx = FindAnyObjectByType<CombatSfxController>();
+            sfx?.PlaySkillSfxAtClipCue(skill, clip.length);
+        }
+
+        public float EstimateCounterClipLength()
+        {
+            ResolveAnimatorReference();
+            var clip = ResolveCounterClip(out _);
+            if (clip == null)
+            {
+                clip = ResolveGuardClip(out _);
+            }
+
+            return clip != null ? clip.length : 0.25f;
+        }
+
+        public float EstimateBeCounteredClipLength()
+        {
+            ResolveAnimatorReference();
+            var clip = ResolveBeCounteredClip(out _);
+            return clip != null ? clip.length : 0.25f;
+        }
+
+        public float EstimateSkillClipLength(SkillDefinitionSO skill)
+        {
+            ResolveAnimatorReference();
+            var clip = ResolveSkillClip(skill, out _);
+            if (clip == null)
+            {
+                clip = ResolveClipByKeyword(null, "Attack", out _);
+            }
+
+            return clip != null ? clip.length : 0.3f;
+        }
+
+        private AnimationClip ResolveSkillClip(SkillDefinitionSO skill, out string stateName)
+        {
+            stateName = null;
+            if (skill == null)
+            {
+                return null;
+            }
+
+            if (!string.IsNullOrEmpty(skill.displayName))
+            {
+                var byDisplayName = ResolveClipByKeyword(skill.displayName, skill.displayName, out stateName);
+                if (byDisplayName != null)
+                {
+                    return byDisplayName;
+                }
+            }
+
+            var slotKeyword = skill.slotKind switch
+            {
+                SkillSlotKind.BasicAttack => "Skill 1",
+                SkillSlotKind.Skill => "Skill 2",
+                SkillSlotKind.Ultimate => "Skill 3",
+                _ => null
+            };
+
+            if (!string.IsNullOrEmpty(slotKeyword))
+            {
+                var bySlot = ResolveClipByKeyword(null, slotKeyword, out stateName);
+                if (bySlot != null)
+                {
+                    return bySlot;
+                }
+            }
+
+            return ResolveClipByKeyword(null, "Skill", out stateName);
         }
 
         private AnimationClip ResolveClipByKeyword(string preferredName, string keyword, out string stateName)
@@ -406,6 +629,8 @@ namespace FracturedChorus.UI
             EnsureHpLabel();
             EnsureInteractionColliders();
             TryRestoreSpriteFromPresetIfNeeded();
+            CaptureBaseSpriteColor();
+            CaptureAnchor();
             ApplyVisuals();
             unit.OnHpChanged += HandleHpChanged;
             RefreshHp();
@@ -632,6 +857,12 @@ namespace FracturedChorus.UI
 
         private void EnsureHpLabel()
         {
+            if (!showWorldHpLabel)
+            {
+                DisableWorldHpLabel();
+                return;
+            }
+
             if (IsHpLabelValid())
             {
                 return;
@@ -646,6 +877,7 @@ namespace FracturedChorus.UI
 
             if (hpLabel != null)
             {
+                hpLabel.gameObject.SetActive(true);
                 return;
             }
 
@@ -657,6 +889,22 @@ namespace FracturedChorus.UI
             hpLabel.fontSize = 48;
             hpLabel.anchor = TextAnchor.MiddleCenter;
             hpLabel.color = Color.white;
+        }
+
+        private void DisableWorldHpLabel()
+        {
+            if (hpLabel != null)
+            {
+                hpLabel.text = string.Empty;
+                hpLabel.gameObject.SetActive(false);
+                return;
+            }
+
+            var labelTransform = transform.Find("HpLabel");
+            if (labelTransform != null)
+            {
+                labelTransform.gameObject.SetActive(false);
+            }
         }
 
         private bool IsHpLabelValid()
@@ -679,9 +927,12 @@ namespace FracturedChorus.UI
 
             if (!preserveSceneVisuals)
             {
-                spriteRenderer.color = Unit.PlaceholderColor;
+                _baseSpriteColor = Unit.PlaceholderColor;
+                _baseColorCaptured = true;
                 spriteRenderer.sortingOrder = 10 + Unit.GridPosition.Row;
             }
+
+            ApplySpriteTint();
         }
 
         private void HandleHpChanged(CombatUnit unit)
@@ -689,8 +940,10 @@ namespace FracturedChorus.UI
             RefreshHp();
             if (!unit.IsAlive && spriteRenderer != null && Unit != null)
             {
-                spriteRenderer.color = new Color(Unit.PlaceholderColor.r, Unit.PlaceholderColor.g,
+                _baseSpriteColor = new Color(Unit.PlaceholderColor.r, Unit.PlaceholderColor.g,
                     Unit.PlaceholderColor.b, 0.35f);
+                _baseColorCaptured = true;
+                ApplySpriteTint();
             }
         }
 
@@ -760,6 +1013,12 @@ namespace FracturedChorus.UI
 
         private void RefreshHp()
         {
+            if (!showWorldHpLabel)
+            {
+                DisableWorldHpLabel();
+                return;
+            }
+
             if (hpLabel != null && Unit != null)
             {
                 hpLabel.text = Unit.CurrentHp.ToString();

@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using FracturedChorus.UI;
 
 namespace FracturedChorus.UI
 {
@@ -960,8 +961,7 @@ namespace FracturedChorus.UI
                     badgeRt.anchoredPosition = new Vector2(0f, 2f);
                     badgeRt.sizeDelta = new Vector2(40f, 18f);
                     var badge = badgeGo.GetComponent<Text>();
-                    badge.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf")
-                        ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+                    badge.font = UiFontCatalog.Body;
                     badge.fontSize = 14;
                     badge.alignment = TextAnchor.MiddleCenter;
                     badge.color = new Color(0.45f, 0.95f, 1f, 1f);
@@ -2394,7 +2394,7 @@ namespace FracturedChorus.UI
                 _laneUnits.Add(unit);
             }
 
-            var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            var font = UiFontCatalog.Body;
             for (var i = 0; i < _laneUnits.Count; i++)
             {
                 var unit = _laneUnits[i];
@@ -2537,7 +2537,7 @@ namespace FracturedChorus.UI
             var fill = _bossTrackFrame.Find("Fill")?.GetComponent<Image>();
             if (fill != null)
             {
-                fill.color = bossTrackFrameFill;
+                fill.color = FcColorTokens.WithAlpha(FcColorTokens.Surface.Panel, 0.88f);
             }
 
             var borderH = Mathf.Max(1f, bossTrackFrameBorderThickness);
@@ -2550,12 +2550,12 @@ namespace FracturedChorus.UI
             var botImg = _bossTrackFrame.Find("BorderBottom")?.GetComponent<Image>();
             if (topImg != null)
             {
-                topImg.color = bossTrackFrameBorderTop;
+                topImg.color = FcColorTokens.WithAlpha(FcColorTokens.Brand.CyanNeonCore, 0.95f);
             }
 
             if (botImg != null)
             {
-                botImg.color = bossTrackFrameBorderBottom;
+                botImg.color = FcColorTokens.WithAlpha(FcColorTokens.Brand.MagentaAccent, 0.9f);
             }
         }
 

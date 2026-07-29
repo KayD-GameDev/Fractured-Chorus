@@ -205,10 +205,10 @@ namespace FracturedChorus.Editor
             note.transform.SetParent(parent, false);
             note.hideFlags = HideFlags.None;
             var text = note.AddComponent<Text>();
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             text.fontSize = 14;
             text.color = new Color(0.7f, 0.9f, 1f, 0.0f);
             text.raycastTarget = false;
+            SceneFontSetupEditor.ApplyAutomatic(text);
             text.text =
                 "UI_EditPreview — bật/tắt từng Lxx_* trong Hierarchy để chỉnh.\n" +
                 "Component UiEditPreviewRoot: Mode StatusMenu / Calendar / SocialStats.\n" +

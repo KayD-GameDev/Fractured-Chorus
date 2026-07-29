@@ -3,15 +3,16 @@ using FracturedChorus.Combat.Presentation;
 using FracturedChorus.Combat.Timeline;
 using UnityEngine;
 using UnityEngine.UI;
+using FracturedChorus.UI;
 
 namespace FracturedChorus.UI
 {
     public class BossNoteClusterView : MonoBehaviour
     {
         private static readonly Color NumberColor = Color.white;
-        private static readonly Color OutlinePurple = new Color(0.16f, 0.04f, 0.25f, 1f);
-        private static readonly Color OutlineBlue = new Color(0.04f, 0.1f, 0.25f, 1f);
-        private static readonly Color OutlineRed = new Color(0.25f, 0.06f, 0.09f, 1f);
+        private static readonly Color OutlinePurple = FcColorTokens.WithAlpha(FcColorTokens.Semantic.ElementMelody, 1f);
+        private static readonly Color OutlineBlue = FcColorTokens.WithAlpha(FcColorTokens.Brand.CyanNeonBody, 1f);
+        private static readonly Color OutlineRed = FcColorTokens.WithAlpha(FcColorTokens.Semantic.ElementRhythm, 1f);
 
         private readonly List<GameObject> _spawned = new();
         private readonly List<GameObject> _livingNoteRoots = new();
@@ -327,7 +328,7 @@ namespace FracturedChorus.UI
                 text = slot.gameObject.AddComponent<Text>();
             }
 
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            text.font = UiFontCatalog.Body;
             if (text.font == null)
             {
                 text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
@@ -444,7 +445,7 @@ namespace FracturedChorus.UI
             img.color = Color.white;
             if (sprite == null)
             {
-                img.color = new Color(1f, 0.35f, 0.85f, 0.9f);
+                img.color = FcColorTokens.WithAlpha(FcColorTokens.Brand.MagentaAccent, 0.9f);
             }
 
             _spawned.Add(go);

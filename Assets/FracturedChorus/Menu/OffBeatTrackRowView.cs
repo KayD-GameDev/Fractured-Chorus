@@ -1,4 +1,5 @@
 using System;
+using FracturedChorus.UI;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -7,10 +8,10 @@ namespace FracturedChorus.Menu
 {
     public sealed class OffBeatTrackRowView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler
     {
-        private static readonly Color Idle = new Color(0.75f, 0.9f, 1f, 0.85f);
-        private static readonly Color Selected = new Color(0f, 0.831f, 1f, 1f);
-        private static readonly Color HoverBg = new Color(0f, 0.55f, 0.75f, 0.18f);
-        private static readonly Color SelectedBg = new Color(0f, 0.55f, 0.75f, 0.32f);
+        private static readonly Color Idle = FcColorTokens.Brand.TextIdle;
+        private static readonly Color Selected = FcColorTokens.Selection.Accent;
+        private static readonly Color HoverBg = FcColorTokens.WithAlpha(FcColorTokens.Brand.CyanDim, 0.18f);
+        private static readonly Color SelectedBg = FcColorTokens.WithAlpha(FcColorTokens.Brand.CyanDim, 0.32f);
         private static readonly Color ClearBg = new Color(0f, 0f, 0f, 0f);
 
         [SerializeField] private Text titleLabel;

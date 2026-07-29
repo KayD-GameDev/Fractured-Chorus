@@ -1,3 +1,4 @@
+using FracturedChorus.UI;
 using FracturedChorus.Meta;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,6 +11,19 @@ namespace FracturedChorus.Hub
         [SerializeField] private Text phaseLabel;
         [SerializeField] private Text slotLabel;
         [SerializeField] private Text deadlineLabel;
+
+        private void Awake()
+        {
+            ApplyFonts();
+        }
+
+        public void ApplyFonts()
+        {
+            UiFontCatalog.Apply(dateLabel, UiFontRole.Display);
+            UiFontCatalog.Apply(phaseLabel, UiFontRole.DisplaySecondary);
+            UiFontCatalog.Apply(slotLabel, UiFontRole.DisplaySecondary);
+            UiFontCatalog.Apply(deadlineLabel, UiFontRole.DisplaySecondary);
+        }
 
         public void Refresh(GameMetaState state)
         {

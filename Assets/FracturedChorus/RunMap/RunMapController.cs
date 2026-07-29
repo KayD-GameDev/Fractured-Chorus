@@ -1,7 +1,11 @@
 using System.Collections;
 using FracturedChorus.Combat.Bootstrap;
+using FracturedChorus.Meta;
+using FracturedChorus.Meta.Economy;
 using FracturedChorus.RunMap.Core;
 using FracturedChorus.RunMap.UI;
+using FracturedChorus.Tutorial;
+using FracturedChorus.UI;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -134,6 +138,8 @@ namespace FracturedChorus.RunMap
             Initialize(graph, seed);
             ApplyCombatReturnHandoff();
             SyncLegendPanel();
+            TutorialDirector.Ensure().StartMapTrack();
+            RefreshNotesHud();
         }
 
         public void ApplyCombatReturnHandoff()
@@ -332,17 +338,121 @@ namespace FracturedChorus.RunMap
                 return;
             }
 
-            if (node.Type == MapNodeType.Battle ||
-                node.Type == MapNodeType.Elite ||
-                node.Type == MapNodeType.Treasure ||
-                node.Type == MapNodeType.Event ||
-                node.Type == MapNodeType.Relay)
+            if (node.Type == MapNodeType.Battle)
             {
-                UpdateLabels($"{MapNodePalette.DisplayName(node.Type)} — coming soon.");
+                BeginCombatForNode(node, EncounterCatalog.BattleGrunts, "Entering battle…");
+                return;
+            }
+
+            if (node.Type == MapNodeType.Elite)
+            {
+                BeginCombatForNode(node, EncounterCatalog.EliteGrunts, "Entering elite battle…");
+                return;
+            }
+
+            if (node.Type == MapNodeType.Camp)
+            {
+                ResolveCampNode(node);
+                return;
+            }
+
+            if (node.Type == MapNodeType.Treasure)
+            {
+                ResolveTreasureNode(node);
+                return;
+            }
+
+            if (node.Type == MapNodeType.Relay)
+            {
+                ResolveRelayNode(node);
+                return;
+            }
+
+            if (node.Type == MapNodeType.Event)
+            {
+                UpdateLabels($"{MapNodePalette.DisplayName(node.Type)} — event stub. Select next node.");
                 return;
             }
 
             UpdateLabels($"Entered {MapNodePalette.DisplayName(node.Type)} (F{node.Floor}). Select next node.");
+        }
+
+        private void ResolveCampNode(MapNodeData node)
+        {
+            if (!GameMetaSession.HasSession)
+            {
+                PartyRunHpStore.RestoreFullAtCamp();
+                UpdateLabels($"Camp F{node.Floor} — HP restored (no wallet session).");
+                return;
+            }
+
+            var wallet = GameMetaSession.Current.Wallet;
+            if (!wallet.CanAfford(EconomyTable.CampHealCost))
+            {
+                UpdateLabels($"Camp F{node.Floor} — need {EconomyTable.CampHealCost} Notes to rest.");
+                return;
+            }
+
+            if (!wallet.Spend(EconomyTable.CampHealCost))
+            {
+                UpdateLabels($"Camp F{node.Floor} — could not spend Notes.");
+                return;
+            }
+
+            PartyRunHpStore.RestoreFullAtCamp();
+            GameMetaSession.Save();
+            RefreshNotesHud();
+            UpdateLabels($"Camp F{node.Floor} — rested (−{EconomyTable.CampHealCost} Notes). HP restored.");
+        }
+
+        private void ResolveTreasureNode(MapNodeData node)
+        {
+            if (!GameMetaSession.HasSession)
+            {
+                UpdateLabels($"Treasure F{node.Floor} — empty (no session).");
+                return;
+            }
+
+            var amount = EconomyTable.TreasureReward(node.Id + node.Floor);
+            GameMetaSession.Current.Wallet.Add(amount);
+            GameMetaSession.Save();
+            RefreshNotesHud();
+            UpdateLabels($"Treasure F{node.Floor} — +{amount} Notes.");
+        }
+
+        private void ResolveRelayNode(MapNodeData node)
+        {
+            if (!GameMetaSession.HasSession)
+            {
+                UpdateLabels($"Relay F{node.Floor} — shop stub.");
+                return;
+            }
+
+            var wallet = GameMetaSession.Current.Wallet;
+            if (!wallet.CanAfford(EconomyTable.RelayCost))
+            {
+                UpdateLabels($"Relay shop — need {EconomyTable.RelayCost} Notes for field kit.");
+                return;
+            }
+
+            if (!wallet.Spend(EconomyTable.RelayCost))
+            {
+                return;
+            }
+
+            PartyRunHpStore.RestoreFullAtCamp();
+            GameMetaSession.Save();
+            RefreshNotesHud();
+            UpdateLabels($"Relay F{node.Floor} — bought field kit (−{EconomyTable.RelayCost} Notes). HP restored.");
+        }
+
+        private static void RefreshNotesHud()
+        {
+            var canvas = Object.FindAnyObjectByType<Canvas>();
+            if (canvas != null)
+            {
+                NotesHudView.Ensure(canvas.transform)?.Refresh();
+            }
         }
 
         private void BeginCombatForNode(MapNodeData node, string encounterId, string status)

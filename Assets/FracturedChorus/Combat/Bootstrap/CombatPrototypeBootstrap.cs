@@ -1,15 +1,20 @@
 using FracturedChorus.Audio;
 using FracturedChorus.Combat.Core;
 using FracturedChorus.Combat.Cover;
+using FracturedChorus.Combat.Difficulty;
+using FracturedChorus.Combat.Formation;
 using FracturedChorus.Combat.Grid;
 using FracturedChorus.Combat.Presentation;
 using FracturedChorus.Combat.Timeline;
 using FracturedChorus.Combat.Units;
 using FracturedChorus.Data;
+using FracturedChorus.Meta;
+using FracturedChorus.RunMap;
 using FracturedChorus.UI;
 using UnityEngine.Serialization;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace FracturedChorus.Combat.Bootstrap
 {
@@ -29,10 +34,13 @@ namespace FracturedChorus.Combat.Bootstrap
 
         [Header("Encounter (optional if units already in scene)")]
         [SerializeField] private EncounterDefinitionSO encounterDefinition;
+        [Tooltip("CombatTutorial scene: respect Hierarchy BG/enemies; force tutorial party/skills/coach.")]
+        [SerializeField] private bool tutorialSceneMode;
 
         [SerializeField] private CombatMusicController musicController;
         [SerializeField] private CombatSfxController combatSfxController;
         [SerializeField] private CounterPresentationDriver counterPresentation;
+        [SerializeField] private EnemyStrikeChoreographer enemyStrikeChoreographer;
 
         [Header("Grid layout")]
         [SerializeField] private float sideGap = HexBoardLayout.DefaultSideGap;
@@ -77,10 +85,38 @@ namespace FracturedChorus.Combat.Bootstrap
                     ? encounterDefinition
                     : null;
 
+            var respectSceneVisuals = tutorialSceneMode
+                                      || IsCombatTutorialScene();
+            if (respectSceneVisuals && handoffEncounter == null && encounter == null)
+            {
+                encounter = EncounterCatalog.LoadOrCreate(EncounterCatalog.Tutorial);
+                handoffEncounter = encounter;
+                if (!CombatEncounterHandoff.HasPendingEncounter)
+                {
+                    CombatEncounterHandoff.SetPending(
+                        EncounterCatalog.Tutorial,
+                        RunMapSceneCatalog.CampusHub);
+                }
+            }
+
+            var encounterId = handoffEncounter?.encounterId
+                              ?? encounter?.encounterId
+                              ?? (respectSceneVisuals ? EncounterCatalog.Tutorial : EncounterCatalog.BattleGrunts);
+            var isTutorial = respectSceneVisuals || EncounterCatalog.IsTutorial(encounterId);
+
+            if (isTutorial)
+            {
+                ApplyTutorialUnitVisibility();
+                if (!respectSceneVisuals)
+                {
+                    ApplyTutorialBackground();
+                }
+            }
+
             if (HasSceneUnits())
             {
-                RegisterSceneUnits();
-                if (handoffEncounter != null)
+                RegisterSceneUnits(isTutorial);
+                if (handoffEncounter != null && !respectSceneVisuals)
                 {
                     ApplyHandoffToSceneEnemies(handoffEncounter);
                 }
@@ -90,10 +126,12 @@ namespace FracturedChorus.Combat.Bootstrap
                 var full = encounter != null
                     ? MergePartyIfEnemyOnly(encounter)
                     : EncounterRuntimeFactory.CreateDemoEncounter();
-                SpawnUnitsFromEncounter(full, enemiesOnly: false);
+                SpawnUnitsFromEncounter(full, enemiesOnly: false, tutorialBasics: isTutorial);
             }
 
             RefreshUnitViewsCache();
+
+            InitializeBossFormation(encounterId);
 
             if (CombatEncounterHandoff.HasPendingEncounter)
             {
@@ -115,11 +153,14 @@ namespace FracturedChorus.Combat.Bootstrap
 
             var executeOverlay = ResolveExecuteOverlay();
 
+            combatController.SetActiveEncounter(encounterId);
             combatController.Initialize(_session, _timeline, timelineView, skillPanelView, musicController,
                 executeOverlay, _boardDrag);
 
             counterPresentation?.Configure(combatSfxController, timelineView);
             timelineView?.SetCounterPresentation(counterPresentation);
+
+            EnsureEnemyStrikeChoreographer(isTutorial);
 
             RefreshPartyStatusBar();
             EnsureEnemyStatusBar();
@@ -130,6 +171,151 @@ namespace FracturedChorus.Combat.Bootstrap
             {
                 skillPanelView.Hide();
             }
+        }
+
+        private void InitializeBossFormation(string encounterId)
+        {
+            var profile = BossFormationProfileSO.GetDefaultForEncounter(encounterId);
+            BossFormationRuntime.Initialize(profile);
+
+            var difficulty = GameMetaSession.HasSession ? GameMetaSession.Current.Difficulty : DifficultyRuntime.Cadence;
+            var mult = DifficultyRuntime.Get(difficulty);
+            BossFormationRuntime.ApplyDifficultyScale(mult.PierceFrontBias);
+        }
+
+        private static bool IsCombatTutorialScene()
+        {
+            var sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+            return string.Equals(sceneName, RunMapSceneCatalog.CombatTutorial,
+                System.StringComparison.OrdinalIgnoreCase);
+        }
+
+        private void ApplyTutorialUnitVisibility()
+        {
+            if (unitViews == null || unitViews.Length == 0)
+            {
+                unitViews = unitsRoot != null
+                    ? unitsRoot.GetComponentsInChildren<UnitView>(true)
+                    : GetComponentsInChildren<UnitView>(true);
+            }
+
+            if (unitViews == null)
+            {
+                return;
+            }
+
+            var survivors = new List<UnitView>(unitViews.Length);
+            foreach (var view in unitViews)
+            {
+                if (view == null)
+                {
+                    continue;
+                }
+
+                if (IsExcludedFromTutorial(view))
+                {
+                    Destroy(view.gameObject);
+                    continue;
+                }
+
+                survivors.Add(view);
+            }
+
+            unitViews = survivors.ToArray();
+        }
+
+        private static bool IsExcludedFromTutorial(UnitView view)
+        {
+            var key = view.DemoUnitKey?.ToLowerInvariant() ?? string.Empty;
+            var preset = view.ResolvePreset();
+            var unitId = preset?.unitId?.ToLowerInvariant() ?? string.Empty;
+            var role = preset != null ? preset.role : UnitRole.Grunt;
+
+            if (role == UnitRole.Boss || key.Contains("boss") || unitId.Contains("boss"))
+            {
+                return true;
+            }
+
+            if (key.Contains("grunt") || unitId.Contains("grunt"))
+            {
+                return true;
+            }
+
+            if (key.Contains("tank") || key.Contains("charlotte") || key.Contains("charlott")
+                || unitId.Contains("tank") || unitId.Contains("charlotte") || unitId.Contains("charlott"))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private void ApplyTutorialBackground()
+        {
+            try
+            {
+                var bgRoot = GameObject.Find("Background canvas");
+                if (bgRoot == null)
+                {
+                    return;
+                }
+
+                var image = bgRoot.GetComponentInChildren<Image>(true);
+                if (image == null)
+                {
+                    return;
+                }
+
+                var sprite = LoadTutorialBackgroundSprite();
+                if (sprite == null)
+                {
+                    return;
+                }
+
+                image.sprite = sprite;
+                image.color = Color.white;
+                image.preserveAspect = false;
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError("[Bootstrap] Failed to apply tutorial background: " + e);
+            }
+        }
+
+        private static Sprite LoadTutorialBackgroundSprite()
+        {
+            var fromResources = Resources.Load<Sprite>("Backgrounds/lumina_alley_night_rain_v1");
+            if (fromResources != null)
+            {
+                return fromResources;
+            }
+
+            var tex = Resources.Load<Texture2D>("Backgrounds/lumina_alley_night_rain_v1");
+            if (tex != null)
+            {
+                return Sprite.Create(tex, new Rect(0f, 0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100f);
+            }
+
+#if UNITY_EDITOR
+            var editorSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(
+                "Assets/FracturedChorus/Art/Backgrounds/lumina_alley_night_rain_v1.png");
+            if (editorSprite != null)
+            {
+                return editorSprite;
+            }
+
+            var editorTex = UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2D>(
+                "Assets/FracturedChorus/Art/Backgrounds/lumina_alley_night_rain_v1.png");
+            if (editorTex != null)
+            {
+                return Sprite.Create(
+                    editorTex,
+                    new Rect(0f, 0f, editorTex.width, editorTex.height),
+                    new Vector2(0.5f, 0.5f),
+                    100f);
+            }
+#endif
+            return null;
         }
 
         private void EnsureCoverHud()
@@ -373,6 +559,33 @@ namespace FracturedChorus.Combat.Bootstrap
             counterPresentation.Configure(combatSfxController, timelineView);
         }
 
+        private void EnsureEnemyStrikeChoreographer(bool choreographyEnabled)
+        {
+            EnemyStrikeChoreographer.ClearOwnership();
+
+            if (enemyStrikeChoreographer == null)
+            {
+                enemyStrikeChoreographer = GetComponent<EnemyStrikeChoreographer>();
+            }
+
+            if (enemyStrikeChoreographer == null)
+            {
+                enemyStrikeChoreographer = FindAnyObjectByType<EnemyStrikeChoreographer>();
+            }
+
+            if (enemyStrikeChoreographer == null)
+            {
+                if (!choreographyEnabled)
+                {
+                    return;
+                }
+
+                enemyStrikeChoreographer = gameObject.AddComponent<EnemyStrikeChoreographer>();
+            }
+
+            enemyStrikeChoreographer.Configure(_session, choreographyEnabled);
+        }
+
         private void EnsureAudioListener()
         {
             if (FindAnyObjectByType<AudioListener>() != null)
@@ -474,7 +687,7 @@ namespace FracturedChorus.Combat.Bootstrap
 
             foreach (var view in unitViews)
             {
-                if (view?.Unit != null)
+                if (view?.Unit != null && view.gameObject.activeSelf)
                 {
                     view.Bind(view.Unit);
                 }
@@ -502,12 +715,17 @@ namespace FracturedChorus.Combat.Bootstrap
             }
         }
 
-        private void RegisterSceneUnits()
+        private void RegisterSceneUnits(bool tutorialBasics = false)
         {
             foreach (var view in unitViews)
             {
-                var unitPreset = view?.ResolvePreset();
-                if (view == null || unitPreset == null)
+                if (view == null || !view.gameObject.activeSelf)
+                {
+                    continue;
+                }
+
+                var unitPreset = view.ResolvePreset();
+                if (unitPreset == null)
                 {
                     continue;
                 }
@@ -521,6 +739,16 @@ namespace FracturedChorus.Combat.Bootstrap
                 }
 
                 var unit = new CombatUnit(unitPreset, view.Side);
+                if (tutorialBasics)
+                {
+                    PartyLoadoutApplicator.ApplyTutorialBasics(unit);
+                }
+                else
+                {
+                    PartyLoadoutApplicator.ApplyToUnit(unit);
+                }
+
+                PartyLoadoutApplicator.ApplyDifficultyToEnemy(unit);
                 if (!_grid.TryPlaceUnit(unit, pos))
                 {
                     Debug.LogWarning($"[Bootstrap] Could not place {unitPreset.displayName} at {pos}");
@@ -619,7 +847,7 @@ namespace FracturedChorus.Combat.Bootstrap
 
             foreach (var view in unitViews)
             {
-                if (view == null || view.Side != GridSide.Enemy)
+                if (view == null || view.Side != GridSide.Enemy || !view.gameObject.activeSelf)
                 {
                     continue;
                 }
@@ -644,6 +872,7 @@ namespace FracturedChorus.Combat.Bootstrap
                 }
 
                 var unit = new CombatUnit(handoffPreset, GridSide.Enemy);
+                PartyLoadoutApplicator.ApplyDifficultyToEnemy(unit);
                 if (!_grid.TryPlaceUnit(unit, pos))
                 {
                     Debug.LogWarning(
@@ -735,9 +964,10 @@ namespace FracturedChorus.Combat.Bootstrap
 
             var merged = ScriptableObject.CreateInstance<EncounterDefinitionSO>();
             merged.encounterId = encounter.encounterId;
-            merged.units = MergeSpawns(
-                EncounterRuntimeFactory.CreateDefaultPartySpawns(),
-                encounter.units);
+            var party = EncounterCatalog.IsTutorial(encounter.encounterId)
+                ? EncounterRuntimeFactory.CreateTutorialPartySpawns()
+                : EncounterRuntimeFactory.CreateDefaultPartySpawns();
+            merged.units = MergeSpawns(party, encounter.units);
             return merged;
         }
 
@@ -749,7 +979,7 @@ namespace FracturedChorus.Combat.Bootstrap
             return merged;
         }
 
-        private void SpawnUnitsFromEncounter(EncounterDefinitionSO encounter, bool enemiesOnly)
+        private void SpawnUnitsFromEncounter(EncounterDefinitionSO encounter, bool enemiesOnly, bool tutorialBasics = false)
         {
             if (encounter?.units == null)
             {
@@ -776,6 +1006,16 @@ namespace FracturedChorus.Combat.Bootstrap
                 }
 
                 var unit = new CombatUnit(spawn.preset, spawn.side);
+                if (tutorialBasics)
+                {
+                    PartyLoadoutApplicator.ApplyTutorialBasics(unit);
+                }
+                else
+                {
+                    PartyLoadoutApplicator.ApplyToUnit(unit);
+                }
+
+                PartyLoadoutApplicator.ApplyDifficultyToEnemy(unit);
                 var pos = new GridPosition(spawn.side, spawn.row, spawn.column);
                 if (!_grid.TryPlaceUnit(unit, pos))
                 {
@@ -801,7 +1041,7 @@ namespace FracturedChorus.Combat.Bootstrap
 
         private static Vector3 ResolveSpawnScale(UnitPresetSO preset)
         {
-            if (preset != null && preset.role == UnitRole.Boss)
+            if (preset != null && (preset.role == UnitRole.Boss || preset.role == UnitRole.Elite))
             {
                 return Vector3.one * 0.2f;
             }

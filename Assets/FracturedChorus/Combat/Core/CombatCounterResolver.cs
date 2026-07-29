@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using FracturedChorus.Combat.Grid;
@@ -10,6 +11,183 @@ namespace FracturedChorus.Combat.Core
 {
     public static class CombatCounterResolver
     {
+        private static readonly HashSet<long> PresentedCounterPlacements = new();
+
+        public static void ClearPresentationMarkers()
+        {
+            PresentedCounterPlacements.Clear();
+        }
+
+        public static CombatUnit SelectCounterBody(IReadOnlyList<CombatUnit> units)
+        {
+            if (units == null || units.Count == 0)
+            {
+                return null;
+            }
+
+            CombatUnit best = null;
+            for (var i = 0; i < units.Count; i++)
+            {
+                var unit = units[i];
+                if (unit == null || !unit.IsAlive)
+                {
+                    continue;
+                }
+
+                if (best == null)
+                {
+                    best = unit;
+                    continue;
+                }
+
+                if (CompareCounterBodyPriority(unit, best) < 0)
+                {
+                    best = unit;
+                }
+            }
+
+            return best;
+        }
+
+        private static int CompareCounterBodyPriority(CombatUnit a, CombatUnit b)
+        {
+            var roleA = a.Role == UnitRole.Tank ? 0 : 1;
+            var roleB = b.Role == UnitRole.Tank ? 0 : 1;
+            if (roleA != roleB)
+            {
+                return roleA.CompareTo(roleB);
+            }
+
+            var colA = a.GridPosition.IsValid() ? a.GridPosition.Column : int.MaxValue;
+            var colB = b.GridPosition.IsValid() ? b.GridPosition.Column : int.MaxValue;
+            if (colA != colB)
+            {
+                return colA.CompareTo(colB);
+            }
+
+            return a.ActionPriority.CompareTo(b.ActionPriority);
+        }
+
+        private static long PlacementKey(CombatUnit unit, int placementBeat)
+        {
+            var idHash = unit != null ? unit.UnitId?.GetHashCode() ?? 0 : 0;
+            return ((long)idHash << 32) ^ (uint)placementBeat;
+        }
+
+        public static bool IsCounterPresentationPending(AgendaEntry entry)
+        {
+            if (entry?.Unit == null || entry.BeatIndex < 0)
+            {
+                return false;
+            }
+
+            return !PresentedCounterPlacements.Contains(PlacementKey(entry.Unit, entry.BeatIndex));
+        }
+
+        public static void MarkCounterPresentation(AgendaEntry entry)
+        {
+            if (entry?.Unit == null || entry.BeatIndex < 0)
+            {
+                return;
+            }
+
+            PresentedCounterPlacements.Add(PlacementKey(entry.Unit, entry.BeatIndex));
+        }
+
+        public static void MarkCounterPresentations(IEnumerable<AgendaEntry> entries)
+        {
+            if (entries == null)
+            {
+                return;
+            }
+
+            foreach (var entry in entries)
+            {
+                MarkCounterPresentation(entry);
+            }
+        }
+
+        public static bool ShouldPresentCounterBodyAtBeat(BeatTimelineEngine timeline, int beatIndex)
+        {
+            if (timeline == null || beatIndex < 0)
+            {
+                return false;
+            }
+
+            var telegraphs = timeline.GetImpactTelegraphsAtBeat(beatIndex);
+            if (telegraphs == null || telegraphs.Count == 0)
+            {
+                return false;
+            }
+
+            foreach (var entry in timeline.Agenda)
+            {
+                if (entry?.Unit == null || entry.Unit.Side != GridSide.Player || entry.Skill == null ||
+                    entry.Skill.IsGuard)
+                {
+                    continue;
+                }
+
+                if (!GetActiveBeatIndices(entry).Contains(beatIndex))
+                {
+                    continue;
+                }
+
+                var counters = false;
+                foreach (var telegraph in telegraphs)
+                {
+                    if (IsCounterEntry(entry, telegraph))
+                    {
+                        counters = true;
+                        break;
+                    }
+                }
+
+                if (counters && IsCounterPresentationPending(entry))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public static bool WillPresentStrikeAtBeat(BeatTimelineEngine timeline, int beatIndex)
+        {
+            if (timeline == null || beatIndex < 0)
+            {
+                return false;
+            }
+
+            var telegraphs = timeline.GetImpactTelegraphsAtBeat(beatIndex);
+            if (telegraphs == null || telegraphs.Count == 0)
+            {
+                return false;
+            }
+
+            foreach (var telegraph in telegraphs)
+            {
+                if (telegraph?.Unit == null || !telegraph.Unit.IsAlive)
+                {
+                    continue;
+                }
+
+                if (IsTelegraphFullyCountered(telegraph, timeline))
+                {
+                    if (ShouldPresentCounterBodyAtBeat(timeline, beatIndex))
+                    {
+                        return true;
+                    }
+                }
+                else
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         /// <summary>Player active beat overlaps enemy impact telegraph at beat E.</summary>
         public static bool IsCounterEntry(AgendaEntry entry, EnemyTelegraph telegraph)
         {
