@@ -86,7 +86,9 @@ namespace FracturedChorus.Narrative.Vn
 
         private void Awake()
         {
+            VnRuntimeUiLayoutApplier.ApplyReadability(this);
             ApplyDialogueFonts();
+            dateHud?.ApplyFonts();
             if (typingClip != null)
             {
                 typewriter?.BindTypingClip(typingClip);
@@ -123,22 +125,15 @@ namespace FracturedChorus.Narrative.Vn
 
         private void ApplyDialogueFonts()
         {
-            VnUiFont.ApplyAssetOnly(nameplateText);
+            VnUiFont.ApplyReadableEffectsOnly(nameplateText);
             var body = typewriter != null ? typewriter.BodyText : null;
             if (body == null && typewriter != null)
             {
                 body = typewriter.GetComponent<Text>() ?? typewriter.GetComponentInChildren<Text>(true);
             }
 
-            VnUiFont.ApplyAssetOnly(body);
-            VnUiFont.ApplyAssetOnly(textCardBody);
-            if (dateHud != null)
-            {
-                foreach (var label in dateHud.GetComponentsInChildren<Text>(true))
-                {
-                    VnUiFont.ApplyAssetOnly(label);
-                }
-            }
+            VnUiFont.ApplyReadableEffectsOnly(body);
+            VnUiFont.ApplyReadableEffectsOnly(textCardBody);
         }
 
         private void Update()

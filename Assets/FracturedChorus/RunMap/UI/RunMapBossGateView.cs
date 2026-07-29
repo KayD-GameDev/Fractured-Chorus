@@ -8,10 +8,6 @@ namespace FracturedChorus.RunMap.UI
     /// <summary>Boss gate overlay — hiện sau khi chọn node F16; không load combat ngay.</summary>
     public class RunMapBossGateView : MonoBehaviour
     {
-        private static readonly Color DimColor = new Color(0.04f, 0.05f, 0.08f, 0.82f);
-        private static readonly Color PanelColor = new Color(0.11f, 0.12f, 0.15f, 0.98f);
-        private static readonly Color AccentColor = new Color(0.75f, 0.22f, 0.18f, 1f);
-
         [SerializeField] private Text titleText;
         [SerializeField] private Text bodyText;
         [SerializeField] private Text hintText;
@@ -100,10 +96,10 @@ namespace FracturedChorus.RunMap.UI
             var root = GetComponent<RectTransform>() ?? gameObject.AddComponent<RectTransform>();
             StretchFull(root);
 
-            var dim = CreateImage("Dim", transform, DimColor);
+            var dim = CreateImage("Dim", transform, FcColorTokens.WithAlpha(FcColorTokens.Surface.Dim, 0.82f));
             StretchFull(dim.rectTransform);
 
-            var panel = CreateImage("Panel", transform, PanelColor);
+            var panel = CreateImage("Panel", transform, FcColorTokens.WithAlpha(FcColorTokens.Surface.Modal, 0.98f));
             var panelRect = panel.rectTransform;
             panelRect.anchorMin = new Vector2(0.5f, 0.5f);
             panelRect.anchorMax = new Vector2(0.5f, 0.5f);
@@ -111,7 +107,7 @@ namespace FracturedChorus.RunMap.UI
             panelRect.sizeDelta = new Vector2(520f, 320f);
 
             titleText = CreateText("Title", panel.transform, "Oni — Cadence Vault", 28, FontStyle.Bold,
-                new Color(0.95f, 0.94f, 0.92f), TextAnchor.UpperCenter);
+                FcColorTokens.Brand.TextPrimary, TextAnchor.UpperCenter);
             PlaceText(titleText.rectTransform, new Vector2(0f, -28f), new Vector2(480f, 40f));
 
             bodyText = CreateText(
@@ -120,7 +116,7 @@ namespace FracturedChorus.RunMap.UI
                 "F16 · Boss Beat Timeline\nRen covers the stolen hit song.",
                 20,
                 FontStyle.Normal,
-                new Color(0.78f, 0.8f, 0.84f),
+                FcColorTokens.Brand.CyanDim,
                 TextAnchor.UpperCenter);
             PlaceText(bodyText.rectTransform, new Vector2(0f, -88f), new Vector2(460f, 72f));
 
@@ -130,11 +126,11 @@ namespace FracturedChorus.RunMap.UI
                 "Prepare formation · EXECUTE on beat",
                 16,
                 FontStyle.Italic,
-                new Color(0.58f, 0.6f, 0.66f),
+                FcColorTokens.WithAlpha(FcColorTokens.Brand.TextMuted, 0.9f),
                 TextAnchor.UpperCenter);
             PlaceText(hintText.rectTransform, new Vector2(0f, -168f), new Vector2(440f, 28f));
 
-            fightButton = CreateButton("FightButton", panel.transform, AccentColor, out fightLabel, "Enter battle");
+            fightButton = CreateButton("FightButton", panel.transform, FcColorTokens.Brand.RedSelection, out fightLabel, "Enter battle");
             var fightRect = fightButton.GetComponent<RectTransform>();
             fightRect.anchorMin = new Vector2(0.5f, 0f);
             fightRect.anchorMax = new Vector2(0.5f, 0f);
@@ -145,7 +141,7 @@ namespace FracturedChorus.RunMap.UI
             cancelButton = CreateButton(
                 "CancelButton",
                 panel.transform,
-                new Color(0.22f, 0.24f, 0.28f, 1f),
+                FcColorTokens.WithAlpha(FcColorTokens.Surface.Track, 1f),
                 out cancelLabel,
                 "Back to map");
             var cancelRect = cancelButton.GetComponent<RectTransform>();
@@ -199,7 +195,7 @@ namespace FracturedChorus.RunMap.UI
             go.transform.SetParent(parent, false);
             var text = go.AddComponent<Text>();
             text.text = content;
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            text.font = UiFontCatalog.Body;
             text.fontSize = fontSize;
             text.fontStyle = style;
             text.color = color;

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using FracturedChorus.UI;
 
 namespace FracturedChorus.UI
 {
@@ -11,12 +12,12 @@ namespace FracturedChorus.UI
         private const float Lifetime = 0.9f;
         private const float RisePixels = 96f;
         private const int PoolCap = 16;
-        private const int CanvasSortOrder = 520;
+        private const int CanvasSortOrder = UiCanvasLayers.PopupDamage;
 
-        private static readonly Color DamageColor = new Color(1f, 0.38f, 0.78f, 1f);
-        private static readonly Color HealColor = new Color(0.25f, 1f, 0.55f, 1f);
-        private static readonly Color CritColor = new Color(1f, 0.88f, 0.2f, 1f);
-        private static readonly Color OutlineColor = new Color(0.02f, 0.01f, 0.05f, 1f);
+        private static readonly Color DamageColor = FcColorTokens.Semantic.Damage;
+        private static readonly Color HealColor = FcColorTokens.Semantic.Heal;
+        private static readonly Color CritColor = FcColorTokens.Semantic.Crit;
+        private static readonly Color OutlineColor = FcColorTokens.WithAlpha(FcColorTokens.Surface.Panel, 1f);
 
         private static readonly Queue<DamageNumberPopupView> Pool = new();
         private static RectTransform _canvasRoot;
@@ -115,7 +116,7 @@ namespace FracturedChorus.UI
                 return _font;
             }
 
-            _font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            _font = UiFontCatalog.Body;
             if (_font == null)
             {
                 _font = Resources.GetBuiltinResource<Font>("Arial.ttf");

@@ -1,12 +1,15 @@
+using System.Collections;
 using FracturedChorus.Audio;
 using FracturedChorus.Combat.Bootstrap;
 using FracturedChorus.Combat.Core;
+using FracturedChorus.Combat.Formation;
 using FracturedChorus.Combat.Grid;
 using FracturedChorus.Combat.Presentation;
 using FracturedChorus.Combat.Timeline;
 using FracturedChorus.Combat.Units;
 using FracturedChorus.Data;
 using FracturedChorus.RunMap;
+using FracturedChorus.Tutorial;
 using FracturedChorus.UI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -34,8 +37,11 @@ namespace FracturedChorus.Combat.Core
         [SerializeField] private CombatExecuteOverlayUIView executeOverlay;
         [SerializeField] private CombatResultOverlayUIView resultOverlay;
         [SerializeField] private BlockInputController blockInput;
+        [SerializeField] private DeployFormationHintView deployFormationHint;
 
         private CombatSession _session;
+        private bool _combatTutorialStarted;
+        private string _activeEncounterId;
 
         private BeatTimelineEngine _timeline;
 
@@ -53,8 +59,16 @@ namespace FracturedChorus.Combat.Core
         private SkillDefinitionSO _relocateSkill;
         private int _relocateFromBeat = -1;
         private bool _coverMusicLatch;
+        private Coroutine _segmentCompleteRoutine;
+        private Coroutine _encounterEndRoutine;
+        private bool _pendingEncounterResult;
 
 
+
+        public void SetActiveEncounter(string encounterId)
+        {
+            _activeEncounterId = encounterId;
+        }
 
         public void Initialize(CombatSession session, BeatTimelineEngine timeline,
 
@@ -100,6 +114,7 @@ namespace FracturedChorus.Combat.Core
 
             WireBlockInput();
             EnsureResultOverlay();
+            EnsureDeployFormationHint();
 
             _session.OnPhaseChanged += HandlePhaseChanged;
 
@@ -163,6 +178,8 @@ namespace FracturedChorus.Combat.Core
 
             UpdateExecuteOverlayVisibility(_session?.Phase ?? CombatPhase.Planning);
             ApplySlotFloorVisibilityForCurrentPhase();
+            RefreshDeployFormationHint();
+            TryStartCombatTutorial();
         }
 
 
@@ -260,6 +277,7 @@ namespace FracturedChorus.Combat.Core
             SetCoverActivateAllowed(false);
 
             _session.LockPlayerReposition();
+            deployFormationHint?.Hide();
 
             _session.PrepareTelegraphsForCurrentSegment();
 
@@ -552,44 +570,65 @@ namespace FracturedChorus.Combat.Core
 
 
         public void OnRoundSegmentComplete()
-
         {
-
             if (_session == null || _session.IsEncounterOver)
-
             {
-
                 return;
-
             }
 
+            if (_segmentCompleteRoutine != null)
+            {
+                StopCoroutine(_segmentCompleteRoutine);
+            }
 
+            _segmentCompleteRoutine = StartCoroutine(CompleteRoundSegmentAfterPresentations());
+        }
+
+        private IEnumerator CompleteRoundSegmentAfterPresentations()
+        {
+            yield return WaitForStrikePresentations();
+
+            if (_session == null || _session.IsEncounterOver)
+            {
+                _segmentCompleteRoutine = null;
+                yield break;
+            }
 
             _introPauseConsumed = true;
-
             _planningPaused = false;
-
             _awaitingExecute = true;
-
             SetCoverActivateAllowed(true);
-
             _session.EndRoundSegment();
-
             timelineView?.HoldAtRoundEnd();
-
             timelineView?.RefreshTelegraphsAndSlots();
-
             RefreshCoverHud();
 
             if (TimelineConstants.GetSegmentStartBeat(_session.RoundSegmentIndex) >= TimelineConstants.TotalBeats)
             {
                 _awaitingExecute = false;
                 executeOverlay?.SetVisible(false);
-                return;
+                _segmentCompleteRoutine = null;
+                yield break;
             }
 
             UpdateExecuteOverlayVisibility(_session.Phase);
+            _segmentCompleteRoutine = null;
+        }
 
+        private IEnumerator WaitForStrikePresentations()
+        {
+            var choreographer = EnemyStrikeChoreographer.ActiveInstance;
+            if (choreographer == null)
+            {
+                choreographer = FindAnyObjectByType<EnemyStrikeChoreographer>();
+            }
+
+            if (choreographer == null || !choreographer.IsBusy)
+            {
+                yield break;
+            }
+
+            yield return new WaitUntil(() => choreographer == null || !choreographer.IsBusy);
         }
 
 
@@ -790,14 +829,20 @@ namespace FracturedChorus.Combat.Core
                 skillPanelView?.Hide();
 
                 ApplySlotFloorVisibilityForCurrentPhase();
+                RefreshDeployFormationHint();
+                TryStartCombatTutorial();
 
+            }
+            else
+            {
+                deployFormationHint?.Hide();
             }
 
 
 
             if (phase == CombatPhase.Victory || phase == CombatPhase.Defeat)
             {
-                ShowResultOverlay(phase == CombatPhase.Victory);
+                executeOverlay?.SetVisible(false);
             }
         }
 
@@ -818,6 +863,11 @@ namespace FracturedChorus.Combat.Core
         private void HandleUnitHpChanged(CombatUnit unit)
         {
             if (unit == null || !unit.LastHpChange.ShouldShowFeedback)
+            {
+                return;
+            }
+
+            if (EnemyStrikeChoreographer.TryDeferHpFeedback(unit, unit.LastHpChange))
             {
                 return;
             }
@@ -860,7 +910,27 @@ namespace FracturedChorus.Combat.Core
                 CombatEncounterHandoff.SetResult(true);
             }
 
+            if (_encounterEndRoutine != null)
+            {
+                StopCoroutine(_encounterEndRoutine);
+            }
+
+            _pendingEncounterResult = true;
+            _encounterEndRoutine = StartCoroutine(ShowResultAfterPresentations(victory));
+        }
+
+        private IEnumerator ShowResultAfterPresentations(bool victory)
+        {
+            yield return WaitForStrikePresentations();
+            if (!_pendingEncounterResult)
+            {
+                _encounterEndRoutine = null;
+                yield break;
+            }
+
+            _pendingEncounterResult = false;
             ShowResultOverlay(victory);
+            _encounterEndRoutine = null;
         }
 
         private void EnsureResultOverlay()
@@ -1036,6 +1106,78 @@ namespace FracturedChorus.Combat.Core
         }
 
 
+
+        private void EnsureDeployFormationHint()
+        {
+            if (deployFormationHint != null)
+            {
+                return;
+            }
+
+            deployFormationHint = FindAnyObjectByType<DeployFormationHintView>();
+            if (deployFormationHint != null)
+            {
+                return;
+            }
+
+            Canvas canvas = null;
+            if (executeOverlay != null)
+            {
+                canvas = executeOverlay.GetComponentInParent<Canvas>();
+            }
+
+            if (canvas == null && timelineView != null)
+            {
+                canvas = timelineView.GetComponentInParent<Canvas>();
+            }
+
+            if (canvas == null)
+            {
+                canvas = FindAnyObjectByType<Canvas>();
+            }
+
+            if (canvas != null)
+            {
+                deployFormationHint = DeployFormationHintView.EnsureOnCanvas(canvas.transform);
+            }
+        }
+
+        private void RefreshDeployFormationHint()
+        {
+            EnsureDeployFormationHint();
+            if (deployFormationHint == null || _session == null)
+            {
+                return;
+            }
+
+            if (_session.Phase == CombatPhase.Planning && _session.AllowPlayerReposition)
+            {
+                deployFormationHint.ShowForDeploy(BossFormationRuntime.Active);
+            }
+            else
+            {
+                deployFormationHint.Hide();
+            }
+        }
+
+        private void TryStartCombatTutorial()
+        {
+            if (_combatTutorialStarted || _session == null || !_session.AllowPlayerReposition)
+            {
+                return;
+            }
+
+            _combatTutorialStarted = true;
+            var director = TutorialDirector.Ensure();
+            if (EncounterCatalog.IsTutorial(_activeEncounterId))
+            {
+                director.StartCadenceIntroTrack();
+            }
+            else
+            {
+                director.StartCombatTrack();
+            }
+        }
 
         private void OnDestroy()
 

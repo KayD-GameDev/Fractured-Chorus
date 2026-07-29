@@ -573,8 +573,7 @@ namespace FracturedChorus.Narrative
             if (disclaimerText != null)
             {
                 disclaimerText.alignment = TextAnchor.MiddleCenter;
-                disclaimerText.fontStyle = FontStyle.Italic;
-                disclaimerText.fontSize = narrationFontSize;
+                VnUiFont.Apply(disclaimerText, narrationFontSize, FontStyle.Italic);
                 disclaimerText.lineSpacing = 1.12f;
                 disclaimerText.horizontalOverflow = HorizontalWrapMode.Wrap;
                 disclaimerText.transform.localRotation = Quaternion.identity;
@@ -592,7 +591,7 @@ namespace FracturedChorus.Narrative
             if (dialogueBody != null)
             {
                 dialogueBody.alignment = TextAnchor.MiddleCenter;
-                dialogueBody.fontSize = narrationFontSize;
+                VnUiFont.Apply(dialogueBody, narrationFontSize, FontStyle.Normal);
                 dialogueBody.lineSpacing = 1.12f;
                 dialogueBody.horizontalOverflow = HorizontalWrapMode.Wrap;
                 dialogueBody.raycastTarget = false;

@@ -1,10 +1,15 @@
+using FracturedChorus.Menu;
+
 namespace FracturedChorus.Meta
 {
     public static class GameMetaSession
     {
         private static GameMetaState s_state;
+        private static int s_activeSlotIndex;
 
         public static bool HasSession => s_state != null;
+
+        public static int ActiveSlotIndex => s_activeSlotIndex;
 
         public static GameMetaState Current
         {
@@ -12,6 +17,8 @@ namespace FracturedChorus.Meta
             {
                 if (s_state == null)
                 {
+                    GameMetaSaveLoad.MigrateLegacySaveOnce();
+                    s_activeSlotIndex = GameMetaSaveLoad.ActiveSlot;
                     s_state = GameMetaSaveLoad.LoadOrNew();
                 }
 
@@ -21,8 +28,16 @@ namespace FracturedChorus.Meta
 
         public static void BeginNewGame()
         {
+            BeginNewGame(s_activeSlotIndex);
+        }
+
+        public static void BeginNewGame(int slot)
+        {
+            s_activeSlotIndex = slot;
+            GameMetaSaveLoad.ActiveSlot = slot;
             s_state = GameMetaState.CreateNew();
-            GameMetaSaveLoad.TrySave(s_state);
+            s_state.Difficulty = (int)MainMenuGameSettings.Difficulty;
+            GameMetaSaveLoad.TrySave(s_state, slot);
         }
 
         public static void BeginHubAfterPrologue()
@@ -34,12 +49,21 @@ namespace FracturedChorus.Meta
         {
             s_state = GameMetaState.CreateHubStart();
             s_state.SetFlag(StoryFlagIds.OpeningInvestigationDone);
-            GameMetaSaveLoad.TrySave(s_state);
+            s_state.Difficulty = (int)MainMenuGameSettings.Difficulty;
+            GameMetaSaveLoad.TrySave(s_state, s_activeSlotIndex);
         }
 
         public static void Load()
         {
-            s_state = GameMetaSaveLoad.LoadOrNew();
+            LoadSlot(s_activeSlotIndex);
+        }
+
+        public static void LoadSlot(int slot)
+        {
+            GameMetaSaveLoad.MigrateLegacySaveOnce();
+            s_activeSlotIndex = slot;
+            GameMetaSaveLoad.ActiveSlot = slot;
+            s_state = GameMetaSaveLoad.TryLoad(slot) ?? GameMetaState.CreateNew();
         }
 
         public static void Save()
@@ -49,7 +73,18 @@ namespace FracturedChorus.Meta
                 return;
             }
 
-            GameMetaSaveLoad.TrySave(s_state);
+            GameMetaSaveLoad.TrySave(s_state, s_activeSlotIndex);
+        }
+
+        public static void SaveToSlot(int slot)
+        {
+            if (s_state == null)
+            {
+                return;
+            }
+
+            s_activeSlotIndex = slot;
+            GameMetaSaveLoad.TrySave(s_state, slot);
         }
 
         public static void ResetSession()

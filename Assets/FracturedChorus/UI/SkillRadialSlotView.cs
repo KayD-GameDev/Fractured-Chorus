@@ -3,6 +3,7 @@ using FracturedChorus.Data;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using FracturedChorus.UI;
 
 namespace FracturedChorus.UI
 {
@@ -33,9 +34,10 @@ namespace FracturedChorus.UI
         /// <summary>Hộp design chuẩn để scale đồng nhất (lấy max W/H của 3 khung).</summary>
         private static readonly Vector2 FrameDesignRef = new Vector2(329f, 359f);
 
-        private static readonly Color IdleColor = new Color(0.16f, 0.16f, 0.22f, 0.96f);
-        private static readonly Color HighlightColor = new Color(0.95f, 0.62f, 0.25f, 1f);
-        private static readonly Color RingColor = new Color(0.75f, 0.8f, 0.95f, 1f);
+        private static readonly Color IdleColor = FcColorTokens.WithAlpha(FcColorTokens.Surface.Track, 0.96f);
+        private static readonly Color HighlightColor = FcColorTokens.Brand.CyanNeonBody;
+        private static readonly Color RingColor = FcColorTokens.Brand.CyanHover;
+        private static readonly Color FrameHighlightColor = FcColorTokens.WithAlpha(FcColorTokens.Brand.CyanHover, 0.95f);
 
         private RectTransform _rect;
         private Image _background;
@@ -75,7 +77,7 @@ namespace FracturedChorus.UI
                 labelRect.anchoredPosition = new Vector2(-4f, -2f);
                 labelRect.sizeDelta = new Vector2(28f, 18f);
                 _label = labelGo.AddComponent<Text>();
-                _label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+                _label.font = UiFontCatalog.Body;
                 _label.alignment = TextAnchor.UpperRight;
                 _label.horizontalOverflow = HorizontalWrapMode.Overflow;
                 _label.verticalOverflow = VerticalWrapMode.Overflow;
@@ -139,7 +141,7 @@ namespace FracturedChorus.UI
                 var frameImage = frame.AddComponent<Image>();
                 frameImage.sprite = UiCircleSpriteUtil.Circle;
                 frameImage.type = Image.Type.Simple;
-                frameImage.color = new Color(0.92f, 0.78f, 0.42f, 0.95f);
+                frameImage.color = FrameHighlightColor;
                 frameImage.raycastTarget = false;
             }
 
@@ -406,7 +408,7 @@ namespace FracturedChorus.UI
                     frameTransform.sizeDelta = Vector2.zero;
                     frameTransform.offsetMin = new Vector2(-6f, -6f);
                     frameTransform.offsetMax = new Vector2(6f, 6f);
-                    frameImage.color = new Color(0.92f, 0.78f, 0.42f, 0.95f);
+                    frameImage.color = FrameHighlightColor;
                 }
 
                 if (frameImage.sprite == null)
@@ -648,7 +650,7 @@ namespace FracturedChorus.UI
 
             if (_label.font == null)
             {
-                _label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+                _label.font = UiFontCatalog.Body;
             }
 
             _label.fontSize = LabelFontSize;

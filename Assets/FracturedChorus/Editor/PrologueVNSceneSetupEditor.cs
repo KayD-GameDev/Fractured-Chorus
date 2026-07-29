@@ -1,6 +1,8 @@
 #if UNITY_EDITOR
 using FracturedChorus.Combat.Bootstrap;
 using FracturedChorus.Narrative;
+using FracturedChorus.Narrative.Vn;
+using FracturedChorus.UI;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -133,9 +135,7 @@ namespace FracturedChorus.Editor
             var disclaimerGo = CreateUiObject("DisclaimerText", canvasGo.transform);
             StretchRect(disclaimerGo, new Vector2(0.1f, 0.3f), new Vector2(0.9f, 0.7f), Vector2.zero, Vector2.zero);
             var disclaimerText = disclaimerGo.AddComponent<Text>();
-            disclaimerText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            disclaimerText.fontSize = 40;
-            disclaimerText.fontStyle = FontStyle.Italic;
+            VnUiFont.Apply(disclaimerText, 40, FontStyle.Italic);
             disclaimerText.alignment = TextAnchor.MiddleCenter;
             disclaimerText.color = new Color(0.72f, 0.8f, 0.9f, 1f);
             disclaimerText.horizontalOverflow = HorizontalWrapMode.Wrap;
@@ -157,8 +157,7 @@ namespace FracturedChorus.Editor
             var dialogueBodyGo = CreateUiObject("DialogueBody", dialogueRoot.transform);
             StretchRect(dialogueBodyGo, new Vector2(0.08f, 0.18f), new Vector2(0.92f, 0.82f), Vector2.zero, Vector2.zero);
             var dialogueText = dialogueBodyGo.AddComponent<Text>();
-            dialogueText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            dialogueText.fontSize = 40;
+            VnUiFont.Apply(dialogueText, 40, FontStyle.Normal);
             dialogueText.alignment = TextAnchor.MiddleCenter;
             dialogueText.color = new Color(0.92f, 0.97f, 1f, 1f);
             dialogueText.horizontalOverflow = HorizontalWrapMode.Wrap;
@@ -177,27 +176,26 @@ namespace FracturedChorus.Editor
             var choicePromptGo = CreateUiObject("ChoicePrompt", choiceRoot.transform);
             StretchRect(choicePromptGo, new Vector2(0.18f, 0.42f), new Vector2(0.82f, 0.58f), Vector2.zero, Vector2.zero);
             var choicePrompt = choicePromptGo.AddComponent<Text>();
-            choicePrompt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            choicePrompt.fontSize = 34;
+            VnUiFont.Apply(choicePrompt, 34, FontStyle.Normal);
             choicePrompt.alignment = TextAnchor.MiddleCenter;
             choicePrompt.color = new Color(0.88f, 0.94f, 1f, 1f);
             choicePrompt.horizontalOverflow = HorizontalWrapMode.Wrap;
 
             var agreeRow = CreateUiObject("AgreeRow", choiceRoot.transform);
-            StretchRect(agreeRow, new Vector2(0.34f, 0.24f), new Vector2(0.66f, 0.34f), Vector2.zero, Vector2.zero);
+            StretchRect(agreeRow, new Vector2(0.28f, 0.3f), new Vector2(0.72f, 0.41f), Vector2.zero, Vector2.zero);
             var agreeHighlight = CreateImage("AgreeHighlight", agreeRow.transform, null,
-                new Color(0.35f, 0.72f, 1f, 0.92f));
-            StretchRect(agreeHighlight.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-            agreeHighlight.rectTransform.localRotation = Quaternion.Euler(0f, 0f, -4f);
+                FcColorTokens.WithAlpha(FcColorTokens.Selection.VnChoiceHighlight, 0f));
+            StretchRect(agreeHighlight.gameObject, Vector2.zero, Vector2.one, new Vector2(8f, 6f), new Vector2(-8f, -6f));
+            agreeHighlight.rectTransform.localRotation = Quaternion.Euler(0f, 0f, -2f);
             var agreeText = CreateText("AgreeLabel", agreeRow.transform, "I agree.", 36, TextAnchor.MiddleCenter);
             StretchRect(agreeText.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
 
             var disagreeRow = CreateUiObject("DisagreeRow", choiceRoot.transform);
-            StretchRect(disagreeRow, new Vector2(0.34f, 0.12f), new Vector2(0.66f, 0.22f), Vector2.zero, Vector2.zero);
+            StretchRect(disagreeRow, new Vector2(0.28f, 0.15f), new Vector2(0.72f, 0.26f), Vector2.zero, Vector2.zero);
             var disagreeHighlight = CreateImage("DisagreeHighlight", disagreeRow.transform, null,
-                new Color(0.35f, 0.72f, 1f, 0f));
-            StretchRect(disagreeHighlight.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-            disagreeHighlight.rectTransform.localRotation = Quaternion.Euler(0f, 0f, 4f);
+                FcColorTokens.WithAlpha(FcColorTokens.Selection.VnChoiceHighlight, 0f));
+            StretchRect(disagreeHighlight.gameObject, Vector2.zero, Vector2.one, new Vector2(8f, 6f), new Vector2(-8f, -6f));
+            disagreeHighlight.rectTransform.localRotation = Quaternion.Euler(0f, 0f, 2f);
             var disagreeText = CreateText("DisagreeLabel", disagreeRow.transform, "I do not agree.", 36, TextAnchor.MiddleCenter);
             StretchRect(disagreeText.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
 
@@ -222,8 +220,7 @@ namespace FracturedChorus.Editor
             var nameValueGo = CreateUiObject("NameValue", contractPaper.transform);
             StretchRect(nameValueGo, PrologueContractLayout.NameLineMin, PrologueContractLayout.NameLineMax, Vector2.zero, Vector2.zero);
             var nameValueText = nameValueGo.AddComponent<Text>();
-            nameValueText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            nameValueText.fontSize = 26;
+            VnUiFont.Apply(nameValueText, 26, FontStyle.Normal);
             nameValueText.alignment = TextAnchor.MiddleLeft;
             nameValueText.color = new Color(0.08f, 0.12f, 0.28f, 1f);
 
@@ -235,16 +232,13 @@ namespace FracturedChorus.Editor
             var nameInputTextGo = CreateUiObject("Text", nameInputGo.transform);
             StretchRect(nameInputTextGo, Vector2.zero, Vector2.one, new Vector2(12f, 6f), new Vector2(-12f, -6f));
             var nameInputText = nameInputTextGo.AddComponent<Text>();
-            nameInputText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            nameInputText.fontSize = 26;
+            VnUiFont.Apply(nameInputText, 26, FontStyle.Normal);
             nameInputText.color = new Color(0.08f, 0.12f, 0.28f, 1f);
             nameInputText.supportRichText = false;
             var placeholderGo = CreateUiObject("Placeholder", nameInputGo.transform);
             StretchRect(placeholderGo, Vector2.zero, Vector2.one, new Vector2(12f, 6f), new Vector2(-12f, -6f));
             var placeholderText = placeholderGo.AddComponent<Text>();
-            placeholderText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            placeholderText.fontSize = 26;
-            placeholderText.fontStyle = FontStyle.Italic;
+            VnUiFont.Apply(placeholderText, 26, FontStyle.Italic);
             placeholderText.color = new Color(0.08f, 0.12f, 0.28f, 0.45f);
             placeholderText.text = RunProfile.DefaultNameSuggestion;
             nameInput.textComponent = nameInputText;
@@ -313,6 +307,7 @@ namespace FracturedChorus.Editor
             SetSerializedField(controller, "audioController", audio);
             SetSerializedField(controller, "choiceBackdrop", choiceGroup);
             SetSerializedField(controller, "convenience", convenience);
+            SceneFontSetupEditor.FinalizeSceneCanvas(canvasGo);
         }
 
         private static void EnsureBuildSettings()
@@ -393,12 +388,16 @@ namespace FracturedChorus.Editor
                 return;
             }
 
+            choiceView.ApplyChoiceLayout();
+            choiceView.ApplyEditorPreview();
+
             var serialized = new SerializedObject(choiceView);
-            serialized.FindProperty("idleColor").colorValue = new Color(0.04f, 0.04f, 0.06f, 0.94f);
-            serialized.FindProperty("selectedColor").colorValue = new Color(0.35f, 0.72f, 1f, 0.92f);
+            serialized.FindProperty("idleColor").colorValue = FcColorTokens.WithAlpha(FcColorTokens.Surface.Panel, 0f);
+            serialized.FindProperty("hoverColor").colorValue = FcColorTokens.WithAlpha(FcColorTokens.Brand.CyanHover, 0.88f);
+            serialized.FindProperty("selectedColor").colorValue = FcColorTokens.Selection.VnChoiceHighlight;
             serialized.ApplyModifiedPropertiesWithoutUndo();
             EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
-            Debug.Log("[Fractured Chorus] PrologueVN choice colors updated — Save scene (Ctrl+S).");
+            Debug.Log("[Fractured Chorus] PrologueVN choice layout + hover updated — Save scene (Ctrl+S).");
         }
 
         private static Sprite LoadSprite(string assetPath)
@@ -451,7 +450,7 @@ namespace FracturedChorus.Editor
             text.fontSize = fontSize;
             text.alignment = anchor;
             text.color = Color.white;
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            VnUiFont.Apply(text, fontSize, FontStyle.Normal);
             return text;
         }
 

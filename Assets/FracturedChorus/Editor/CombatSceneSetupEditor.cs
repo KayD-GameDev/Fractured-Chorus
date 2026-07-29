@@ -491,6 +491,7 @@ namespace FracturedChorus.Editor
 
             WireBootstrap(bootstrap, controller, timelineUi, skillPanel, partyBar, executeOverlay, unitsRoot, gridRoot);
             WireController(controller, timelineUi, skillPanel, executeOverlay);
+            SceneFontSetupEditor.FinalizeSceneCanvas(canvas.gameObject);
 
             EditorSceneManager.MarkSceneDirty(root.scene);
             Selection.activeGameObject = root;
@@ -877,10 +878,10 @@ namespace FracturedChorus.Editor
 
         private static void ApplyTextDefaults(Text text)
         {
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             text.fontSize = 14;
             text.alignment = TextAnchor.MiddleCenter;
             text.color = Color.white;
+            SceneFontSetupEditor.ApplyAutomatic(text);
         }
 
         private static Vector3 GetWorldPosition(GridPosition position)

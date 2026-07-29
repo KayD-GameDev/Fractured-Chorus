@@ -6,10 +6,13 @@ using FracturedChorus.Combat.AI;
 using FracturedChorus.Combat.Block;
 using FracturedChorus.Combat.Cover;
 using FracturedChorus.Combat.Damage;
+using FracturedChorus.Combat.Difficulty;
+using FracturedChorus.Combat.Formation;
 using FracturedChorus.Combat.Grid;
 using FracturedChorus.Combat.Timeline;
 using FracturedChorus.Combat.Units;
 using FracturedChorus.Data;
+using FracturedChorus.Meta;
 using UnityEngine;
 
 namespace FracturedChorus.Combat.Core
@@ -27,6 +30,8 @@ namespace FracturedChorus.Combat.Core
         public event Action OnEncounterEnded;
         public event Action<int> OnTelegraphsPlanned;
         public event Action<int, BlockTiming> OnBlockResolved;
+        public event Action<EnemyStrikeReport> OnEnemyStrikeResolved;
+        public event Action<int> OnBeforeResolveBeat;
 
         private SimpleEnemyAI _enemyAi;
         private readonly HashSet<int> _resolvedBeats = new();
@@ -333,6 +338,7 @@ namespace FracturedChorus.Combat.Core
             BlockBarriers.Clear();
             _resolvedBeats.Clear();
             _bulwarkGuardChargeGranted.Clear();
+            CombatCounterResolver.ClearPresentationMarkers();
             _roundSegmentIndex++;
             PrePlanTelegraphsForSegment(_roundSegmentIndex);
             _lastScanBeat = TimelineConstants.GetSegmentStartBeat(_roundSegmentIndex) - 1;
@@ -346,6 +352,7 @@ namespace FracturedChorus.Combat.Core
             _roundSegmentIndex = 0;
             _resolvedBeats.Clear();
             _bulwarkGuardChargeGranted.Clear();
+            CombatCounterResolver.ClearPresentationMarkers();
             _lastScanBeat = -1;
             BlockBarriers.Clear();
             AllowPlayerReposition = true;
@@ -401,6 +408,8 @@ namespace FracturedChorus.Combat.Core
 
             var telegraphs = Timeline.GetImpactTelegraphsAtBeat(beatIndex);
             var playerEntries = GetPlayerEntriesActiveAtBeat(beatIndex);
+
+            OnBeforeResolveBeat?.Invoke(beatIndex);
 
             Cover.BeginWindowIfPending();
 
@@ -553,14 +562,17 @@ namespace FracturedChorus.Combat.Core
                 return;
             }
 
+            var target = CombatTargetPicker.PickEnemyAttackTargetForBeat(Grid, Timeline, beatIndex);
+
             if (CombatCounterResolver.IsTelegraphFullyCountered(telegraph, Timeline))
             {
                 Debug.Log(
                     $"[Counter] Cancelled {telegraph.Unit.DisplayName} @ beat {beatIndex} ({telegraph.NoteTier}, need {telegraph.HitsRequired})");
+                OnEnemyStrikeResolved?.Invoke(
+                    new EnemyStrikeReport(telegraph.Unit, target, wasCountered: true, beatIndex));
                 return;
             }
 
-            var target = CombatTargetPicker.PickEnemyAttackTargetForBeat(Grid, Timeline, beatIndex);
             if (target == null)
             {
                 return;
@@ -578,13 +590,22 @@ namespace FracturedChorus.Combat.Core
                 HarmonyElementResolver.GetRelation(telegraph.Unit.Stats.Element, target.Stats.Element),
                 positionalMod);
 
-            var finalDamage = damageResult.FinalDamage;
+            var difficulty = GameMetaSession.HasSession
+                ? GameMetaSession.Current.Difficulty
+                : DifficultyRuntime.Cadence;
+            var difficultyMult = DifficultyRuntime.Get(difficulty);
+            var finalDamage = damageResult.FinalDamage * difficultyMult.EnemyDamage;
             var blockTiming = BlockBarriers.TryGetBlockTiming(beatIndex, Timeline);
             if (blockTiming.HasValue)
             {
                 var timing = Cover.RemapGuardTiming(blockTiming.Value);
                 timing = BlockBarriers.ConsumeGuardChargeRemap(timing);
                 var reduction = timing.GetDamageReduction();
+                if (timing is BlockTiming.Early or BlockTiming.Late)
+                {
+                    reduction = Mathf.Max(0f, reduction - difficultyMult.EarlyLateBlockPenalty);
+                }
+
                 var before = finalDamage;
                 finalDamage *= 1f - reduction;
                 Debug.Log(
@@ -601,9 +622,70 @@ namespace FracturedChorus.Combat.Core
             }
 
             target.TakeDamage(finalDamage, damageResult.IsCritical);
+            ApplyColumnSlamIfNeeded(target, finalDamage * 0.45f, damageResult.IsCritical);
+            TryFormationDisrupt();
             Debug.Log(
                 $"[Enemy] {telegraph.Unit.DisplayName} hits {target.DisplayName} for {finalDamage:F0} @ beat {beatIndex}" +
                 (Mathf.Approximately(positionalMod, 1f) ? string.Empty : $" pos×={positionalMod:F2}"));
+
+            OnEnemyStrikeResolved?.Invoke(
+                new EnemyStrikeReport(telegraph.Unit, target, wasCountered: false, beatIndex));
+        }
+
+        private void ApplyColumnSlamIfNeeded(CombatUnit primaryTarget, float splashDamage, bool isCritical)
+        {
+            var profile = BossFormationRuntime.Active;
+            if (profile == null || profile.columnSlamColumn < 0 || Grid == null)
+            {
+                return;
+            }
+
+            foreach (var unit in Grid.PlayerUnits)
+            {
+                if (unit == null || !unit.IsAlive || unit == primaryTarget)
+                {
+                    continue;
+                }
+
+                if (unit.GridPosition.Column != profile.columnSlamColumn)
+                {
+                    continue;
+                }
+
+                unit.TakeDamage(splashDamage, isCritical);
+            }
+        }
+
+        private void TryFormationDisrupt()
+        {
+            var profile = BossFormationRuntime.Active;
+            if (profile == null || profile.formationDisrupt == FormationDisruptKind.None || Grid == null)
+            {
+                return;
+            }
+
+            if (profile.formationDisrupt != FormationDisruptKind.ForceSwapAdjacent)
+            {
+                return;
+            }
+
+            if (UnityEngine.Random.value > 0.2f)
+            {
+                return;
+            }
+
+            var alive = Grid.PlayerUnits.Where(u => u != null && u.IsAlive).OrderBy(u => u.GridPosition.Column).ToList();
+            if (alive.Count < 2)
+            {
+                return;
+            }
+
+            var a = alive[0];
+            var b = alive[1];
+            if (Grid.TrySwapUnits(a, b.GridPosition))
+            {
+                Debug.Log($"[Formation] Disrupt swap {a.DisplayName} ↔ {b.DisplayName}");
+            }
         }
 
         private bool TryGrantBulwarkGuardCharge(int beatIndex)

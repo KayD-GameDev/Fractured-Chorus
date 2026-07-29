@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using FracturedChorus.Meta;
 using UnityEngine;
 using UnityEngine.UI;
+using FracturedChorus.UI;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -20,14 +21,6 @@ namespace FracturedChorus.Hub
 
             public CalendarOverlayUI Overlay { get; }
         }
-
-        private static readonly Color Cyan = new Color(0f, 0.831f, 1f, 1f);
-        private static readonly Color Pink = new Color(1f, 0f, 0.4f, 1f);
-        private static readonly Color SundayRed = new Color(1f, 0.28f, 0.35f, 1f);
-        private static readonly Color SaturdayCyan = new Color(0.55f, 0.92f, 1f, 1f);
-        private static readonly Color PanelBlue = new Color(0.03f, 0.05f, 0.14f, 0.62f);
-        private static readonly Color ChipBg = new Color(0f, 0.75f, 0.92f, 0.92f);
-        private static readonly Color EventGold = new Color(1f, 0.84f, 0.2f, 0.9f);
 
         private static readonly string[] WeekdayNames = { "SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT" };
 
@@ -350,7 +343,7 @@ namespace FracturedChorus.Hub
             left.transform.SetParent(rootGo.transform, false);
             Stretch(left.GetComponent<RectTransform>(), new Vector2(0f, 0f), new Vector2(0.56f, 1f), Vector2.zero, Vector2.zero);
             var leftImg = left.GetComponent<Image>();
-            leftImg.color = PanelBlue;
+            leftImg.color = FcColorTokens.WithAlpha(FcColorTokens.Surface.Panel, 0.62f);
             leftImg.raycastTarget = false;
 
             var title = CreateText(left.transform, "Title", "CALENDAR", 52, TextAnchor.MiddleLeft);
@@ -360,7 +353,7 @@ namespace FracturedChorus.Hub
 
             var year = CreateText(left.transform, "Year", DisplayYear.ToString(), 24, TextAnchor.MiddleLeft);
             Stretch(year.rectTransform, new Vector2(0.06f, 0.84f), new Vector2(0.35f, 0.9f), Vector2.zero, Vector2.zero);
-            year.color = Cyan;
+            year.color = FcColorTokens.Brand.Cyan;
 
             var monthBig = CreateText(left.transform, "MonthBig", ArcMonth.ToString(), 140, TextAnchor.LowerCenter);
             Stretch(monthBig.rectTransform, new Vector2(0.12f, 0.66f), new Vector2(0.4f, 0.86f), Vector2.zero, Vector2.zero);
@@ -373,7 +366,7 @@ namespace FracturedChorus.Hub
 
             var arrow = CreateText(left.transform, "MonthArrow", "▶", 22, TextAnchor.MiddleCenter);
             Stretch(arrow.rectTransform, new Vector2(0.4f, 0.74f), new Vector2(0.46f, 0.82f), Vector2.zero, Vector2.zero);
-            arrow.color = Pink;
+            arrow.color = FcColorTokens.Semantic.CalendarPink;
 
             var hintQ = CreateKeyHint(left.transform, "HintQ", "Q", new Vector2(0.05f, 0.74f), new Vector2(0.12f, 0.82f));
             var hintE = CreateKeyHint(left.transform, "HintE", "E", new Vector2(0.62f, 0.74f), new Vector2(0.69f, 0.82f));
@@ -388,7 +381,7 @@ namespace FracturedChorus.Hub
                 var x1 = (i + 1) / 7f;
                 Stretch(wd.rectTransform, new Vector2(x0, 0f), new Vector2(x1, 1f), Vector2.zero, Vector2.zero);
                 wd.fontStyle = FontStyle.Bold;
-                wd.color = i == 0 ? SundayRed : Color.white;
+                wd.color = i == 0 ? FcColorTokens.Semantic.CalendarSunday : Color.white;
             }
 
             var grid = new GameObject("DayGrid", typeof(RectTransform));
@@ -397,13 +390,13 @@ namespace FracturedChorus.Hub
 
             var info = CreateText(left.transform, "SelectedDayInfo", string.Empty, 18, TextAnchor.MiddleLeft);
             Stretch(info.rectTransform, new Vector2(0.06f, 0.04f), new Vector2(0.7f, 0.12f), Vector2.zero, Vector2.zero);
-            info.color = Cyan;
+            info.color = FcColorTokens.Brand.Cyan;
 
             var chipBgGo = new GameObject("DateChipBg", typeof(RectTransform), typeof(Image));
             chipBgGo.transform.SetParent(rootGo.transform, false);
             Stretch(chipBgGo.GetComponent<RectTransform>(), new Vector2(0.5f, 0.46f), new Vector2(0.62f, 0.53f), Vector2.zero, Vector2.zero);
             var chipBg = chipBgGo.GetComponent<Image>();
-            chipBg.color = ChipBg;
+            chipBg.color = FcColorTokens.Surface.Chip;
             chipBg.raycastTarget = false;
 
             var chip = CreateText(chipBgGo.transform, "DateChip", "9/1", 22, TextAnchor.MiddleCenter);
@@ -420,7 +413,7 @@ namespace FracturedChorus.Hub
             tri.transform.SetParent(todayRoot.transform, false);
             Stretch(tri.GetComponent<RectTransform>(), new Vector2(0.25f, 0f), new Vector2(0.75f, 0.45f), Vector2.zero, Vector2.zero);
             var triImg = tri.GetComponent<Image>();
-            triImg.color = Pink;
+            triImg.color = FcColorTokens.Semantic.CalendarPink;
             triImg.raycastTarget = false;
             tri.transform.localEulerAngles = new Vector3(0f, 0f, 180f);
 
@@ -667,8 +660,8 @@ namespace FracturedChorus.Hub
                 var weekday = (startWeekday + dayNumber - 1) % 7;
                 cell.Label.color = weekday switch
                 {
-                    0 => SundayRed,
-                    6 => SaturdayCyan,
+                    0 => FcColorTokens.Semantic.CalendarSunday,
+                    6 => FcColorTokens.Brand.SaturdayLabel,
                     _ => Color.white
                 };
                 cell.Label.fontSize = 30;
@@ -678,9 +671,9 @@ namespace FracturedChorus.Hub
 
                 if (isToday)
                 {
-                    cell.Label.color = Pink;
+                    cell.Label.color = FcColorTokens.Semantic.CalendarPink;
                     cell.Label.fontSize = 36;
-                    cell.TodayGlow.color = new Color(Pink.r, Pink.g, Pink.b, 0.2f);
+                    cell.TodayGlow.color = new Color(FcColorTokens.Semantic.CalendarPink.r, FcColorTokens.Semantic.CalendarPink.g, FcColorTokens.Semantic.CalendarPink.b, 0.2f);
                     todayCell = cell;
                 }
                 else
@@ -691,12 +684,12 @@ namespace FracturedChorus.Hub
                 if (isSelected && !isToday)
                 {
                     cell.Label.fontSize = 34;
-                    cell.TodayGlow.color = new Color(Cyan.r, Cyan.g, Cyan.b, 0.18f);
+                    cell.TodayGlow.color = new Color(FcColorTokens.Brand.Cyan.r, FcColorTokens.Brand.Cyan.g, FcColorTokens.Brand.Cyan.b, 0.18f);
                 }
 
                 if (eventDays.Contains(dayNumber))
                 {
-                    cell.Ring.color = EventGold;
+                    cell.Ring.color = FcColorTokens.WithAlpha(FcColorTokens.Semantic.EventGold, 0.9f);
                     cell.Dot.color = Color.white;
                 }
                 else
@@ -833,7 +826,7 @@ namespace FracturedChorus.Hub
             button.targetGraphic = image;
             var label = CreateText(go.transform, "Label", "CLOSE", 18, TextAnchor.MiddleCenter);
             Stretch(label.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-            label.color = Cyan;
+            label.color = FcColorTokens.Brand.Cyan;
             label.fontStyle = FontStyle.Bold;
             return button;
         }
@@ -854,12 +847,12 @@ namespace FracturedChorus.Hub
             var go = new GameObject(name, typeof(RectTransform), typeof(Text));
             go.transform.SetParent(parent, false);
             var text = go.GetComponent<Text>();
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             text.text = content;
             text.fontSize = fontSize;
             text.alignment = anchor;
             text.color = Color.white;
             text.raycastTarget = false;
+            UiFontCatalog.ApplyAutomatic(text);
             return text;
         }
 

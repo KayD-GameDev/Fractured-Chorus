@@ -25,6 +25,7 @@ namespace FracturedChorus.Combat.Bootstrap
                 EncounterCatalog.BattleGrunts => CreateBattleEncounter(),
                 EncounterCatalog.EliteGrunts => CreateEliteEncounter(),
                 EncounterCatalog.BossDespair => CreateBossEncounter(),
+                EncounterCatalog.Tutorial => CreateTutorialEncounter(),
                 _ => CreateDemoEncounter()
             };
         }
@@ -53,9 +54,23 @@ namespace FracturedChorus.Combat.Bootstrap
             return encounter;
         }
 
+        public static EncounterDefinitionSO CreateTutorialEncounter()
+        {
+            var encounter = ScriptableObject.CreateInstance<EncounterDefinitionSO>();
+            encounter.encounterId = EncounterCatalog.Tutorial;
+            encounter.units = CreateTutorialEnemySpawns();
+            return encounter;
+        }
+
         public static EncounterUnitSpawn[] CreateDefaultPartySpawns() => new[]
         {
             CreateSpawn(GetPresetByKey("tank"), GridSide.Player, 2, 1),
+            CreateSpawn(GetPresetByKey("ren"), GridSide.Player, 2, 2),
+            CreateSpawn(GetPresetByKey("mage"), GridSide.Player, 2, 3)
+        };
+
+        public static EncounterUnitSpawn[] CreateTutorialPartySpawns() => new[]
+        {
             CreateSpawn(GetPresetByKey("ren"), GridSide.Player, 2, 2),
             CreateSpawn(GetPresetByKey("mage"), GridSide.Player, 2, 3)
         };
@@ -64,6 +79,11 @@ namespace FracturedChorus.Combat.Bootstrap
         {
             CreateSpawn(GetPresetByKey("grunt_left"), GridSide.Enemy, 2, 1),
             CreateSpawn(GetPresetByKey("grunt_right"), GridSide.Enemy, 2, 3)
+        };
+
+        public static EncounterUnitSpawn[] CreateTutorialEnemySpawns() => new[]
+        {
+            CreateSpawn(GetPresetByKey("kiki_ueda"), GridSide.Enemy, 2, 2)
         };
 
         public static EncounterUnitSpawn[] CreateEliteEnemySpawns() => new[]
@@ -95,6 +115,7 @@ namespace FracturedChorus.Combat.Bootstrap
                 "grunt" or "grunt_left" => "Grunt",
                 "grunt_right" => "Grunt_Eye",
                 "boss_despair" => "Boss_Despair",
+                "kiki" or "kiki_ueda" => "Kiki_Ueda",
                 "ren" => "Ren",
                 "tank" => "Tank",
                 "mage" => "Mage",
@@ -115,6 +136,7 @@ namespace FracturedChorus.Combat.Bootstrap
                 "grunt_left" => CreateGruntPreset("grunt_left"),
                 "grunt_right" => CreateGruntPreset("grunt_right"),
                 "boss_despair" => CreateBossDespairPreset(),
+                "kiki" or "kiki_ueda" => CreateKikiUedaPreset(),
                 _ => CreateGruntPreset(key ?? "grunt")
             };
         }
@@ -204,6 +226,23 @@ namespace FracturedChorus.Combat.Bootstrap
             preset.skills = new[]
             {
                 CreateGruntStrike("boss_despair_core", "Core Strike")
+            };
+            return preset;
+        }
+
+        private static UnitPresetSO CreateKikiUedaPreset()
+        {
+            var preset = ScriptableObject.CreateInstance<UnitPresetSO>();
+            preset.unitId = "kiki_ueda";
+            preset.displayName = "Kiki Ueda";
+            preset.role = UnitRole.Elite;
+            preset.stats = UnitStats.CreateKikiUedaLv1Preset();
+            preset.placeholderColor = new Color(0.55f, 0.12f, 0.14f);
+            preset.telegraphAttacksPerPhase = 2;
+            preset.skills = new[]
+            {
+                CreateSkill("kiki_claw", "Claw", SkillSlotKind.BasicAttack, 1, ActionGlowType.Attack),
+                CreateSkill("kiki_smoke_rend", "Smoke Rend", SkillSlotKind.Skill, 2, ActionGlowType.Attack)
             };
             return preset;
         }

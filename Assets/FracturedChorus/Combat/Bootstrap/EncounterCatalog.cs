@@ -9,6 +9,12 @@ namespace FracturedChorus.Combat.Bootstrap
         public const string BattleGrunts = "Encounter_Battle_Grunts";
         public const string EliteGrunts = "Encounter_Elite_Grunts";
         public const string BossDespair = "Encounter_Boss_Despair";
+        public const string Tutorial = "Encounter_Tutorial";
+
+        public static bool IsTutorial(string encounterId) =>
+            !string.IsNullOrEmpty(encounterId)
+            && (encounterId == Tutorial
+                || encounterId.IndexOf("Tutorial", System.StringComparison.OrdinalIgnoreCase) >= 0);
 
         public static string ForNodeType(MapNodeType type) => type switch
         {

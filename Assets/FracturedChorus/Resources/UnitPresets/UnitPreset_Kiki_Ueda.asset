@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce73a71ac68f23f48a5aad627d27478a, type: 3}
+  m_Name: UnitPreset_Kiki_Ueda
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.UnitPresetSO
+  unitId: kiki_ueda
+  displayName: Kiki Ueda
+  role: 4
+  statBlock: {fileID: 11400000, guid: d3e4f5a6b7c84901d2e3f4a506071829, type: 2}
+  stats:
+    Element: 0
+    StrengthType: 0
+    Strength: 28
+    Endurance: 6
+    HeartBeat: 128
+    BaseLuck: 7
+    CritMultiplier: 1.18
+    MaxHp: 260
+    BaseSpeed: 10
+  skills:
+  - {fileID: 11400000, guid: e4f5a6b7c8d94a12e3f4a5060718293a, type: 2}
+  - {fileID: 11400000, guid: f5a6b7c8d9ea4b23f4a5060718293a4b, type: 2}
+  placeholderColor: {r: 0.55, g: 0.12, b: 0.14, a: 1}
+  battleSprite: {fileID: 21300000, guid: b1c2d3e4f5a64789b0c1d2e3f4a50607, type: 3}
+  timelineAvatarSprite: {fileID: 0}
+  combatCardSprite: {fileID: 2354350885672035966, guid: 5490bd145ed941e42a74ee778693952b, type: 3}
+  barStackAnchoredY: -1
+  healthSlotTop: 2.9
+  telegraphAttacksPerPhase: 2

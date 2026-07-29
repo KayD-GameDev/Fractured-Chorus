@@ -11,8 +11,7 @@ namespace FracturedChorus.Menu
     public sealed class OffBeatArchiveController : MonoBehaviour
     {
         private const string FavoriteKeyPrefix = "fc_offbeat_fav_";
-        private static readonly Color Cyan = new Color(0f, 0.831f, 1f, 1f);
-        private static readonly Color CyanDim = new Color(0f, 0.55f, 0.7f, 0.55f);
+        private static readonly Color CyanDim = FcColorTokens.WithAlpha(FcColorTokens.Brand.CyanDim, 0.55f);
 
         [SerializeField] private OffBeatCatalogSO catalog;
         [SerializeField] private OffBeatMusicPlayer musicPlayer;
@@ -585,7 +584,7 @@ namespace FracturedChorus.Menu
             _songTitleDisplayLabel.resizeTextForBestFit = false;
             _songTitleDisplayLabel.fontStyle = FontStyle.Bold;
             _songTitleDisplayLabel.alignment = TextAnchor.MiddleCenter;
-            _songTitleDisplayLabel.color = Cyan;
+            _songTitleDisplayLabel.color = FcColorTokens.Brand.Cyan;
             if (_songTitleDisplayLabel.fontSize < 20)
             {
                 _songTitleDisplayLabel.fontSize = 22;
@@ -984,7 +983,7 @@ namespace FracturedChorus.Menu
             titleRt.offsetMin = new Vector2(12f, 0f);
             titleRt.offsetMax = new Vector2(-8f, -4f);
             var title = titleGo.GetComponent<Text>();
-            title.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            title.font = UiFontCatalog.Body;
             title.fontSize = 20;
             title.fontStyle = FontStyle.Bold;
             title.alignment = TextAnchor.LowerLeft;
@@ -998,7 +997,7 @@ namespace FracturedChorus.Menu
             artistRt.offsetMin = new Vector2(12f, 4f);
             artistRt.offsetMax = new Vector2(-8f, 0f);
             var artist = artistGo.GetComponent<Text>();
-            artist.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            artist.font = UiFontCatalog.Body;
             artist.fontSize = 15;
             artist.alignment = TextAnchor.UpperLeft;
             artist.raycastTarget = false;
@@ -1011,7 +1010,7 @@ namespace FracturedChorus.Menu
             favRt.offsetMin = Vector2.zero;
             favRt.offsetMax = Vector2.zero;
             var fav = favGo.GetComponent<Image>();
-            fav.color = Cyan;
+            fav.color = FcColorTokens.Brand.Cyan;
             fav.raycastTarget = false;
             fav.enabled = false;
 
@@ -1148,7 +1147,7 @@ namespace FracturedChorus.Menu
             var fav = track != null && IsFavorite(track.trackId);
             if (favoriteIcon != null)
             {
-                favoriteIcon.color = fav ? Cyan : CyanDim;
+                favoriteIcon.color = fav ? FcColorTokens.Brand.Cyan : FcColorTokens.Brand.CyanDim;
             }
         }
 
@@ -1201,14 +1200,14 @@ namespace FracturedChorus.Menu
             shuffleView?.SetActiveVisual(shuffleOn);
             if (shuffleIcon != null && shuffleView == null)
             {
-                shuffleIcon.color = shuffleOn ? Cyan : CyanDim;
+                shuffleIcon.color = shuffleOn ? FcColorTokens.Brand.Cyan : FcColorTokens.Brand.CyanDim;
             }
 
             repeatView?.SetSprite(repeatSprite);
             repeatView?.SetActiveVisual(repeatOn);
             if (repeatIcon != null && repeatView == null)
             {
-                repeatIcon.color = repeatOn ? Cyan : CyanDim;
+                repeatIcon.color = repeatOn ? FcColorTokens.Brand.Cyan : FcColorTokens.Brand.CyanDim;
             }
 
             previousView?.SetSprite(previousSprite);

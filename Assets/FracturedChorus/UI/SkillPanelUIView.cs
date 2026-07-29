@@ -6,6 +6,7 @@ using FracturedChorus.Combat.Units;
 using FracturedChorus.Data;
 using UnityEngine;
 using UnityEngine.UI;
+using FracturedChorus.UI;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
@@ -498,7 +499,7 @@ namespace FracturedChorus.UI
 
                 var img = _dragGhost.AddComponent<Image>();
                 img.sprite = UiCircleSpriteUtil.Circle;
-                img.color = new Color(0.95f, 0.62f, 0.25f, 0.75f);
+                img.color = FcColorTokens.WithAlpha(FcColorTokens.Brand.CyanNeonBody, 0.75f);
                 img.raycastTarget = false;
 
                 var iconGo = new GameObject("Icon", typeof(RectTransform));
@@ -549,7 +550,7 @@ namespace FracturedChorus.UI
                 labelRect.anchoredPosition = new Vector2(-4f, -2f);
                 labelRect.sizeDelta = new Vector2(28f, 18f);
                 _dragGhostLabel = labelGo.AddComponent<Text>();
-                _dragGhostLabel.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+                _dragGhostLabel.font = UiFontCatalog.Body;
                 _dragGhostLabel.fontSize = 12;
                 _dragGhostLabel.alignment = TextAnchor.UpperRight;
                 _dragGhostLabel.horizontalOverflow = HorizontalWrapMode.Overflow;

@@ -10,6 +10,7 @@ namespace FracturedChorus.RunMap
         private const string OpeningInvestigationScenePath = "Assets/FracturedChorus/Scenes/OpeningInvestigation.unity";
         private const string CampusHubScenePath = "Assets/FracturedChorus/Scenes/CampusHub.unity";
         private const string CombatScenePath = "Assets/FracturedChorus/Scenes/CombatPrototype.unity";
+        private const string CombatTutorialScenePath = "Assets/FracturedChorus/Scenes/CombatTutorial.unity";
         private const string RunMapScenePath = "Assets/FracturedChorus/Scenes/RunMapPrototype.unity";
 
         public static bool LoadByName(string sceneName, LoadSceneMode mode = LoadSceneMode.Single)
@@ -37,11 +38,13 @@ namespace FracturedChorus.RunMap
 
             Debug.LogError(
                 $"[Fractured Chorus] Không load được scene '{sceneName}'. " +
-                $"Thêm {CombatScenePath} vào File → Build Settings.");
+                $"Thêm scene vào File → Build Settings.");
             return false;
         }
 
         public static bool LoadCombatPrototype() => LoadByName(RunMapSceneCatalog.CombatPrototype);
+
+        public static bool LoadCombatTutorial() => LoadByName(RunMapSceneCatalog.CombatTutorial);
 
         public static bool LoadRunMapPrototype() => LoadByName(RunMapSceneCatalog.RunMapPrototype);
 
@@ -70,6 +73,11 @@ namespace FracturedChorus.RunMap
             if (sceneName == RunMapSceneCatalog.CombatPrototype)
             {
                 return CombatScenePath;
+            }
+
+            if (sceneName == RunMapSceneCatalog.CombatTutorial)
+            {
+                return CombatTutorialScenePath;
             }
 
             if (sceneName == RunMapSceneCatalog.RunMapPrototype)

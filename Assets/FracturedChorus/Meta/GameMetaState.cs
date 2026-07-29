@@ -5,7 +5,7 @@ namespace FracturedChorus.Meta
     [Serializable]
     public sealed class GameMetaState
     {
-        public const int SaveVersion = 1;
+        public const int SaveVersion = 2;
 
         public int SaveVersionId = SaveVersion;
         public CalendarState Calendar = new CalendarState();
@@ -13,6 +13,9 @@ namespace FracturedChorus.Meta
         public BondState Bonds = new BondState();
         public StoryFlags Flags = new StoryFlags();
         public RunSnapshot RunSnapshot = new RunSnapshot();
+        public WalletState Wallet = new WalletState();
+        public PartyLoadoutState Loadout = new PartyLoadoutState();
+        public int Difficulty;
 
         public static GameMetaState CreateNew()
         {

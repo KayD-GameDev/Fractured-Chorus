@@ -3,6 +3,7 @@ using FracturedChorus.Combat.Units;
 using FracturedChorus.Data;
 using UnityEngine;
 using UnityEngine.UI;
+using FracturedChorus.UI;
 
 namespace FracturedChorus.UI
 {
@@ -35,7 +36,7 @@ namespace FracturedChorus.UI
             textRect.offsetMax = Vector2.zero;
 
             _label = textGo.AddComponent<Text>();
-            _label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            _label.font = UiFontCatalog.Body;
             _label.fontSize = 14;
             _label.alignment = TextAnchor.MiddleCenter;
             _label.color = Color.white;

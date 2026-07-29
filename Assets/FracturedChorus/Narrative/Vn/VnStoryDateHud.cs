@@ -1,3 +1,4 @@
+using FracturedChorus.UI;
 using FracturedChorus.Meta;
 using UnityEngine;
 using UnityEngine.UI;
@@ -13,6 +14,17 @@ namespace FracturedChorus.Narrative.Vn
         [SerializeField] private Sprite sunSprite;
         [SerializeField] private Sprite moonSprite;
         [SerializeField] private Sprite dawnSprite;
+
+        private void Awake()
+        {
+            ApplyFonts();
+        }
+
+        public void ApplyFonts()
+        {
+            UiFontCatalog.Apply(dateLabel, UiFontRole.Display, VnDialoguePanelLayout.DateLabelFontSize);
+            UiFontCatalog.Apply(phaseLabel, UiFontRole.DisplaySecondary, VnDialoguePanelLayout.PhaseLabelFontSize);
+        }
 
         public void Hide()
         {

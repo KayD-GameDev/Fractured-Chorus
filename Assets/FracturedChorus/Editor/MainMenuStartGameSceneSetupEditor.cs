@@ -708,6 +708,7 @@ namespace FracturedChorus.Editor
 
             WireController(controller, attractLayer, mainMenuBackground, menuUiGroup, menuController, settingsOverlay, archiveOverlay, sceneFadeOverlay);
             controller.SetEditorPreview(MainMenuStartGameController.MainMenuEditorPreview.Attract);
+            SceneFontSetupEditor.FinalizeSceneCanvas(canvas.gameObject);
 
             Selection.activeGameObject = root;
         }
@@ -855,10 +856,10 @@ namespace FracturedChorus.Editor
             var statusGo = CreateUiObject("StatusText", panelGo.transform);
             statusText = statusGo.AddComponent<Text>();
             statusText.text = string.Empty;
-            statusText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             statusText.fontSize = 16;
             statusText.alignment = TextAnchor.LowerRight;
             statusText.color = new Color(0.75f, 0.8f, 0.85f, 0.85f);
+            SceneFontSetupEditor.ApplyAutomatic(statusText);
             var statusLayout = statusGo.AddComponent<LayoutElement>();
             statusLayout.preferredHeight = 28f;
             statusLayout.flexibleWidth = 1f;
@@ -910,12 +911,12 @@ namespace FracturedChorus.Editor
             StretchRect(labelGo, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             var text = labelGo.AddComponent<Text>();
             text.text = label;
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             text.fontSize = 28;
             text.fontStyle = FontStyle.Bold;
             text.alignment = TextAnchor.MiddleRight;
             text.color = interactable ? Color.white : new Color(1f, 1f, 1f, 0.45f);
             text.raycastTarget = false;
+            SceneFontSetupEditor.ApplyAutomatic(text);
 
             var rowView = rowGo.AddComponent<MainMenuButtonRowView>();
 
@@ -1061,7 +1062,7 @@ namespace FracturedChorus.Editor
                 Object.DestroyImmediate(existing.gameObject);
             }
 
-            var cyan = new Color(0f, 0.831f, 1f, 1f);
+            var cyan = FcColorTokens.Brand.Cyan;
             var overlayGo = CreateUiObject("OffBeatArchiveOverlay", canvas);
             StretchRect(overlayGo, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             var group = overlayGo.AddComponent<CanvasGroup>();
@@ -1344,7 +1345,7 @@ namespace FracturedChorus.Editor
             var button = go.AddComponent<Button>();
             button.targetGraphic = img;
             labelText = CreateText("Label", go.transform, label, large ? 26 : 22, TextAnchor.MiddleCenter);
-            labelText.color = new Color(0f, 0.831f, 1f, 1f);
+            labelText.color = FcColorTokens.Brand.Cyan;
             labelText.raycastTarget = false;
             StretchRect(labelText.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             iconImage = img;
@@ -1734,11 +1735,11 @@ namespace FracturedChorus.Editor
             var infoGo = CreateUiObject("InfoText", uiRootGo.transform);
             var infoText = infoGo.AddComponent<Text>();
             infoText.text = "Adjust master volume for menu and game audio.";
-            infoText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             infoText.fontSize = 18;
             infoText.alignment = TextAnchor.UpperLeft;
             infoText.color = new Color(0.88f, 0.92f, 0.96f, 0.95f);
             infoText.raycastTarget = false;
+            SceneFontSetupEditor.ApplyAutomatic(infoText);
             SetFreeRect(infoGo, new Vector2(0.5f, 1f), new Vector2(768f, 52f), new Vector2(0f, -26f));
 
             var listGo = CreateUiObject("ConfigList", uiRootGo.transform);
@@ -2067,14 +2068,7 @@ namespace FracturedChorus.Editor
 
         private static Text CreateText(string name, Transform parent, string content, int fontSize, TextAnchor anchor)
         {
-            var go = CreateUiObject(name, parent);
-            var text = go.AddComponent<Text>();
-            text.text = content;
-            text.fontSize = fontSize;
-            text.alignment = anchor;
-            text.color = Color.white;
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            return text;
+            return SceneFontSetupEditor.CreateUiText(name, parent, content, fontSize, anchor);
         }
 
         private static void StretchRect(GameObject go, Vector2 anchorMin, Vector2 anchorMax, Vector2 offsetMin, Vector2 offsetMax)

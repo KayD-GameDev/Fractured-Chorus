@@ -19,11 +19,21 @@ namespace FracturedChorus.Editor
         private const string PerfectCounterPath = "Assets/FracturedChorus/Audio/SFX/Perfect sound Game.wav";
         private const string PerfectBlockPath = "Assets/FracturedChorus/Audio/SFX/Perfect sound SFX.wav";
         private const string ClashHitPath = "Assets/FracturedChorus/Audio/SFX/Clash Hit.wav";
+        private const string RenSkill1Path = "Assets/FracturedChorus/Audio/SFX/Ren_Skill1.wav";
+        private const string RenSkill2Path = "Assets/FracturedChorus/Audio/SFX/Ren_Skill2.wav";
+        private const string RenSkill3Path = "Assets/FracturedChorus/Audio/SFX/Ren_Skill3.mp3";
+        private const string CodaSkill1Path = "Assets/FracturedChorus/Audio/SFX/Coda_Skill1.mp3";
+        private const string CodaSkill23Path = "Assets/FracturedChorus/Audio/SFX/Coda_Skill23.wav";
         private const string PlanningSourceDownload = @"c:\Users\Asus\Downloads\Eternal Spark - BGM Silent.mp3";
         private const string TransitionSourceDownload = @"d:\Project 1\Transition SFX.wav";
         private const string PerfectCounterSourceDownload = @"d:\Project 1\Clash Hit Game.wav";
         private const string PerfectBlockSourceDownload = @"d:\Project 1\Perfect sound SFX.wav";
         private const string ClashHitSourceDownload = @"d:\Project 1\Clash Hit Game.wav";
+        private const string RenSkill1SourceDownload = @"d:\Project 1\Skill 1 Ren SFX.mp3.wav";
+        private const string RenSkill2SourceDownload = @"d:\Project 1\Skill 2 Ren SFX.wav";
+        private const string RenSkill3SourceDownload = @"d:\Project 1\Skill 3 Ren SFX.mp3";
+        private const string CodaSkill1SourceDownload = @"d:\Project 1\freesound_community-swinging-staff-whoosh-strong-08-44658.mp3";
+        private const string CodaSkill23SourceDownload = @"d:\Project 1\Skill 2 3 Coda SFX.wav";
         private const string RenCoverPath = "Assets/FracturedChorus/Audio/Music/EternalSpark_RenCover.mp3";
         private const string RenCoverSourceDownload = @"d:\Project 1\Eternal Spark - Ren cover.mp3";
 
@@ -35,9 +45,14 @@ namespace FracturedChorus.Editor
             ImportAudio(PerfectCounterSourceDownload, PerfectCounterPath);
             ImportAudio(PerfectBlockSourceDownload, PerfectBlockPath);
             ImportAudio(ClashHitSourceDownload, ClashHitPath);
+            ImportAudio(RenSkill1SourceDownload, RenSkill1Path);
+            ImportAudio(RenSkill2SourceDownload, RenSkill2Path);
+            ImportAudio(RenSkill3SourceDownload, RenSkill3Path);
+            ImportAudio(CodaSkill1SourceDownload, CodaSkill1Path);
+            ImportAudio(CodaSkill23SourceDownload, CodaSkill23Path);
             ImportIfMissing(RenCoverSourceDownload, RenCoverPath);
             AssetDatabase.Refresh();
-            Debug.Log("[Fractured Chorus] Planning BGM + transition WAV + perfect counter/block + clash hit WAV + Ren Cover imported.");
+            Debug.Log("[Fractured Chorus] Planning BGM + transition WAV + perfect counter/block + clash hit + Ren/Coda skill SFX + Ren Cover imported.");
         }
 
         [MenuItem("Fractured Chorus/Import Ren Cover Audio")]
@@ -93,6 +108,11 @@ namespace FracturedChorus.Editor
             var perfectCounter = AssetDatabase.LoadAssetAtPath<AudioClip>(PerfectCounterPath);
             var perfectBlock = AssetDatabase.LoadAssetAtPath<AudioClip>(PerfectBlockPath);
             var clashHit = AssetDatabase.LoadAssetAtPath<AudioClip>(ClashHitPath);
+            var renSkill1 = AssetDatabase.LoadAssetAtPath<AudioClip>(RenSkill1Path);
+            var renSkill2 = AssetDatabase.LoadAssetAtPath<AudioClip>(RenSkill2Path);
+            var renSkill3 = AssetDatabase.LoadAssetAtPath<AudioClip>(RenSkill3Path);
+            var codaSkill1 = AssetDatabase.LoadAssetAtPath<AudioClip>(CodaSkill1Path);
+            var codaSkill23 = AssetDatabase.LoadAssetAtPath<AudioClip>(CodaSkill23Path);
             var renCover = AssetDatabase.LoadAssetAtPath<AudioClip>(RenCoverPath);
             if (clip == null)
             {
@@ -175,9 +195,35 @@ namespace FracturedChorus.Editor
                 sfxSo.FindProperty("clashHitClip").objectReferenceValue = clashHit;
             }
 
+            if (renSkill1 != null)
+            {
+                sfxSo.FindProperty("renSkill1Clip").objectReferenceValue = renSkill1;
+            }
+
+            if (renSkill2 != null)
+            {
+                sfxSo.FindProperty("renSkill2Clip").objectReferenceValue = renSkill2;
+            }
+
+            if (renSkill3 != null)
+            {
+                sfxSo.FindProperty("renSkill3Clip").objectReferenceValue = renSkill3;
+            }
+
+            if (codaSkill1 != null)
+            {
+                sfxSo.FindProperty("codaSkill1Clip").objectReferenceValue = codaSkill1;
+            }
+
+            if (codaSkill23 != null)
+            {
+                sfxSo.FindProperty("codaSkill23Clip").objectReferenceValue = codaSkill23;
+            }
+
             sfxSo.FindProperty("perfectCounterVolume").floatValue = 1f;
             sfxSo.FindProperty("perfectBlockVolume").floatValue = 1f;
             sfxSo.FindProperty("clashHitVolume").floatValue = 1f;
+            sfxSo.FindProperty("renSkillVolume").floatValue = 1f;
             sfxSo.ApplyModifiedPropertiesWithoutUndo();
 
             var bootstrapSo = new SerializedObject(bootstrap);

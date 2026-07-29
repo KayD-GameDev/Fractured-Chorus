@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using FracturedChorus.Audio;
 using FracturedChorus.Combat.Core;
+using FracturedChorus.Combat.Grid;
 using FracturedChorus.Combat.Timeline;
 using FracturedChorus.Combat.Units;
 using FracturedChorus.UI;
@@ -26,6 +27,7 @@ namespace FracturedChorus.Combat.Presentation
         private readonly CounterPresentationPolicy _policy = new();
         private readonly List<CombatUnit> _playersScratch = new();
         private readonly List<CombatUnit> _enemiesScratch = new();
+        private readonly List<AgendaEntry> _entriesScratch = new();
 
         public void Configure(CombatSfxController sfxController, BeatTimelineUIView timeline)
         {
@@ -48,6 +50,7 @@ namespace FracturedChorus.Combat.Presentation
             ApplyTunablesToPolicy();
             ApplyPerfectChipDefaults();
             _policy.Reset();
+            CombatCounterResolver.ClearPresentationMarkers();
             timelineView?.HideMultiBanner();
         }
 
@@ -77,6 +80,11 @@ namespace FracturedChorus.Combat.Presentation
                 return;
             }
 
+            if (!CombatCounterResolver.ShouldPresentCounterBodyAtBeat(timeline, beatIndex))
+            {
+                return;
+            }
+
             ApplyTunablesToPolicy();
             var dspNow = AudioSettings.dspTime;
             var partyCount = _policy.RegisterPartyPerfect(dspNow, out var burstTriggered);
@@ -94,18 +102,26 @@ namespace FracturedChorus.Combat.Presentation
             }
 
             CombatCounterResolver.CollectCounteringPlayerUnits(timeline, beatIndex, _playersScratch);
-            var burstAssigned = false;
-            foreach (var unit in _playersScratch)
-            {
-                var useBurst = burstTriggered && !burstAssigned;
-                if (useBurst)
-                {
-                    burstAssigned = true;
-                }
+            CollectCounteringEntries(timeline, beatIndex);
 
-                var mode = _policy.DecideUnitBody(unit.UnitId, dspNow, useBurst);
-                PlayPlayerBody(unit, mode);
-                SpawnPerfectAboveUnit(unit, tier);
+            var counterBody = CombatCounterResolver.SelectCounterBody(_playersScratch);
+            var ownsChoreo = EnemyStrikeChoreographer.OwnsCounterPresentation;
+
+            if (!ownsChoreo)
+            {
+                CombatCounterResolver.MarkCounterPresentations(_entriesScratch);
+
+                if (counterBody != null)
+                {
+                    var useBurst = burstTriggered;
+                    var mode = _policy.DecideUnitBody(counterBody.UnitId, dspNow, useBurst);
+                    PlayPlayerBody(counterBody, mode);
+                    SpawnPerfectAboveUnit(counterBody, tier);
+                }
+            }
+            else if (counterBody != null)
+            {
+                SpawnPerfectAboveUnit(counterBody, tier);
             }
 
             CombatCounterResolver.CollectCounteredEnemyUnits(timeline, beatIndex, _enemiesScratch);
@@ -118,6 +134,41 @@ namespace FracturedChorus.Combat.Presentation
             if (partyCount >= burstCount)
             {
                 timelineView?.ShowOrRefreshMultiBanner(partyCount);
+            }
+        }
+
+        private void CollectCounteringEntries(BeatTimelineEngine timeline, int beatIndex)
+        {
+            _entriesScratch.Clear();
+            if (timeline == null || beatIndex < 0)
+            {
+                return;
+            }
+
+            foreach (var entry in timeline.Agenda)
+            {
+                if (entry?.Unit == null || entry.Unit.Side != GridSide.Player ||
+                    entry.Skill == null || entry.Skill.IsGuard)
+                {
+                    continue;
+                }
+
+                var active = false;
+                foreach (var beat in CombatCounterResolver.GetActiveBeatIndices(entry))
+                {
+                    if (beat == beatIndex)
+                    {
+                        active = true;
+                        break;
+                    }
+                }
+
+                if (!active || !_playersScratch.Contains(entry.Unit))
+                {
+                    continue;
+                }
+
+                _entriesScratch.Add(entry);
             }
         }
 
@@ -136,6 +187,11 @@ namespace FracturedChorus.Combat.Presentation
 
         private static void PlayPlayerBody(CombatUnit unit, CounterBodyMode mode)
         {
+            if (EnemyStrikeChoreographer.OwnsCounterPresentation)
+            {
+                return;
+            }
+
             var view = UnitView.FindForUnit(unit);
             if (view == null)
             {
@@ -158,6 +214,11 @@ namespace FracturedChorus.Combat.Presentation
 
         private static void PlayEnemyBody(CombatUnit unit, CounterBodyMode mode)
         {
+            if (EnemyStrikeChoreographer.IsChoreographing(unit))
+            {
+                return;
+            }
+
             var view = UnitView.FindForUnit(unit);
             if (view == null)
             {

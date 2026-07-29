@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using FracturedChorus.UI;
 
 namespace FracturedChorus.UI
 {
@@ -42,7 +43,7 @@ namespace FracturedChorus.UI
             bgRect.offsetMin = Vector2.zero;
             bgRect.offsetMax = Vector2.zero;
             var bg = bgGo.GetComponent<Image>();
-            bg.color = new Color(0.05f, 0.05f, 0.08f, 0.75f);
+            bg.color = FcColorTokens.WithAlpha(FcColorTokens.Surface.Panel, 0.75f);
             bg.raycastTarget = false;
 
             var labelGo = new GameObject("Label", typeof(RectTransform), typeof(Text));
@@ -56,9 +57,9 @@ namespace FracturedChorus.UI
             _label.alignment = TextAnchor.MiddleCenter;
             _label.fontSize = 18;
             _label.fontStyle = FontStyle.Bold;
-            _label.color = new Color(1f, 0.92f, 0.55f, 1f);
+            _label.color = FcColorTokens.Brand.TextPrimary;
             _label.raycastTarget = false;
-            _label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            _label.font = UiFontCatalog.Body;
             if (_label.font == null)
             {
                 _label.font = Resources.GetBuiltinResource<Font>("Arial.ttf");

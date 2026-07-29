@@ -1,6 +1,7 @@
 using FracturedChorus.Meta;
 using UnityEngine;
 using UnityEngine.UI;
+using FracturedChorus.UI;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -18,10 +19,6 @@ namespace FracturedChorus.Hub
 
             public SocialStatsOverlayUI Overlay { get; }
         }
-
-        private static readonly Color Cyan = new Color(0f, 0.831f, 1f, 1f);
-        private static readonly Color NavyDim = new Color(0.02f, 0.04f, 0.12f, 0.75f);
-        private static readonly Color WatermarkColor = new Color(0.7f, 0.95f, 1f, 0.06f);
 
         private static readonly Vector2[] NodeOffsets =
         {
@@ -271,12 +268,12 @@ namespace FracturedChorus.Hub
 
             var dim = CreateImage(rootGo.transform, "DimBackdrop", null);
             Stretch(dim.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-            dim.color = NavyDim;
+            dim.color = FcColorTokens.Surface.Dim;
             dim.raycastTarget = true;
 
             var watermark = CreateText(rootGo.transform, "Watermark", "RESONANCE FIELD", 96, TextAnchor.MiddleCenter);
             Stretch(watermark.rectTransform, new Vector2(0.1f, 0.15f), new Vector2(0.9f, 0.85f), Vector2.zero, Vector2.zero);
-            watermark.color = WatermarkColor;
+            watermark.color = FcColorTokens.WithAlpha(FcColorTokens.Brand.TextPrimary, 0.06f);
             watermark.fontStyle = FontStyle.Bold;
             watermark.rectTransform.localEulerAngles = new Vector3(0f, 0f, -28f);
 
@@ -291,7 +288,7 @@ namespace FracturedChorus.Hub
 
             var subtitle = CreateText(titleBlock.transform, "Subtitle", "共鳴フィールド", 20, TextAnchor.UpperLeft);
             Stretch(subtitle.rectTransform, new Vector2(0f, 0f), new Vector2(1f, 0.4f), Vector2.zero, Vector2.zero);
-            subtitle.color = Cyan;
+            subtitle.color = FcColorTokens.Brand.Cyan;
 
             var chartRoot = new GameObject("ChartRoot", typeof(RectTransform));
             chartRoot.transform.SetParent(rootGo.transform, false);
@@ -316,7 +313,7 @@ namespace FracturedChorus.Hub
             centerRect.pivot = new Vector2(0.5f, 0.5f);
             centerRect.sizeDelta = new Vector2(48f, 48f);
             centerRect.anchoredPosition = Vector2.zero;
-            centerGlyph.color = new Color(Cyan.r, Cyan.g, Cyan.b, 0.35f);
+            centerGlyph.color = new Color(FcColorTokens.Brand.Cyan.r, FcColorTokens.Brand.Cyan.g, FcColorTokens.Brand.Cyan.b, 0.35f);
             centerGlyph.raycastTarget = false;
 
             var nodesRoot = new GameObject("NodesRoot", typeof(RectTransform));
@@ -345,7 +342,7 @@ namespace FracturedChorus.Hub
 
             var footer = CreateText(rootGo.transform, "FooterEsc", "[Esc] Back", 22, TextAnchor.MiddleRight);
             Stretch(footer.rectTransform, new Vector2(0.72f, 0.02f), new Vector2(0.97f, 0.08f), Vector2.zero, Vector2.zero);
-            footer.color = Cyan;
+            footer.color = FcColorTokens.Brand.Cyan;
             footer.fontStyle = FontStyle.Bold;
 
             var overlay = rootGo.AddComponent<SocialStatsOverlayUI>();
@@ -375,7 +372,7 @@ namespace FracturedChorus.Hub
 
             var icon = CreateImage(go.transform, "Icon", null);
             Stretch(icon.rectTransform, new Vector2(0f, 0.55f), new Vector2(0.28f, 1f), Vector2.zero, Vector2.zero);
-            icon.color = new Color(Cyan.r, Cyan.g, Cyan.b, 0.35f);
+            icon.color = new Color(FcColorTokens.Brand.Cyan.r, FcColorTokens.Brand.Cyan.g, FcColorTokens.Brand.Cyan.b, 0.35f);
             icon.raycastTarget = false;
             icon.enabled = false;
 
@@ -386,7 +383,7 @@ namespace FracturedChorus.Hub
 
             var rankLabel = CreateText(go.transform, "Rank", "Rank 1", 18, TextAnchor.MiddleLeft);
             Stretch(rankLabel.rectTransform, new Vector2(0.3f, 0.38f), new Vector2(1f, 0.68f), Vector2.zero, Vector2.zero);
-            rankLabel.color = Cyan;
+            rankLabel.color = FcColorTokens.Brand.Cyan;
 
             var flavorLabel = CreateText(go.transform, "Flavor", string.Empty, 13, TextAnchor.UpperLeft);
             Stretch(flavorLabel.rectTransform, new Vector2(0f, 0f), new Vector2(1f, 0.4f), Vector2.zero, Vector2.zero);
@@ -509,12 +506,12 @@ namespace FracturedChorus.Hub
             var go = new GameObject(name, typeof(RectTransform), typeof(Text));
             go.transform.SetParent(parent, false);
             var text = go.GetComponent<Text>();
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             text.text = content;
             text.fontSize = fontSize;
             text.alignment = anchor;
             text.color = Color.white;
             text.raycastTarget = false;
+            UiFontCatalog.ApplyAutomatic(text);
             return text;
         }
 

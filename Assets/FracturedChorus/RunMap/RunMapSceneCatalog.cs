@@ -10,5 +10,6 @@ namespace FracturedChorus.RunMap
         public const string FlowerShopWork = "FlowerShopWork";
         public const string RunMapPrototype = "RunMapPrototype";
         public const string CombatPrototype = "CombatPrototype";
+        public const string CombatTutorial = "CombatTutorial";
     }
 }

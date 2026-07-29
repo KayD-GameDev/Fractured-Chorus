@@ -43,6 +43,7 @@ namespace FracturedChorus.Editor
                 new[] { gruntStrike }, new Color(0.85f, 0.25f, 0.2f));
 
             CreateBossDespairAssets();
+            CreateKikiUedaAssets();
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -56,6 +57,104 @@ namespace FracturedChorus.Editor
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log("[Fractured Chorus] Boss assets: StatBlock_Boss_Despair, UnitPreset_Boss_Despair, boss_despair_core.");
+        }
+
+        [MenuItem("Fractured Chorus/Create Elite — Kiki Ueda (Lv1) Assets")]
+        public static void CreateKikiUedaAssetsMenu()
+        {
+            CreateKikiUedaAssets();
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log("[Fractured Chorus] Kiki assets: StatBlock_Kiki_Ueda, UnitPreset_Kiki_Ueda, kiki_claw, kiki_smoke_rend.");
+        }
+
+        public static void CreateKikiUedaAssets()
+        {
+            EnsureFolder(StatBlockFolder);
+            EnsureFolder(PresetFolder);
+            EnsureFolder(SkillFolder);
+
+            var block = CreateStatBlock(
+                "StatBlock_Kiki_Ueda",
+                HarmonyElement.Rhythm,
+                DamageType.Physical,
+                28f,
+                6f,
+                128,
+                7f,
+                1.18f,
+                260,
+                10);
+
+            var claw = CreateSkillAsset(
+                "kiki_claw",
+                "Claw",
+                SkillSlotKind.BasicAttack,
+                1,
+                ActionGlowType.Attack,
+                0);
+            var smokeRend = CreateSkillAsset(
+                "kiki_smoke_rend",
+                "Smoke Rend",
+                SkillSlotKind.Skill,
+                2,
+                ActionGlowType.Attack,
+                0);
+
+            var preset = CreatePreset(
+                "UnitPreset_Kiki_Ueda",
+                "kiki_ueda",
+                "Kiki Ueda",
+                UnitRole.Elite,
+                block,
+                new[] { claw, smokeRend },
+                new Color(0.55f, 0.12f, 0.14f));
+            preset.battleSprite = LoadKikiIdleSprite();
+            preset.combatCardSprite = LoadKikiCombatIconSprite();
+            preset.telegraphAttacksPerPhase = 2;
+            preset.healthSlotTop = 2.9f;
+            EditorUtility.SetDirty(preset);
+        }
+
+        private static Sprite LoadKikiCombatIconSprite()
+        {
+            const string path = "Assets/FracturedChorus/Art/UI/Combat/Characters/kiki_ueda_character_icon_bars_elite_v1.png";
+            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+            if (sprite != null)
+            {
+                return sprite;
+            }
+
+            foreach (var asset in AssetDatabase.LoadAllAssetsAtPath(path))
+            {
+                if (asset is Sprite s)
+                {
+                    return s;
+                }
+            }
+
+            return null;
+        }
+
+        private static Sprite LoadKikiIdleSprite()
+        {
+            const string path = "Assets/FracturedChorus/Art/Characters/KikiUeda/kiki_ueda_idle_v1.png";
+            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+            if (sprite != null)
+            {
+                return sprite;
+            }
+
+            foreach (var asset in AssetDatabase.LoadAllAssetsAtPath(path))
+            {
+                if (asset is Sprite s)
+                {
+                    return s;
+                }
+            }
+
+            Debug.LogWarning("[Fractured Chorus] Kiki idle sprite missing at " + path);
+            return null;
         }
 
         public static void CreateBossDespairAssets()

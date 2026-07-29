@@ -97,11 +97,11 @@ namespace FracturedChorus.Menu
             switch (value)
             {
                 case GameDifficulty.OnBeat:
-                    return "Enemy pressure reduced · forgiving beat windows.";
+                    return "Enemy HP/dmg ×0.85 · +1 planning beat · Notes ×1.1.";
                 case GameDifficulty.Cadence:
-                    return "Standard run · intended balance.";
+                    return "Standard balance · intended pressure.";
                 case GameDifficulty.OffBeat:
-                    return "Higher pressure · tighter timing.";
+                    return "Enemy HP ×1.15 · dmg ×1.2 · stricter Early/Late blocks.";
                 default:
                     return string.Empty;
             }

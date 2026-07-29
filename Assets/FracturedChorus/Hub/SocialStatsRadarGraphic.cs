@@ -1,3 +1,4 @@
+using FracturedChorus.UI;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,11 +12,32 @@ namespace FracturedChorus.Hub
         private static readonly float[] RingScales = { 0.2f, 0.4f, 0.6f, 0.8f, 1f };
 
         [SerializeField] private int maxRank = 10;
-        [SerializeField] private Color axisColor = new Color(0f, 0.83f, 1f, 0.45f);
-        [SerializeField] private Color ringColor = new Color(0f, 0.83f, 1f, 0.22f);
-        [SerializeField] private Color fillColor = new Color(0f, 0.75f, 1f, 0.28f);
-        [SerializeField] private Color strokeColor = new Color(0.4f, 0.95f, 1f, 0.9f);
+        [SerializeField] private Color axisColor;
+        [SerializeField] private Color ringColor;
+        [SerializeField] private Color fillColor;
+        [SerializeField] private Color strokeColor;
         [SerializeField] private float strokeWidth = 2.5f;
+
+        private void Reset()
+        {
+            ApplyTokenDefaults();
+        }
+
+        private void Awake()
+        {
+            if (axisColor == default)
+            {
+                ApplyTokenDefaults();
+            }
+        }
+
+        private void ApplyTokenDefaults()
+        {
+            axisColor = FcColorTokens.WithAlpha(FcColorTokens.Brand.Cyan, 0.45f);
+            ringColor = FcColorTokens.WithAlpha(FcColorTokens.Brand.Cyan, 0.22f);
+            fillColor = FcColorTokens.WithAlpha(FcColorTokens.Brand.CyanSoft, 0.28f);
+            strokeColor = FcColorTokens.Brand.RadarStroke;
+        }
 
         private readonly int[] _ranks = { 1, 1, 1, 1, 1 };
         private readonly Vector2[] _axisDirs = new Vector2[AxisCount];

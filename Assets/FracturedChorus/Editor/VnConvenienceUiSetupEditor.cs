@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using FracturedChorus.Narrative;
 using FracturedChorus.Narrative.Vn;
+using FracturedChorus.UI;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
@@ -188,10 +189,9 @@ namespace FracturedChorus.Editor
             layout.minHeight = 40f;
             layout.preferredHeight = 40f;
 
-            var text = CreateText("Label", go.transform, label, 22, TextAnchor.MiddleCenter);
+            var text = CreateDisplayText("Label", go.transform, label, 22, TextAnchor.MiddleCenter);
             StretchRect(text.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             text.color = new Color(0.82f, 0.92f, 1f, 0.92f);
-            text.fontStyle = FontStyle.Bold;
             return button;
         }
 
@@ -209,6 +209,17 @@ namespace FracturedChorus.Editor
             image.sprite = sprite;
             image.color = color;
             return image;
+        }
+
+        private static Text CreateDisplayText(string name, Transform parent, string content, int fontSize, TextAnchor anchor)
+        {
+            var go = CreateUiObject(name, parent);
+            var text = go.AddComponent<Text>();
+            text.text = content;
+            text.alignment = anchor;
+            text.color = Color.white;
+            UiFontCatalog.Apply(text, UiFontRole.Display, fontSize);
+            return text;
         }
 
         private static Text CreateText(string name, Transform parent, string content, int fontSize, TextAnchor anchor)

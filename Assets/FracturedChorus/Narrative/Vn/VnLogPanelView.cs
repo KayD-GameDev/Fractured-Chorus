@@ -1,6 +1,7 @@
 using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
+using FracturedChorus.UI;
 
 namespace FracturedChorus.Narrative.Vn
 {
@@ -175,7 +176,7 @@ namespace FracturedChorus.Narrative.Vn
             rect.anchoredPosition = new Vector2(28f, -16f);
             rect.sizeDelta = new Vector2(-160f, 36f);
             titleText = go.AddComponent<Text>();
-            ApplyFont(titleText, 22, FontStyle.Bold);
+            ApplyChromeFont(titleText, 22);
             titleText.alignment = TextAnchor.MiddleLeft;
             titleText.color = new Color(0.75f, 0.9f, 1f, 1f);
             titleText.raycastTarget = false;
@@ -261,7 +262,7 @@ namespace FracturedChorus.Narrative.Vn
                 return;
             }
 
-            ApplyFont(_displayText, 28, FontStyle.Normal);
+            ApplyDialogueFont(_displayText, 28);
             _displayText.alignment = TextAnchor.UpperLeft;
             _displayText.horizontalOverflow = HorizontalWrapMode.Wrap;
             _displayText.verticalOverflow = VerticalWrapMode.Overflow;
@@ -297,7 +298,7 @@ namespace FracturedChorus.Narrative.Vn
             _displayText.color = Color.white;
             if (_displayText.font == null)
             {
-                ApplyFont(_displayText, 28, FontStyle.Normal);
+                ApplyDialogueFont(_displayText, 28);
             }
 
             Canvas.ForceUpdateCanvases();
@@ -397,23 +398,24 @@ namespace FracturedChorus.Narrative.Vn
             return builder.ToString();
         }
 
-        private static void ApplyFont(Text text, int size, FontStyle style)
+        private static void ApplyChromeFont(Text text, int size)
         {
             if (text == null)
             {
                 return;
             }
 
-            VnUiFont.Apply(text, size, style);
-            if (text.font == null)
+            UiFontCatalog.Apply(text, UiFontRole.Display, size);
+        }
+
+        private static void ApplyDialogueFont(Text text, int size)
+        {
+            if (text == null)
             {
-                text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf")
-                    ?? Resources.GetBuiltinResource<Font>("Arial.ttf")
-                    ?? Font.CreateDynamicFontFromOSFont(new[] { "Segoe UI", "Arial" }, size);
+                return;
             }
 
-            text.fontSize = size;
-            text.fontStyle = style;
+            VnUiFont.Apply(text, size, FontStyle.Normal);
         }
 
         private static void Stretch(RectTransform rect)

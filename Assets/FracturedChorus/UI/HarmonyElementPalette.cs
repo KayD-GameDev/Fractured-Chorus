@@ -4,7 +4,6 @@ using UnityEngine;
 
 namespace FracturedChorus.UI
 {
-    /// <summary>Màu khung / badge hệ (Nhịp · Giai điệu · Hòa âm) cho UI party card.</summary>
     public static class HarmonyElementPalette
     {
         private static Sprite _rhythmIcon;
@@ -15,9 +14,9 @@ namespace FracturedChorus.UI
         {
             return element switch
             {
-                HarmonyElement.Rhythm => new Color(0.92f, 0.28f, 0.22f, 1f),
-                HarmonyElement.Melody => new Color(0.58f, 0.28f, 0.88f, 1f),
-                HarmonyElement.Harmony => new Color(0.95f, 0.82f, 0.18f, 1f),
+                HarmonyElement.Rhythm => FcColorTokens.Semantic.ElementRhythm,
+                HarmonyElement.Melody => FcColorTokens.Semantic.ElementMelody,
+                HarmonyElement.Harmony => FcColorTokens.Semantic.ElementHarmony,
                 _ => new Color(0.55f, 0.55f, 0.6f, 1f)
             };
         }
@@ -29,8 +28,7 @@ namespace FracturedChorus.UI
 
         public static Color GetBadgeFill(HarmonyElement element)
         {
-            var baseColor = GetBorderColor(element);
-            return Color.Lerp(baseColor, Color.white, 0.15f);
+            return Color.Lerp(GetBorderColor(element), Color.white, 0.15f);
         }
 
         public static Sprite ResolveElementIcon(HarmonyElement element, UnitStatBlockSO statBlock)
@@ -47,11 +45,16 @@ namespace FracturedChorus.UI
         {
             return element switch
             {
-                HarmonyElement.Rhythm => _rhythmIcon ??= CreateColoredDisc(new Color(0.95f, 0.35f, 0.28f)),
-                HarmonyElement.Melody => _melodyIcon ??= CreateColoredDisc(new Color(0.65f, 0.35f, 0.95f)),
-                HarmonyElement.Harmony => _harmonyIcon ??= CreateColoredDisc(new Color(0.98f, 0.88f, 0.25f)),
+                HarmonyElement.Rhythm => _rhythmIcon ??= CreateColoredDisc(DiscFill(HarmonyElement.Rhythm)),
+                HarmonyElement.Melody => _melodyIcon ??= CreateColoredDisc(DiscFill(HarmonyElement.Melody)),
+                HarmonyElement.Harmony => _harmonyIcon ??= CreateColoredDisc(DiscFill(HarmonyElement.Harmony)),
                 _ => null
             };
+        }
+
+        private static Color DiscFill(HarmonyElement element)
+        {
+            return Color.Lerp(GetBorderColor(element), Color.white, 0.12f);
         }
 
         private static Sprite CreateColoredDisc(Color fill)

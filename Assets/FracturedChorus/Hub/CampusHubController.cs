@@ -1,4 +1,9 @@
+using FracturedChorus.Combat.Bootstrap;
 using FracturedChorus.Meta;
+using FracturedChorus.Meta.Economy;
+using FracturedChorus.RunMap;
+using FracturedChorus.Tutorial;
+using FracturedChorus.UI;
 using UnityEngine;
 using UnityEngine.UI;
 #if UNITY_EDITOR
@@ -50,12 +55,78 @@ namespace FracturedChorus.Hub
                 }
 
                 _phaseDriver.BeginCurrentPhase();
+                TutorialDirector.Ensure().StartHubTrack();
+                var canvas = Object.FindAnyObjectByType<Canvas>();
+                if (canvas != null)
+                {
+                    NotesHudView.Ensure(canvas.transform);
+                    EnsureTutorialCombatHotkey(canvas.transform);
+                }
             }
             catch (System.Exception error)
             {
                 Debug.LogError($"[Fractured Chorus] CampusHub start failed: {error}");
                 ShowStatus("Không thể khởi tạo campus hub.");
             }
+        }
+
+        private void EnsureTutorialCombatHotkey(Transform canvasRoot)
+        {
+            if (canvasRoot == null)
+            {
+                return;
+            }
+
+            var overlay = SceneLinkHotkeyUI.EnsureSceneLinkOverlay(canvasRoot);
+            var link = SceneLinkHotkeyUI.Ensure(
+                overlay != null ? overlay : canvasRoot,
+                "Tutorial Fight",
+                LaunchTutorialCombat,
+                objectName: "TutorialCombatHotkey",
+                placement: SceneLinkHotkeyPlacement.TopRight,
+                persistInScene: false);
+            link?.SetListening(false);
+        }
+
+        private void LaunchTutorialCombat()
+        {
+            try
+            {
+                CombatEncounterHandoff.SetPending(
+                    EncounterCatalog.Tutorial,
+                    RunMapSceneCatalog.CampusHub);
+                if (!RunMapSceneLoader.LoadCombatTutorial())
+                {
+                    Debug.LogError("[Fractured Chorus] Failed to load CombatTutorial for tutorial fight.");
+                    ShowStatus("Không thể mở tutorial combat.");
+                }
+            }
+            catch (System.Exception error)
+            {
+                Debug.LogError($"[Fractured Chorus] Tutorial combat launch failed: {error}");
+                ShowStatus("Không thể mở tutorial combat.");
+            }
+        }
+
+        public bool TryHubHealService()
+        {
+            if (!GameMetaSession.HasSession)
+            {
+                return false;
+            }
+
+            var wallet = GameMetaSession.Current.Wallet;
+            if (!wallet.Spend(EconomyTable.HubHealCost))
+            {
+                ShowStatus($"Need {EconomyTable.HubHealCost} Notes for clinic heal.");
+                return false;
+            }
+
+            PartyRunHpStore.RestoreFullAtCamp();
+            GameMetaSession.Save();
+            NotesHudView.Ensure(Object.FindAnyObjectByType<Canvas>()?.transform)?.Refresh();
+            ShowStatus($"Clinic heal (−{EconomyTable.HubHealCost} Notes).");
+            return true;
         }
 
         public void ShowStatus(string message)

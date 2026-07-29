@@ -2,6 +2,7 @@ using FracturedChorus.Combat.Core;
 using FracturedChorus.Combat.Cover;
 using UnityEngine;
 using UnityEngine.UI;
+using FracturedChorus.UI;
 
 namespace FracturedChorus.UI
 {
@@ -490,7 +491,7 @@ namespace FracturedChorus.UI
                 t = go.transform;
                 t.SetParent(parent, false);
                 text = go.GetComponent<Text>();
-                text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+                text.font = UiFontCatalog.Body;
                 if (text.font == null)
                 {
                     text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
