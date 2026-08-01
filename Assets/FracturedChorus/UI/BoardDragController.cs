@@ -13,8 +13,7 @@ using UnityEngine.InputSystem;
 namespace FracturedChorus.UI
 {
     /// <summary>
-    /// Press-and-hold on a player unit to drag between grid cells (Planning, pre-Execute).
-    /// Click without drag after Execute opens the skill panel.
+    /// Planning window: short click opens skill panel; drag past threshold repositions unit.
     /// Uses Physics2D pick — reliable with Screen Space Overlay UI + Input System.
     /// </summary>
     public class BoardDragController : MonoBehaviour
@@ -134,9 +133,19 @@ namespace FracturedChorus.UI
                 HandlePointerDown(screenPos);
             }
 
-            if (IsPointerHeld() && _dragPointerActive && _draggingUnit != null)
+            if (IsPointerHeld() && _dragPointerActive && _pointerDownUnit != null)
             {
-                UpdateDragAtScreen(screenPos);
+                if (_draggingUnit == null
+                    && CanDragUnit(_pointerDownUnit)
+                    && BoardPointerGesture.ShouldCommitDrag(_pointerDownScreen, screenPos, clickDragThresholdPx))
+                {
+                    BeginDrag(_pointerDownUnit);
+                }
+
+                if (_draggingUnit != null)
+                {
+                    UpdateDragAtScreen(screenPos);
+                }
             }
 
             if (WasPointerReleasedThisFrame())
@@ -149,6 +158,7 @@ namespace FracturedChorus.UI
         {
             _pointerDownUnit = null;
             _dragPointerActive = false;
+            _draggingUnit = null;
 
             if (IsScreenPointBlockedByUi(screenPos))
             {
@@ -163,24 +173,18 @@ namespace FracturedChorus.UI
 
             _pointerDownUnit = view;
             _pointerDownScreen = screenPos;
-
-            if (CanDragUnit(view))
-            {
-                BeginDrag(view);
-                _dragPointerActive = true;
-            }
+            _dragPointerActive = true;
         }
 
         private void HandlePointerUp(Vector2 screenPos)
         {
-            var moved = _pointerDownScreen != Vector2.zero
-                        && Vector2.Distance(_pointerDownScreen, screenPos) > clickDragThresholdPx;
-
-            if (_dragPointerActive && _draggingUnit != null)
+            if (_draggingUnit != null)
             {
                 EndDrag(_draggingUnit);
             }
-            else if (!moved && _pointerDownUnit != null && CanOpenSkillPanelFor(_pointerDownUnit))
+            else if (_pointerDownUnit != null
+                     && BoardPointerGesture.IsClick(_pointerDownScreen, screenPos, clickDragThresholdPx)
+                     && CanOpenSkillPanelFor(_pointerDownUnit))
             {
                 _onUnitClicked?.Invoke(_pointerDownUnit.Unit, _pointerDownUnit);
             }
@@ -211,14 +215,14 @@ namespace FracturedChorus.UI
 
         public void CancelActiveDrag()
         {
-            if (_draggingUnit == null)
+            if (_draggingUnit != null)
             {
-                return;
+                CancelDrag(_draggingUnit);
             }
 
-            CancelDrag(_draggingUnit);
             _dragPointerActive = false;
             _pointerDownUnit = null;
+            _draggingUnit = null;
         }
 
         public void SetSlotFloorsVisible(bool visible, GridSide? side = null)
