@@ -27,12 +27,12 @@ namespace FracturedChorus.UI
         [SerializeField] private Text phaseLabel;
         [SerializeField] private Text budgetLabel;
         [SerializeField] private Text avLabel;
-        [SerializeField] private float slotWidth = 52f;
-        [SerializeField] private float minSlotWidth = 14f;
-        [SerializeField] private float laneMarkerSize = 26f;
-        [SerializeField] private float activeFootprintDotSize = 30f;
+        [SerializeField] private float slotWidth = TimelineLayoutLock.SlotWidth;
+        [SerializeField] private float minSlotWidth = TimelineLayoutLock.MinSlotWidth;
+        [SerializeField] private float laneMarkerSize = TimelineLayoutLock.LaneMarkerSize;
+        [SerializeField] private float activeFootprintDotSize = TimelineLayoutLock.ActiveFootprintDotSize;
         [Tooltip("Footprint dot size (gray S1/S2 · colored active S) around the skill chip.")]
-        [SerializeField] private float footprintDotSize = 16f;
+        [SerializeField] private float footprintDotSize = TimelineLayoutLock.FootprintDotSize;
         [SerializeField] private bool autoPlayOnStart;
         [SerializeField] private float autoBeatInterval = 0.405405f;
         [SerializeField] private bool useMusicSync = true;
@@ -56,7 +56,7 @@ namespace FracturedChorus.UI
         [SerializeField] [Range(0.05f, 0.45f)] private float laneBandMinNormalizedY = 0.12f;
         [Tooltip("Party lane band — mép trên (normalized từ đáy viewport). Phải < noteBand.")]
         [SerializeField] [Range(0.25f, 0.6f)] private float laneBandMaxNormalizedY = 0.42f;
-        [SerializeField] private float bossTrackFrameHeight = 56f;
+        [SerializeField] private float bossTrackFrameHeight = TimelineLayoutLock.BossTrackFrameHeight;
         [SerializeField] private Color bossTrackFrameFill = new Color(0.22f, 0.05f, 0.07f, 0.88f);
         [SerializeField] private Color bossTrackFrameBorderTop = new Color(0.45f, 0.98f, 1f, 0.95f);
         [SerializeField] private Color bossTrackFrameBorderBottom = new Color(0.85f, 0.45f, 1f, 0.9f);
@@ -1712,7 +1712,7 @@ namespace FracturedChorus.UI
 
             if (avgSpan <= 0.0001f)
             {
-                avgSpan = autoBeatInterval > 0f ? autoBeatInterval : 60f / 148f;
+                avgSpan = autoBeatInterval > 0f ? autoBeatInterval : 60f / 152f;
             }
 
             return slotWidth / avgSpan;
@@ -3627,7 +3627,7 @@ namespace FracturedChorus.UI
 
         private float GetScanLineX()
         {
-            return slotWidth * 0.5f;
+            return TimelineLayoutLock.ClampSlotWidth(slotWidth) * 0.5f;
         }
 
         private void EnsureTrackLine()
@@ -3692,8 +3692,8 @@ namespace FracturedChorus.UI
             trackLine.anchorMin = new Vector2(0f, 0f);
             trackLine.anchorMax = new Vector2(1f, 0f);
             trackLine.pivot = new Vector2(0.5f, 0f);
-            trackLine.anchoredPosition = new Vector2(0f, 6f);
-            trackLine.sizeDelta = new Vector2(0f, 2f);
+            trackLine.anchoredPosition = new Vector2(0f, TimelineLayoutLock.TrackLineY);
+            trackLine.sizeDelta = new Vector2(0f, TimelineLayoutLock.TrackLineHeight);
         }
 
         private float GetViewportWidth()
@@ -3713,30 +3713,37 @@ namespace FracturedChorus.UI
             return width;
         }
 
-        private float GetTemplateSlotWidth()
+        private float ReadTemplateSlotWidthRaw()
         {
-            const float fallback = 52f;
-            var maxSane = Mathf.Max(fallback * 4f, minSlotWidth * 4f);
-
-            if (segmentTemplate != null)
+            if (segmentTemplate == null)
             {
-                var layoutElement = segmentTemplate.GetComponent<LayoutElement>();
-                if (layoutElement != null && layoutElement.preferredWidth > 0f)
-                {
-                    return Mathf.Clamp(layoutElement.preferredWidth, minSlotWidth, maxSane);
-                }
+                return 0f;
+            }
 
-                if (segmentTemplate.TryGetComponent<RectTransform>(out var rect))
+            var layoutElement = segmentTemplate.GetComponent<LayoutElement>();
+            if (layoutElement != null && layoutElement.preferredWidth > 0f)
+            {
+                return layoutElement.preferredWidth;
+            }
+
+            if (segmentTemplate.TryGetComponent<RectTransform>(out var rect))
+            {
+                var stretchX = Mathf.Abs(rect.anchorMax.x - rect.anchorMin.x) > 0.01f;
+                if (!stretchX && rect.sizeDelta.x > 0f)
                 {
-                    var stretchX = Mathf.Abs(rect.anchorMax.x - rect.anchorMin.x) > 0.01f;
-                    if (!stretchX && rect.sizeDelta.x > 0f)
-                    {
-                        return Mathf.Clamp(rect.sizeDelta.x, minSlotWidth, maxSane);
-                    }
+                    return rect.sizeDelta.x;
                 }
             }
 
-            return slotWidth > 0f ? Mathf.Clamp(slotWidth, minSlotWidth, maxSane) : fallback;
+            return 0f;
+        }
+
+        private float ResolveLockedSlotWidth()
+        {
+            return TimelineLayoutLock.ResolveSlotWidth(
+                ReadTemplateSlotWidthRaw(),
+                slotWidth,
+                preserveSceneLayout);
         }
 
         /// <summary>Editor menu / scene sync — rebuild beat slots and widths for current viewport.</summary>
@@ -3756,10 +3763,8 @@ namespace FracturedChorus.UI
             EnsureViewportMask();
             AlignScanBar();
 
-            if (slotWidth <= 0f)
-            {
-                slotWidth = GetTemplateSlotWidth();
-            }
+            slotWidth = ResolveLockedSlotWidth();
+            minSlotWidth = Mathf.Max(minSlotWidth, TimelineLayoutLock.MinSlotWidth);
 
             if (!_slotsBuilt || _slots == null || _slots.Length != TotalBeats)
             {
@@ -3780,7 +3785,7 @@ namespace FracturedChorus.UI
 
             DisableSlotsRowLayoutGroup();
 
-            var uniformWidth = Mathf.Max(minSlotWidth, GetSpanSec() * _pixelsPerSecond);
+            var uniformWidth = TimelineLayoutLock.ClampSlotWidth(slotWidth);
             var cumulative = 0f;
             for (var i = 0; i < TotalBeats; i++)
             {
@@ -3812,14 +3817,14 @@ namespace FracturedChorus.UI
                 return;
             }
 
-            width = Mathf.Max(minSlotWidth, width);
+            width = TimelineLayoutLock.ClampSlotWidth(width);
 
             var layoutElement = slot.GetComponent<LayoutElement>();
             if (layoutElement != null)
             {
                 layoutElement.ignoreLayout = true;
                 layoutElement.minWidth = -1f;
-                layoutElement.preferredWidth = -1f;
+                layoutElement.preferredWidth = width;
                 layoutElement.flexibleWidth = -1f;
             }
 
@@ -3863,12 +3868,8 @@ namespace FracturedChorus.UI
             AlignSlotsRowInViewport();
             DisableSlotsRowLayoutGroup();
 
-            if (slotWidth <= 0f)
-            {
-                slotWidth = GetTemplateSlotWidth();
-            }
-
-            var templateWidth = slotWidth > 0f ? slotWidth : 52f;
+            slotWidth = ResolveLockedSlotWidth();
+            var templateWidth = TimelineLayoutLock.ClampSlotWidth(slotWidth);
 
             _slots = new BeatSegmentView[TotalBeats];
             _slots[0] = segmentTemplate;
@@ -3970,7 +3971,9 @@ namespace FracturedChorus.UI
             scanBar.anchorMax = new Vector2(0f, 1f);
             scanBar.pivot = new Vector2(0.5f, 0.5f);
             scanBar.anchoredPosition = new Vector2(GetScanLineX(), 0f);
-            scanBar.sizeDelta = new Vector2(6f, -4f);
+            scanBar.sizeDelta = new Vector2(
+                TimelineLayoutLock.ScanBarWidth,
+                TimelineLayoutLock.ScanBarVerticalInset);
         }
 
         private void CleanupExtraBeatChildren()
