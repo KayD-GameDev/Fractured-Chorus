@@ -49,6 +49,9 @@ ExportedObj/
 *.opendb
 *.VC.db
 
+# Standalone dotnet tools under Tools/ are hand-written, not Unity-generated
+!/Tools/**/*.csproj
+
 # Unity3D generated meta files
 *.pidb.meta
 *.pdb.meta

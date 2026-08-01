@@ -101,9 +101,22 @@ Nhạc không dừng ở bất kỳ mũi tên nào.
 
 ## 4. Kết quả đo BPM (Task 1)
 
-Đo bằng `tools/beat-analyzer` (spectral flux + comb-filter tempo scan + downbeat phase fit).
+Đo bằng `tools/beat-analyzer` (spectral flux FFT-1024/hop-256 → comb-filter tempo scan → phase fit → downbeat fit).
 
-_Chờ Task 1._
+| Tham số | Giá trị |
+|---------|---------|
+| `BPM` | **152.0000** |
+| `FIRST_BEAT_SEC` | **1.1610** |
+| `BEAT_SPAN_SEC` | **0.394737** |
+| `TOTAL_BEATS` | **677** |
+| `TOTAL_BARS` | **169** |
+| `DOWNBEAT_PHASE` | 2 |
+
+`TimelineConstants.PhaseCount` derived = `1 + ceil((677 - 16) / 16)` = **43**.
+
+**Xác nhận không trôi nhịp:** phân tích độc lập 60s cuối (`-ss 208`) cho ra đúng `BPM=152.0000` và `FIRST_BEAT_SEC=0.0000`. Lưới beat toàn bài dự đoán mốc beat tại `t = 208.003s`, tức lệch 3ms sau khoảng cách 208 giây — nếu BPM sai dù chỉ 0.05 thì sai số tích luỹ đã là 68ms (0.17 beat) và sẽ lộ ra ngay. Tempo cố định, model uniform hợp lệ.
+
+Click-track để nghe kiểm chứng: `C:\Users\Asus\Downloads\BossRemix_clicktrack_152bpm.mp3` (click 1600Hz ở phách mạnh, 1000Hz ở phách nhẹ).
 
 ---
 
