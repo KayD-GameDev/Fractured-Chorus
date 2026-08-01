@@ -5078,7 +5078,7 @@ MonoBehaviour:
   m_IgnoreLayout: 1
   m_MinWidth: -1
   m_MinHeight: -1
-  m_PreferredWidth: -1
+  m_PreferredWidth: 73.85
   m_PreferredHeight: -1
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
@@ -7979,7 +7979,7 @@ MonoBehaviour:
   phaseLabel: {fileID: 2113597695}
   budgetLabel: {fileID: 458919646}
   avLabel: {fileID: 0}
-  slotWidth: 52
+  slotWidth: 73.85
   minSlotWidth: 14
   laneMarkerSize: 26
   activeFootprintDotSize: 30
