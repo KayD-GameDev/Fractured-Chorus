@@ -8,8 +8,7 @@ namespace FracturedChorus.Audio
         [SerializeField] private AudioSource source;
         [SerializeField] private AudioClip bossTrack;
         [SerializeField] private MusicBeatMapSO beatMap;
-        [SerializeField] private TextAsset beatMapCsv;
-        [SerializeField] private float bpm = 148f;
+        [SerializeField] private float bpm = 152f;
         [SerializeField] private float introEndSec = 24f;
         [SerializeField] private float loopEndSec = 122f;
         [SerializeField] private float firstPassEndSec = 244.8f;
@@ -89,36 +88,18 @@ namespace FracturedChorus.Audio
         {
             EnsureAudioSource();
             TryAssignDefaultClip();
-            TryLoadBeatMapFromCsv();
+            TryLoadBeatMapFromResources();
             PreloadPlanningTransition();
         }
 
-        private void TryLoadBeatMapFromCsv()
+        private void TryLoadBeatMapFromResources()
         {
             if (beatMap != null && beatMap.HasData)
             {
                 return;
             }
 
-            if (beatMap == null)
-            {
-                beatMap = Resources.Load<MusicBeatMapSO>("Music/EternalSpark_CadenceRemix_BeatMap");
-            }
-
-#if UNITY_EDITOR
-            if (beatMapCsv == null)
-            {
-                beatMapCsv = UnityEditor.AssetDatabase.LoadAssetAtPath<TextAsset>(
-                    "Assets/FracturedChorus/Audio/Music/EternalSpark_CadenceRemix_beats.csv");
-            }
-#endif
-
-            if (beatMapCsv == null || bossTrack == null)
-            {
-                return;
-            }
-
-            beatMap = MusicBeatMapSO.CreateRuntimeFromCsv(beatMapCsv.text, bossTrack);
+            beatMap = Resources.Load<MusicBeatMapSO>("Music/EternalSpark_BossRemix_BeatMap");
         }
 
         private void OnValidate()
@@ -334,6 +315,15 @@ namespace FracturedChorus.Audio
             }
 
             PlayPlanningMusic();
+        }
+
+        /// <summary>Pause track only — no planning stinger (tutorial scan freeze).</summary>
+        public void PauseTrackOnly()
+        {
+            if (source != null && source.isPlaying)
+            {
+                source.Pause();
+            }
         }
 
         /// <summary>Phát tiếp từ chỗ đã pause.</summary>
@@ -594,19 +584,13 @@ namespace FracturedChorus.Audio
             if (bossTrack == null)
             {
                 bossTrack = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>(
-                    "Assets/FracturedChorus/Audio/Music/EternalSpark_CadenceRemix.mp3");
+                    "Assets/FracturedChorus/Audio/Music/EternalSpark_BossRemix.mp3");
             }
 
             if (beatMap == null)
             {
                 beatMap = UnityEditor.AssetDatabase.LoadAssetAtPath<MusicBeatMapSO>(
-                    "Assets/FracturedChorus/Audio/Music/EternalSpark_CadenceRemix_BeatMap.asset");
-            }
-
-            if (planningClip == null)
-            {
-                planningClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>(
-                    "Assets/FracturedChorus/Audio/Music/EternalSpark_PlanningSilent.mp3");
+                    "Assets/FracturedChorus/Audio/Music/EternalSpark_BossRemix_BeatMap.asset");
             }
 
             if (planningTransitionClip == null)

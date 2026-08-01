@@ -1385,7 +1385,7 @@ namespace FracturedChorus.Editor
             {
                 ("midnight", "Midnight", "Fractured Chorus", "Assets/FracturedChorus/Audio/Music/Midnight_BGM_Menu.mp3"),
                 ("eternal_spark", "Eternal Spark", "LUXE", "Assets/FracturedChorus/Audio/Music/EternalSpark.mp3"),
-                ("eternal_spark_cadence", "Eternal Spark — Cadence Remix", "Astra", "Assets/FracturedChorus/Audio/Music/EternalSpark_CadenceRemix.mp3"),
+                ("eternal_spark_boss", "Eternal Spark — Boss Remix", "Astra", "Assets/FracturedChorus/Audio/Music/EternalSpark_BossRemix.mp3"),
                 ("bring_me_home", "Bring Me Home", "Fractured Chorus", "Assets/FracturedChorus/Audio/Music/Bring_Me_Home.mp3"),
                 ("velvet_reverie", "Velvet Reverie", "Fractured Chorus", "Assets/FracturedChorus/Audio/Music/Velvet_Reverie_BGM.mp3"),
                 ("locked_vault", "The Locked Vault", "Fractured Chorus", "Assets/FracturedChorus/Audio/Music/The_Locked_Vault.mp3"),

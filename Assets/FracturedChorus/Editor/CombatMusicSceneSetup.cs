@@ -11,10 +11,8 @@ namespace FracturedChorus.Editor
 {
     public static class CombatMusicSceneSetup
     {
-        private const string ClipPath = "Assets/FracturedChorus/Audio/Music/EternalSpark_CadenceRemix.mp3";
-        private const string BeatMapPath = "Assets/FracturedChorus/Audio/Music/EternalSpark_CadenceRemix_BeatMap.asset";
-        private const string BeatMapCsvPath = "Assets/FracturedChorus/Audio/Music/EternalSpark_CadenceRemix_beats.csv";
-        private const string PlanningClipPath = "Assets/FracturedChorus/Audio/Music/EternalSpark_PlanningSilent.mp3";
+        private const string ClipPath = "Assets/FracturedChorus/Audio/Music/EternalSpark_BossRemix.mp3";
+        private const string BeatMapPath = "Assets/FracturedChorus/Audio/Music/EternalSpark_BossRemix_BeatMap.asset";
         private const string PlanningTransitionPath = "Assets/FracturedChorus/Audio/SFX/Combat_PlanningTransition.wav";
         private const string PerfectCounterPath = "Assets/FracturedChorus/Audio/SFX/Perfect sound Game.wav";
         private const string PerfectBlockPath = "Assets/FracturedChorus/Audio/SFX/Perfect sound SFX.wav";
@@ -24,7 +22,6 @@ namespace FracturedChorus.Editor
         private const string RenSkill3Path = "Assets/FracturedChorus/Audio/SFX/Ren_Skill3.mp3";
         private const string CodaSkill1Path = "Assets/FracturedChorus/Audio/SFX/Coda_Skill1.mp3";
         private const string CodaSkill23Path = "Assets/FracturedChorus/Audio/SFX/Coda_Skill23.wav";
-        private const string PlanningSourceDownload = @"c:\Users\Asus\Downloads\Eternal Spark - BGM Silent.mp3";
         private const string TransitionSourceDownload = @"d:\Project 1\Transition SFX.wav";
         private const string PerfectCounterSourceDownload = @"d:\Project 1\Clash Hit Game.wav";
         private const string PerfectBlockSourceDownload = @"d:\Project 1\Perfect sound SFX.wav";
@@ -37,10 +34,9 @@ namespace FracturedChorus.Editor
         private const string RenCoverPath = "Assets/FracturedChorus/Audio/Music/EternalSpark_RenCover.mp3";
         private const string RenCoverSourceDownload = @"d:\Project 1\Eternal Spark - Ren cover.mp3";
 
-        [MenuItem("Fractured Chorus/Import Planning Audio From Downloads")]
-        public static void ImportPlanningAudioFromDownloads()
+        [MenuItem("Fractured Chorus/Import Combat Audio From Downloads")]
+        public static void ImportCombatAudioFromDownloads()
         {
-            ImportIfMissing(PlanningSourceDownload, PlanningClipPath);
             ImportAudio(TransitionSourceDownload, PlanningTransitionPath);
             ImportAudio(PerfectCounterSourceDownload, PerfectCounterPath);
             ImportAudio(PerfectBlockSourceDownload, PerfectBlockPath);
@@ -50,9 +46,8 @@ namespace FracturedChorus.Editor
             ImportAudio(RenSkill3SourceDownload, RenSkill3Path);
             ImportAudio(CodaSkill1SourceDownload, CodaSkill1Path);
             ImportAudio(CodaSkill23SourceDownload, CodaSkill23Path);
-            ImportIfMissing(RenCoverSourceDownload, RenCoverPath);
             AssetDatabase.Refresh();
-            Debug.Log("[Fractured Chorus] Planning BGM + transition WAV + perfect counter/block + clash hit + Ren/Coda skill SFX + Ren Cover imported.");
+            Debug.Log("[Fractured Chorus] Transition WAV + perfect counter/block + clash hit + Ren/Coda skill SFX imported.");
         }
 
         [MenuItem("Fractured Chorus/Import Ren Cover Audio")]
@@ -61,17 +56,6 @@ namespace FracturedChorus.Editor
             ImportAudio(RenCoverSourceDownload, RenCoverPath);
             AssetDatabase.Refresh();
             Debug.Log("[Fractured Chorus] Ren Cover imported → " + RenCoverPath);
-        }
-
-        private static void ImportIfMissing(string sourcePath, string destAssetPath)
-        {
-            if (!System.IO.File.Exists(sourcePath))
-            {
-                Debug.LogWarning($"[CombatMusic] Missing source file: {sourcePath}");
-                return;
-            }
-
-            ImportAudio(sourcePath, destAssetPath);
         }
 
         private static void ImportAudio(string sourcePath, string destAssetPath)
@@ -98,12 +82,10 @@ namespace FracturedChorus.Editor
         [MenuItem("Fractured Chorus/Wire Combat Music (Current Scene)")]
         public static void WireCurrentScene()
         {
-            ImportPlanningAudioFromDownloads();
+            ImportCombatAudioFromDownloads();
 
             var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(ClipPath);
             var beatMap = AssetDatabase.LoadAssetAtPath<MusicBeatMapSO>(BeatMapPath);
-            var beatMapCsv = AssetDatabase.LoadAssetAtPath<TextAsset>(BeatMapCsvPath);
-            var planningClip = AssetDatabase.LoadAssetAtPath<AudioClip>(PlanningClipPath);
             var planningTransition = AssetDatabase.LoadAssetAtPath<AudioClip>(PlanningTransitionPath);
             var perfectCounter = AssetDatabase.LoadAssetAtPath<AudioClip>(PerfectCounterPath);
             var perfectBlock = AssetDatabase.LoadAssetAtPath<AudioClip>(PerfectBlockPath);
@@ -148,12 +130,6 @@ namespace FracturedChorus.Editor
             var so = new SerializedObject(music);
             so.FindProperty("bossTrack").objectReferenceValue = clip;
             so.FindProperty("beatMap").objectReferenceValue = beatMap;
-            so.FindProperty("beatMapCsv").objectReferenceValue = beatMapCsv;
-            if (planningClip != null)
-            {
-                so.FindProperty("planningClip").objectReferenceValue = planningClip;
-            }
-
             if (planningTransition != null)
             {
                 so.FindProperty("planningTransitionClip").objectReferenceValue = planningTransition;
@@ -164,8 +140,6 @@ namespace FracturedChorus.Editor
                 so.FindProperty("coverClip").objectReferenceValue = renCover;
             }
 
-            so.FindProperty("planningStartSec").floatValue = 17f;
-            so.FindProperty("planningVolume").floatValue = 0.25f;
             so.FindProperty("planningTransitionVolume").floatValue = 1f;
             so.FindProperty("coverStartSec").floatValue = 96.5f;
             so.FindProperty("coverVolume").floatValue = 1f;
