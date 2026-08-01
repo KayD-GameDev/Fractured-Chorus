@@ -2,10 +2,6 @@ using UnityEngine;
 
 namespace FracturedChorus.UI
 {
-    /// <summary>
-    /// Canonical timeline beat layout locked from CombatTutorial.unity (Beat_0 / BeatTimelineUI).
-    /// Runtime and rebuild menus must not shrink below these values.
-    /// </summary>
     public static class TimelineLayoutLock
     {
         public const float SlotWidth = 73.85f;
@@ -22,7 +18,12 @@ namespace FracturedChorus.UI
 
         public static float ClampSlotWidth(float width)
         {
-            return Mathf.Max(MinSlotWidth, width > 0.01f ? width : SlotWidth);
+            if (width <= 0.01f)
+            {
+                return SlotWidth;
+            }
+
+            return Mathf.Max(SlotWidth, width);
         }
 
         public static float ResolveSlotWidth(float templateWidth, float serializedWidth, bool preserveScene)
@@ -35,7 +36,7 @@ namespace FracturedChorus.UI
 
             if (serializedWidth > MinSlotWidth)
             {
-                return serializedWidth;
+                return Mathf.Max(serializedWidth, SlotWidth);
             }
 
             return SlotWidth;
