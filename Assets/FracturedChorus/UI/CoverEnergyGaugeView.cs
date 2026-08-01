@@ -4,16 +4,26 @@ using UnityEngine.UI;
 
 namespace FracturedChorus.UI
 {
+    /// <summary>
+    /// Cover energy gauge: scene chỉ cần 1 pip template (Pip_0 / PipTemplate).
+    /// Khi vào Play (hoặc EnsureBuilt), clone đủ <see cref="CoverConstants.GaugeCap"/> pips.
+    /// </summary>
     public class CoverEnergyGaugeView : MonoBehaviour
     {
         private const string DefaultPipResourcePath = "UI/Combat/Cover/cover_energy_pip_hologram_v1";
         private const string DefaultFrameResourcePath = "UI/Combat/Cover/cover_energy_gauge_frame_hologram_v1";
+        private const string TemplateName = "PipTemplate";
+        private const string PipNamePrefix = "Pip_";
 
         [SerializeField] private bool preserveSceneLayout = true;
         [SerializeField] private Sprite pipSprite;
         [SerializeField] private Sprite frameSprite;
         [SerializeField] private Image frameImage;
         [SerializeField] private RectTransform pipsRoot;
+        [Tooltip("Pip mẫu trên scene (để trống = Pip_0 / PipTemplate / Image con đầu).")]
+        [SerializeField] private RectTransform pipTemplate;
+        [Tooltip("Khoảng cách Y giữa các pip (Pip_0 → Pip_1). Dương = đi lên. 0 = auto từ size template.")]
+        [SerializeField] private float pipStepY;
         [SerializeField] private Color pipOnColor = Color.white;
         [SerializeField] private Color pipOffColor = new Color(1f, 1f, 1f, 0.28f);
         [SerializeField] private float disabledAlpha = 0.45f;
@@ -22,6 +32,7 @@ namespace FracturedChorus.UI
         private int _displayed;
         private CanvasGroup _canvasGroup;
         private bool _wired;
+        private bool _spawned;
 
         public static CoverEnergyGaugeView EnsureOn(RectTransform parent)
         {
@@ -37,8 +48,6 @@ namespace FracturedChorus.UI
                 return existing;
             }
 
-            // Fallback when scene lost CoverEnergyGauge (e.g. merge kept local timeline polish).
-            // Prefer Hierarchy authoring via Fractured Chorus → Setup Cover HUD.
             var go = new GameObject("CoverEnergyGauge", typeof(RectTransform));
             var rt = go.GetComponent<RectTransform>();
             rt.SetParent(parent, false);
@@ -55,7 +64,6 @@ namespace FracturedChorus.UI
             return view;
         }
 
-        /// <summary>Minimal Frame + Pips when scene object was not authored.</summary>
         private void BuildRuntimeFallbackHierarchy()
         {
             ResolveSprites();
@@ -94,46 +102,24 @@ namespace FracturedChorus.UI
                 pipsRoot.anchorMax = Vector2.one;
                 pipsRoot.offsetMin = new Vector2(8f, 8f);
                 pipsRoot.offsetMax = new Vector2(-8f, -8f);
-
-                const float pipSize = 10f;
-                const float gap = 4f;
-                var total = CoverConstants.GaugeCap * pipSize + (CoverConstants.GaugeCap - 1) * gap;
-                var startY = total * 0.5f - pipSize * 0.5f;
-                for (var i = 0; i < CoverConstants.GaugeCap; i++)
-                {
-                    var pipGo = new GameObject($"Pip_{i}", typeof(RectTransform));
-                    var pipRt = pipGo.GetComponent<RectTransform>();
-                    pipRt.SetParent(pipsRoot, false);
-                    pipRt.anchorMin = new Vector2(0.5f, 0.5f);
-                    pipRt.anchorMax = new Vector2(0.5f, 0.5f);
-                    pipRt.pivot = new Vector2(0.5f, 0.5f);
-                    pipRt.sizeDelta = new Vector2(pipSize, pipSize);
-                    pipRt.anchoredPosition = new Vector2(0f, startY - i * (pipSize + gap));
-                    var pipImg = pipGo.AddComponent<Image>();
-                    pipImg.raycastTarget = false;
-                    pipImg.preserveAspect = true;
-                    if (pipSprite != null)
-                    {
-                        pipImg.sprite = pipSprite;
-                    }
-
-                    pipImg.color = pipOffColor;
-                }
             }
+
+            BindPipsRoot();
+            EnsureTemplatePip();
         }
 
         public void EnsureBuilt()
         {
-            if (_wired)
+            if (_wired && _spawned)
             {
-                BindPipImages();
+                ApplyVisual(_displayed);
                 return;
             }
 
             ResolveSprites();
             BindFrame();
             BindPipsRoot();
-            BindPipImages();
+            SpawnPipsFromTemplate();
             _wired = true;
             ApplyVisual(_displayed);
         }
@@ -167,29 +153,85 @@ namespace FracturedChorus.UI
             return pipsRoot;
         }
 
+        /// <summary>Editor: giữ 1 pip template trên scene (xóa Pip_1..n).</summary>
+        public int StripToTemplatePip()
+        {
+            BindPipsRoot();
+            var template = ResolveTemplatePip(createIfMissing: true);
+            if (template == null || pipsRoot == null)
+            {
+                return 0;
+            }
+
+            EnsureTemplateIdentity(template);
+            var removed = 0;
+            for (var i = pipsRoot.childCount - 1; i >= 0; i--)
+            {
+                var child = pipsRoot.GetChild(i);
+                if (child == template)
+                {
+                    continue;
+                }
+
+                DestroyImmediate(child.gameObject);
+                removed++;
+            }
+
+            pipTemplate = template;
+            _spawned = false;
+            _wired = false;
+            for (var i = 0; i < _pips.Length; i++)
+            {
+                _pips[i] = null;
+            }
+
+            return removed;
+        }
+
         public int CreateHandEditPips(bool resetLayout)
         {
 #if UNITY_EDITOR
             if (!Application.isPlaying)
             {
-                return EditorCreateOrFillPips(resetLayout);
+                return EditorPreviewSpawnPips(resetLayout);
             }
 #endif
-            Debug.LogWarning("[CoverEnergyGauge] CreateHandEditPips is editor-only. Scene pips are authoritative at runtime.");
-            BindPipImages();
-            return 0;
+            SpawnPipsFromTemplate();
+            return CoverConstants.GaugeCap;
         }
 
         public void RelayoutPipsFromPip0()
         {
-#if UNITY_EDITOR
-            if (!Application.isPlaying)
+            if (!_spawned)
             {
-                EditorRelayoutFromPip0AndPip1();
+                SpawnPipsFromTemplate();
                 return;
             }
-#endif
-            Debug.LogWarning("[CoverEnergyGauge] Relayout is editor-only. Runtime keeps scene pip positions.");
+
+            var template = _pips[0] != null ? _pips[0].rectTransform : ResolveTemplatePip(false);
+            if (template == null)
+            {
+                return;
+            }
+
+            var step = ResolveStepY(template);
+            var origin = template.anchoredPosition;
+            var size = template.sizeDelta;
+            for (var i = 0; i < _pips.Length; i++)
+            {
+                if (_pips[i] == null)
+                {
+                    continue;
+                }
+
+                var rt = _pips[i].rectTransform;
+                rt.anchorMin = template.anchorMin;
+                rt.anchorMax = template.anchorMax;
+                rt.pivot = template.pivot;
+                rt.sizeDelta = size;
+                rt.localScale = template.localScale;
+                rt.anchoredPosition = new Vector2(origin.x, origin.y + i * step);
+            }
         }
 
         private void ResolveSprites()
@@ -279,40 +321,194 @@ namespace FracturedChorus.UI
             }
         }
 
-        private void BindPipImages()
+        private RectTransform ResolveTemplatePip(bool createIfMissing)
         {
-            if (pipsRoot == null)
+            if (pipTemplate != null)
             {
-                BindPipsRoot();
+                return pipTemplate;
             }
 
             if (pipsRoot == null)
+            {
+                return null;
+            }
+
+            var named = pipsRoot.Find(TemplateName) as RectTransform
+                        ?? pipsRoot.Find($"{PipNamePrefix}0") as RectTransform;
+            if (named != null)
+            {
+                pipTemplate = named;
+                return named;
+            }
+
+            for (var i = 0; i < pipsRoot.childCount; i++)
+            {
+                var child = pipsRoot.GetChild(i) as RectTransform;
+                if (child == null || child.GetComponent<Image>() == null)
+                {
+                    continue;
+                }
+
+                pipTemplate = child;
+                return child;
+            }
+
+            if (!createIfMissing)
+            {
+                return null;
+            }
+
+            return EnsureTemplatePip();
+        }
+
+        private RectTransform EnsureTemplatePip()
+        {
+            BindPipsRoot();
+            if (pipsRoot == null)
+            {
+                return null;
+            }
+
+            var existing = ResolveTemplatePip(createIfMissing: false);
+            if (existing != null)
+            {
+                EnsureTemplateIdentity(existing);
+                return existing;
+            }
+
+            ResolveSprites();
+            var go = new GameObject($"{PipNamePrefix}0", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            var rt = go.GetComponent<RectTransform>();
+            rt.SetParent(pipsRoot, false);
+            rt.anchorMin = new Vector2(0.5f, 0.5f);
+            rt.anchorMax = new Vector2(0.5f, 0.5f);
+            rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.sizeDelta = new Vector2(46f, 47f);
+            rt.anchoredPosition = new Vector2(0.1f, -141.2f);
+            var img = go.GetComponent<Image>();
+            img.raycastTarget = false;
+            img.preserveAspect = true;
+            if (pipSprite != null)
+            {
+                img.sprite = pipSprite;
+            }
+
+            img.color = pipOffColor;
+            pipTemplate = rt;
+            return rt;
+        }
+
+        private static void EnsureTemplateIdentity(RectTransform template)
+        {
+            if (template != null && template.name != $"{PipNamePrefix}0" && template.name != TemplateName)
+            {
+                template.name = $"{PipNamePrefix}0";
+            }
+            else if (template != null && template.name == TemplateName)
+            {
+                template.name = $"{PipNamePrefix}0";
+            }
+        }
+
+        private float ResolveStepY(RectTransform template)
+        {
+            if (Mathf.Abs(pipStepY) > 0.01f)
+            {
+                return pipStepY;
+            }
+
+            if (pipsRoot != null)
+            {
+                var pip1 = pipsRoot.Find($"{PipNamePrefix}1") as RectTransform;
+                if (pip1 != null && pip1 != template)
+                {
+                    var measured = pip1.anchoredPosition.y - template.anchoredPosition.y;
+                    if (Mathf.Abs(measured) > 0.01f)
+                    {
+                        return measured;
+                    }
+                }
+            }
+
+            // Scene CombatPrototype hiện ~13.8 giữa các pip (Pip_0 đáy → lên).
+            var fromSize = Mathf.Max(12f, template.sizeDelta.y * 0.29f);
+            return fromSize;
+        }
+
+        private void SpawnPipsFromTemplate()
+        {
+            if (_spawned)
             {
                 return;
             }
 
-            for (var i = 0; i < _pips.Length; i++)
+            BindPipsRoot();
+            var template = ResolveTemplatePip(createIfMissing: true);
+            if (template == null || pipsRoot == null)
             {
-                var pipT = pipsRoot.Find($"Pip_{i}");
-                if (pipT == null)
-                {
-                    if (_pips[i] == null)
-                    {
-                        Debug.LogWarning($"[CoverEnergyGauge] Pip_{i} missing in scene — skip (no runtime spawn).");
-                    }
+                Debug.LogWarning("[CoverEnergyGauge] No pip template — cannot spawn gauge pips.");
+                return;
+            }
 
-                    _pips[i] = null;
+            EnsureTemplateIdentity(template);
+            var step = ResolveStepY(template);
+            if (Mathf.Abs(pipStepY) <= 0.01f)
+            {
+                pipStepY = step;
+            }
+
+            var origin = template.anchoredPosition;
+            var size = template.sizeDelta;
+            var anchorMin = template.anchorMin;
+            var anchorMax = template.anchorMax;
+            var pivot = template.pivot;
+            var scale = template.localScale;
+            var templateImg = template.GetComponent<Image>();
+
+            // Xóa pip cũ (trừ template) rồi clone đủ GaugeCap.
+            for (var i = pipsRoot.childCount - 1; i >= 0; i--)
+            {
+                var child = pipsRoot.GetChild(i);
+                if (child == template)
+                {
                     continue;
                 }
 
-                var img = pipT.GetComponent<Image>();
+                DestroyImmediate(child.gameObject);
+            }
+
+            for (var i = 0; i < CoverConstants.GaugeCap; i++)
+            {
+                RectTransform pipRt;
+                Image img;
+                if (i == 0)
+                {
+                    pipRt = template;
+                    img = templateImg;
+                }
+                else
+                {
+                    var clone = Instantiate(template.gameObject, pipsRoot);
+                    clone.name = $"{PipNamePrefix}{i}";
+                    pipRt = clone.GetComponent<RectTransform>();
+                    img = clone.GetComponent<Image>();
+                }
+
+                pipRt.name = $"{PipNamePrefix}{i}";
+                pipRt.SetSiblingIndex(i);
+                pipRt.anchorMin = anchorMin;
+                pipRt.anchorMax = anchorMax;
+                pipRt.pivot = pivot;
+                pipRt.localScale = scale;
+                pipRt.sizeDelta = size;
+                pipRt.anchoredPosition = new Vector2(origin.x, origin.y + i * step);
+
                 if (img == null)
                 {
-                    _pips[i] = null;
-                    continue;
+                    img = pipRt.gameObject.AddComponent<Image>();
                 }
 
-                if (pipSprite != null && img.sprite != pipSprite)
+                if (pipSprite != null)
                 {
                     img.sprite = pipSprite;
                     img.type = Image.Type.Simple;
@@ -323,6 +519,9 @@ namespace FracturedChorus.UI
                 img.enabled = true;
                 _pips[i] = img;
             }
+
+            pipTemplate = template;
+            _spawned = true;
         }
 
         private void ApplyVisual(int gauge)
@@ -340,135 +539,21 @@ namespace FracturedChorus.UI
         }
 
 #if UNITY_EDITOR
-        private int EditorCreateOrFillPips(bool resetLayout)
+        private int EditorPreviewSpawnPips(bool resetLayout)
         {
             preserveSceneLayout = true;
             ResolveSprites();
             BindPipsRoot();
-            if (pipsRoot == null)
+            EnsureTemplatePip();
+            _spawned = false;
+            SpawnPipsFromTemplate();
+            if (resetLayout)
             {
-                var go = new GameObject("Pips", typeof(RectTransform));
-                go.transform.SetParent(transform, false);
-                pipsRoot = go.GetComponent<RectTransform>();
-                pipsRoot.anchorMin = Vector2.zero;
-                pipsRoot.anchorMax = Vector2.one;
-                pipsRoot.offsetMin = Vector2.zero;
-                pipsRoot.offsetMax = Vector2.zero;
+                RelayoutPipsFromPip0();
             }
 
-            var ref0 = pipsRoot.Find("Pip_0") as RectTransform;
-            var ref1 = pipsRoot.Find("Pip_1") as RectTransform;
-            if (ref0 == null)
-            {
-                Debug.LogError("[CoverEnergyGauge] Place Pip_0 in scene first, then run Create/Relayout.");
-                return 0;
-            }
-
-            var size = ref0.sizeDelta;
-            var x = ref0.anchoredPosition.x;
-            var y0 = ref0.anchoredPosition.y;
-            var step = ref1 != null
-                ? ref1.anchoredPosition.y - y0
-                : Mathf.Max(12f, size.y * 0.3f);
-
-            var created = 0;
-            for (var i = 0; i < CoverConstants.GaugeCap; i++)
-            {
-                var pipRt = pipsRoot.Find($"Pip_{i}") as RectTransform;
-                var isNew = pipRt == null;
-                if (isNew)
-                {
-                    var pipGo = new GameObject($"Pip_{i}", typeof(RectTransform), typeof(CanvasRenderer),
-                        typeof(Image));
-                    pipRt = pipGo.GetComponent<RectTransform>();
-                    pipRt.SetParent(pipsRoot, false);
-                    created++;
-                }
-
-                var img = pipRt.GetComponent<Image>();
-                img.raycastTarget = false;
-                if (pipSprite != null)
-                {
-                    img.sprite = pipSprite;
-                    img.type = Image.Type.Simple;
-                    img.preserveAspect = true;
-                }
-
-                img.color = Color.white;
-                pipRt.SetSiblingIndex(i);
-                _pips[i] = img;
-
-                if (i <= 1)
-                {
-                    continue;
-                }
-
-                if (resetLayout || isNew)
-                {
-                    pipRt.anchorMin = new Vector2(0.5f, 0.5f);
-                    pipRt.anchorMax = new Vector2(0.5f, 0.5f);
-                    pipRt.pivot = new Vector2(0.5f, 0.5f);
-                    pipRt.sizeDelta = size;
-                    pipRt.anchoredPosition = new Vector2(x, y0 + i * step);
-                }
-            }
-
-            _wired = false;
-            BindPipImages();
             ApplyVisual(CoverConstants.GaugeCap);
-            return created;
-        }
-
-        private void EditorRelayoutFromPip0AndPip1()
-        {
-            BindPipsRoot();
-            var ref0 = pipsRoot != null ? pipsRoot.Find("Pip_0") as RectTransform : null;
-            var ref1 = pipsRoot != null ? pipsRoot.Find("Pip_1") as RectTransform : null;
-            if (ref0 == null || ref1 == null)
-            {
-                Debug.LogError("[CoverEnergyGauge] Need Pip_0 and Pip_1 placed before relayout.");
-                return;
-            }
-
-            var size = ref0.sizeDelta;
-            var x = ref0.anchoredPosition.x;
-            var y0 = ref0.anchoredPosition.y;
-            var step = ref1.anchoredPosition.y - y0;
-
-            for (var i = 0; i < CoverConstants.GaugeCap; i++)
-            {
-                var pipRt = pipsRoot.Find($"Pip_{i}") as RectTransform;
-                if (pipRt == null)
-                {
-                    var pipGo = new GameObject($"Pip_{i}", typeof(RectTransform), typeof(CanvasRenderer),
-                        typeof(Image));
-                    pipRt = pipGo.GetComponent<RectTransform>();
-                    pipRt.SetParent(pipsRoot, false);
-                    var imgNew = pipGo.GetComponent<Image>();
-                    imgNew.raycastTarget = false;
-                    if (pipSprite != null)
-                    {
-                        imgNew.sprite = pipSprite;
-                        imgNew.type = Image.Type.Simple;
-                        imgNew.preserveAspect = true;
-                    }
-                }
-
-                if (i == 0 || i == 1)
-                {
-                    continue;
-                }
-
-                pipRt.anchorMin = new Vector2(0.5f, 0.5f);
-                pipRt.anchorMax = new Vector2(0.5f, 0.5f);
-                pipRt.pivot = new Vector2(0.5f, 0.5f);
-                pipRt.sizeDelta = size;
-                pipRt.anchoredPosition = new Vector2(x, y0 + i * step);
-            }
-
-            _wired = false;
-            BindPipImages();
-            ApplyVisual(_displayed);
+            return CoverConstants.GaugeCap;
         }
 #endif
     }

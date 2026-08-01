@@ -21,7 +21,7 @@ namespace FracturedChorus.Editor
                 return;
             }
 
-            var graphics = Object.FindObjectsByType<Graphic>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            var graphics = Object.FindObjectsByType<Graphic>(FindObjectsInactive.Include);
             var changed = 0;
 
             foreach (var graphic in graphics)

@@ -80,7 +80,7 @@ namespace FracturedChorus.Editor
 
         public static void ApplyToScene(Scene scene)
         {
-            foreach (var canvas in Object.FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (var canvas in Object.FindObjectsByType<Canvas>(FindObjectsInactive.Include))
             {
                 if (canvas.gameObject.scene != scene)
                 {

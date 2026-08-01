@@ -70,26 +70,38 @@ namespace FracturedChorus.Editor
                 "[CoverHud] Ready. CoverEnergyGauge nằm bên phải CoverHud (ngoài nút). Save scene.");
         }
 
-        [MenuItem("Fractured Chorus/Create 10 Cover Pips (Hand Edit)")]
-        public static void CreateTenCoverPipsForHandEdit()
+        [MenuItem("Fractured Chorus/Cover Pips/Keep 1 Pip Template (Scene)")]
+        public static void StripCoverPipsToTemplate()
         {
-            var hud = Object.FindAnyObjectByType<CoverHudView>();
-            var gauge = hud != null
-                ? hud.EnergyGauge
-                : Object.FindAnyObjectByType<CoverEnergyGaugeView>();
-            if (gauge == null && hud != null)
-            {
-                ForceBuildEnergyGauge(hud);
-                gauge = hud.EnergyGauge;
-            }
-
+            var gauge = ResolveCoverGauge();
             if (gauge == null)
             {
-                Debug.LogError("[CoverHud] Không thấy CoverEnergyGauge. Chạy Setup Cover HUD trước.");
                 return;
             }
 
-            Undo.RegisterFullObjectHierarchyUndo(gauge.gameObject, "Create 10 Cover Pips");
+            Undo.RegisterFullObjectHierarchyUndo(gauge.gameObject, "Keep 1 Cover Pip Template");
+            var removed = gauge.StripToTemplatePip();
+            EditorUtility.SetDirty(gauge);
+            EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+
+            var template = gauge.transform.Find("Pips/Pip_0");
+            Selection.activeGameObject = template != null ? template.gameObject : gauge.gameObject;
+            EditorGUIUtility.PingObject(Selection.activeGameObject);
+            Debug.Log(
+                $"[CoverHud] Scene giữ 1 pip template (Pip_0). Removed={removed}. " +
+                "Play sẽ clone đủ 10. Chỉnh RectTransform Pip_0 + pipStepY trên CoverEnergyGauge.");
+        }
+
+        [MenuItem("Fractured Chorus/Cover Pips/Preview Spawn 10 (Editor)")]
+        public static void PreviewSpawnTenCoverPips()
+        {
+            var gauge = ResolveCoverGauge();
+            if (gauge == null)
+            {
+                return;
+            }
+
+            Undo.RegisterFullObjectHierarchyUndo(gauge.gameObject, "Preview 10 Cover Pips");
             var gso = new SerializedObject(gauge);
             gso.FindProperty("preserveSceneLayout").boolValue = true;
             var pip = AssetDatabase.LoadAssetAtPath<Sprite>(
@@ -108,7 +120,7 @@ namespace FracturedChorus.Editor
 
             gso.ApplyModifiedPropertiesWithoutUndo();
 
-            var created = gauge.CreateHandEditPips(resetLayout: false);
+            var created = gauge.CreateHandEditPips(resetLayout: true);
             EditorUtility.SetDirty(gauge);
             EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
 
@@ -116,8 +128,28 @@ namespace FracturedChorus.Editor
             Selection.activeGameObject = pipsRoot != null ? pipsRoot.gameObject : gauge.gameObject;
             EditorGUIUtility.PingObject(Selection.activeGameObject);
             Debug.Log(
-                $"[CoverHud] Hierarchy sẵn sàng: CoverEnergyGauge/Pips/Pip_0..Pip_9 " +
-                $"(created={created}). Chỉnh tay từng RectTransform rồi Save.");
+                $"[CoverHud] Preview spawn {created} pips trong Editor. " +
+                "Trước khi ship scene: chạy Keep 1 Pip Template.");
+        }
+
+        private static CoverEnergyGaugeView ResolveCoverGauge()
+        {
+            var hud = Object.FindAnyObjectByType<CoverHudView>();
+            var gauge = hud != null
+                ? hud.EnergyGauge
+                : Object.FindAnyObjectByType<CoverEnergyGaugeView>();
+            if (gauge == null && hud != null)
+            {
+                ForceBuildEnergyGauge(hud);
+                gauge = hud.EnergyGauge;
+            }
+
+            if (gauge == null)
+            {
+                Debug.LogError("[CoverHud] Không thấy CoverEnergyGauge. Chạy Setup Cover HUD trước.");
+            }
+
+            return gauge;
         }
 
         [MenuItem("Fractured Chorus/Build Cover Energy Gauge (Scene)")]
@@ -345,12 +377,17 @@ namespace FracturedChorus.Editor
                 CoverHudSetupEditor.BuildCoverEnergyGaugeMenu();
             }
 
-            if (GUILayout.Button("Create 10 Pips (Hand Edit)"))
+            if (GUILayout.Button("Keep 1 Pip Template (Scene)"))
             {
-                CoverHudSetupEditor.CreateTenCoverPipsForHandEdit();
+                CoverHudSetupEditor.StripCoverPipsToTemplate();
             }
 
-            if (GUILayout.Button("Relayout Pips From Pip_0 + Pip_1 spacing"))
+            if (GUILayout.Button("Preview Spawn 10 Pips (Editor)"))
+            {
+                CoverHudSetupEditor.PreviewSpawnTenCoverPips();
+            }
+
+            if (GUILayout.Button("Relayout Spawned Pips From Pip_0"))
             {
                 var gauge = view.EnergyGauge;
                 if (gauge == null)
@@ -369,8 +406,8 @@ namespace FracturedChorus.Editor
             }
 
             EditorGUILayout.HelpBox(
-                "Create 10 Pips → Hierarchy: CoverEnergyGauge/Pips/Pip_0..Pip_9 để chỉnh tay.\n" +
-                "Preserve Scene Layout bật — Play không ghi đè vị trí đã kéo.",
+                "Scene chỉ cần Pip_0 (template). Play sẽ clone đủ 10 theo pipStepY.\n" +
+                "Trước khi save ship: Keep 1 Pip Template. Preview Spawn chỉ để xem layout Editor.",
                 MessageType.Info);
         }
     }

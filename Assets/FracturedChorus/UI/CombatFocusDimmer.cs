@@ -74,7 +74,7 @@ namespace FracturedChorus.UI
             ClearTargets();
             _currentFactor = 1f;
 
-            foreach (var view in FindObjectsByType<UnitView>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+            foreach (var view in Object.FindObjectsByType<UnitView>(FindObjectsInactive.Exclude))
             {
                 if (view == null || Contains(keepBright, view))
                 {

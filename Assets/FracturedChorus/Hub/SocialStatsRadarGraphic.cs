@@ -18,13 +18,15 @@ namespace FracturedChorus.Hub
         [SerializeField] private Color strokeColor;
         [SerializeField] private float strokeWidth = 2.5f;
 
-        private void Reset()
+        protected override void Reset()
         {
+            base.Reset();
             ApplyTokenDefaults();
         }
 
-        private void Awake()
+        protected override void Awake()
         {
+            base.Awake();
             if (axisColor == default)
             {
                 ApplyTokenDefaults();
