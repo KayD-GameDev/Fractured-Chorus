@@ -139,7 +139,6 @@ namespace FracturedChorus.Combat.Core
         {
             var phaseA = TimelineConstants.RoundPhaseCount * segmentIndex;
             var phaseB = phaseA + 1;
-
             TimelineConstants.GetPhaseBeatRange(phaseA, out _, out var countA);
             if (countA > 0)
             {

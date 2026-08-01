@@ -177,7 +177,9 @@ namespace FracturedChorus.Audio
                 return;
             }
 
-            var syncMode = UsesBeatMap ? $"beat map ({beatMap.BeatCount} markers)" : $"{bpm} BPM";
+            var syncMode = UsesBeatMap
+                ? $"beat map ({beatMap.Bpm} BPM, first beat {beatMap.FirstBeatOffsetSec:F3}s, {beatMap.TotalBeatsForClip()} beats)"
+                : $"{bpm} BPM";
             Debug.Log($"[CombatMusic] Playing '{bossTrack.name}' ({bossTrack.length:F1}s) sync={syncMode}.");
         }
 

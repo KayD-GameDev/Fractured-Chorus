@@ -5,10 +5,12 @@ using FracturedChorus.Combat.Presentation;
 using FracturedChorus.Combat.Units;
 using FracturedChorus.Data;
 using FracturedChorus.RunMap;
+using FracturedChorus.Tutorial;
 using FracturedChorus.UI;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace FracturedChorus.Editor
@@ -50,10 +52,46 @@ namespace FracturedChorus.Editor
 
             var scene = EditorSceneManager.OpenScene(ScenePath);
             ApplyTutorialAuthoringDefaults();
+            StripLegacyTutorialLayers();
+            RestoreCombatTutorialVisuals();
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
             EnsureInBuildSettings();
-            Debug.Log("[Fractured Chorus] CombatTutorial prepared — edit BG under Background canvas, swap enemy UnitViews, Save.");
+            Debug.Log(
+                "[Fractured Chorus] CombatTutorial prepared — slideshow khung (ảnh step add sau). " +
+                "BG + Ren/Coda/Kiki đã bật lại.");
+        }
+
+        [MenuItem("Fractured Chorus/Tutorial/Restore CombatTutorial Visuals (BG + units)")]
+        public static void RestoreVisualsMenu()
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+            {
+                EditorUtility.DisplayDialog("Combat Tutorial", "Thoát Play Mode trước.", "OK");
+                return;
+            }
+
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+            {
+                return;
+            }
+
+            var scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            RestoreCombatTutorialVisuals();
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            SceneView.RepaintAll();
+            Debug.Log(
+                "[Fractured Chorus] Restored + saved CombatTutorial: " +
+                "CombatCanvas=Camera, TutorialCoach→CombatCanvas, BG/World/Units on, dimmer light.");
+            EditorUtility.DisplayDialog(
+                "Combat Tutorial",
+                "Đã reload scene, restore & Save.\n\n" +
+                "• CombatCanvas → Screen Space Camera\n" +
+                "• TutorialCoach ra khỏi ResultOverlay\n" +
+                "• BG + Ren/Coda/Kiki bật\n\n" +
+                "Mở tab Game rồi Play để kiểm tra.",
+                "OK");
         }
 
         private static void EnsureSceneExists()
@@ -73,6 +111,235 @@ namespace FracturedChorus.Editor
             AssetDatabase.CopyAsset(SourceScenePath, ScenePath);
             EnsureInBuildSettings();
             AssetDatabase.Refresh();
+        }
+
+        private static void RestoreCombatTutorialVisuals()
+        {
+            var mainCam = Camera.main;
+            if (mainCam == null)
+            {
+                var camGo = GameObject.Find("Main Camera");
+                if (camGo != null)
+                {
+                    mainCam = camGo.GetComponent<Camera>();
+                }
+            }
+
+            var combatCanvas = GameObject.Find("CombatCanvas")?.GetComponent<Canvas>();
+            if (combatCanvas != null)
+            {
+                Undo.RecordObject(combatCanvas, "Restore CombatCanvas Camera Mode");
+                combatCanvas.renderMode = RenderMode.ScreenSpaceCamera;
+                if (mainCam != null)
+                {
+                    combatCanvas.worldCamera = mainCam;
+                }
+
+                combatCanvas.planeDistance = 100f;
+                EditorUtility.SetDirty(combatCanvas);
+            }
+
+            var bgRoot = GameObject.Find("Background canvas");
+            if (bgRoot != null)
+            {
+                Undo.RecordObject(bgRoot, "Restore Tutorial BG");
+                bgRoot.SetActive(true);
+                var bgCanvas = bgRoot.GetComponent<Canvas>();
+                if (bgCanvas != null)
+                {
+                    Undo.RecordObject(bgCanvas, "Restore BG Canvas");
+                    bgCanvas.renderMode = RenderMode.ScreenSpaceCamera;
+                    if (mainCam != null)
+                    {
+                        bgCanvas.worldCamera = mainCam;
+                    }
+
+                    bgCanvas.planeDistance = 100f;
+                    bgCanvas.sortingOrder = -1;
+                    EditorUtility.SetDirty(bgCanvas);
+                }
+
+                var bgImage = bgRoot.GetComponentInChildren<Image>(true);
+                if (bgImage != null)
+                {
+                    Undo.RecordObject(bgImage, "Restore Tutorial BG Image");
+                    bgImage.gameObject.SetActive(true);
+                    bgImage.enabled = true;
+                    bgImage.color = Color.white;
+                    var sprite = LoadFirstSprite(TutorialBgPath);
+                    if (sprite != null)
+                    {
+                        bgImage.sprite = sprite;
+                    }
+
+                    EditorUtility.SetDirty(bgImage);
+                }
+
+                EditorUtility.SetDirty(bgRoot);
+            }
+
+            var world = GameObject.Find("World");
+            if (world != null)
+            {
+                Undo.RecordObject(world, "Restore World");
+                world.SetActive(true);
+                EditorUtility.SetDirty(world);
+            }
+
+            var units = GameObject.Find("Units") ?? GameObject.Find("World/Units");
+            if (units != null)
+            {
+                Undo.RecordObject(units, "Restore Units Root");
+                units.SetActive(true);
+                EditorUtility.SetDirty(units);
+            }
+
+            foreach (var view in Object.FindObjectsByType<UnitView>(FindObjectsInactive.Include))
+            {
+                if (view == null)
+                {
+                    continue;
+                }
+
+                var key = view.DemoUnitKey?.ToLowerInvariant() ?? string.Empty;
+                var name = view.gameObject.name.ToLowerInvariant();
+                var isKiki = name.Contains("kiki") || key.Contains("kiki");
+                var isParty = view.Side == GridSide.Player
+                              || key.Contains("ren")
+                              || key.Contains("coda")
+                              || key.Contains("mage")
+                              || name.Contains("ren")
+                              || name.Contains("mage");
+                var hide = name.Contains("boss") || name.Contains("tank") || name.Contains("grunt");
+                var keep = (isParty || isKiki) && !hide;
+                if (isKiki)
+                {
+                    keep = true;
+                }
+
+                Undo.RecordObject(view.gameObject, "Restore Tutorial Units");
+                view.gameObject.SetActive(keep);
+                if (keep)
+                {
+                    view.SetVisualDimFactor(1f);
+                    foreach (var sr in view.GetComponentsInChildren<SpriteRenderer>(true))
+                    {
+                        if (sr == null)
+                        {
+                            continue;
+                        }
+
+                        Undo.RecordObject(sr, "Restore Tutorial Sprite");
+                        sr.enabled = true;
+                        if (sr.sprite == null && view.Preset != null && view.Preset.battleSprite != null)
+                        {
+                            sr.sprite = view.Preset.battleSprite;
+                        }
+
+                        sr.color = Color.white;
+                        EditorUtility.SetDirty(sr);
+                    }
+                }
+
+                EditorUtility.SetDirty(view.gameObject);
+            }
+
+            foreach (var dimmer in Object.FindObjectsByType<CombatFocusDimmer>(FindObjectsInactive.Include))
+            {
+                dimmer.ReleaseImmediate();
+                EditorUtility.SetDirty(dimmer);
+            }
+
+            var resultOverlay = GameObject.Find("CombatResultOverlay");
+            if (resultOverlay != null)
+            {
+                Undo.RecordObject(resultOverlay, "Keep Result Overlay Hidden");
+                resultOverlay.SetActive(false);
+                EditorUtility.SetDirty(resultOverlay);
+            }
+
+            var coach = Object.FindAnyObjectByType<TutorialCoachView>(FindObjectsInactive.Include);
+            if (coach != null)
+            {
+                if (combatCanvas != null && coach.transform.parent != combatCanvas.transform)
+                {
+                    Undo.SetTransformParent(coach.transform, combatCanvas.transform, "Move TutorialCoach under CombatCanvas");
+                    var rt = coach.transform as RectTransform;
+                    if (rt != null)
+                    {
+                        rt.anchorMin = Vector2.zero;
+                        rt.anchorMax = Vector2.one;
+                        rt.offsetMin = Vector2.zero;
+                        rt.offsetMax = Vector2.zero;
+                        rt.localScale = Vector3.one;
+                    }
+                }
+
+                Undo.RecordObject(coach.gameObject, "Hide Tutorial Coach in Edit");
+                coach.gameObject.SetActive(false);
+                var dimmerTf = coach.transform.Find("Dimmer");
+                if (dimmerTf != null)
+                {
+                    var dimmerImg = dimmerTf.GetComponent<Image>();
+                    if (dimmerImg != null)
+                    {
+                        Undo.RecordObject(dimmerImg, "Lighten coach dimmer");
+                        dimmerImg.color = new Color(0f, 0f, 0f, 0.12f);
+                        dimmerImg.raycastTarget = false;
+                        EditorUtility.SetDirty(dimmerImg);
+                    }
+                }
+
+                var so = new SerializedObject(coach);
+                var dimmerProp = so.FindProperty("dimmer");
+                if (dimmerProp != null && dimmerTf != null)
+                {
+                    dimmerProp.objectReferenceValue = dimmerTf.GetComponent<Image>();
+                    so.ApplyModifiedPropertiesWithoutUndo();
+                }
+
+                var alphaProp = so.FindProperty("slideshowDimmerAlpha");
+                if (alphaProp != null)
+                {
+                    alphaProp.floatValue = 0.12f;
+                    so.ApplyModifiedPropertiesWithoutUndo();
+                }
+
+                EditorUtility.SetDirty(coach.gameObject);
+            }
+        }
+
+        private static void StripLegacyTutorialLayers()
+        {
+            foreach (var go in Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include))
+            {
+                if (go == null)
+                {
+                    continue;
+                }
+
+                if (go.name == "TutorialEditCanvas"
+                    || go.name == "CombatTutorialDirector"
+                    || go.name == "TutorialSteps"
+                    || go.name == "TutorialHighlightOverlay")
+                {
+                    Undo.DestroyObjectImmediate(go);
+                }
+            }
+
+            foreach (var mb in Object.FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include))
+            {
+                if (mb == null)
+                {
+                    continue;
+                }
+
+                var typeName = mb.GetType().Name;
+                if (typeName is "TutorialCombatBridge" or "CombatTutorialDirector" or "CombatTutorialStepAuthoring")
+                {
+                    Undo.DestroyObjectImmediate(mb);
+                }
+            }
         }
 
         private static void ApplyTutorialAuthoringDefaults()

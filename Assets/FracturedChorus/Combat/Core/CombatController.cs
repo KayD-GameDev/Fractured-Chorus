@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using FracturedChorus.Audio;
 using FracturedChorus.Combat.Bootstrap;
@@ -240,31 +241,19 @@ namespace FracturedChorus.Combat.Core
 
             }
 
-
-
             if (_session.AllowPlayerReposition)
-
             {
-
                 StartDeployRound();
-
                 return;
-
             }
-
-
 
             if (_awaitingExecute)
-
             {
-
                 StartExecuteSegment();
-
             }
-
         }
 
-
+        public event Action PlayerDeployed;
 
         private void StartDeployRound()
 
@@ -295,14 +284,14 @@ namespace FracturedChorus.Combat.Core
 
             timelineView?.SetPlanningPauseEnabled(!_introPauseConsumed);
 
-
-
             if (_musicController != null && !_musicController.IsPlaying)
             {
                 _musicController.PlayBossMusic();
             }
 
             timelineView?.BeginRoundPlayback(continueFromHold: false);
+
+            PlayerDeployed?.Invoke();
 
         }
 
@@ -521,6 +510,19 @@ namespace FracturedChorus.Combat.Core
 
 
 
+        public void RefreshExecuteOverlayVisibility()
+        {
+            if (_session == null)
+            {
+                executeOverlay?.SetVisible(false);
+                deployFormationHint?.Hide();
+                return;
+            }
+
+            UpdateExecuteOverlayVisibility(_session.Phase);
+            RefreshDeployFormationHint();
+        }
+
         private void UpdateExecuteOverlayVisibility(CombatPhase phase)
 
         {
@@ -537,9 +539,15 @@ namespace FracturedChorus.Combat.Core
 
 
 
-            var showDeploy = phase == CombatPhase.Planning && _session.AllowPlayerReposition;
+            var coachBlocking = TutorialCoachView.FindAnyVisible();
+            var showDeploy = !coachBlocking
+                             && phase == CombatPhase.Planning
+                             && _session.AllowPlayerReposition;
 
-            var showExecute = phase == CombatPhase.Planning && _awaitingExecute && !_session.AllowPlayerReposition;
+            var showExecute = !coachBlocking
+                              && phase == CombatPhase.Planning
+                              && _awaitingExecute
+                              && !_session.AllowPlayerReposition;
 
             executeOverlay?.SetVisible(showDeploy || showExecute);
 
@@ -646,7 +654,6 @@ namespace FracturedChorus.Combat.Core
             executeOverlay?.SetLabel(ExecuteLabel);
 
             executeOverlay?.SetVisible(true);
-
         }
 
 
@@ -663,8 +670,6 @@ namespace FracturedChorus.Combat.Core
 
             }
 
-
-
             _planningPaused = false;
 
             SetCoverActivateAllowed(false);
@@ -674,7 +679,6 @@ namespace FracturedChorus.Combat.Core
             executeOverlay?.SetVisible(false);
 
             timelineView?.ResumeRoundPlayback();
-
         }
 
 
@@ -705,7 +709,7 @@ namespace FracturedChorus.Combat.Core
 
         {
 
-            var hud = Object.FindAnyObjectByType<CoverHudView>();
+            var hud = UnityEngine.Object.FindAnyObjectByType<CoverHudView>();
 
             hud?.Refresh();
 
@@ -735,8 +739,6 @@ namespace FracturedChorus.Combat.Core
 
             }
 
-
-
             if (timelineView == null || !timelineView.TryGetPlacementBeatAtScreenPoint(screenPos, skill, out var beat))
 
             {
@@ -745,17 +747,10 @@ namespace FracturedChorus.Combat.Core
 
             }
 
-
-
             if (!_session.TryAssignPlayerAction(unit, skill, beat))
-
             {
-
                 return false;
-
             }
-
-
 
             RefreshBeatsForSkillFootprint(unit, skill, beat);
 
@@ -991,6 +986,14 @@ namespace FracturedChorus.Combat.Core
         private void OnResultContinue()
         {
             var victory = _session != null && _session.Phase == CombatPhase.Victory;
+            if (victory
+                && (EncounterCatalog.IsTutorial(_activeEncounterId)
+                    || CombatPrototypeBootstrap.IsCombatTutorialSceneStatic()))
+            {
+                ExitTutorialToRunMap();
+                return;
+            }
+
             if (victory)
             {
                 PartyRunHpStore.CaptureFromSession(_session);
@@ -1018,6 +1021,24 @@ namespace FracturedChorus.Combat.Core
         private void OnResultRetry()
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        }
+
+        public void ExitTutorialToRunMap()
+        {
+            PartyRunHpStore.CaptureFromSession(_session);
+            CombatEncounterHandoff.SetResult(true);
+            var sceneName = string.IsNullOrWhiteSpace(CombatEncounterHandoff.ReturnSceneName)
+                ? RunMapSceneCatalog.RunMapPrototype
+                : CombatEncounterHandoff.ReturnSceneName;
+            if (string.Equals(sceneName, RunMapSceneCatalog.CampusHub, StringComparison.OrdinalIgnoreCase))
+            {
+                sceneName = RunMapSceneCatalog.RunMapPrototype;
+            }
+
+            if (!RunMapSceneLoader.LoadByName(sceneName))
+            {
+                Debug.LogError($"[Combat] Tutorial exit failed to load '{sceneName}'.");
+            }
         }
 
 
@@ -1150,7 +1171,9 @@ namespace FracturedChorus.Combat.Core
                 return;
             }
 
-            if (_session.Phase == CombatPhase.Planning && _session.AllowPlayerReposition)
+            if (_session.Phase == CombatPhase.Planning
+                && _session.AllowPlayerReposition
+                && !TutorialDirector.SuppressFormationHint)
             {
                 deployFormationHint.ShowForDeploy(BossFormationRuntime.Active);
             }
@@ -1168,15 +1191,15 @@ namespace FracturedChorus.Combat.Core
             }
 
             _combatTutorialStarted = true;
-            var director = TutorialDirector.Ensure();
-            if (EncounterCatalog.IsTutorial(_activeEncounterId))
+            if (EncounterCatalog.IsTutorial(_activeEncounterId)
+                || CombatPrototypeBootstrap.IsCombatTutorialSceneStatic())
             {
-                director.StartCadenceIntroTrack();
+                FindAnyObjectByType<CombatFocusDimmer>()?.ReleaseImmediate();
+                TutorialDirector.Ensure().StartCadenceIntroTrack();
+                return;
             }
-            else
-            {
-                director.StartCombatTrack();
-            }
+
+            TutorialDirector.Ensure().StartCombatTrack();
         }
 
         private void OnDestroy()

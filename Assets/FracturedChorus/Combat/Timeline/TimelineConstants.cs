@@ -5,10 +5,11 @@ namespace FracturedChorus.Combat.Timeline
         public const int Phase1SlotCount = 16;
         public const int LaterPhaseSlotCount = 16;
 
-        /// <summary>Eternal Spark beat map: 618 CSV markers + t=0 pad (MusicBeatMapSO.ParseCsvTimes).</summary>
-        public const int TotalBeats = 619;
+        /// <summary>Eternal Spark Boss Remix @ 152 BPM, first beat 1.161s, 268.29s clip.</summary>
+        public const int TotalBeats = 677;
 
-        public const int PhaseCount = 39;
+        public static int PhaseCount =>
+            1 + (TotalBeats - Phase1SlotCount + LaterPhaseSlotCount - 1) / LaterPhaseSlotCount;
 
         /// <summary>Fallback when UI has not reported visible slot count yet.</summary>
         public const int DefaultVisibleBeatHint = 20;

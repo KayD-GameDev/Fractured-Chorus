@@ -68,6 +68,7 @@ namespace FracturedChorus.Combat.Bootstrap
             EnsureCombatSfxController();
             EnsureCounterPresentation();
             EnsureAudioListener();
+            WarnIfBeatMapMismatchesTimeline();
 
             _grid = new DualGrid();
             _timeline = new BeatTimelineEngine();
@@ -107,7 +108,11 @@ namespace FracturedChorus.Combat.Bootstrap
             if (isTutorial)
             {
                 ApplyTutorialUnitVisibility();
-                if (!respectSceneVisuals)
+                if (respectSceneVisuals)
+                {
+                    EnsureTutorialSceneVisualsVisible();
+                }
+                else
                 {
                     ApplyTutorialBackground();
                 }
@@ -164,7 +169,10 @@ namespace FracturedChorus.Combat.Bootstrap
 
             RefreshPartyStatusBar();
             EnsureEnemyStatusBar();
-            EnsureCoverHud();
+            if (!(tutorialSceneMode || IsCombatTutorialScene()))
+            {
+                EnsureCoverHud();
+            }
             ApplyPlaytestStartResources();
 
             if (skillPanelView != null && !skillPanelView.gameObject.activeSelf)
@@ -183,11 +191,80 @@ namespace FracturedChorus.Combat.Bootstrap
             BossFormationRuntime.ApplyDifficultyScale(mult.PierceFrontBias);
         }
 
+        public static bool IsCombatTutorialSceneStatic() => IsCombatTutorialScene();
+
         private static bool IsCombatTutorialScene()
         {
             var sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
             return string.Equals(sceneName, RunMapSceneCatalog.CombatTutorial,
                 System.StringComparison.OrdinalIgnoreCase);
+        }
+
+        private void EnsureTutorialSceneVisualsVisible()
+        {
+            try
+            {
+                var cam = mainCamera != null ? mainCamera : Camera.main;
+                var combatCanvas = GameObject.Find("CombatCanvas")?.GetComponent<Canvas>();
+                if (combatCanvas != null)
+                {
+                    combatCanvas.renderMode = RenderMode.ScreenSpaceCamera;
+                    if (cam != null)
+                    {
+                        combatCanvas.worldCamera = cam;
+                    }
+
+                    combatCanvas.planeDistance = 100f;
+                }
+
+                var bgRoot = GameObject.Find("Background canvas");
+                if (bgRoot != null)
+                {
+                    bgRoot.SetActive(true);
+                    var bgCanvas = bgRoot.GetComponent<Canvas>();
+                    if (bgCanvas != null)
+                    {
+                        bgCanvas.renderMode = RenderMode.ScreenSpaceCamera;
+                        if (cam != null)
+                        {
+                            bgCanvas.worldCamera = cam;
+                        }
+
+                        bgCanvas.planeDistance = 100f;
+                        bgCanvas.sortingOrder = -1;
+                    }
+
+                    var image = bgRoot.GetComponentInChildren<Image>(true);
+                    if (image != null)
+                    {
+                        image.gameObject.SetActive(true);
+                        image.enabled = true;
+                        if (image.color.a < 0.99f)
+                        {
+                            var c = image.color;
+                            c.a = 1f;
+                            image.color = c;
+                        }
+                    }
+                }
+
+                if (unitsRoot != null)
+                {
+                    unitsRoot.gameObject.SetActive(true);
+                }
+
+                var world = GameObject.Find("World");
+                if (world != null)
+                {
+                    world.SetActive(true);
+                }
+
+                FindAnyObjectByType<CombatFocusDimmer>()?.ReleaseImmediate();
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError("[Bootstrap] Failed to restore tutorial visuals: " + e);
+            }
         }
 
         private void ApplyTutorialUnitVisibility()
@@ -515,6 +592,25 @@ namespace FracturedChorus.Combat.Bootstrap
             musicController = audioGo.AddComponent<CombatMusicController>();
         }
 
+        private void WarnIfBeatMapMismatchesTimeline()
+        {
+            var beatMap = musicController != null ? musicController.BeatMap : null;
+            if (beatMap == null || !beatMap.HasData || beatMap.Clip == null)
+            {
+                return;
+            }
+
+            var clipBeats = beatMap.TotalBeatsForClip();
+            if (clipBeats == TimelineConstants.TotalBeats)
+            {
+                return;
+            }
+
+            Debug.LogWarning(
+                $"[CombatBootstrap] Beat map yields {clipBeats} beats but TimelineConstants.TotalBeats is " +
+                $"{TimelineConstants.TotalBeats}. Update the constant to match the current boss track.");
+        }
+
         private void EnsureCombatSfxController()
         {
             if (combatSfxController != null)
@@ -684,7 +780,6 @@ namespace FracturedChorus.Combat.Bootstrap
             _boardDrag.Initialize(_session, _grid, markers, mainCamera);
             _boardDrag.SetUnitClickHandler(HandleUnitSelected);
             _boardDrag.SetFormationChangedHandler(RefreshPartyStatusBar);
-
             foreach (var view in unitViews)
             {
                 if (view?.Unit != null && view.gameObject.activeSelf)
