@@ -44,10 +44,17 @@ namespace FracturedChorus.Combat.Core
         /// <summary>0 = phases 1–2 (beats 0–31), 1 = phases 3–4, …</summary>
         public int RoundSegmentIndex => _roundSegmentIndex;
 
-        /// <summary>True only before Execute — player may drag units onto grid cells.</summary>
-        public bool AllowPlayerReposition { get; private set; } = true;
+        /// <summary>True while the scan is advancing; false whenever a planning window is open.</summary>
+        public bool IsTimelineRunning { get; private set; }
 
-        /// <summary>True while Deploy reposition / planning pause / between-segment planning — Cover button gate.</summary>
+        /// <summary>
+        /// The single gate for player agency: repositioning units and assigning skills are both
+        /// allowed exactly when the timeline is parked in Planning.
+        /// </summary>
+        public bool IsPlanningWindowOpen =>
+            Phase == CombatPhase.Planning && !IsTimelineRunning && !IsEncounterOver;
+
+        /// <summary>Cover button gate — open during any planning window.</summary>
         public bool AllowCoverActivate { get; set; } = true;
 
         public bool IsEncounterOver =>
@@ -341,7 +348,7 @@ namespace FracturedChorus.Combat.Core
             _roundSegmentIndex++;
             PrePlanTelegraphsForSegment(_roundSegmentIndex);
             _lastScanBeat = TimelineConstants.GetSegmentStartBeat(_roundSegmentIndex) - 1;
-            AllowPlayerReposition = false;
+            IsTimelineRunning = false;
             PhaseAv.ResetForPlanning();
             Timeline.SetPhase(CombatPhase.Planning);
         }
@@ -354,17 +361,18 @@ namespace FracturedChorus.Combat.Core
             CombatCounterResolver.ClearPresentationMarkers();
             _lastScanBeat = -1;
             BlockBarriers.Clear();
-            AllowPlayerReposition = true;
+            IsTimelineRunning = false;
             AllowCoverActivate = true;
             Timeline.ResetForPlanning();
             PhaseAv.ResetForPlanning();
             Cover.Reset();
             Timeline.SetPhase(CombatPhase.Planning);
+            PrepareTelegraphsForCurrentSegment();
         }
 
-        public void LockPlayerReposition()
+        public void SetTimelineRunning(bool running)
         {
-            AllowPlayerReposition = false;
+            IsTimelineRunning = running;
         }
 
         public void ConfirmPlanningAndExecute()

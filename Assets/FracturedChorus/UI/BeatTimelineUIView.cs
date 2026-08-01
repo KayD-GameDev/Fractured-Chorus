@@ -88,7 +88,6 @@ namespace FracturedChorus.UI
         private float[] _slotOffsetPx;
         private float _contentWidthPx;
         private float _pixelsPerSecond = 1f;
-        private int _roundStartBeatIndex;
         private Coroutine _autoPlayRoutine;
         private bool _slotsBuilt;
         private bool _autoPlayCompleted;
@@ -96,7 +95,6 @@ namespace FracturedChorus.UI
         private int _autoPlayBeat;
         private Action _onPlanningPause;
         private Action _onRoundSegmentComplete;
-        private bool _planningPauseEnabled = true;
         private float _scanSpeedMultiplier = 1f;
         private float _totalScrollPx;
         private float _localBeat;
@@ -104,7 +102,6 @@ namespace FracturedChorus.UI
         private bool _isPlaybackActive;
         private bool _suppressTelegraphRefresh;
         private Coroutine _delaySlideRoutine;
-        private bool _planningPauseArmed;
         private bool _pausedForPlanning;
         private int _lastHighlightedSlotIndex = -1;
         private int _lastCounterSfxBeat = -1;
@@ -117,6 +114,10 @@ namespace FracturedChorus.UI
         private readonly Queue<CounterNoteResolveChipView> _resolveChipActive = new();
         private CounterMultiBannerView _multiBanner;
         private const int ResolveChipPoolCap = 6;
+
+        /// <summary>Lead-in before the anchor bar so the scan never starts mid-frame behind the music.</summary>
+        private const float ResumeLeadBeats = 0.5f;
+
         private float _roundStartMusicalBeat;
         private int _roundSegmentIndex;
         private int _segmentStartBeat;
@@ -845,7 +846,7 @@ namespace FracturedChorus.UI
             _onRoundSegmentComplete = onRoundSegmentComplete;
             if (_timeline != null)
             {
-                _timeline.PlanningHorizonBeat = TimelineConstants.IntroExecuteStartBeatIndex;
+                _timeline.PlanningHorizonBeat = 0;
                 _timeline.OnTelegraphsChanged -= HandleTelegraphsChanged;
                 _timeline.OnTelegraphsChanged += HandleTelegraphsChanged;
                 _timeline.OnTelegraphMoved -= HandleTelegraphMoved;
@@ -1305,15 +1306,10 @@ namespace FracturedChorus.UI
             RefreshLaneMarkerDragWiring();
         }
 
-        /// <summary>
-        /// Cho kéo lại skill trên lane khi đang Planning (sau Deploy) — cùng cửa sổ với gán skill.
-        /// Không khóa theo playback: vẫn kéo được lúc intro-pause / timeline đứng.
-        /// </summary>
+        /// <summary>Kéo lại skill trên lane — cùng cửa sổ planning với gán skill và dời unit.</summary>
         public bool CanRelocateLaneMarker()
         {
-            return _session != null
-                   && _session.Phase == CombatPhase.Planning
-                   && !_session.AllowPlayerReposition;
+            return _session != null && _session.IsPlanningWindowOpen;
         }
 
         public bool TryBeginLaneMarkerRelocate(CombatUnit unit, int beatIndex)
@@ -1431,7 +1427,6 @@ namespace FracturedChorus.UI
 
             _autoPlayCompleted = false;
             _pausedForPlanning = false;
-            _planningPauseArmed = _planningPauseEnabled;
             ResetCounterSfxState();
             counterPresentation?.ResetPresentation();
 
@@ -1445,24 +1440,18 @@ namespace FracturedChorus.UI
                 : StartCoroutine(ContinuousScanRoutine(false, continueFromHold));
         }
 
-        public void SetPlanningPauseEnabled(bool enabled)
-        {
-            _planningPauseEnabled = enabled;
-        }
-
         public void ResetForNextPlanningSegment()
         {
             StopAutoPlay();
             _autoPlayCompleted = false;
             _pausedForPlanning = false;
-            _planningPauseArmed = false;
             _localBeat = 0f;
             _lastFiredBeat = -1;
             _totalScrollPx = 0f;
             ResetScrollState();
             ApplyScrollVisual(0f);
             ResetAllScanHighlights();
-            musicController?.PausePlayback();
+            musicController?.EnterPlanningDuck();
         }
 
         /// <summary>Giữ scroll tại vạch trắng cuối round segment (không nhảy về beat 0).</summary>
@@ -1472,7 +1461,6 @@ namespace FracturedChorus.UI
             _autoPlayCompleted = true;
             _autoPlayRoutine = null;
             _pausedForPlanning = false;
-            _planningPauseArmed = false;
 
             SyncSegmentFromSession();
             var completedSegmentIndex = Mathf.Max(0, _roundSegmentIndex - 1);
@@ -1485,10 +1473,46 @@ namespace FracturedChorus.UI
             }
         }
 
-        /// <summary>Đang tạm dừng chờ player set up skill (intro-pause).</summary>
+        /// <summary>Scan đang đóng băng chờ player set up skill (nhạc vẫn chạy).</summary>
         public bool IsPausedForPlanning => _pausedForPlanning;
 
-        /// <summary>Phát tiếp sau intro-pause: nhạc + scan tiếp tục từ vị trí đã dừng.</summary>
+        private int _tutorialPauseAtBeat = -1;
+
+        public void ArmTutorialScanPause(int absoluteBeat)
+        {
+            _tutorialPauseAtBeat = absoluteBeat;
+        }
+
+        public void ClearTutorialScanPause()
+        {
+            _tutorialPauseAtBeat = -1;
+        }
+
+        public void EnterTutorialPlanningHold()
+        {
+            _pausedForPlanning = true;
+            _isPlaybackActive = false;
+            musicController?.EnterPlanningDuck();
+            _onPlanningPause?.Invoke();
+            ResetAllScanHighlights();
+            RefreshLaneMarkers();
+            RefreshTelegraphsAndSlots();
+        }
+
+        public RectTransform TryGetBeatSlotRect(int absoluteBeat)
+        {
+            if (_slots == null || absoluteBeat < 0 || absoluteBeat >= _slots.Length)
+            {
+                return null;
+            }
+
+            var slot = _slots[absoluteBeat];
+            return slot != null ? slot.transform as RectTransform : null;
+        }
+
+        public RectTransform TryGetBossNoteRect(int absoluteBeat) => TryGetBeatSlotRect(absoluteBeat);
+
+        /// <summary>Scan chạy tiếp từ vị trí đã đóng băng, bám vào mốc bar kế của nhạc đang chạy.</summary>
         public void ResumeRoundPlayback()
         {
             if (!_pausedForPlanning)
@@ -1497,7 +1521,8 @@ namespace FracturedChorus.UI
             }
 
             _pausedForPlanning = false;
-            musicController?.ResumePlayback();
+            musicController?.ExitPlanningDuck();
+            AnchorTimelineToNextBar();
             ResetCounterSfxState();
             RebuildCounterBeatCache();
 
@@ -1509,32 +1534,6 @@ namespace FracturedChorus.UI
             _autoPlayRoutine = CanUseMusicSync()
                 ? StartCoroutine(MusicDrivenScanRoutine(true))
                 : StartCoroutine(ContinuousScanRoutine(true));
-        }
-
-        private void EnterPlanningPause()
-        {
-            musicController?.EnterPlanningPhase();
-            _planningPauseArmed = false;
-            _pausedForPlanning = true;
-            _isPlaybackActive = false;
-            SnapScrollToAnchor(GetIntroPauseAnchorPx());
-            _localBeat = TimelineConstants.IntroExecuteStartBeatIndex;
-            _lastFiredBeat = _segmentStartBeat + TimelineConstants.IntroPlanningPauseAfterBeatIndex;
-            if (_timeline != null)
-            {
-                _timeline.PlanningHorizonBeat = TimelineConstants.IntroExecuteStartBeatIndex;
-            }
-
-            if (musicController != null && CanUseMusicSync())
-            {
-                _roundStartMusicalBeat = musicController.TotalMusicalBeat - TimelineConstants.IntroExecuteStartBeatIndex;
-            }
-
-            ResetAllScanHighlights();
-            RefreshLaneMarkers();
-            RefreshTelegraphsAndSlots();
-            Debug.Log($"[BeatTimeline] Intro-pause @ beat {TimelineConstants.IntroPlanningPauseAfterBeatIndex}. Execute from beat {TimelineConstants.IntroExecuteStartBeatIndex}.");
-            _onPlanningPause?.Invoke();
         }
 
         private void StartAutoPlayIfNeeded()
@@ -1571,7 +1570,7 @@ namespace FracturedChorus.UI
 
             while (_isPlaybackActive)
             {
-                _localBeat = musicController.TotalMusicalBeat - _roundStartMusicalBeat;
+                _localBeat = Mathf.Max(_localBeat, musicController.TotalMusicalBeat - _roundStartMusicalBeat);
                 if (_localBeat >= GetSegmentBeatSpan())
                 {
                     break;
@@ -1587,11 +1586,6 @@ namespace FracturedChorus.UI
                 }
 
                 if (!_isPlaybackActive)
-                {
-                    break;
-                }
-
-                if (TryEnterIntroPlanningPause())
                 {
                     break;
                 }
@@ -1641,11 +1635,6 @@ namespace FracturedChorus.UI
                     break;
                 }
 
-                if (TryEnterIntroPlanningPause())
-                {
-                    break;
-                }
-
                 if (_session != null && _session.IsEncounterOver)
                 {
                     break;
@@ -1665,7 +1654,7 @@ namespace FracturedChorus.UI
 
         private void FinishRoundSegment()
         {
-            musicController?.EnterPlanningPhase();
+            musicController?.EnterPlanningDuck();
             _isPlaybackActive = false;
             _autoPlayCompleted = true;
             _autoPlayRoutine = null;
@@ -1678,7 +1667,6 @@ namespace FracturedChorus.UI
             StopAutoPlay();
             _autoPlayCompleted = true;
             _pausedForPlanning = false;
-            _planningPauseArmed = false;
             ResetCounterSfxState();
             ResetAllScanHighlights();
         }
@@ -1704,15 +1692,15 @@ namespace FracturedChorus.UI
             }
         }
 
-        private float GetSpanSec(int songBeatIndex)
+        private float GetSpanSec()
         {
             var beatMap = musicController != null ? musicController.BeatMap : null;
             if (beatMap != null && beatMap.HasData)
             {
-                return beatMap.GetBeatSpanSec(songBeatIndex);
+                return beatMap.BeatSpanSec;
             }
 
-            return autoBeatInterval > 0f ? autoBeatInterval : 60f / 148f;
+            return autoBeatInterval > 0f ? autoBeatInterval : 60f / 152f;
         }
 
         private float ComputePixelsPerSecond()
@@ -1767,10 +1755,6 @@ namespace FracturedChorus.UI
             ApplyScrollVisual(_totalScrollPx);
         }
 
-        /// <summary>End of intro planning-pause beat in current segment.</summary>
-        private float GetIntroPauseAnchorPx() =>
-            GetBeatEndContentPx(_segmentStartBeat + TimelineConstants.IntroPlanningPauseAfterBeatIndex);
-
         private float GetSegmentPhaseDividerAnchorPx(int segmentIndex)
         {
             var startBeat = TimelineConstants.GetSegmentStartBeat(segmentIndex);
@@ -1806,6 +1790,21 @@ namespace FracturedChorus.UI
         public int GetCurrentScanBeatIndex() =>
             Mathf.Clamp(Mathf.FloorToInt(GetAbsolutePlaybackBeat()), 0, TotalBeats - 1);
 
+        /// <summary>
+        /// Re-seats the timeline's frame of reference on the freely running music: keeps the current
+        /// _localBeat exactly where it is and picks the next bar boundary as the beat it resumes on.
+        /// </summary>
+        private void AnchorTimelineToNextBar()
+        {
+            if (musicController == null)
+            {
+                return;
+            }
+
+            var target = MusicBeatMapSO.SnapUpToBar(musicController.TotalMusicalBeat + ResumeLeadBeats);
+            _roundStartMusicalBeat = target - _localBeat;
+        }
+
         private void PrepareSegmentScanStart(bool useMusicSync, bool continueFromHold = false)
         {
             SyncSegmentFromSession();
@@ -1814,9 +1813,9 @@ namespace FracturedChorus.UI
             {
                 _localBeat = 0f;
                 _lastFiredBeat = _segmentStartBeat - 1;
-                if (useMusicSync && musicController != null)
+                if (useMusicSync)
                 {
-                    _roundStartMusicalBeat = musicController.TotalMusicalBeat;
+                    AnchorTimelineToNextBar();
                 }
 
                 RebuildLayout();
@@ -1833,7 +1832,7 @@ namespace FracturedChorus.UI
 
             if (useMusicSync && musicController != null && musicController.IsPlaying)
             {
-                _roundStartMusicalBeat = musicController.TotalMusicalBeat;
+                AnchorTimelineToNextBar();
             }
             else if (_roundSegmentIndex == 0)
             {
@@ -1944,30 +1943,6 @@ namespace FracturedChorus.UI
             return _slotOffsetPx[beat] + _slotWidths[beat] * beatHitAnchorT;
         }
 
-        /// <summary>Intro-pause khi beat 6 qua vạch quét.</summary>
-        private bool TryEnterIntroPlanningPause()
-        {
-            if (!_planningPauseArmed)
-            {
-                return false;
-            }
-
-            var pauseAfterBeat = _segmentStartBeat + TimelineConstants.IntroPlanningPauseAfterBeatIndex;
-            if (_lastFiredBeat < pauseAfterBeat)
-            {
-                return false;
-            }
-
-            var scrollTarget = ScrollPxForContentAnchor(GetIntroPauseAnchorPx());
-            if (_totalScrollPx < scrollTarget - AnchorScrollEpsilonPx)
-            {
-                return false;
-            }
-
-            EnterPlanningPause();
-            return true;
-        }
-
         private void FireScanBeat(int beat)
         {
             _lastFiredBeat = beat;
@@ -1979,6 +1954,21 @@ namespace FracturedChorus.UI
             RefreshBeat(beat);
             RefreshPhaseAvLabel();
             UpdateScanHighlights();
+
+            if (_tutorialPauseAtBeat >= 0 && beat >= _tutorialPauseAtBeat)
+            {
+                _tutorialPauseAtBeat = -1;
+                musicController?.EnterPlanningDuck();
+                _pausedForPlanning = true;
+                _isPlaybackActive = false;
+                if (_autoPlayRoutine != null)
+                {
+                    StopCoroutine(_autoPlayRoutine);
+                    _autoPlayRoutine = null;
+                }
+
+                _onPlanningPause?.Invoke();
+            }
         }
 
         private void PlayAttackAnimationsAtBeat(int beatIndex)
@@ -3777,7 +3767,6 @@ namespace FracturedChorus.UI
             }
 
             _pixelsPerSecond = ComputePixelsPerSecond();
-            _roundStartBeatIndex = _isPlaybackActive ? Mathf.RoundToInt(_roundStartMusicalBeat) : 0;
 
             if (_slotWidths == null || _slotWidths.Length != TotalBeats)
             {
@@ -3791,15 +3780,14 @@ namespace FracturedChorus.UI
 
             DisableSlotsRowLayoutGroup();
 
+            var uniformWidth = Mathf.Max(minSlotWidth, GetSpanSec() * _pixelsPerSecond);
             var cumulative = 0f;
             for (var i = 0; i < TotalBeats; i++)
             {
-                var span = GetSpanSec(_roundStartBeatIndex + i);
-                var w = Mathf.Max(minSlotWidth, span * _pixelsPerSecond);
-                _slotWidths[i] = w;
+                _slotWidths[i] = uniformWidth;
                 _slotOffsetPx[i] = cumulative;
-                ApplySlotRect(_slots[i], w, cumulative);
-                cumulative += w;
+                ApplySlotRect(_slots[i], uniformWidth, cumulative);
+                cumulative += uniformWidth;
             }
 
             _slotOffsetPx[TotalBeats] = cumulative;

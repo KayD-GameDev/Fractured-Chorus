@@ -1170,11 +1170,6 @@ namespace FracturedChorus.Combat.Bootstrap
                 return;
             }
 
-            if (_session != null && _session.AllowPlayerReposition)
-            {
-                return;
-            }
-
             skillPanelView?.ToggleForUnit(unit, view);
         }
 

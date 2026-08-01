@@ -47,8 +47,7 @@ namespace FracturedChorus.UI
 
         public bool IsDragging => _draggingUnit != null;
 
-        public bool IsPreExecuteRepositionPhase =>
-            _session != null && _session.Phase == CombatPhase.Planning && _session.AllowPlayerReposition;
+        public bool IsRepositionAllowed => _session != null && _session.IsPlanningWindowOpen;
 
         public void Initialize(CombatSession session, DualGrid grid, IEnumerable<GridCellMarker> markers,
             Camera camera = null)
@@ -84,6 +83,16 @@ namespace FracturedChorus.UI
             _onFormationChanged = onFormationChanged;
         }
 
+        public void AddFormationChangedHandler(Action onFormationChanged)
+        {
+            _onFormationChanged += onFormationChanged;
+        }
+
+        public void RemoveFormationChangedHandler(Action onFormationChanged)
+        {
+            _onFormationChanged -= onFormationChanged;
+        }
+
         /// <summary>Optional extra gate (timeline playback, etc.). Null = only session deploy check.</summary>
         public void SetSkillPanelOpenPredicate(Func<bool> canOpen)
         {
@@ -92,13 +101,17 @@ namespace FracturedChorus.UI
 
         public bool CanDragUnit(UnitView view)
         {
-            return view != null
-                   && view.Unit != null
-                   && view.Unit.IsAlive
-                   && view.Side == GridSide.Player
-                   && _session != null
-                   && _session.Phase == CombatPhase.Planning
-                   && _session.AllowPlayerReposition;
+            if (view == null
+                || view.Unit == null
+                || !view.Unit.IsAlive
+                || view.Side != GridSide.Player
+                || _session == null
+                || !_session.IsPlanningWindowOpen)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         private void Update()
@@ -183,8 +196,7 @@ namespace FracturedChorus.UI
                 || !view.Unit.IsAlive
                 || view.Side != GridSide.Player
                 || _session == null
-                || _session.Phase != CombatPhase.Planning
-                || IsPreExecuteRepositionPhase)
+                || !_session.IsPlanningWindowOpen)
             {
                 return false;
             }

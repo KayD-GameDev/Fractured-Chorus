@@ -143,13 +143,10 @@ namespace FracturedChorus.UI
             _isTimelinePlaybackActive = isTimelinePlaybackActive;
         }
 
-        /// <summary>
-        /// Deploy / không Planning / timeline đang playback (intro·execute) → không mở skill UI.
-        /// Intro-pause (IsPlaybackActive=false) vẫn cho mở.
-        /// </summary>
+        /// <summary>Skill UI mở trong cửa sổ planning, đóng khi timeline đang chạy.</summary>
         public bool CanOpenSkillPanelNow()
         {
-            if (_session == null || _session.Phase != CombatPhase.Planning || _session.AllowPlayerReposition)
+            if (_session == null || !_session.IsPlanningWindowOpen)
             {
                 return false;
             }
