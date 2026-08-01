@@ -6247,27 +6247,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Audio.CombatMusicController
   source: {fileID: 888001003}
-  bossTrack: {fileID: 8300000, guid: a3f8c2e1b904d6479a2e5f1c8d7b6e40, type: 3}
+  bossTrack: {fileID: 8300000, guid: b7d41c9e35a2f84c8b61e0d27a45c913, type: 3}
   beatMap: {fileID: 11400000, guid: 9be2bc01aa1cb7449b7f3cb1831eda11, type: 2}
-  beatMapCsv: {fileID: 4900000, guid: f3a4b5c6d7e8490f1a2b3c4d5e6f7380, type: 3}
-  bpm: 148
-  introEndSec: 24
-  loopEndSec: 122
-  firstPassEndSec: 244.8
-  crossfadeSec: 0.05
+  fallbackBpm: 152
+  loopStartBar: 0
+  loopEndBar: -1
+  loopFadeSec: 0.05
   loopDetectLeadSec: 0.05
-  planningSource: {fileID: 0}
-  planningClip: {fileID: 8300000, guid: f1a2b3c4d5e6478890a1b2c3d4e5f601, type: 3}
-  planningStartSec: 17
-  planningVolume: 0.25
-  transitionSource: {fileID: 0}
-  planningTransitionClip: {fileID: 8300000, guid: b3c4d5e6f708192a3b4c5d6e7f8091a2, type: 3}
-  planningTransitionVolume: 1
-  coverSource: {fileID: 0}
-  coverClip: {fileID: 0}
-  coverStartSec: 96.5
-  coverVolume: 1
-  coverBossDuckVolume: 0.2
+  duckVolume: 0.7
+  duckCutoffHz: 900
+  duckFadeSec: 0.25
 --- !u!114 &888001005
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8746,7 +8735,7 @@ MonoBehaviour:
   activeFootprintDotSize: 30
   footprintDotSize: 16
   autoPlayOnStart: 0
-  autoBeatInterval: 0.4054054
+  autoBeatInterval: 0.39473686
   useMusicSync: 1
   beatHitAnchorT: 0
   musicController: {fileID: 888001004}
