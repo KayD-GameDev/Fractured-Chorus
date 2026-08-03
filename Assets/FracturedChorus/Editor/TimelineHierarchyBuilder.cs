@@ -9,8 +9,8 @@ namespace FracturedChorus.Editor
 {
     public static class TimelineHierarchyBuilder
     {
-        public const float SlotWidth = 52f;
-        public const float SlotHeight = 64f;
+        public const float SlotWidth = TimelineLayoutLock.SlotWidth;
+        public const float SlotHeight = TimelineLayoutLock.SlotHeight;
 
         public const float PartyCardWidth = 115f;
         public const float PartyCardHeight = 167f;

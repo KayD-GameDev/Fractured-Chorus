@@ -16,7 +16,7 @@ MonoBehaviour:
   displayName: Claw
   icon: {fileID: 0}
   frame: {fileID: 0}
-  description: Basic rake — teaches Ren to respect front pressure.
+  description: "Basic rake \u2014 teaches Ren to respect front pressure."
   slotKind: 0
   avCost: 0
   delay: 2
@@ -25,3 +25,22 @@ MonoBehaviour:
   targetType: 0
   glowType: 0
   baseDamage: 0
+  standingBeatsBefore: 1
+  activeBeats: 1
+  standingBeatsAfter: 1
+  effectKind: 0
+  effectValue: 0
+  grantsCycleShift: 0
+  usesPrepEmpower: 0
+  prepEmpowerThreshold: 1
+  prepEmpowerCost: 1
+  empowerEffectValue: 0
+  empowerDamageMultiplier: 1
+  empowerExtraHits: 0
+  empowerForceHarmony: 0
+  empowerKeepDelayTier: 0
+  empowerOverhealToShield: 0
+  empowerOverhealShieldCap: 30
+  empowerPartyReduceS2: 0
+  empowerGiftPrepToTarget: 0
+  empowerGuardChargeOnPerfect: 0

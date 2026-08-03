@@ -38,6 +38,10 @@ namespace FracturedChorus.Data
         public Sprite icon;
         [Tooltip("Khung vẽ trên art skill (Frame Image). Null = dùng Frame từ SkillSlot_Template.")]
         public Sprite frame;
+        [Tooltip("Nốt skill trên timeline (pha S active). Null = footprint tròn màu unit.")]
+        public Sprite timelineActiveSprite;
+        [Tooltip("Nốt chờ S1/S2 trên timeline. Null = chấm xám.")]
+        public Sprite timelineStandingSprite;
         [TextArea] public string description;
         public SkillSlotKind slotKind = SkillSlotKind.BasicAttack;
         public int avCost;

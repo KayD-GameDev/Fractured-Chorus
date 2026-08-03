@@ -21,6 +21,13 @@ namespace FracturedChorus.Audio
         private const string CodaSkill1ResourcePath = "Audio/SFX/Coda_Skill1";
         private const string CodaSkill23ClipPath = "Assets/FracturedChorus/Audio/SFX/Coda_Skill23.wav";
         private const string CodaSkill23ResourcePath = "Audio/SFX/Coda_Skill23";
+        private const string PlanningTransitionClipPath =
+            "Assets/FracturedChorus/Audio/SFX/Combat_PlanningTransition.wav";
+        private const string PlanningTransitionResourcePath = "Audio/SFX/Combat_PlanningTransition";
+        private const string UiClickClipPath = "Assets/FracturedChorus/Audio/SFX/Combat_UiClick.wav";
+        private const string UiClickResourcePath = "Audio/SFX/Combat_UiClick";
+        private const string SkillPlaceClipPath = "Assets/FracturedChorus/Audio/SFX/Combat_SkillPlace.wav";
+        private const string SkillPlaceResourcePath = "Audio/SFX/Combat_SkillPlace";
 
         [SerializeField] private AudioSource perfectCounterSource;
         [SerializeField] private AudioClip perfectCounterClip;
@@ -44,6 +51,15 @@ namespace FracturedChorus.Audio
         [SerializeField] [Range(0.05f, 1f)] private float renSkillCueNormalizedTime = 0.45f;
         [Tooltip("Extra seconds pulled earlier than the cue point.")]
         [SerializeField] private float renSkillCueLeadSec = 0.05f;
+        [SerializeField] private AudioSource planningTransitionSource;
+        [SerializeField] private AudioClip planningTransitionClip;
+        [SerializeField] private float planningTransitionVolume = 0.85f;
+        [SerializeField] private AudioSource uiClickSource;
+        [SerializeField] private AudioClip uiClickClip;
+        [SerializeField] private float uiClickVolume = 0.9f;
+        [SerializeField] private AudioSource skillPlaceSource;
+        [SerializeField] private AudioClip skillPlaceClip;
+        [SerializeField] private float skillPlaceVolume = 0.9f;
 
         private void Awake()
         {
@@ -51,11 +67,74 @@ namespace FracturedChorus.Audio
             EnsurePerfectBlockSource();
             EnsureClashHitSource();
             EnsureRenSkillSource();
+            EnsurePlanningTransitionSource();
+            EnsureUiClickSource();
+            EnsureSkillPlaceSource();
             TryAssignDefaultClips();
             PrimePerfectCounterSource();
             PrimePerfectBlockSource();
             PrimeClashHitSource();
             PrimeRenSkillSource();
+        }
+
+        public void PlayPlanningTransition()
+        {
+            EnsureClip(ref planningTransitionClip, PlanningTransitionResourcePath, PlanningTransitionClipPath);
+            if (planningTransitionClip == null)
+            {
+                return;
+            }
+
+            EnsurePlanningTransitionSource();
+            if (planningTransitionSource == null)
+            {
+                return;
+            }
+
+            planningTransitionSource.spatialBlend = 0f;
+            planningTransitionSource.mute = false;
+            planningTransitionSource.volume = planningTransitionVolume;
+            planningTransitionSource.PlayOneShot(planningTransitionClip, planningTransitionVolume);
+        }
+
+        public void PlayUiClick()
+        {
+            EnsureClip(ref uiClickClip, UiClickResourcePath, UiClickClipPath);
+            if (uiClickClip == null)
+            {
+                return;
+            }
+
+            EnsureUiClickSource();
+            if (uiClickSource == null)
+            {
+                return;
+            }
+
+            uiClickSource.spatialBlend = 0f;
+            uiClickSource.mute = false;
+            uiClickSource.volume = uiClickVolume;
+            uiClickSource.PlayOneShot(uiClickClip, uiClickVolume);
+        }
+
+        public void PlaySkillPlace()
+        {
+            EnsureClip(ref skillPlaceClip, SkillPlaceResourcePath, SkillPlaceClipPath);
+            if (skillPlaceClip == null)
+            {
+                return;
+            }
+
+            EnsureSkillPlaceSource();
+            if (skillPlaceSource == null)
+            {
+                return;
+            }
+
+            skillPlaceSource.spatialBlend = 0f;
+            skillPlaceSource.mute = false;
+            skillPlaceSource.volume = skillPlaceVolume;
+            skillPlaceSource.PlayOneShot(skillPlaceClip, skillPlaceVolume);
         }
 
         public void PlayPerfectCounter(double targetDspTime = -1d)
@@ -317,6 +396,36 @@ namespace FracturedChorus.Audio
             renSkillSource = FindOrCreateSfxSource("RenSkillSfx");
         }
 
+        private void EnsurePlanningTransitionSource()
+        {
+            if (planningTransitionSource != null)
+            {
+                return;
+            }
+
+            planningTransitionSource = FindOrCreateSfxSource("PlanningTransitionSfx");
+        }
+
+        private void EnsureUiClickSource()
+        {
+            if (uiClickSource != null)
+            {
+                return;
+            }
+
+            uiClickSource = FindOrCreateSfxSource("UiClickSfx");
+        }
+
+        private void EnsureSkillPlaceSource()
+        {
+            if (skillPlaceSource != null)
+            {
+                return;
+            }
+
+            skillPlaceSource = FindOrCreateSfxSource("SkillPlaceSfx");
+        }
+
         private AudioSource FindOrCreateSfxSource(string name)
         {
             var existing = transform.Find(name);
@@ -372,6 +481,9 @@ namespace FracturedChorus.Audio
         private void TryAssignDefaultClips()
         {
             EnsureClip(ref perfectBlockClip, PerfectBlockResourcePath, PerfectBlockClipPath);
+            EnsureClip(ref planningTransitionClip, PlanningTransitionResourcePath, PlanningTransitionClipPath);
+            EnsureClip(ref uiClickClip, UiClickResourcePath, UiClickClipPath);
+            EnsureClip(ref skillPlaceClip, SkillPlaceResourcePath, SkillPlaceClipPath);
             EnsureRenSkillClips();
             EnsureCodaSkillClips();
 #if UNITY_EDITOR

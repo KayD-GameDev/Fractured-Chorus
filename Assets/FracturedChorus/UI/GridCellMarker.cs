@@ -10,6 +10,7 @@ namespace FracturedChorus.UI
     public class GridCellMarker : MonoBehaviour
     {
         private const string HexFloorChildName = "Hexagon Flat Top";
+        private const string LaneIconChildName = "LaneIcon";
 
         [SerializeField] private GridSide side = GridSide.Player;
         [SerializeField] private int row;
@@ -21,7 +22,6 @@ namespace FracturedChorus.UI
         [Tooltip("Keep visual/active state authored in the scene — do not rebuild hex when selecting the object or entering Play.")]
         [SerializeField] private bool preserveSceneVisuals = true;
 
-        private static readonly Color PlayerFill = new Color(0.12f, 0.28f, 0.48f, 0.35f);
         private static readonly Color EnemyFill = new Color(0.48f, 0.14f, 0.14f, 0.35f);
         private static readonly Color DropNeonColor = new Color(0.15f, 0.82f, 1f, 0.92f);
 
@@ -98,6 +98,12 @@ namespace FracturedChorus.UI
                 hexRoot.gameObject.SetActive(visible);
             }
 
+            var laneIcon = transform.Find(LaneIconChildName);
+            if (laneIcon != null)
+            {
+                laneIcon.gameObject.SetActive(visible && side == GridSide.Player);
+            }
+
             if (!visible)
             {
                 SetDropHighlight(false);
@@ -139,7 +145,12 @@ namespace FracturedChorus.UI
             {
                 EnsureHexFloor();
             }
+            else
+            {
+                ApplyFloorColor(hexRoot.GetComponent<SpriteRenderer>());
+            }
 
+            EnsureLaneIcon();
             EnsureDropGlow();
             SetDropHighlight(false);
 
@@ -237,15 +248,72 @@ namespace FracturedChorus.UI
             }
 
             spriteRenderer.sprite = sprite;
+            ApplyFloorColor(spriteRenderer);
+            spriteRenderer.sortingOrder = 0;
+            EnsureLaneIcon();
+        }
+
+        private void ApplyFloorColor(SpriteRenderer spriteRenderer)
+        {
+            if (spriteRenderer == null)
+            {
+                return;
+            }
+
+            if (side == GridSide.Player)
+            {
+                spriteRenderer.color = FormationLaneVisuals.FloorColor(column);
+                return;
+            }
+
             if (useCustomFloorColor)
             {
                 spriteRenderer.color = customFloorColor;
+                return;
             }
-            else
+
+            spriteRenderer.color = EnemyFill;
+        }
+
+        private void EnsureLaneIcon()
+        {
+            if (side != GridSide.Player)
             {
-                spriteRenderer.color = side == GridSide.Player ? PlayerFill : EnemyFill;
+                var existingEnemy = transform.Find(LaneIconChildName);
+                if (existingEnemy != null)
+                {
+                    existingEnemy.gameObject.SetActive(false);
+                }
+
+                return;
             }
-            spriteRenderer.sortingOrder = 0;
+
+            var iconRoot = transform.Find(LaneIconChildName);
+            if (iconRoot == null)
+            {
+                var go = new GameObject(LaneIconChildName);
+                go.transform.SetParent(transform, false);
+                iconRoot = go.transform;
+            }
+
+            iconRoot.localPosition = new Vector3(0f, -0.08f, 0f);
+            iconRoot.localScale = Vector3.one * 0.42f;
+
+            var spriteRenderer = iconRoot.GetComponent<SpriteRenderer>();
+            if (spriteRenderer == null)
+            {
+                spriteRenderer = iconRoot.gameObject.AddComponent<SpriteRenderer>();
+            }
+
+            var icon = FormationLaneVisuals.LoadLaneIcon(column);
+            if (icon != null)
+            {
+                spriteRenderer.sprite = icon;
+            }
+
+            spriteRenderer.color = Color.white;
+            spriteRenderer.sortingOrder = 1;
+            iconRoot.gameObject.SetActive(true);
         }
 
         public void ApplyFloorColorFromRenderer()

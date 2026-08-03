@@ -2,44 +2,53 @@ namespace FracturedChorus.Combat.Timeline
 {
     public static class TimelineConstants
     {
-        public const int Phase1SlotCount = 16;
-        public const int LaterPhaseSlotCount = 16;
+        public const int Phase1SlotCount = 22;
+        public const int LaterPhaseSlotCount = 22;
 
-        /// <summary>Eternal Spark beat map: 618 CSV markers + t=0 pad (MusicBeatMapSO.ParseCsvTimes).</summary>
-        public const int TotalBeats = 619;
+        /// <summary>Eternal Spark Boss Remix @ 152 BPM, first beat 1.161s, 268.29s clip.</summary>
+        public const int TotalBeats = 677;
 
-        public const int PhaseCount = 39;
+        public static int PhaseCount =>
+            1 + (TotalBeats - Phase1SlotCount + LaterPhaseSlotCount - 1) / LaterPhaseSlotCount;
 
         /// <summary>Fallback when UI has not reported visible slot count yet.</summary>
         public const int DefaultVisibleBeatHint = 20;
 
-        /// <summary>Quái chỉ được phép ra đòn (đặt telegraph) từ beat này trở đi — "beat thứ 3" = index 2.</summary>
-        public const int EnemyFirstAttackBeat = 2;
+        /// <summary>Quái chỉ được phép ra đòn từ beat index này — beat 3 = index 3.</summary>
+        public const int EnemyFirstAttackBeat = 3;
 
-        /// <summary>Beat index cuối intro trước planning-pause (beat thứ 6 = index 6).</summary>
-        public const int IntroPlanningPauseAfterBeatIndex = 6;
-
-        /// <summary>Beat execute đầu tiên sau intro-pause.</summary>
-        public const int IntroExecuteStartBeatIndex = IntroPlanningPauseAfterBeatIndex + 1;
-
-        /// <summary>Vùng bắt đầu boss có thể spawn impact: execute start + buffer (segment 0 intro).</summary>
+        /// <summary>Reaction buffer between a planning horizon and the first impact the boss may land.</summary>
         public const int EnemySpawnBufferBeatsAfterHorizon = 3;
 
-        public const int IntroEnemySpawnZoneStartBeat = IntroExecuteStartBeatIndex + EnemySpawnBufferBeatsAfterHorizon;
+        /// <summary>
+        /// Runtime floor for enemy note impacts (intro beats are empty).
+        /// </summary>
+        public static int EnemyNoteFloorBeat { get; set; }
 
-        /// <summary>Beat nhỏ nhất cho impact của quái trong phase — phase start + buffer (segment 0 intro dùng IntroEnemySpawnZoneStartBeat).</summary>
+        /// <summary>Beat nhỏ nhất cho impact của quái trong phase — phase start + buffer.</summary>
         public static int GetMinEnemyImpactBeat(int phaseStartBeat)
         {
-            if (phaseStartBeat <= 0)
-            {
-                return IntroEnemySpawnZoneStartBeat;
-            }
-
-            return phaseStartBeat + EnemySpawnBufferBeatsAfterHorizon;
+            var floor = System.Math.Max(EnemyFirstAttackBeat, EnemyNoteFloorBeat);
+            return System.Math.Max(floor, phaseStartBeat + EnemySpawnBufferBeatsAfterHorizon);
         }
 
-        /// <summary>Timeline phases executed per round segment before returning to Execute.</summary>
-        public const int RoundPhaseCount = 2;
+        /// <summary>Timeline phases executed per round segment before returning to Planning.</summary>
+        public const int RoundPhaseCount = 1;
+
+        /// <summary>How many phases of boss notes to keep pre-spawned ahead of the current phase.</summary>
+        public const int TelegraphLookaheadPhases = 3;
+
+        /// <summary>Boss Remix first-beat offset — keep in sync with MusicBeatMapSO.</summary>
+        public const float BossRemixFirstBeatOffsetSec = 1.161f;
+
+        public const float BossRemixBpm = 152f;
+
+        /// <summary>Intro length in musical beats (timing). Notes spawn only after intro ends.</summary>
+        public const int CombatIntroBeatCount = 12;
+
+        /// <summary>Full-music intro = offset + 12 beats @ 152 BPM (~5.90s).</summary>
+        public const float CombatIntroDurationSec =
+            BossRemixFirstBeatOffsetSec + CombatIntroBeatCount * (60f / BossRemixBpm);
 
         public static int GetRoundEndBeatExclusive()
         {
@@ -63,7 +72,7 @@ namespace FracturedChorus.Combat.Timeline
             return System.Math.Min(GetSegmentBeatCount(), System.Math.Max(0, TotalBeats - start));
         }
 
-        /// <summary>Beat indices after which a phase divider is drawn (between 15|16, 25|26, …).</summary>
+        /// <summary>Beat indices after which a phase divider is drawn (every 22 beats).</summary>
         public static bool IsPhaseDividerAfter(int beatIndex)
         {
             if (beatIndex == Phase1SlotCount - 1)
@@ -108,7 +117,7 @@ namespace FracturedChorus.Combat.Timeline
             }
         }
 
-        /// <summary>First beat of each phase: 0, 15, 25, 35, …</summary>
+        /// <summary>First beat of each phase: 0, 22, 44, …</summary>
         public static bool IsFirstBeatOfPhase(int beatIndex)
         {
             if (beatIndex == 0 || beatIndex == Phase1SlotCount)

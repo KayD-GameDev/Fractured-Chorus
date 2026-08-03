@@ -9,6 +9,27 @@ Newest first.
 
 ---
 
+## 2026-08-01 — Combat: uniform beat, nhạc chạy liên tục, Planning Window
+
+**Focus:** combat runtime · audio · docs
+
+**Done**
+- **Boss track mới:** `EternalSpark_BossRemix.mp3`. Viết `Tools/beat-analyzer` (dotnet, spectral flux + autocorrelation + phase fit) đo được **152.0000 BPM · first beat 1.1610s · 677 beat · 169 bar**; tool xuất `clicktrack.wav` để nghe kiểm chứng. Xóa Cadence Remix / PlanningSilent / toàn bộ CSV beat map.
+- **Uniform beat:** `MusicBeatMapSO` bỏ mảng `beatTimesSec[]`, chuyển sang `bpm + firstBeatOffsetSec`. `TimelineConstants.TotalBeats = 677`, `PhaseCount` thành derived (43). Ô beat trên timeline rộng bằng nhau; biến thiên duy nhất là pitch/tốc độ.
+- **Nhạc không bao giờ pause:** `CombatMusicController` chạy track boss từ lúc vào scene. Planning chỉ **duck** `volume ×0.7` + `AudioLowPassFilter 900 Hz` (fade 0.25s). Bỏ planning BGM, transition stinger, lớp Ren Cover, và mọi API `PausePlayback`/`ResumePlayback`/`EnterPlanningPhase`. Thêm loop bar-aligned với `_loopBeatAccum` để `TotalMusicalBeat` đơn điệu tăng.
+- **Beat Offset Anchor:** nhạc = đồng hồ tuyệt đối, timeline = hệ quy chiếu trượt. `_localBeat = max(_localBeat, TotalMusicalBeat - _roundStartMusicalBeat)`; bấm Execute → `AnchorTimelineToNextBar()` đẩy `_roundStartMusicalBeat` sao cho scan vào đúng mốc bar kế. Không beat/telegraph nào bị bỏ qua, trễ tối đa ~1 bar.
+- **Planning Window:** gộp Deploy vào Planning. `CombatSession.AllowPlayerReposition` → `IsPlanningWindowOpen` (= `Planning && !IsTimelineRunning && !IsEncounterOver`) — một cổng duy nhất mở cả kéo unit lẫn gán skill, ở **mọi** cửa sổ planning chứ không chỉ lần đầu. Một nút **Execute**. Bỏ intro-pause @ beat 6.
+- Rewire `CombatPrototype` + `CombatTutorial` (autoBeatInterval 148 → 152 BPM); cập nhật `TutorialDirector` + `TUTORIAL_COPY`; sync `COMBAT_MECHANICS` / `BOSS_ENCOUNTER_DESIGN` / `BOARD_GRID_LAYOUT` / `UNITY_WORKFLOW`.
+- Thêm `Tools/check-compile.ps1` — build Assembly-CSharp(+Editor) qua Roslyn từ RSP của Unity, không cần mở editor.
+- Spec: `docs/superpowers/specs/2026-08-01-uniform-beat-continuous-music-design.md` · Plan: `docs/superpowers/plans/2026-08-01-uniform-beat-continuous-music.md`.
+
+**Handoff**
+- Chưa Play Mode QA — checklist `docs/combat/UNIFORM_BEAT_QA.md`, ưu tiên mục C (nhạc liền mạch), D (anchor), E (planning window).
+- Balance sim boss còn tính trên 619 beat, cần chạy lại với 677 (`BOSS_ENCOUNTER_DESIGN` §Balance targets đã gắn cờ stale).
+- Lớp Ren Cover tạm tắt, chờ track cover mới khớp Boss Remix.
+
+---
+
 ## 2026-07-16 — Docs runtime SoT sync (code = SoT)
 
 **Focus:** docs

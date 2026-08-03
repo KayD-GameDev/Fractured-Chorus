@@ -1,3 +1,4 @@
+using FracturedChorus.Audio;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -5,7 +6,10 @@ using UnityEngine.UI;
 namespace FracturedChorus.UI
 {
     [DisallowMultipleComponent]
-    public sealed class UiButtonHoverFeedback : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+    public sealed class UiButtonHoverFeedback : MonoBehaviour,
+        IPointerEnterHandler,
+        IPointerExitHandler,
+        IPointerClickHandler
     {
         [SerializeField] private Selectable selectable;
         [SerializeField] private Graphic targetGraphic;
@@ -33,12 +37,12 @@ namespace FracturedChorus.UI
         private void OnEnable()
         {
             CaptureBase();
-            ApplyVisual(false);
+            ResetHoverState();
         }
 
         private void OnDisable()
         {
-            RestoreBase();
+            ResetHoverState();
         }
 
         public void OnPointerEnter(PointerEventData eventData)
@@ -54,6 +58,52 @@ namespace FracturedChorus.UI
         public void OnPointerExit(PointerEventData eventData)
         {
             ApplyVisual(false);
+        }
+
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            if (!IsInteractable())
+            {
+                return;
+            }
+
+            FindAnyObjectByType<CombatSfxController>()?.PlayUiClick();
+            ResetHoverState();
+        }
+
+        public void ResetHoverState()
+        {
+            CaptureBase();
+            RestoreBase();
+
+            var eventSystem = EventSystem.current;
+            if (eventSystem != null)
+            {
+                var pointerData = new PointerEventData(eventSystem)
+                {
+                    pointerEnter = gameObject
+                };
+                ExecuteEvents.Execute(gameObject, pointerData, ExecuteEvents.pointerUpHandler);
+                ExecuteEvents.Execute(gameObject, pointerData, ExecuteEvents.pointerExitHandler);
+
+                if (eventSystem.currentSelectedGameObject == gameObject)
+                {
+                    eventSystem.SetSelectedGameObject(null);
+                }
+            }
+
+            if (targetGraphic != null)
+            {
+                targetGraphic.color = _baseColor;
+                targetGraphic.CrossFadeColor(_baseColor, 0f, true, true);
+            }
+        }
+
+        public void RecaptureBaseFromGraphic()
+        {
+            _baseCaptured = false;
+            CaptureBase();
+            RestoreBase();
         }
 
         public static UiButtonHoverFeedback Ensure(GameObject host)
@@ -96,7 +146,15 @@ namespace FracturedChorus.UI
 
                 if (targetGraphic != null)
                 {
-                    _baseColor = targetGraphic.color;
+                    var c = targetGraphic.color;
+                    // Scene/authored dim alpha must not lock hover base forever.
+                    if (c.a < 0.9f)
+                    {
+                        c = new Color(1f, 1f, 1f, 1f);
+                        targetGraphic.color = c;
+                    }
+
+                    _baseColor = c;
                 }
 
                 _baseCaptured = true;

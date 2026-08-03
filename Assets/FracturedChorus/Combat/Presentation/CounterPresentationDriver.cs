@@ -117,11 +117,13 @@ namespace FracturedChorus.Combat.Presentation
                     var mode = _policy.DecideUnitBody(counterBody.UnitId, dspNow, useBurst);
                     PlayPlayerBody(counterBody, mode);
                     SpawnPerfectAboveUnit(counterBody, tier);
+                    CharlotteVfxChoreographer.PlayCounterIfCharlotte(counterBody);
                 }
             }
             else if (counterBody != null)
             {
                 SpawnPerfectAboveUnit(counterBody, tier);
+                CharlotteVfxChoreographer.PlayCounterIfCharlotte(counterBody);
             }
 
             CombatCounterResolver.CollectCounteredEnemyUnits(timeline, beatIndex, _enemiesScratch);

@@ -61,18 +61,21 @@ Main Camera
 
 ---
 
-## CombatTutorial — scene riêng (BG + enemy authoring)
+## CombatTutorial — scene riêng (text + ảnh step)
 
-Clone của CombatPrototype để chỉnh tutorial Cadence **không đụng** boss scene.
+Clone của CombatPrototype để chỉnh tutorial Cadence **không đụng** boss scene.  
+Copy/step SoT: `docs/tutorial/TUTORIAL_COPY.md`.
 
 | Mục | Cách chỉnh |
 |-----|------------|
 | Scene | `Assets/FracturedChorus/Scenes/CombatTutorial.unity` |
-| Mở | Menu **Fractured Chorus → Open Combat Tutorial Scene** |
-| BG | `Background canvas/Image` — smoke-war front (`cadence_smoke_war_front_bg_v1`) |
+| Mở / Prepare | **Fractured Chorus → Open / Prepare Combat Tutorial Scene** (Prepare xóa legacy TutorialEditCanvas) |
+| BG | `Background canvas/Image` — `cadence_smoke_war_front_bg_v1` |
 | Quái | `World/Units/Unit_Kiki_Ueda` — Kiki Lv1 Elite; grunts inactive |
 | Party | Ren + Mage (Coda) active; Tank + Boss inactive mặc định |
-| Runtime | `tutorialSceneMode` = true → **không** overwrite BG/enemy từ handoff; vẫn ép basic skills + coach Coda |
+| Runtime | `tutorialSceneMode` = true; `TutorialDirector` chạy text VI + Coda chibi; bấm Next |
+| Ảnh step (optional) | `Art/UI/Tutorial/Steps/{stepId}_v1.png` — thiếu file = chỉ text |
+| Exit | Victory → `tutorial_cadence_intro_done` + RunMap; chết → reload scene |
 | Test | CampusHub → **Tutorial Fight**, hoặc Play trực tiếp scene |
 
 ---
@@ -103,6 +106,13 @@ Clone của CombatPrototype để chỉnh tutorial Cadence **không đụng** bo
 
 **Input:** Main Camera cần `Physics2DRaycaster` (`maxRayIntersections = 32`); menu **Fix Input System** / **Apply All**.
 
+### Planning window — unit click vs drag
+
+- **Short click** (move ≤ `clickDragThresholdPx`, default 8px) → open skill panel.
+- **Drag** past threshold → reposition / swap on player grid.
+- Both only while `CombatSession.IsPlanningWindowOpen`.
+- Gesture math: `BoardPointerGesture` · wiring: `BoardDragController`.
+
 ---
 
 ## Beat Timeline UI — quét liên tục
@@ -119,13 +129,23 @@ BeatTimelineUI
     └── ScanBar         ← vạch quét đỏ; trượt dọc track, không nhảy từng ô
 ```
 
-### Độ rộng ô theo thời gian thực (smooth scroll)
+### Độ rộng ô — khóa theo CombatTutorial
 
-> **Cập nhật (2026-06):** Độ rộng mỗi ô beat **tỉ lệ với số giây** của khoảng beat đó (`width = span_giây × pixelsPerSecond`), không còn các ô đều nhau. Nhờ vậy:
+> **Cập nhật (2026-08-01):** Beat **chia đều**. Độ rộng ô **không** còn suy từ span giây biến thiên.
 >
-> - Vùng beat **ngắn liên tục** → ô **hẹp, sát nhau**; vùng beat **dài** → ô **rộng ra** ⇒ timeline phản ánh đúng nhịp bài.
-> - Scroll được lái bằng `musical beat → offset tích lũy`, nên tốc độ **px/giây không đổi** ⇒ chạy **mượt**, vẫn khớp nhạc và đúng cả khi nhạc loop.
-> - **Data-driven**: độ rộng suy ra từ `MusicBeatMapSO` của bài đang chơi (`GetBeatSpanSec`, `AverageBeatSpanSec`). Đổi bài khác chỉ cần gán beat map/CSV cho `CombatMusicController` — không sửa code timeline. Không có beat map → tự về độ rộng đều theo `Auto Beat Interval`.
+> **Canonical lock:** `TimelineLayoutLock` (đọc từ `CombatTutorial.unity` → `Beat_0`):
+>
+> | Hằng | Giá trị | Nguồn |
+> |------|---------|--------|
+> | `SlotWidth` | **73.85** | `Beat_0.sizeDelta.x` + `LayoutElement.preferredWidth` |
+> | `MinSlotWidth` | 14 | Inspector |
+> | `ScanBarWidth` | 6 | ScanBar |
+> | `LaneMarkerSize` | 26 | Inspector |
+> | Khung `BeatTimelineUI` | Anchor `(0.02,0.02)–(0.98,0.22277778)` · posY `69.4` · sizeDeltaY `138.8` | `CombatTutorial` — **Prototype phải khớp** |
+>
+> Runtime (`preserveSceneLayout = true`): `ResolveLockedSlotWidth()` = `max(template, TimelineLayoutLock.SlotWidth)` — **không bao giờ co nhỏ hơn 73.85**, kể cả khi field `slotWidth` scene bị lệch (ví dụ còn 52).
+>
+> Đổi kích thước ô / khung: sửa trong **CombatTutorial**, cập nhật `TimelineLayoutLock`, sync sang `CombatPrototype`. Không thu khung ad-hoc.
 
 ### Hành vi khi Play (prototype hiện tại)
 
@@ -141,8 +161,8 @@ BeatTimelineUI
 
 | Field | Ý nghĩa |
 |-------|---------|
-| `Slot Width` | **Độ rộng ô trung bình mục tiêu** → suy ra `pixelsPerSecond = slotWidth / span_trung_bình`. Tăng = cả timeline giãn rộng, chênh lệch ngắn/dài rõ hơn |
-| `Min Slot Width` | Độ rộng tối thiểu của ô (beat quá ngắn không bị mảnh quá; mặc định 14) |
+| `Slot Width` | Độ rộng mỗi ô beat (uniform). **Khóa ≥ 73.85** qua `TimelineLayoutLock` |
+| `Min Slot Width` | Sàn tuyệt đối (mặc định 14) — không dùng để co ô dưới lock |
 | `Auto Beat Interval` | Fallback khi **không có** beat map → scroll đều theo interval này |
 | `Skill Panel Open Speed Multiplier` | Hệ số chậm khi panel skill mở (mặc định 0.25) |
 
@@ -160,7 +180,7 @@ BeatTimelineUI
 
 ### Phase divider
 
-Vạch trắng **PhaseDivider** trên từng ô sau beat 15, 31, 47… (mỗi **16 beat** một phase). **`TimelineConstants.TotalBeats = 619`** — khớp `MusicBeatMapSO` Eternal Spark (618 CSV marker + pad t=0). **39 phase** (phase cuối 11 beat).
+Vạch trắng **PhaseDivider** sau beat 21, 43, 65… (mỗi **22 beat** một phase). **`TimelineConstants.TotalBeats = 677`** — Boss Remix 152 BPM. **30 phase**. Mỗi Execute đủ **22 beat** mới Planning. Intro **12 beat** không nốt; hết intro mới spawn phase 1–3.
 
 ---
 

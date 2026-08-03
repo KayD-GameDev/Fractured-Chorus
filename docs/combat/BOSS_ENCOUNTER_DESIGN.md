@@ -1,7 +1,7 @@
 # Boss Encounter — Stat, Skill & Combat Pacing
 
 > **Trạng thái:** Stat/boss lock · **cơ chế gameplay → xem [COMBAT_MECHANICS.md](./COMBAT_MECHANICS.md)**  
-> **Ngữ cảnh:** Party Lv 15 vs Boss Lv 18 · scene boss đầu · nhạc **Eternal Spark (Cadence Remix)** · **619 beat** (EternalSpark_CadenceRemix_beats.csv + pad t=0 → MusicBeatMapSO.BeatCount)  
+> **Ngữ cảnh:** Party Lv 15 vs Boss Lv 18 · scene boss đầu · nhạc **Eternal Spark (Boss Remix)** · **677 beat đều nhau** (152 BPM, first beat 1.161s → `MusicBeatMapSO` / `TimelineConstants.TotalBeats`)  
 > **Level / XP:** Soft target Lv15 · soft-cap grind · boss grant Lv15→18 — [combat-level-xp-progression-design](../superpowers/specs/2026-07-19-combat-level-xp-progression-design.md) · tables [CHARACTER_LEVEL_PROGRESS.md](./CHARACTER_LEVEL_PROGRESS.md)  
 > **Illustrations:** `docs/combat/illustrations/`  
 > **Code hiện tại:** DamageCalculator · EnemyTelegraph · UnitStatBlockSO · CoverRuntime · CombatCounterResolver
@@ -9,10 +9,10 @@
 ### Vòng combat khi vào boss (tóm tắt)
 
 ```
-Deploy (dàn trận, chưa nhạc)
-  → Deploy → nhạc + pause sau beat 6
-  → gán skill từ beat 7 (lane / W·A·D)
-  → Execute → block 32 beat → hold → Execute tiếp
+Vào trận → nhạc chạy ngay (ducked), Planning window mở
+  → dời unit ‖ gán skill cùng lúc (lane / W·A·D)
+  → Execute → nhạc mở duck, scan anchor vào bar kế → block 32 beat
+  → hold (nhạc vẫn chạy, ducked lại) → Execute tiếp
 ```
 
 - Kit: **3 skill** / unit · block = **Space** (OnBeat −68% · Early −25% · Late −10%)  
@@ -169,9 +169,10 @@ effectivePulse = pulse × phaseScale
 
 **Asset:** `StatBlock_Boss_Pulse` (Core) · `StatBlock_Boss_Micro` · `StatBlock_Boss_Eye` · `UnitPreset_Boss_Pulse`
 
-### Balance targets (Monte Carlo · `Tools/simulate-boss-run.js` · **619 beat**)
+### Balance targets (Monte Carlo · `Tools/simulate-boss-run.js` · **619 beat** — chưa chạy lại)
 
 > ⚠ Sim hiện tại **chỉ model CORE mono HP 2160** (proxy difficulty ≈ CORE 1680 + áp lực mini). Mini + Cycle Shift **chưa** trong sim.
+> ⚠ **Stale 2026-08-01:** số dưới đo trên 619 beat của Cadence Remix. Track mới có **677 beat** → "% bài" thấp hơn ~9% ở cùng win beat. Cần chạy lại sim với `TOTAL_BEATS = 677` trước khi khoá balance.
 
 
 | Skill tier                         | Win rate | Win beat p50 | % bài    | Ghi chú                    |

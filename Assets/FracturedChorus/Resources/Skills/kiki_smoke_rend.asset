@@ -16,12 +16,31 @@ MonoBehaviour:
   displayName: Smoke Rend
   icon: {fileID: 0}
   frame: {fileID: 0}
-  description: Heavier cadence lunge — mini-boss telegraph beat.
+  description: "Heavier cadence lunge \u2014 mini-boss telegraph beat."
   slotKind: 1
-  avCost: 0
+  avCost: 25
   delay: 3
   skillTier: 2
   damageType: 0
   targetType: 0
   glowType: 0
   baseDamage: 0
+  standingBeatsBefore: 1
+  activeBeats: 1
+  standingBeatsAfter: 1
+  effectKind: 0
+  effectValue: 0
+  grantsCycleShift: 0
+  usesPrepEmpower: 0
+  prepEmpowerThreshold: 1
+  prepEmpowerCost: 1
+  empowerEffectValue: 0
+  empowerDamageMultiplier: 1
+  empowerExtraHits: 0
+  empowerForceHarmony: 0
+  empowerKeepDelayTier: 0
+  empowerOverhealToShield: 0
+  empowerOverhealShieldCap: 30
+  empowerPartyReduceS2: 0
+  empowerGiftPrepToTarget: 0
+  empowerGuardChargeOnPerfect: 0

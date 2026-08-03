@@ -13,8 +13,7 @@ using UnityEngine.InputSystem;
 namespace FracturedChorus.UI
 {
     /// <summary>
-    /// Press-and-hold on a player unit to drag between grid cells (Planning, pre-Execute).
-    /// Click without drag after Execute opens the skill panel.
+    /// Planning window: short click opens skill panel; drag past threshold repositions unit.
     /// Uses Physics2D pick — reliable with Screen Space Overlay UI + Input System.
     /// </summary>
     public class BoardDragController : MonoBehaviour
@@ -32,10 +31,12 @@ namespace FracturedChorus.UI
         private GridCellMarker _highlightedCell;
         private UnitView _draggingUnit;
         private UnitView _pointerDownUnit;
+        private GridCellMarker _pointerDownCell;
         private Vector2 _pointerDownScreen;
         private bool _dragPointerActive;
         private Action<CombatUnit, UnitView> _onUnitClicked;
         private Action _onFormationChanged;
+        private Action _onDeployCellClicked;
         private Func<bool> _canOpenSkillPanel;
 
         private void Awake()
@@ -47,8 +48,7 @@ namespace FracturedChorus.UI
 
         public bool IsDragging => _draggingUnit != null;
 
-        public bool IsPreExecuteRepositionPhase =>
-            _session != null && _session.Phase == CombatPhase.Planning && _session.AllowPlayerReposition;
+        public bool IsRepositionAllowed => _session != null && _session.IsPlanningWindowOpen;
 
         public void Initialize(CombatSession session, DualGrid grid, IEnumerable<GridCellMarker> markers,
             Camera camera = null)
@@ -84,21 +84,40 @@ namespace FracturedChorus.UI
             _onFormationChanged = onFormationChanged;
         }
 
+        public void AddFormationChangedHandler(Action onFormationChanged)
+        {
+            _onFormationChanged += onFormationChanged;
+        }
+
+        public void RemoveFormationChangedHandler(Action onFormationChanged)
+        {
+            _onFormationChanged -= onFormationChanged;
+        }
+
         /// <summary>Optional extra gate (timeline playback, etc.). Null = only session deploy check.</summary>
         public void SetSkillPanelOpenPredicate(Func<bool> canOpen)
         {
             _canOpenSkillPanel = canOpen;
         }
 
+        public void SetDeployCellClickHandler(Action onDeployCellClicked)
+        {
+            _onDeployCellClicked = onDeployCellClicked;
+        }
+
         public bool CanDragUnit(UnitView view)
         {
-            return view != null
-                   && view.Unit != null
-                   && view.Unit.IsAlive
-                   && view.Side == GridSide.Player
-                   && _session != null
-                   && _session.Phase == CombatPhase.Planning
-                   && _session.AllowPlayerReposition;
+            if (view == null
+                || view.Unit == null
+                || !view.Unit.IsAlive
+                || view.Side != GridSide.Player
+                || _session == null
+                || !_session.IsPlanningWindowOpen)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         private void Update()
@@ -121,9 +140,19 @@ namespace FracturedChorus.UI
                 HandlePointerDown(screenPos);
             }
 
-            if (IsPointerHeld() && _dragPointerActive && _draggingUnit != null)
+            if (IsPointerHeld() && _dragPointerActive && _pointerDownUnit != null)
             {
-                UpdateDragAtScreen(screenPos);
+                if (_draggingUnit == null
+                    && CanDragUnit(_pointerDownUnit)
+                    && BoardPointerGesture.ShouldCommitDrag(_pointerDownScreen, screenPos, clickDragThresholdPx))
+                {
+                    BeginDrag(_pointerDownUnit);
+                }
+
+                if (_draggingUnit != null)
+                {
+                    UpdateDragAtScreen(screenPos);
+                }
             }
 
             if (WasPointerReleasedThisFrame())
@@ -135,44 +164,56 @@ namespace FracturedChorus.UI
         private void HandlePointerDown(Vector2 screenPos)
         {
             _pointerDownUnit = null;
+            _pointerDownCell = null;
             _dragPointerActive = false;
+            _draggingUnit = null;
 
             if (IsScreenPointBlockedByUi(screenPos))
             {
                 return;
             }
 
-            var view = PickUnitAtScreen(screenPos);
-            if (view == null)
+            _pointerDownScreen = screenPos;
+            var cell = _session != null && _session.IsPlanningWindowOpen
+                ? PickPlayerCellAtScreen(screenPos)
+                : null;
+            var view = PickUnitAtScreen(screenPos, allowNearestFallback: cell == null || IsCellOccupied(cell));
+
+            if (view != null)
             {
+                _pointerDownUnit = view;
+                _dragPointerActive = true;
                 return;
             }
 
-            _pointerDownUnit = view;
-            _pointerDownScreen = screenPos;
-
-            if (CanDragUnit(view))
+            if (cell != null && !IsCellOccupied(cell))
             {
-                BeginDrag(view);
-                _dragPointerActive = true;
+                _pointerDownCell = cell;
             }
         }
 
         private void HandlePointerUp(Vector2 screenPos)
         {
-            var moved = _pointerDownScreen != Vector2.zero
-                        && Vector2.Distance(_pointerDownScreen, screenPos) > clickDragThresholdPx;
-
-            if (_dragPointerActive && _draggingUnit != null)
+            if (_draggingUnit != null)
             {
                 EndDrag(_draggingUnit);
             }
-            else if (!moved && _pointerDownUnit != null && CanOpenSkillPanelFor(_pointerDownUnit))
+            else if (_pointerDownUnit != null
+                     && BoardPointerGesture.IsClick(_pointerDownScreen, screenPos, clickDragThresholdPx)
+                     && CanOpenSkillPanelFor(_pointerDownUnit))
             {
                 _onUnitClicked?.Invoke(_pointerDownUnit.Unit, _pointerDownUnit);
             }
+            else if (_pointerDownCell != null
+                     && BoardPointerGesture.IsClick(_pointerDownScreen, screenPos, clickDragThresholdPx)
+                     && _session != null
+                     && _session.IsPlanningWindowOpen)
+            {
+                _onDeployCellClicked?.Invoke();
+            }
 
             _pointerDownUnit = null;
+            _pointerDownCell = null;
             _dragPointerActive = false;
         }
 
@@ -183,8 +224,7 @@ namespace FracturedChorus.UI
                 || !view.Unit.IsAlive
                 || view.Side != GridSide.Player
                 || _session == null
-                || _session.Phase != CombatPhase.Planning
-                || IsPreExecuteRepositionPhase)
+                || !_session.IsPlanningWindowOpen)
             {
                 return false;
             }
@@ -199,14 +239,15 @@ namespace FracturedChorus.UI
 
         public void CancelActiveDrag()
         {
-            if (_draggingUnit == null)
+            if (_draggingUnit != null)
             {
-                return;
+                CancelDrag(_draggingUnit);
             }
 
-            CancelDrag(_draggingUnit);
             _dragPointerActive = false;
             _pointerDownUnit = null;
+            _pointerDownCell = null;
+            _draggingUnit = null;
         }
 
         public void SetSlotFloorsVisible(bool visible, GridSide? side = null)
@@ -332,7 +373,12 @@ namespace FracturedChorus.UI
             _draggingUnit = null;
         }
 
-        private UnitView PickUnitAtScreen(Vector2 screenPos)
+        private bool IsCellOccupied(GridCellMarker cell)
+        {
+            return cell != null && _grid != null && _grid.IsOccupied(cell.Position);
+        }
+
+        private UnitView PickUnitAtScreen(Vector2 screenPos, bool allowNearestFallback = true)
         {
             var world = ScreenToWorld(screenPos);
             var count = Physics2D.OverlapPoint(new Vector2(world.x, world.y), _unitPickFilter, _overlapHits);
@@ -370,8 +416,11 @@ namespace FracturedChorus.UI
                 return best;
             }
 
-            // Fallback: sprite lớn nhưng collider thân hẹp (vd Charlotte/tank) dễ bấm trượt.
-            // Chọn unit gần con trỏ nhất trong bán kính nhỏ để vẫn kéo được.
+            if (!allowNearestFallback)
+            {
+                return null;
+            }
+
             return PickNearestUnit(new Vector2(world.x, world.y));
         }
 
@@ -445,6 +494,11 @@ namespace FracturedChorus.UI
                     return true;
                 }
 
+                if (go.GetComponentInParent<DeployFormationHintView>() != null)
+                {
+                    return true;
+                }
+
                 if (go.GetComponent<Button>() != null || go.GetComponent<ScrollRect>() != null)
                 {
                     return true;
@@ -452,6 +506,17 @@ namespace FracturedChorus.UI
             }
 
             return false;
+        }
+
+        private GridCellMarker PickPlayerCellAtScreen(Vector2 screenPos)
+        {
+            if (worldCamera == null || !IsValidScreenPosition(screenPos))
+            {
+                return null;
+            }
+
+            var world = ScreenToWorld(screenPos);
+            return FindDropCell(world, GridSide.Player);
         }
 
         private GridCellMarker FindDropCell(Vector3 world, GridSide side)

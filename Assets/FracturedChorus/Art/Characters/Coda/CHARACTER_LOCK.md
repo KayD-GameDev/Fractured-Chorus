@@ -47,5 +47,9 @@
 ## Combat icon ref
 - `Art/UI/Combat/Characters/coda_character_icon_bars_white_v1.png` — Cadence face/outfit cue
 
+## Chibi
+- School fullbody: `Art/Characters/Coda/Chibi/coda_chibi_fullbody_v1.png`
+- Cadence bust (tutorial coach): `Art/Characters/Coda/Chibi/coda_cadence_chibi_bust_v1.png` — chest-up, headphones + forehead goggles, transparent PNG, canvas 1024×1536
+
 ## Tone
 - Curious, light support presence — younger energy than Ren/Charlotte, not cool stoic

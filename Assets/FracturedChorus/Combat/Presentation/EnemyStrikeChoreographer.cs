@@ -125,10 +125,13 @@ namespace FracturedChorus.Combat.Presentation
 
         private void HandlePhaseChanged(CombatPhase phase)
         {
-            if (phase == CombatPhase.Planning && !IsBusy)
+            if (phase != CombatPhase.Planning)
             {
-                focusDimmer?.ReleaseImmediate();
+                return;
             }
+
+            // Phase xong → Planning: luôn abort lunge và kéo mọi attacker về ô home.
+            AbortAll();
         }
 
         public void ResetPresentation()
@@ -198,6 +201,7 @@ namespace FracturedChorus.Combat.Presentation
             }
 
             _routine = null;
+            SnapAllHomedUnits();
         }
 
         private IEnumerator PlayStrike(EnemyStrikeReport report)
@@ -265,8 +269,22 @@ namespace FracturedChorus.Combat.Presentation
                 return;
             }
 
-            attackerView.CaptureAnchor();
-            _homePositions[attacker] = attackerView.AnchorPosition;
+            _homePositions[attacker] = ResolveAuthoritativeHome(attacker, attackerView);
+        }
+
+        private static Vector3 ResolveAuthoritativeHome(CombatUnit attacker, UnitView attackerView)
+        {
+            if (attacker != null && attacker.GridPosition.IsValid())
+            {
+                var cell = HexBoardLayout.GetWorldPosition(attacker.GridPosition);
+                var rootToFeet = attackerView.transform.position - attackerView.FeetWorldPosition;
+                return new Vector3(
+                    cell.x + rootToFeet.x,
+                    cell.y + rootToFeet.y,
+                    attackerView.transform.position.z);
+            }
+
+            return attackerView.AnchorPosition;
         }
 
         private IEnumerator FinishStrikeMovement(EnemyStrikeReport report, UnitView attackerView)
@@ -274,24 +292,21 @@ namespace FracturedChorus.Combat.Presentation
             var hasMoreStrikes = _pending.Count > 0;
             var home = _homePositions.TryGetValue(report.Attacker, out var stored)
                 ? stored
-                : attackerView.AnchorPosition;
+                : ResolveAuthoritativeHome(report.Attacker, attackerView);
 
             if (hasMoreStrikes)
             {
-                if (!report.WasCountered)
-                {
-                    attackerView.PlayMovingLoop();
-                    yield return attackerView.MoveFeetToRoutine(
-                        ResolveMidStaging(attackerView),
-                        retreatSeconds);
-                }
-
+                attackerView.PlayMovingLoop();
+                yield return attackerView.MoveFeetToRoutine(
+                    ResolveMidStaging(attackerView),
+                    retreatSeconds);
                 attackerView.PlayIdleState();
                 yield break;
             }
 
             attackerView.PlayMovingLoop();
             yield return attackerView.MoveToRoutine(home, retreatSeconds);
+            SnapUnitToHome(attackerView, home);
             attackerView.PlayIdleState();
             _homePositions.Remove(report.Attacker);
         }
@@ -534,26 +549,7 @@ namespace FracturedChorus.Combat.Presentation
             }
 
             FlushRemainingHpFeedback();
-
-            foreach (var attacker in ActiveAttackers)
-            {
-                var view = UnitView.FindForUnit(attacker);
-                if (view == null)
-                {
-                    continue;
-                }
-
-                if (_homePositions.TryGetValue(attacker, out var home))
-                {
-                    view.transform.position = new Vector3(home.x, home.y, view.transform.position.z);
-                }
-                else
-                {
-                    view.SnapToAnchor();
-                }
-
-                view.PlayIdleState();
-            }
+            SnapAllHomedUnits();
 
             foreach (var view in _focusScratch)
             {
@@ -561,8 +557,44 @@ namespace FracturedChorus.Combat.Presentation
             }
 
             ActiveAttackers.Clear();
-            _homePositions.Clear();
             focusDimmer?.ReleaseImmediate();
+        }
+
+        private void SnapAllHomedUnits()
+        {
+            var attackers = new HashSet<CombatUnit>(ActiveAttackers);
+            foreach (var unit in _homePositions.Keys)
+            {
+                attackers.Add(unit);
+            }
+
+            foreach (var attacker in attackers)
+            {
+                var view = UnitView.FindForUnit(attacker);
+                if (view == null)
+                {
+                    continue;
+                }
+
+                var home = _homePositions.TryGetValue(attacker, out var stored)
+                    ? stored
+                    : ResolveAuthoritativeHome(attacker, view);
+                SnapUnitToHome(view, home);
+                view.PlayIdleState();
+            }
+
+            _homePositions.Clear();
+        }
+
+        private static void SnapUnitToHome(UnitView view, Vector3 home)
+        {
+            if (view == null)
+            {
+                return;
+            }
+
+            view.transform.position = new Vector3(home.x, home.y, view.transform.position.z);
+            view.CaptureAnchor();
         }
 
         private void Unsubscribe()
