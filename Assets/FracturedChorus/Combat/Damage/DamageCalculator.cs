@@ -40,7 +40,7 @@ namespace FracturedChorus.Combat.Damage
             float buffModifier = 1f)
         {
             var randomMultiplier = RollSkillRandom(skillTier);
-            var attackPower = attacker.AttackPower;
+            var attackPower = attacker.GetAttackPower(damageType);
             var rawDamage = randomMultiplier * attackPower * StrengthDamageConstant;
 
             var enduranceFactor = GetEnduranceFactor(defender.Endurance);

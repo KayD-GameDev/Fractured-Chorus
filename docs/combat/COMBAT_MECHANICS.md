@@ -333,10 +333,13 @@ So sánh beat **S active** vs beat **nốt boss**:
 Công thức dmg giữ nguyên:
 
 ```
-Raw        = Random(tier) × AttackPower × 10
-CoreFinal  = Raw × 1/(4×√EN_core) × BeatTiming × Harmony(active, CORE) × CritMult
-MiniDmg    = Raw × 1/(4×√EN_mini) × BeatTiming × 0.85 × CritMult   // không Harmony
+AttackPower = skill.damageType == Magical ? Magic : Strength
+Raw         = Random(tier) × AttackPower × 10
+CoreFinal   = Raw × 1/(4×√EN_core) × BeatTiming × Harmony(active, CORE) × CritMult
+MiniDmg     = Raw × 1/(4×√EN_mini) × BeatTiming × 0.85 × CritMult   // không Harmony
 ```
+
+Mỗi unit có **cả Strength và Magic** ([progression §3](../superpowers/specs/2026-07-19-combat-level-xp-progression-design.md)). Skill chọn kênh qua `SkillDefinitionSO.damageType`. Heal (Mend): `effectValue + Magic×0.5`.
 
 | Target | BeatTiming | Harmony |
 |--------|------------|---------|

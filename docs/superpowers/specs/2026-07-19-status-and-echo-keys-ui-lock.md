@@ -60,6 +60,7 @@ Xem 1 party member: identity · element · level/XP · skill kit · combat stats
 | **Skills** | Kit unlocked at current level ([SKILL_KIT](../../combat/SKILL_KIT.md)). Ren Lv15: **Strike · Crosscut · Finale**. Empty slots = `—`. Grid 2-col OK. |
 | **Stats** | Labels: **St · Ma · En · Hb · Lu**. Mapping: St←STR, Ma←Ma, En←EN, Hb←Heartbeat, Lu←Luck. |
 | **Stat bars** | Visual max = **300** (full width). **Không** hiện chữ MAX / `/300` / cap trên UI. Chỉ số hiện tại cạnh bar. |
+| **Build scene (standalone)** | Scene [`CharacterBuild.unity`](../../../Assets/FracturedChorus/Scenes/CharacterBuild.unity) — view skills/stats + allocate + change combat loadout. Labels **full names** (Strength / Magic / Endurance / HeartBeat / Luck); combat slots 0–2 = gold frame; `Remaining Points` object; `[-] spent [+]`. Not wired to CampusHub yet. Setup menu: **Fractured Chorus → Create/Heal CharacterBuild Scene**. |
 | **Portrait** | Character art bên phải (slot “quái/Persona” kiểu P3). Ren mock dùng school fullbody look-over-shoulder. |
 | **Swap** | **[Q]** left edge · **[E]** right edge — cycle party order (Ren → Charlotte → Coda → …). Wrap. |
 | **Footer** | **[Esc]** Back · **[V]** View Skills (mở skill detail — stub OK MVP). |

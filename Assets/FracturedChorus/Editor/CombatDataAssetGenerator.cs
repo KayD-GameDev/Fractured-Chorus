@@ -22,10 +22,10 @@ namespace FracturedChorus.Editor
             EnsureFolder(SkillFolder);
 
             // Baseline = Lv15 optimal build (xem docs/combat/CHARACTER_LEVEL_PROGRESS.md).
-            var renBlock = CreateStatBlock("StatBlock_Ren", HarmonyElement.Melody, DamageType.Physical, 42, 10.8f, 167, 18, 1.35f, 114, 12);
-            var tankBlock = CreateStatBlock("StatBlock_Tank", HarmonyElement.Rhythm, DamageType.Physical, 35, 18.2f, 127, 8, 1.15f, 260, 8);
-            var mageBlock = CreateStatBlock("StatBlock_Mage", HarmonyElement.Harmony, DamageType.Magical, 50, 9.8f, 147, 16, 1.3f, 73, 10);
-            var gruntBlock = CreateStatBlock("StatBlock_Grunt", HarmonyElement.Rhythm, DamageType.Physical, 60, 8, 120, 5, 1.1f, 150, 9);
+            var renBlock = CreateStatBlock("StatBlock_Ren", HarmonyElement.Melody, 42f, 8.8f, 11.8f, 167, 18, 1.35f, 114, 12);
+            var tankBlock = CreateStatBlock("StatBlock_Tank", HarmonyElement.Rhythm, 35f, 6.4f, 19.2f, 127, 8, 1.15f, 260, 8);
+            var mageBlock = CreateStatBlock("StatBlock_Mage", HarmonyElement.Harmony, 20f, 50f, 10.8f, 147, 16, 1.3f, 73, 10);
+            var gruntBlock = CreateStatBlock("StatBlock_Grunt", HarmonyElement.Rhythm, 60f, 5f, 8f, 120, 5, 1.1f, 150, 9);
 
             var renSkills = CreateStandardSkills("ren", "Strike", "Riposte", "Finale");
             var tankSkills = CreateStandardSkills("tank", "Ram", "Bulwark", "Hold");
@@ -77,8 +77,8 @@ namespace FracturedChorus.Editor
             var block = CreateStatBlock(
                 "StatBlock_Kiki_Ueda",
                 HarmonyElement.Rhythm,
-                DamageType.Physical,
                 28f,
+                7f,
                 6f,
                 128,
                 7f,
@@ -166,8 +166,8 @@ namespace FracturedChorus.Editor
             var bossBlock = CreateStatBlock(
                 "StatBlock_Boss_Despair",
                 HarmonyElement.Rhythm,
-                DamageType.Physical,
                 58f,
+                8f,
                 20f,
                 130,
                 5f,
@@ -240,8 +240,8 @@ namespace FracturedChorus.Editor
         private static UnitStatBlockSO CreateStatBlock(
             string fileName,
             HarmonyElement element,
-            DamageType strengthType,
             float strength,
+            float magic,
             float endurance,
             int heartBeat,
             float baseLuck,
@@ -253,8 +253,8 @@ namespace FracturedChorus.Editor
             var block = LoadOrCreate<UnitStatBlockSO>(path);
             block.blockId = fileName;
             block.element = element;
-            block.strengthType = strengthType;
             block.strength = strength;
+            block.magic = magic;
             block.endurance = endurance;
             block.heartBeat = heartBeat;
             block.baseLuck = baseLuck;

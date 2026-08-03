@@ -9,10 +9,12 @@
 
 | Into | Gain | Impact |
 |------|------|--------|
-| STR | +1 | Ren/Coda +2HP, Charlotte +6HP |
-| Ma | +1 | +Skill dmg (Magical) |
+| STR | +1 | Physical AttackPower · Ren/Charlotte HP via STR formula |
+| Ma | +1 | Magical AttackPower · Coda HP via Ma term |
 | EN | +1 | EnduranceFactor + reactive Guard |
 | HB | +5 | +W beat bar · intel · planning latency |
+
+Unity: cả hai kênh sống trên mọi unit; skill chọn kênh bằng `damageType`. Scene allocate/equip: `CharacterBuild` (standalone).
 
 Party Combat Level: mỗi level-up → **+1 điểm / nhân vật**.  
 Formula: `Stat(Lv) = Base + Growth*(Lv-1) + Pts*Conversion`  
