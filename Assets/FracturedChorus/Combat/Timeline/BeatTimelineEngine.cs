@@ -125,6 +125,31 @@ namespace FracturedChorus.Combat.Timeline
             return _telegraphs.FirstOrDefault(t => t.BeatIndex == beatIndex && !t.IsWindupOnly);
         }
 
+        public HashSet<int> CollectImpactBeatsInRange(int startBeat, int beatCount)
+        {
+            var result = new HashSet<int>();
+            if (beatCount <= 0)
+            {
+                return result;
+            }
+
+            var endBeat = startBeat + beatCount;
+            foreach (var t in _telegraphs)
+            {
+                if (t == null || t.IsWindupOnly)
+                {
+                    continue;
+                }
+
+                if (t.BeatIndex >= startBeat && t.BeatIndex < endBeat)
+                {
+                    result.Add(t.BeatIndex);
+                }
+            }
+
+            return result;
+        }
+
         public int DelayImpactTelegraphsOnBeats(IEnumerable<int> activeBeats, int delayBeats)
         {
             if (activeBeats == null || delayBeats <= 0)
@@ -181,12 +206,12 @@ namespace FracturedChorus.Combat.Timeline
         }
 
         /// <summary>
-        /// Delay impact notes with BeatIndex &gt; afterBeat and BeatIndex &lt; phaseEndExclusive.
-        /// Notes on/under Anchor S (≤ afterBeat) stay put.
+        /// Delay every impact note after Anchor S (and every note after those — full cascade).
+        /// Notes may cross into later phases; they are kept (lookahead plan never clears them).
         /// </summary>
         public IReadOnlyList<TelegraphBeatMove> DelayImpactTelegraphsAfterBeat(
             int afterBeat,
-            int phaseEndExclusive,
+            int rangeEndExclusive,
             int delayBeats)
         {
             if (delayBeats <= 0)
@@ -194,7 +219,8 @@ namespace FracturedChorus.Combat.Timeline
                 return Array.Empty<TelegraphBeatMove>();
             }
 
-            return DelayImpactTelegraphsInRange(afterBeat + 1, phaseEndExclusive, delayBeats, afterBeat);
+            var end = rangeEndExclusive > 0 ? rangeEndExclusive : BeatCount;
+            return DelayImpactTelegraphsInRange(afterBeat + 1, end, delayBeats, afterBeat);
         }
 
         private IReadOnlyList<TelegraphBeatMove> DelayImpactTelegraphsInRange(
@@ -216,11 +242,12 @@ namespace FracturedChorus.Combat.Timeline
                 return Array.Empty<TelegraphBeatMove>();
             }
 
+            var moving = new HashSet<EnemyTelegraph>(toMove);
             var moves = new List<TelegraphBeatMove>(toMove.Count);
             foreach (var telegraph in toMove)
             {
                 var from = telegraph.BeatIndex;
-                var to = Mathf.Min(BeatCount - 1, from + delayBeats);
+                var to = ResolveCascadeDestination(telegraph, from, delayBeats, moving);
                 if (to == from)
                 {
                     continue;
@@ -237,6 +264,55 @@ namespace FracturedChorus.Combat.Timeline
             }
 
             return moves;
+        }
+
+        /// <summary>
+        /// Push +delayBeats, then keep sliding forward while landing on a note that is not also moving
+        /// (or already claimed by a later note we already relocated).
+        /// </summary>
+        private int ResolveCascadeDestination(
+            EnemyTelegraph self,
+            int fromBeat,
+            int delayBeats,
+            HashSet<EnemyTelegraph> moving)
+        {
+            var dest = Mathf.Min(BeatCount - 1, fromBeat + delayBeats);
+            while (dest < BeatCount - 1 && IsImpactOccupiedByNonMoving(dest, self, moving))
+            {
+                dest++;
+            }
+
+            if (IsImpactOccupiedByNonMoving(dest, self, moving))
+            {
+                return fromBeat;
+            }
+
+            return dest;
+        }
+
+        private bool IsImpactOccupiedByNonMoving(int beatIndex, EnemyTelegraph self, HashSet<EnemyTelegraph> moving)
+        {
+            foreach (var t in _telegraphs)
+            {
+                if (t == null || t == self || t.IsWindupOnly)
+                {
+                    continue;
+                }
+
+                if (t.BeatIndex != beatIndex)
+                {
+                    continue;
+                }
+
+                if (moving != null && moving.Contains(t))
+                {
+                    continue;
+                }
+
+                return true;
+            }
+
+            return false;
         }
 
         public void RevertTelegraphMoves(IReadOnlyList<TelegraphBeatMove> moves)

@@ -41,6 +41,9 @@ namespace FracturedChorus.Combat.Bootstrap
         [SerializeField] private CombatSfxController combatSfxController;
         [SerializeField] private CounterPresentationDriver counterPresentation;
         [SerializeField] private EnemyStrikeChoreographer enemyStrikeChoreographer;
+        [SerializeField] private PlayerSkillShotChoreographer playerSkillShotChoreographer;
+        [SerializeField] private CharlotteVfxChoreographer charlotteVfxChoreographer;
+        [SerializeField] private CodaVfxChoreographer codaVfxChoreographer;
 
         [Header("Grid layout")]
         [SerializeField] private float sideGap = HexBoardLayout.DefaultSideGap;
@@ -165,7 +168,11 @@ namespace FracturedChorus.Combat.Bootstrap
             counterPresentation?.Configure(combatSfxController, timelineView);
             timelineView?.SetCounterPresentation(counterPresentation);
 
-            EnsureEnemyStrikeChoreographer(isTutorial);
+            EnsureEnemyStrikeChoreographer(choreographyEnabled: true);
+            EnsureUnitCombatAnimStates();
+            EnsurePlayerSkillShotChoreographer();
+            EnsureCharlotteVfxChoreographer();
+            EnsureCodaVfxChoreographer();
 
             RefreshPartyStatusBar();
             EnsureEnemyStatusBar();
@@ -680,6 +687,86 @@ namespace FracturedChorus.Combat.Bootstrap
             }
 
             enemyStrikeChoreographer.Configure(_session, choreographyEnabled);
+        }
+
+        private void EnsureUnitCombatAnimStates()
+        {
+            if (unitViews == null || unitViews.Length == 0)
+            {
+                unitViews = unitsRoot != null
+                    ? unitsRoot.GetComponentsInChildren<UnitView>(true)
+                    : FindObjectsByType<UnitView>(FindObjectsInactive.Exclude);
+            }
+
+            if (unitViews == null)
+            {
+                return;
+            }
+
+            foreach (var view in unitViews)
+            {
+                view?.EnsureDefaultCombatAnimStates();
+            }
+        }
+
+        private void EnsurePlayerSkillShotChoreographer()
+        {
+            if (playerSkillShotChoreographer == null)
+            {
+                playerSkillShotChoreographer = GetComponent<PlayerSkillShotChoreographer>();
+            }
+
+            if (playerSkillShotChoreographer == null)
+            {
+                playerSkillShotChoreographer = FindAnyObjectByType<PlayerSkillShotChoreographer>();
+            }
+
+            if (playerSkillShotChoreographer == null)
+            {
+                playerSkillShotChoreographer = gameObject.AddComponent<PlayerSkillShotChoreographer>();
+            }
+
+            playerSkillShotChoreographer.Configure(_session);
+        }
+
+        private void EnsureCharlotteVfxChoreographer()
+        {
+            if (charlotteVfxChoreographer == null)
+            {
+                charlotteVfxChoreographer = GetComponent<CharlotteVfxChoreographer>();
+            }
+
+            if (charlotteVfxChoreographer == null)
+            {
+                charlotteVfxChoreographer = FindAnyObjectByType<CharlotteVfxChoreographer>();
+            }
+
+            if (charlotteVfxChoreographer == null)
+            {
+                charlotteVfxChoreographer = gameObject.AddComponent<CharlotteVfxChoreographer>();
+            }
+
+            charlotteVfxChoreographer.Configure(_session);
+        }
+
+        private void EnsureCodaVfxChoreographer()
+        {
+            if (codaVfxChoreographer == null)
+            {
+                codaVfxChoreographer = GetComponent<CodaVfxChoreographer>();
+            }
+
+            if (codaVfxChoreographer == null)
+            {
+                codaVfxChoreographer = FindAnyObjectByType<CodaVfxChoreographer>();
+            }
+
+            if (codaVfxChoreographer == null)
+            {
+                codaVfxChoreographer = gameObject.AddComponent<CodaVfxChoreographer>();
+            }
+
+            codaVfxChoreographer.Configure(_session);
         }
 
         private void EnsureAudioListener()

@@ -31,10 +31,12 @@ namespace FracturedChorus.UI
         private GridCellMarker _highlightedCell;
         private UnitView _draggingUnit;
         private UnitView _pointerDownUnit;
+        private GridCellMarker _pointerDownCell;
         private Vector2 _pointerDownScreen;
         private bool _dragPointerActive;
         private Action<CombatUnit, UnitView> _onUnitClicked;
         private Action _onFormationChanged;
+        private Action _onDeployCellClicked;
         private Func<bool> _canOpenSkillPanel;
 
         private void Awake()
@@ -98,6 +100,11 @@ namespace FracturedChorus.UI
             _canOpenSkillPanel = canOpen;
         }
 
+        public void SetDeployCellClickHandler(Action onDeployCellClicked)
+        {
+            _onDeployCellClicked = onDeployCellClicked;
+        }
+
         public bool CanDragUnit(UnitView view)
         {
             if (view == null
@@ -157,6 +164,7 @@ namespace FracturedChorus.UI
         private void HandlePointerDown(Vector2 screenPos)
         {
             _pointerDownUnit = null;
+            _pointerDownCell = null;
             _dragPointerActive = false;
             _draggingUnit = null;
 
@@ -165,15 +173,23 @@ namespace FracturedChorus.UI
                 return;
             }
 
-            var view = PickUnitAtScreen(screenPos);
-            if (view == null)
+            _pointerDownScreen = screenPos;
+            var cell = _session != null && _session.IsPlanningWindowOpen
+                ? PickPlayerCellAtScreen(screenPos)
+                : null;
+            var view = PickUnitAtScreen(screenPos, allowNearestFallback: cell == null || IsCellOccupied(cell));
+
+            if (view != null)
             {
+                _pointerDownUnit = view;
+                _dragPointerActive = true;
                 return;
             }
 
-            _pointerDownUnit = view;
-            _pointerDownScreen = screenPos;
-            _dragPointerActive = true;
+            if (cell != null && !IsCellOccupied(cell))
+            {
+                _pointerDownCell = cell;
+            }
         }
 
         private void HandlePointerUp(Vector2 screenPos)
@@ -188,8 +204,16 @@ namespace FracturedChorus.UI
             {
                 _onUnitClicked?.Invoke(_pointerDownUnit.Unit, _pointerDownUnit);
             }
+            else if (_pointerDownCell != null
+                     && BoardPointerGesture.IsClick(_pointerDownScreen, screenPos, clickDragThresholdPx)
+                     && _session != null
+                     && _session.IsPlanningWindowOpen)
+            {
+                _onDeployCellClicked?.Invoke();
+            }
 
             _pointerDownUnit = null;
+            _pointerDownCell = null;
             _dragPointerActive = false;
         }
 
@@ -222,6 +246,7 @@ namespace FracturedChorus.UI
 
             _dragPointerActive = false;
             _pointerDownUnit = null;
+            _pointerDownCell = null;
             _draggingUnit = null;
         }
 
@@ -348,7 +373,12 @@ namespace FracturedChorus.UI
             _draggingUnit = null;
         }
 
-        private UnitView PickUnitAtScreen(Vector2 screenPos)
+        private bool IsCellOccupied(GridCellMarker cell)
+        {
+            return cell != null && _grid != null && _grid.IsOccupied(cell.Position);
+        }
+
+        private UnitView PickUnitAtScreen(Vector2 screenPos, bool allowNearestFallback = true)
         {
             var world = ScreenToWorld(screenPos);
             var count = Physics2D.OverlapPoint(new Vector2(world.x, world.y), _unitPickFilter, _overlapHits);
@@ -386,8 +416,11 @@ namespace FracturedChorus.UI
                 return best;
             }
 
-            // Fallback: sprite lớn nhưng collider thân hẹp (vd Charlotte/tank) dễ bấm trượt.
-            // Chọn unit gần con trỏ nhất trong bán kính nhỏ để vẫn kéo được.
+            if (!allowNearestFallback)
+            {
+                return null;
+            }
+
             return PickNearestUnit(new Vector2(world.x, world.y));
         }
 
@@ -461,6 +494,11 @@ namespace FracturedChorus.UI
                     return true;
                 }
 
+                if (go.GetComponentInParent<DeployFormationHintView>() != null)
+                {
+                    return true;
+                }
+
                 if (go.GetComponent<Button>() != null || go.GetComponent<ScrollRect>() != null)
                 {
                     return true;
@@ -468,6 +506,17 @@ namespace FracturedChorus.UI
             }
 
             return false;
+        }
+
+        private GridCellMarker PickPlayerCellAtScreen(Vector2 screenPos)
+        {
+            if (worldCamera == null || !IsValidScreenPosition(screenPos))
+            {
+                return null;
+            }
+
+            var world = ScreenToWorld(screenPos);
+            return FindDropCell(world, GridSide.Player);
         }
 
         private GridCellMarker FindDropCell(Vector3 world, GridSide side)

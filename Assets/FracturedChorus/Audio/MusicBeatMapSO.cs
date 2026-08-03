@@ -39,6 +39,9 @@ namespace FracturedChorus.Audio
 
         public static float SnapUpToBar(float musicalBeat) => Mathf.Ceil(musicalBeat / BeatsPerBar) * BeatsPerBar;
 
+        /// <summary>Next integer beat at or after musicalBeat (shortest beat-aligned wait).</summary>
+        public static float SnapUpToBeat(float musicalBeat) => Mathf.Ceil(musicalBeat);
+
 #if UNITY_EDITOR
         public void EditorSetData(AudioClip audioClip, float beatsPerMinute, float offsetSec)
         {

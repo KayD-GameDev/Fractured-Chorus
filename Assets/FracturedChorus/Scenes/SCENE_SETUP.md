@@ -141,10 +141,11 @@ BeatTimelineUI
 > | `MinSlotWidth` | 14 | Inspector |
 > | `ScanBarWidth` | 6 | ScanBar |
 > | `LaneMarkerSize` | 26 | Inspector |
+> | Khung `BeatTimelineUI` | Anchor `(0.02,0.02)–(0.98,0.22277778)` · posY `69.4` · sizeDeltaY `138.8` | `CombatTutorial` — **Prototype phải khớp** |
 >
 > Runtime (`preserveSceneLayout = true`): `ResolveLockedSlotWidth()` = `max(template, TimelineLayoutLock.SlotWidth)` — **không bao giờ co nhỏ hơn 73.85**, kể cả khi field `slotWidth` scene bị lệch (ví dụ còn 52).
 >
-> Đổi kích thước ô: sửa `Beat_0` trong **CombatTutorial**, cập nhật `TimelineLayoutLock.SlotWidth`, sync `slotWidth` cả hai scene. Không chỉnh ad-hoc trong code rebuild.
+> Đổi kích thước ô / khung: sửa trong **CombatTutorial**, cập nhật `TimelineLayoutLock`, sync sang `CombatPrototype`. Không thu khung ad-hoc.
 
 ### Hành vi khi Play (prototype hiện tại)
 
@@ -179,7 +180,7 @@ BeatTimelineUI
 
 ### Phase divider
 
-Vạch trắng **PhaseDivider** trên từng ô sau beat 15, 31, 47… (mỗi **16 beat** một phase). **`TimelineConstants.TotalBeats = 677`** — khớp Boss Remix 152 BPM. **43 phase**.
+Vạch trắng **PhaseDivider** sau beat 21, 43, 65… (mỗi **22 beat** một phase). **`TimelineConstants.TotalBeats = 677`** — Boss Remix 152 BPM. **30 phase**. Mỗi Execute đủ **22 beat** mới Planning. Intro **12 beat** không nốt; hết intro mới spawn phase 1–3.
 
 ---
 

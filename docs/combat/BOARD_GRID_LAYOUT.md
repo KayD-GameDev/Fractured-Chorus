@@ -48,7 +48,7 @@ World = local ô + offset các cha ⇒ khớp bảng WORLD ở trên.
 
 ## Visibility hex floor (runtime)
 
-- **Player:** hex hiện lúc Deploy (`AllowPlayerReposition`); ẩn sau Deploy.
+- **Player:** hex hiện trong mọi planning window (`CombatSession.IsPlanningWindowOpen`); ẩn khi timeline đang quét.
 - **Enemy:** hex **luôn ẩn** (không dùng cho dàn trận).
 - API: `CombatController.ApplySlotFloorVisibilityForCurrentPhase` → `GridCellMarker.SetFloorVisible` (tắt child `Hexagon Flat Top`, giữ collider/transform).
 

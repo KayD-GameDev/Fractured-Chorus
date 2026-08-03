@@ -10,11 +10,21 @@ namespace FracturedChorus.UI
         public const float LaneMarkerSize = 26f;
         public const float ActiveFootprintDotSize = 30f;
         public const float FootprintDotSize = 16f;
+        public const float SkillNoteActiveSize = 50.6f;
+        public const float SkillNoteStandingSize = 34.32f;
+        public const float CodaCharlotteNoteScale = 1.1f;
         public const float ScanBarWidth = 6f;
         public const float ScanBarVerticalInset = -4f;
         public const float TrackLineY = 6f;
         public const float TrackLineHeight = 2f;
         public const float BossTrackFrameHeight = 56f;
+
+        public const float TimelineAnchorMinX = 0.02f;
+        public const float TimelineAnchorMinY = 0.02f;
+        public const float TimelineAnchorMaxX = 0.98f;
+        public const float TimelineAnchorMaxY = 0.22277778f;
+        public const float TimelineAnchoredPosY = 69.400024f;
+        public const float TimelineSizeDeltaY = 138.8f;
 
         public static float ClampSlotWidth(float width)
         {

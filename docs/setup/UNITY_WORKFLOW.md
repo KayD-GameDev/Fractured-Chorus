@@ -68,11 +68,12 @@ Nếu chưa có asset: `CombatPrototypeBootstrap` tạo **demo encounter runtime
 |----------|---------|
 | Player grid | **2×3** honeycomb (2 hàng × 3 cột), **max 4** units |
 | Enemy grid | **2×3** mirror, **max 6** units |
-| Timeline | **619 beats** sync `EternalSpark_CadenceRemix` (`MusicBeatMapSO` + CSV) |
-| **Planning flow** | (1) **Deploy** — formation / swap; (2) nhạc → **intro-pause** after beat **6**; (3) đặt skill → bấm **Execute** (không tự resume) |
-| UI MVP | Carousel timeline + lanes + skill panel + Deploy/**Execute** overlay + party/enemy status bar |
+| Timeline | **677 beats đều nhau** sync `EternalSpark_BossRemix` (`MusicBeatMapSO` = 152 BPM + offset 1.161s) |
+| **Planning flow** | (1) **Planning window** — dời unit / swap **và** gán skill cùng lúc (`IsPlanningWindowOpen`); (2) bấm **Execute** → scan anchor vào bar kế rồi quét (không tự resume) |
+| Nhạc | Chạy liên tục từ lúc vào trận; planning chỉ duck 0.7× + lowpass 900 Hz, **không pause** |
+| UI MVP | Carousel timeline + lanes + skill panel + **Execute** overlay + party/enemy status bar |
 | Skill footprint | S1/S/S2 trên lane (`SkillDefinitionSO` + `RefreshFootprintDots`) |
-| Enemy attacks | Segment 0 min impact ≥ beat **10** (`IntroEnemySpawnZoneStartBeat`); later phases use phase buffer |
+| Enemy attacks | Min impact ≥ beat **3** (`EnemyFirstAttackBeat` / phase buffer) |
 | Stats | `UnitStatBlockSO` → `UnitStats`; `DamageCalculator` (Harmony, crit) |
 | Scene-first UI | `RectSizeUtil` — card/badge/panel đọc size từ Hierarchy; fallback khi chưa authored |
 | Input | `Physics2DRaycaster` + `BoardDragController`; `UnitFeetAnchor` |
@@ -161,9 +162,9 @@ CombatCanvas/PartyStatusBarUI     ← PartyStatusBarUIView (preserveSceneLayout)
 
 | ID | Implemented (slice 1) |
 |----|------------------------|
-| UC-03 Position Unit | Grid placement + **pre-Deploy drag** (`BoardDragController`) |
-| UC-04 Execute Skill | Deploy → intro-pause → skill assign → scan resolve |
-| FR-02 Beat Timeline | 619-beat music sync + lanes + Deploy/Execute gate |
+| UC-03 Position Unit | Grid placement + drag trong **mọi** planning window (`BoardDragController`) |
+| UC-04 Execute Skill | Planning window (dời unit ‖ gán skill) → Execute → scan resolve |
+| FR-02 Beat Timeline | 677-beat uniform music sync + lanes + Execute gate |
 | FR-07 Damage | `UnitStatBlockSO` + `DamageCalculator` (Harmony, crit) |
 | FR-03 Dual Grid | Honeycomb **2×3** + front-column targeting |
 

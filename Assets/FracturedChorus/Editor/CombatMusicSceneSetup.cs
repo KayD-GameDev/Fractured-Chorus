@@ -30,6 +30,13 @@ namespace FracturedChorus.Editor
         private const string RenSkill3SourceDownload = @"d:\Project 1\Skill 3 Ren SFX.mp3";
         private const string CodaSkill1SourceDownload = @"d:\Project 1\freesound_community-swinging-staff-whoosh-strong-08-44658.mp3";
         private const string CodaSkill23SourceDownload = @"d:\Project 1\Skill 2 3 Coda SFX.wav";
+        private const string UiClickPath = "Assets/FracturedChorus/Audio/SFX/Combat_UiClick.wav";
+        private const string SkillPlacePath = "Assets/FracturedChorus/Audio/SFX/Combat_SkillPlace.wav";
+        private const string UiClickSourceDownload = @"d:\Project 1\Click Button.wav";
+        private const string SkillPlaceSourceDownload = @"d:\Project 1\soundreality-re-verse-dj-fx-344132.wav";
+        private const string UiClickResourcePath = "Assets/FracturedChorus/Resources/Audio/SFX/Combat_UiClick.wav";
+        private const string SkillPlaceResourcePath = "Assets/FracturedChorus/Resources/Audio/SFX/Combat_SkillPlace.wav";
+
         [MenuItem("Fractured Chorus/Import Combat Audio From Downloads")]
         public static void ImportCombatAudioFromDownloads()
         {
@@ -41,8 +48,12 @@ namespace FracturedChorus.Editor
             ImportAudio(RenSkill3SourceDownload, RenSkill3Path);
             ImportAudio(CodaSkill1SourceDownload, CodaSkill1Path);
             ImportAudio(CodaSkill23SourceDownload, CodaSkill23Path);
+            ImportAudio(UiClickSourceDownload, UiClickPath);
+            ImportAudio(SkillPlaceSourceDownload, SkillPlacePath);
+            ImportAudio(UiClickSourceDownload, UiClickResourcePath);
+            ImportAudio(SkillPlaceSourceDownload, SkillPlaceResourcePath);
             AssetDatabase.Refresh();
-            Debug.Log("[Fractured Chorus] Perfect counter/block + clash hit + Ren/Coda skill SFX imported.");
+            Debug.Log("[Fractured Chorus] Combat SFX imported (incl. UI click + skill place).");
         }
 
         private static void ImportAudio(string sourcePath, string destAssetPath)
@@ -81,6 +92,8 @@ namespace FracturedChorus.Editor
             var renSkill3 = AssetDatabase.LoadAssetAtPath<AudioClip>(RenSkill3Path);
             var codaSkill1 = AssetDatabase.LoadAssetAtPath<AudioClip>(CodaSkill1Path);
             var codaSkill23 = AssetDatabase.LoadAssetAtPath<AudioClip>(CodaSkill23Path);
+            var uiClick = AssetDatabase.LoadAssetAtPath<AudioClip>(UiClickPath);
+            var skillPlace = AssetDatabase.LoadAssetAtPath<AudioClip>(SkillPlacePath);
             if (clip == null)
             {
                 Debug.LogError($"[CombatMusic] Missing clip at {ClipPath}. Re-import project.");
@@ -171,10 +184,22 @@ namespace FracturedChorus.Editor
                 sfxSo.FindProperty("codaSkill23Clip").objectReferenceValue = codaSkill23;
             }
 
+            if (uiClick != null)
+            {
+                sfxSo.FindProperty("uiClickClip").objectReferenceValue = uiClick;
+            }
+
+            if (skillPlace != null)
+            {
+                sfxSo.FindProperty("skillPlaceClip").objectReferenceValue = skillPlace;
+            }
+
             sfxSo.FindProperty("perfectCounterVolume").floatValue = 1f;
             sfxSo.FindProperty("perfectBlockVolume").floatValue = 1f;
             sfxSo.FindProperty("clashHitVolume").floatValue = 1f;
             sfxSo.FindProperty("renSkillVolume").floatValue = 1f;
+            sfxSo.FindProperty("uiClickVolume").floatValue = 0.9f;
+            sfxSo.FindProperty("skillPlaceVolume").floatValue = 0.9f;
             sfxSo.ApplyModifiedPropertiesWithoutUndo();
 
             var bootstrapSo = new SerializedObject(bootstrap);

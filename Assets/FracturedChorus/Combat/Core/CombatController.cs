@@ -45,6 +45,7 @@ namespace FracturedChorus.Combat.Core
         private BeatTimelineEngine _timeline;
 
         private CombatMusicController _musicController;
+        private CombatSfxController _combatSfx;
 
         private BoardDragController _boardDrag;
 
@@ -59,6 +60,7 @@ namespace FracturedChorus.Combat.Core
         private int _relocateFromBeat = -1;
         private Coroutine _segmentCompleteRoutine;
         private Coroutine _encounterEndRoutine;
+        private Coroutine _combatIntroRoutine;
         private bool _pendingEncounterResult;
 
 
@@ -85,6 +87,11 @@ namespace FracturedChorus.Combat.Core
             skillPanelView = skillPanel;
 
             _musicController = music;
+            _combatSfx = music != null ? music.GetComponent<CombatSfxController>() : null;
+            if (_combatSfx == null)
+            {
+                _combatSfx = FindAnyObjectByType<CombatSfxController>();
+            }
 
             _boardDrag = boardDrag != null ? boardDrag : GetComponent<BoardDragController>();
 
@@ -167,38 +174,96 @@ namespace FracturedChorus.Combat.Core
 
             _boardDrag?.SetSkillPanelOpenPredicate(
                 () => skillPanelView == null || skillPanelView.CanOpenSkillPanelNow());
-
-
+            _boardDrag?.SetDeployCellClickHandler(OpenFormationHintFromDeployCell);
 
             timelineView?.RefreshAll();
 
-            StartCombatMusicDucked();
+            StartCombatIntro();
+        }
+
+        /// <summary>
+        /// Fight start: full music + scan for CombatIntroDurationSec, then duck into Planning.
+        /// Mid-fight planning windows skip this intro.
+        /// </summary>
+        private void StartCombatIntro()
+        {
+            if (_musicController != null && !_musicController.IsPlaying)
+            {
+                _musicController.PlayBossMusic();
+            }
+
             UpdateExecuteOverlayVisibility(_session?.Phase ?? CombatPhase.Planning);
+            ApplySlotFloorVisibilityForCurrentPhase();
+            RefreshDeployFormationHint();
+            _session?.SetTimelineRunning(true);
+
+            if (timelineView != null)
+            {
+                timelineView.BeginIntroPlayback(
+                    TimelineConstants.CombatIntroDurationSec,
+                    OnCombatIntroComplete);
+                return;
+            }
+
+            if (_combatIntroRoutine != null)
+            {
+                StopCoroutine(_combatIntroRoutine);
+            }
+
+            _combatIntroRoutine = StartCoroutine(CombatIntroFallbackRoutine());
+        }
+
+        private IEnumerator CombatIntroFallbackRoutine()
+        {
+            var wait = Mathf.Max(0f, TimelineConstants.CombatIntroDurationSec);
+            if (wait > 0f)
+            {
+                yield return new WaitForSeconds(wait);
+            }
+
+            OnCombatIntroComplete();
+            _combatIntroRoutine = null;
+        }
+
+        private void OnCombatIntroComplete()
+        {
+            if (_session == null || _session.IsEncounterOver)
+            {
+                return;
+            }
+
+            _session.EndCombatIntro();
+            _session.SetTimelineRunning(false);
+            _musicController?.EnterPlanningDuck();
+            PlayPlanningTransitionSfx();
+            timelineView?.RefreshTelegraphsAndSlots();
+            UpdateExecuteOverlayVisibility(_session.Phase);
             ApplySlotFloorVisibilityForCurrentPhase();
             RefreshDeployFormationHint();
             TryStartCombatTutorial();
         }
 
-        /// <summary>
-        /// The boss track runs from the moment combat opens and never stops; the first planning
-        /// window just hears it ducked.
-        /// </summary>
-        private void StartCombatMusicDucked()
+        private void PlayPlanningTransitionSfx()
         {
-            if (_musicController == null)
-            {
-                return;
-            }
-
-            if (!_musicController.IsPlaying)
-            {
-                _musicController.PlayBossMusic();
-            }
-
-            _musicController.EnterPlanningDuck();
+            EnsureCombatSfx()?.PlayPlanningTransition();
         }
 
+        private void PlaySkillPlaceSfx()
+        {
+            EnsureCombatSfx()?.PlaySkillPlace();
+        }
 
+        private CombatSfxController EnsureCombatSfx()
+        {
+            if (_combatSfx == null)
+            {
+                _combatSfx = _musicController != null
+                    ? _musicController.GetComponent<CombatSfxController>()
+                    : FindAnyObjectByType<CombatSfxController>();
+            }
+
+            return _combatSfx;
+        }
 
         private void Start()
 
@@ -301,9 +366,14 @@ namespace FracturedChorus.Combat.Core
                 _musicController.ExitPlanningDuck();
             }
 
-
-
-            timelineView?.BeginRoundPlayback(continueFromHold: !firstSegment);
+            if (timelineView != null && timelineView.IsPausedForPlanning)
+            {
+                timelineView.ResumeRoundPlayback();
+            }
+            else
+            {
+                timelineView?.BeginRoundPlayback(continueFromHold: !firstSegment);
+            }
 
             if (firstSegment)
             {
@@ -435,6 +505,7 @@ namespace FracturedChorus.Combat.Core
                 && timelineView.TryGetPlacementBeatAtScreenPoint(screenPos, skill, out var beat)
                 && _session.TryAssignPlayerAction(unit, skill, beat))
             {
+                PlaySkillPlaceSfx();
                 ClearRelocateState();
                 RefreshBeatsForSkillFootprint(unit, skill, beat);
                 timelineView.RefreshLaneMarkers();
@@ -561,6 +632,7 @@ namespace FracturedChorus.Combat.Core
                 yield break;
             }
 
+            _musicController?.EnterPlanningDuck();
             _planningPaused = false;
             _awaitingExecute = true;
             SetCoverActivateAllowed(true);
@@ -578,42 +650,60 @@ namespace FracturedChorus.Combat.Core
             }
 
             UpdateExecuteOverlayVisibility(_session.Phase);
+            PlayPlanningTransitionSfx();
+            RefreshDeployFormationHint();
             _segmentCompleteRoutine = null;
         }
 
+        /// <summary>
+        /// Wait until end-of-phase counter / damage / strike animations finish before opening the next Planning.
+        /// </summary>
         private IEnumerator WaitForStrikePresentations()
         {
-            var choreographer = EnemyStrikeChoreographer.ActiveInstance;
-            if (choreographer == null)
-            {
-                choreographer = FindAnyObjectByType<EnemyStrikeChoreographer>();
-            }
+            yield return null;
 
-            if (choreographer == null || !choreographer.IsBusy)
-            {
-                yield break;
-            }
+            const float timeoutSec = 10f;
+            var deadline = Time.unscaledTime + timeoutSec;
 
-            yield return new WaitUntil(() => choreographer == null || !choreographer.IsBusy);
+            while (Time.unscaledTime < deadline)
+            {
+                var choreographer = EnemyStrikeChoreographer.ActiveInstance;
+                if (choreographer == null)
+                {
+                    choreographer = FindAnyObjectByType<EnemyStrikeChoreographer>();
+                }
+
+                if (choreographer == null || !choreographer.IsBusy)
+                {
+                    yield return null;
+                    choreographer = EnemyStrikeChoreographer.ActiveInstance;
+                    if (choreographer == null)
+                    {
+                        choreographer = FindAnyObjectByType<EnemyStrikeChoreographer>();
+                    }
+
+                    if (choreographer == null || !choreographer.IsBusy)
+                    {
+                        yield break;
+                    }
+                }
+
+                yield return null;
+            }
         }
 
 
 
         public void OnTimelinePlanningPause()
-
         {
-
             _planningPaused = true;
-
             _session?.SetTimelineRunning(false);
-
             SetCoverActivateAllowed(true);
-
             executeOverlay?.Bind(ResumeFromPlanningPause);
-
             executeOverlay?.SetLabel(ExecuteLabel);
-
             executeOverlay?.SetVisible(true);
+            PlayPlanningTransitionSfx();
+            RefreshDeployFormationHint();
         }
 
 
@@ -716,6 +806,7 @@ namespace FracturedChorus.Combat.Core
                 return false;
             }
 
+            PlaySkillPlaceSfx();
             RefreshBeatsForSkillFootprint(unit, skill, beat);
 
             timelineView?.RefreshLaneMarkers();
@@ -1062,19 +1153,30 @@ namespace FracturedChorus.Combat.Core
         private void RefreshDeployFormationHint()
         {
             EnsureDeployFormationHint();
-            if (deployFormationHint == null || _session == null)
+            if (deployFormationHint == null)
             {
                 return;
             }
 
-            if (_session.IsPlanningWindowOpen && !TutorialDirector.SuppressFormationHint)
-            {
-                deployFormationHint.ShowForDeploy(BossFormationRuntime.Active);
-            }
-            else
+            if (_session == null
+                || !_session.IsPlanningWindowOpen
+                || TutorialDirector.SuppressFormationHint)
             {
                 deployFormationHint.Hide();
             }
+        }
+
+        private void OpenFormationHintFromDeployCell()
+        {
+            if (_session == null
+                || !_session.IsPlanningWindowOpen
+                || TutorialDirector.SuppressFormationHint)
+            {
+                return;
+            }
+
+            EnsureDeployFormationHint();
+            deployFormationHint?.ShowForDeploy(BossFormationRuntime.Active);
         }
 
         private void TryStartCombatTutorial()

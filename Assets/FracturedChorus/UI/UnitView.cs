@@ -50,6 +50,54 @@ namespace FracturedChorus.UI
         public string DemoUnitKey => demoUnitKey;
         public UnitFeetAnchor FeetAnchor => feetAnchor;
 
+        public void EnsureDefaultCombatAnimStates()
+        {
+            var key = demoUnitKey ?? string.Empty;
+            switch (key)
+            {
+                case "ren":
+                    SetAnimStateIfEmpty(ref counterStateName, "Ren Counter");
+                    SetAnimStateIfEmpty(ref beCounteredStateName, "Ren Hurt");
+                    SetAnimStateIfEmpty(ref idleStateName, "Ren Idle");
+                    SetAnimStateIfEmpty(ref movingStateName, "Ren Moving");
+                    break;
+                case "mage":
+                    SetAnimStateIfEmpty(ref counterStateName, "Coda - Counter");
+                    SetAnimStateIfEmpty(ref beCounteredStateName, "Coda - Hurt");
+                    SetAnimStateIfEmpty(ref idleStateName, "Coda - Idle");
+                    SetAnimStateIfEmpty(ref movingStateName, "Coda - Moving");
+                    break;
+                case "Charlott":
+                case "charlotte":
+                case "tank":
+                    SetAnimStateIfEmpty(ref beCounteredStateName, "Charlott_Hurt");
+                    SetAnimStateIfEmpty(ref idleStateName, "Charlott_Idle");
+                    break;
+                case "grunt_left":
+                    SetAnimStateIfEmpty(ref beCounteredStateName, "Mini 1 - Hurt");
+                    SetAnimStateIfEmpty(ref idleStateName, "Mini 1 -Idle");
+                    break;
+                case "grunt_right":
+                    SetAnimStateIfEmpty(ref beCounteredStateName, "Mini 2 - Hurt");
+                    SetAnimStateIfEmpty(ref idleStateName, "Mini 2 - Idle");
+                    SetAnimStateIfEmpty(ref movingStateName, "Mini 2 - Moving");
+                    break;
+                case "boss_despair":
+                    SetAnimStateIfEmpty(ref beCounteredStateName, "Boss - Be Countered");
+                    SetAnimStateIfEmpty(ref idleStateName, "Boss Idle");
+                    SetAnimStateIfEmpty(ref movingStateName, "Boss - Moving");
+                    break;
+            }
+        }
+
+        private static void SetAnimStateIfEmpty(ref string field, string value)
+        {
+            if (string.IsNullOrWhiteSpace(field))
+            {
+                field = value;
+            }
+        }
+
         public static UnitView FindForUnit(CombatUnit unit)
         {
             if (unit == null)
@@ -416,24 +464,58 @@ namespace FracturedChorus.UI
                 }
             }
 
-            var slotKeyword = skill.slotKind switch
+            // Charlotte: NorHit / Skill / Ultimate · party chung: Skill 1/2/3
+            string[] keywords = skill.slotKind switch
             {
-                SkillSlotKind.BasicAttack => "Skill 1",
-                SkillSlotKind.Skill => "Skill 2",
-                SkillSlotKind.Ultimate => "Skill 3",
+                SkillSlotKind.BasicAttack => new[] { "NorHit", "NormalHit", "Skill 1", "Attack", "Basic" },
+                SkillSlotKind.Skill => new[] { "Skill 2", "Charlott_Skill", "_Skill" },
+                SkillSlotKind.Ultimate => new[] { "Ultimate", "Skill 3", "Ult" },
                 _ => null
             };
 
-            if (!string.IsNullOrEmpty(slotKeyword))
+            if (keywords != null)
             {
-                var bySlot = ResolveClipByKeyword(null, slotKeyword, out stateName);
-                if (bySlot != null)
+                foreach (var keyword in keywords)
                 {
-                    return bySlot;
+                    var bySlot = ResolveClipByKeyword(null, keyword, out stateName);
+                    if (bySlot != null && !IsSkillClipMismatch(skill.slotKind, bySlot.name))
+                    {
+                        return bySlot;
+                    }
                 }
             }
 
-            return ResolveClipByKeyword(null, "Skill", out stateName);
+            if (skill.slotKind == SkillSlotKind.Skill)
+            {
+                var bySkill = ResolveClipByKeyword(null, "Skill", out stateName);
+                if (bySkill != null && !IsSkillClipMismatch(SkillSlotKind.Skill, bySkill.name))
+                {
+                    return bySkill;
+                }
+            }
+
+            return null;
+        }
+
+        private static bool IsSkillClipMismatch(SkillSlotKind slot, string clipName)
+        {
+            if (string.IsNullOrEmpty(clipName))
+            {
+                return true;
+            }
+
+            var lower = clipName.ToLowerInvariant();
+            return slot switch
+            {
+                SkillSlotKind.BasicAttack =>
+                    lower.Contains("ultimate") || lower.Contains("skill 2") || lower.Contains("skill 3"),
+                SkillSlotKind.Skill =>
+                    lower.Contains("norhit") || lower.Contains("ultimate") || lower.Contains("skill 1") ||
+                    lower.Contains("skill 3"),
+                SkillSlotKind.Ultimate =>
+                    lower.Contains("norhit") || lower.Contains("skill 1") || lower.Contains("skill 2"),
+                _ => false
+            };
         }
 
         private AnimationClip ResolveClipByKeyword(string preferredName, string keyword, out string stateName)

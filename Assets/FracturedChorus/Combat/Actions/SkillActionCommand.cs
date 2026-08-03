@@ -146,9 +146,7 @@ namespace FracturedChorus.Combat.Actions
 
             var delay = Mathf.Max(1, ctx.Skill.ResolveEffectValue(ctx.IsEmpowered));
             var sEnd = ctx.Entry.BeatIndex + SkillFootprintUtil.GetActiveBeats(ctx.Skill) - 1;
-            var phase = TimelineConstants.GetPhaseIndex(ctx.Entry.BeatIndex);
-            TimelineConstants.GetPhaseBeatRange(phase, out var startBeat, out var count);
-            var moved = ctx.Timeline.DelayImpactTelegraphsAfterBeat(sEnd, startBeat + count, delay);
+            var moved = ctx.Timeline.DelayImpactTelegraphsAfterBeat(sEnd, TimelineConstants.TotalBeats, delay);
             if (ctx.Entry != null)
             {
                 ctx.Entry.EffectPayloadApplied = true;

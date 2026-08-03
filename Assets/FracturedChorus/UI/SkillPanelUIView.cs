@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using FracturedChorus.Audio;
 using FracturedChorus.Combat.Core;
 using FracturedChorus.Combat.Units;
 using FracturedChorus.Data;
@@ -61,7 +62,7 @@ namespace FracturedChorus.UI
         private void Awake()
         {
             WireReferences();
-            StripNestedCanvasIfAny();
+            EnsurePanelSortCanvas();
         }
 
         public void WireReferences()
@@ -192,8 +193,9 @@ namespace FracturedChorus.UI
                 return;
             }
 
+            FindAnyObjectByType<CombatSfxController>()?.PlayUiClick();
             WireReferences();
-            StripNestedCanvasIfAny();
+            EnsurePanelSortCanvas();
             ApplyPanelLayout();
 
             _currentUnit = unit;
@@ -875,6 +877,8 @@ namespace FracturedChorus.UI
                 return;
             }
 
+            EnsureBackdropSortCanvas();
+            EnsurePanelSortCanvas();
             dismissBackdrop.SetActive(true);
             dismissBackdrop.transform.SetAsLastSibling();
             panelRect.SetAsLastSibling();
@@ -919,23 +923,45 @@ namespace FracturedChorus.UI
             dismissBackdrop.SetActive(false);
         }
 
-        private void StripNestedCanvasIfAny()
+        private void EnsurePanelSortCanvas()
         {
             if (panelRect == null)
             {
                 return;
             }
 
-            var nestedCanvas = panelRect.GetComponent<Canvas>();
-            if (nestedCanvas != null)
+            var canvas = panelRect.GetComponent<Canvas>();
+            if (canvas == null)
             {
-                DestroyImmediate(nestedCanvas);
+                canvas = panelRect.gameObject.AddComponent<Canvas>();
             }
 
-            var nestedRaycaster = panelRect.GetComponent<GraphicRaycaster>();
-            if (nestedRaycaster != null)
+            canvas.overrideSorting = true;
+            canvas.sortingOrder = UiCanvasLayers.Panel;
+            if (panelRect.GetComponent<GraphicRaycaster>() == null)
             {
-                DestroyImmediate(nestedRaycaster);
+                panelRect.gameObject.AddComponent<GraphicRaycaster>();
+            }
+        }
+
+        private void EnsureBackdropSortCanvas()
+        {
+            if (dismissBackdrop == null)
+            {
+                return;
+            }
+
+            var canvas = dismissBackdrop.GetComponent<Canvas>();
+            if (canvas == null)
+            {
+                canvas = dismissBackdrop.AddComponent<Canvas>();
+            }
+
+            canvas.overrideSorting = true;
+            canvas.sortingOrder = UiCanvasLayers.Panel - 1;
+            if (dismissBackdrop.GetComponent<GraphicRaycaster>() == null)
+            {
+                dismissBackdrop.AddComponent<GraphicRaycaster>();
             }
         }
 

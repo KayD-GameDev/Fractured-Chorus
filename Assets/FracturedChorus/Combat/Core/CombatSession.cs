@@ -31,6 +31,7 @@ namespace FracturedChorus.Combat.Core
         public event Action<int> OnTelegraphsPlanned;
         public event Action<int, BlockTiming> OnBlockResolved;
         public event Action<EnemyStrikeReport> OnEnemyStrikeResolved;
+        public event Action<PlayerSkillResolvedReport> OnPlayerSkillResolved;
         public event Action<int> OnBeforeResolveBeat;
 
         private SimpleEnemyAI _enemyAi;
@@ -41,18 +42,27 @@ namespace FracturedChorus.Combat.Core
         public PhaseAvTracker PhaseAv { get; } = new();
         public BlockBarrierTracker BlockBarriers { get; } = new();
         public CoverRuntime Cover { get; } = new();
-        /// <summary>0 = phases 1–2 (beats 0–31), 1 = phases 3–4, …</summary>
+        /// <summary>0-based execute segment index (each segment = 1 × 19-beat phase).</summary>
         public int RoundSegmentIndex => _roundSegmentIndex;
 
         /// <summary>True while the scan is advancing; false whenever a planning window is open.</summary>
         public bool IsTimelineRunning { get; private set; }
 
+        /// <summary>True during the one-shot full-music intro before the first Planning window.</summary>
+        public bool IsCombatIntroActive { get; private set; }
+
+        private bool _combatIntroCompleted;
+        private readonly HashSet<int> _plannedTelegraphPhases = new();
+
         /// <summary>
         /// The single gate for player agency: repositioning units and assigning skills are both
-        /// allowed exactly when the timeline is parked in Planning.
+        /// allowed exactly when the timeline is parked in Planning (not during intro).
         /// </summary>
         public bool IsPlanningWindowOpen =>
-            Phase == CombatPhase.Planning && !IsTimelineRunning && !IsEncounterOver;
+            Phase == CombatPhase.Planning
+            && !IsTimelineRunning
+            && !IsCombatIntroActive
+            && !IsEncounterOver;
 
         /// <summary>Cover button gate — open during any planning window.</summary>
         public bool AllowCoverActivate { get; set; } = true;
@@ -82,7 +92,9 @@ namespace FracturedChorus.Combat.Core
             BeginPlanningRound();
         }
 
-        /// <summary>Pre-plan both phases of the current segment (Deploy + planning preview).</summary>
+        /// <summary>
+        /// Fill boss notes for the current phase + lookahead window.
+        /// </summary>
         public void PrepareTelegraphsForCurrentSegment()
         {
             if (Grid.EnemyUnits.All(u => !u.IsAlive))
@@ -90,8 +102,7 @@ namespace FracturedChorus.Combat.Core
                 return;
             }
 
-            PrePlanTelegraphsForSegment(_roundSegmentIndex);
-            OnTelegraphsPlanned?.Invoke(TimelineConstants.RoundPhaseCount * _roundSegmentIndex);
+            EnsureTelegraphLookahead(TimelineConstants.RoundPhaseCount * _roundSegmentIndex);
         }
 
         public void OnTimelineScanBeat(int beatIndex)
@@ -110,13 +121,16 @@ namespace FracturedChorus.Combat.Core
             OnTelegraphsPlanned?.Invoke(GetDeathPhaseIndex());
         }
 
-        /// <summary>Strip dead unit telegraphs from death phase through end of current segment.</summary>
+        /// <summary>Strip dead unit telegraphs from death phase through lookahead horizon.</summary>
         private void RemoveTelegraphsForDeadUnit(CombatUnit unit)
         {
             var deathPhase = GetDeathPhaseIndex();
-            var segmentEnd = TimelineConstants.GetSegmentEndBeatExclusive(_roundSegmentIndex);
+            var lastPhase = System.Math.Min(
+                TimelineConstants.PhaseCount - 1,
+                deathPhase + TimelineConstants.TelegraphLookaheadPhases - 1);
             TimelineConstants.GetPhaseBeatRange(deathPhase, out var fromBeat, out _);
-            var beatCount = segmentEnd - fromBeat;
+            TimelineConstants.GetPhaseBeatRange(lastPhase, out var lastStart, out var lastCount);
+            var beatCount = lastStart + lastCount - fromBeat;
             if (beatCount > 0)
             {
                 Timeline.RemoveTelegraphsForUnitInRange(unit, fromBeat, beatCount);
@@ -142,26 +156,40 @@ namespace FracturedChorus.Combat.Core
             return segmentPhaseStart;
         }
 
-        private void PrePlanTelegraphsForSegment(int segmentIndex)
+        /// <summary>
+        /// Keep <see cref="TimelineConstants.TelegraphLookaheadPhases"/> phases of boss notes filled
+        /// ahead of the current phase (phase N ⇒ plan N..N+lookahead-1).
+        /// Already-planned phases are skipped so Charlotte-pushed notes are not wiped.
+        /// </summary>
+        private void EnsureTelegraphLookahead(int currentPhaseIndex)
         {
-            var phaseA = TimelineConstants.RoundPhaseCount * segmentIndex;
-            var phaseB = phaseA + 1;
-            TimelineConstants.GetPhaseBeatRange(phaseA, out _, out var countA);
-            if (countA > 0)
+            var lastExclusive = System.Math.Min(
+                TimelineConstants.PhaseCount,
+                currentPhaseIndex + TimelineConstants.TelegraphLookaheadPhases);
+
+            for (var phase = currentPhaseIndex; phase < lastExclusive; phase++)
             {
-                _enemyAi.PlanTelegraphsForPhase(phaseA, Grid, Timeline);
+                if (!_plannedTelegraphPhases.Add(phase))
+                {
+                    continue;
+                }
+
+                TimelineConstants.GetPhaseBeatRange(phase, out _, out var count);
+                if (count > 0)
+                {
+                    _enemyAi.PlanTelegraphsForPhase(phase, Grid, Timeline);
+                }
             }
 
-            TimelineConstants.GetPhaseBeatRange(phaseB, out _, out var countB);
-            if (countB > 0)
-            {
-                _enemyAi.PlanTelegraphsForPhase(phaseB, Grid, Timeline);
-            }
+            OnTelegraphsPlanned?.Invoke(currentPhaseIndex);
         }
 
         public bool TryAssignPlayerAction(CombatUnit unit, SkillDefinitionSO skill, int beatIndex = -1)
         {
-            if (unit == null || unit.Side != GridSide.Player || Phase != CombatPhase.Planning || skill == null)
+            if (unit == null
+                || unit.Side != GridSide.Player
+                || !IsPlanningWindowOpen
+                || skill == null)
             {
                 return false;
             }
@@ -235,10 +263,7 @@ namespace FracturedChorus.Combat.Core
             {
                 var delay = Mathf.Max(1, skill.ResolveEffectValue(empowerPreview));
                 var sEnd = entry.BeatIndex + SkillFootprintUtil.GetActiveBeats(skill) - 1;
-                var phase = TimelineConstants.GetPhaseIndex(entry.BeatIndex);
-                TimelineConstants.GetPhaseBeatRange(phase, out var startBeat, out var count);
-                var phaseEndExclusive = startBeat + count;
-                var moves = Timeline.DelayImpactTelegraphsAfterBeat(sEnd, phaseEndExclusive, delay);
+                var moves = Timeline.DelayImpactTelegraphsAfterBeat(sEnd, TimelineConstants.TotalBeats, delay);
                 entry.PlanningDelayMoves.Clear();
                 entry.PlanningDelayMoves.AddRange(moves);
                 entry.PlanningDelayAmount = delay;
@@ -346,7 +371,7 @@ namespace FracturedChorus.Combat.Core
             _bulwarkGuardChargeGranted.Clear();
             CombatCounterResolver.ClearPresentationMarkers();
             _roundSegmentIndex++;
-            PrePlanTelegraphsForSegment(_roundSegmentIndex);
+            EnsureTelegraphLookahead(TimelineConstants.RoundPhaseCount * _roundSegmentIndex);
             _lastScanBeat = TimelineConstants.GetSegmentStartBeat(_roundSegmentIndex) - 1;
             IsTimelineRunning = false;
             PhaseAv.ResetForPlanning();
@@ -362,11 +387,26 @@ namespace FracturedChorus.Combat.Core
             _lastScanBeat = -1;
             BlockBarriers.Clear();
             IsTimelineRunning = false;
-            AllowCoverActivate = true;
+            IsCombatIntroActive = !_combatIntroCompleted;
+            AllowCoverActivate = _combatIntroCompleted;
+            _plannedTelegraphPhases.Clear();
             Timeline.ResetForPlanning();
             PhaseAv.ResetForPlanning();
             Cover.Reset();
             Timeline.SetPhase(CombatPhase.Planning);
+            TimelineConstants.EnemyNoteFloorBeat = 0;
+            if (!IsCombatIntroActive)
+            {
+                PrepareTelegraphsForCurrentSegment();
+            }
+        }
+
+        public void EndCombatIntro(int introEndBeat = 0)
+        {
+            IsCombatIntroActive = false;
+            _combatIntroCompleted = true;
+            AllowCoverActivate = true;
+            TimelineConstants.EnemyNoteFloorBeat = 0;
             PrepareTelegraphsForCurrentSegment();
         }
 
@@ -377,12 +417,7 @@ namespace FracturedChorus.Combat.Core
 
         public void ConfirmPlanningAndExecute()
         {
-            if (Phase != CombatPhase.Planning)
-            {
-                return;
-            }
-
-            if (IsEncounterOver)
+            if (!IsPlanningWindowOpen)
             {
                 return;
             }
@@ -786,6 +821,8 @@ namespace FracturedChorus.Combat.Core
                 Debug.Log(
                     $"[Beat] {entry.Unit.DisplayName} {entry.Skill.displayName} @ beat {entry.BeatIndex} (prio {entry.Unit.ActionPriority:F0}) → {timing}" +
                     (entry.IsEmpowered ? " [empowered]" : string.Empty));
+                OnPlayerSkillResolved?.Invoke(
+                    new PlayerSkillResolvedReport(entry.Unit, target, entry.Skill, entry.BeatIndex));
             }
         }
 

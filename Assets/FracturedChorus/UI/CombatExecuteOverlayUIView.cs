@@ -131,6 +131,8 @@ namespace FracturedChorus.UI
                 buttonImage.type = Image.Type.Simple;
                 buttonImage.preserveAspect = true;
                 ApplyAlphaHitTest(buttonImage, sprite);
+                UiButtonHoverFeedback.Ensure(executeButton != null ? executeButton.gameObject : buttonImage.gameObject)
+                    ?.RecaptureBaseFromGraphic();
                 if (hideLabelWhenUsingSprites && labelText != null)
                 {
                     labelText.enabled = false;
@@ -293,7 +295,26 @@ namespace FracturedChorus.UI
 
             if (executeButton != null)
             {
+                if (!visible)
+                {
+                    UiButtonHoverFeedback.Ensure(executeButton.gameObject)?.ResetHoverState();
+                }
+
                 executeButton.gameObject.SetActive(visible);
+
+                if (visible)
+                {
+                    if (buttonImage != null)
+                    {
+                        buttonImage.color = Color.white;
+                    }
+
+                    executeButton.interactable = true;
+                    var feedback = UiButtonHoverFeedback.Ensure(executeButton.gameObject);
+                    feedback?.RecaptureBaseFromGraphic();
+                    feedback?.ResetHoverState();
+                }
+
                 return;
             }
 
