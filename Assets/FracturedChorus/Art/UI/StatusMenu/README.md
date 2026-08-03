@@ -9,6 +9,7 @@
 |------|--------|
 | `statusmenu_ren_bg_v6.png` | 1920×1080 plate (inverted Ren + MAIN MENU) |
 | `statusmenu_ren_bg_v5.png` … `v1` | Iterations / backup |
+| `ren_hima_uniform_menu_fullbody_v1.png` | Ren fullbody menu portrait (transparent BG) — CharacterBuild |
 
 ## Buttons (list)
 

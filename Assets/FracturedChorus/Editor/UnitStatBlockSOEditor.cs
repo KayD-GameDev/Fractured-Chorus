@@ -1,5 +1,4 @@
 #if UNITY_EDITOR
-using FracturedChorus.Combat.Damage;
 using FracturedChorus.Data;
 using UnityEditor;
 using UnityEngine;
@@ -11,19 +10,21 @@ namespace FracturedChorus.Editor
     {
         public override void OnInspectorGUI()
         {
-            var block = (UnitStatBlockSO)target;
             serializedObject.Update();
 
             EditorGUILayout.PropertyField(serializedObject.FindProperty("blockId"));
             EditorGUILayout.Space(4f);
             EditorGUILayout.LabelField("Pre-condition (element)", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(serializedObject.FindProperty("element"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("elementBadgeIcon"));
 
             EditorGUILayout.Space(8f);
-            EditorGUILayout.LabelField("Strength", EditorStyles.boldLabel);
-            EditorGUILayout.HelpBox("Choose Physical or Magical, then enter the Strength value.", MessageType.None);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("strengthType"), new GUIContent("Damage Type"));
+            EditorGUILayout.LabelField("Attack Channels", EditorStyles.boldLabel);
+            EditorGUILayout.HelpBox(
+                "Strength fuels Physical skills · Magic fuels Magical skills (via skill.damageType).",
+                MessageType.None);
             EditorGUILayout.PropertyField(serializedObject.FindProperty("strength"), new GUIContent("Strength"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("magic"), new GUIContent("Magic"));
 
             EditorGUILayout.Space(8f);
             EditorGUILayout.LabelField("Other Core Stats", EditorStyles.boldLabel);

@@ -249,7 +249,7 @@ Chi tiết effect: [SKILL_KIT.md](./SKILL_KIT.md)
 | Thiết kế mới        | Code hiện tại                                  |
 | ------------------- | ---------------------------------------------- |
 | COMBAT_MECHANICS.md | PhaseAvTracker, batch planning, 1-row timeline |
-| STR / Ma            | strength + ma + strengthType                   |
+| STR / Ma            | strength + magic (skill.damageType chọn kênh) |
 | HP từ STR/Ma        | maxHp nhập tay                                 |
 | Boss Pulse          | BossStatBlockSO.pulse + color weights          |
 | 3 skill, no Guard   | Kit 3 skill / nhân vật · Space barrier (`BlockBarrierTracker`) |

@@ -27,7 +27,7 @@ namespace FracturedChorus.Combat.Bootstrap
 
             var entry = GameMetaSession.Current.Loadout.GetOrCreate(characterId);
             EnsureDefaultEquipped(entry, characterId);
-            ApplyStatPoints(unit, entry);
+            ApplyStatPoints(unit, entry, characterId);
 
             var skills = ResolveEquippedSkills(entry.EquippedSkillIds);
             if (skills.Length > 0)
@@ -52,7 +52,7 @@ namespace FracturedChorus.Combat.Bootstrap
             if (GameMetaSession.HasSession)
             {
                 var entry = GameMetaSession.Current.Loadout.GetOrCreate(characterId);
-                ApplyStatPoints(unit, entry);
+                ApplyStatPoints(unit, entry, characterId);
             }
 
             var basicId = characterId switch
@@ -96,7 +96,7 @@ namespace FracturedChorus.Combat.Bootstrap
             unit.SetCurrentHp(newMax);
         }
 
-        private static void ApplyStatPoints(CombatUnit unit, CharacterLoadoutEntry entry)
+        private static void ApplyStatPoints(CombatUnit unit, CharacterLoadoutEntry entry, string characterId)
         {
             if (entry == null)
             {
@@ -104,10 +104,22 @@ namespace FracturedChorus.Combat.Bootstrap
             }
 
             unit.Stats.Strength += entry.StrPoints;
+            unit.Stats.Magic += entry.MaPoints;
             unit.Stats.Endurance += entry.EnPoints;
             unit.Stats.HeartBeat += entry.HbPoints * 5;
-            unit.Stats.MaxHp += entry.StrPoints * (unit.UnitId.Contains("tank") || unit.UnitId.Contains("charlotte") ? 6 : 2);
+            unit.Stats.MaxHp = ResolveMaxHp(characterId, unit.Stats.Strength, unit.Stats.Magic);
             unit.SetCurrentHp(unit.Stats.MaxHp);
+        }
+
+        /// <summary>SoT HP formulas — progression design §3.</summary>
+        public static int ResolveMaxHp(string characterId, float strength, float magic)
+        {
+            return characterId switch
+            {
+                PartyCharacterIds.Charlotte => Mathf.RoundToInt(strength * 6f + 50f),
+                PartyCharacterIds.Coda => Mathf.RoundToInt(strength * 2f + magic * 0.35f + 15f),
+                _ => Mathf.RoundToInt(strength * 2f + 30f)
+            };
         }
 
         private static void EnsureDefaultEquipped(CharacterLoadoutEntry entry, string characterId)

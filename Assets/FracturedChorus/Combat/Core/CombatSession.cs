@@ -585,7 +585,7 @@ namespace FracturedChorus.Combat.Core
                 telegraph.Unit.Stats,
                 target.Stats,
                 telegraph.Skill.skillTier,
-                telegraph.Unit.Stats.StrengthType,
+                telegraph.Skill.damageType,
                 BeatTiming.OnBeat,
                 HarmonyElementResolver.GetRelation(telegraph.Unit.Stats.Element, target.Stats.Element),
                 positionalMod);

@@ -87,7 +87,7 @@ namespace FracturedChorus.Combat.Actions
             }
 
             var target = ctx.Target ?? ctx.Source;
-            var amount = ctx.Skill.ResolveEffectValue(false) + ctx.Source.Stats.Strength * 0.5f;
+            var amount = ctx.Skill.ResolveEffectValue(false) + ctx.Source.Stats.Magic * 0.5f;
             if (ctx.IsEmpowered && ctx.Skill.empowerEffectValue > 0)
             {
                 amount += ctx.Skill.empowerEffectValue;
@@ -238,11 +238,12 @@ namespace FracturedChorus.Combat.Actions
 
             var harmony = HarmonyElementResolver.GetRelation(attackerElement, target.Stats.Element);
 
+            var damageType = ctx.Skill != null ? ctx.Skill.damageType : DamageType.Physical;
             var result = DamageCalculator.Calculate(
                 ctx.Source.Stats,
                 target.Stats,
                 ctx.Skill.skillTier,
-                ctx.Source.Stats.StrengthType,
+                damageType,
                 ctx.BeatTiming,
                 harmony,
                 coverMod);
@@ -270,8 +271,12 @@ namespace FracturedChorus.Combat.Actions
             }
 
             target.TakeDamage(finalDamage, result.IsCritical);
+            var atkStat = damageType == DamageType.Magical
+                ? ctx.Source.Stats.Magic
+                : ctx.Source.Stats.Strength;
+            var atkLabel = damageType == DamageType.Magical ? "ma" : "str";
             Debug.Log($"[SkillAction] {ctx.Source.DisplayName} -> {target.DisplayName} | " +
-                      $"rand={result.SkillRandomRoll:F2}×str={ctx.Source.Stats.Strength:F0} " +
+                      $"rand={result.SkillRandomRoll:F2}×{atkLabel}={atkStat:F0} " +
                       $"raw={result.RawDamage:F1} en×={result.EnduranceFactor:F2} " +
                       $"pos×={coverMod:F2} final={finalDamage:F1} crit={result.IsCritical} mult={result.CritDamageMultiplier:F2}" +
                       (ctx.IsEmpowered ? " empowered" : string.Empty));

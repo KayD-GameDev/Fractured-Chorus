@@ -11,8 +11,8 @@ namespace FracturedChorus.Combat.Units
         public const float AvConstant = 12000f;
 
         public HarmonyElement Element = HarmonyElement.Melody;
-        public DamageType StrengthType = DamageType.Physical;
         public float Strength = 100f;
+        public float Magic = 10f;
         public float Endurance = 10f;
         public int HeartBeat = 160;
         public float BaseLuck = 15f;
@@ -54,7 +54,13 @@ namespace FracturedChorus.Combat.Units
 
         public float ActionPriority => BaseAv;
 
-        public float AttackPower => Strength;
+        /// <summary>Legacy: Physical channel. Prefer <see cref="GetAttackPower"/>.</summary>
+        public float AttackPower => GetAttackPower(DamageType.Physical);
+
+        public float GetAttackPower(DamageType damageType)
+        {
+            return damageType == DamageType.Magical ? Magic : Strength;
+        }
 
         public static UnitStats FromBlock(UnitStatBlockSO block)
         {
@@ -67,9 +73,9 @@ namespace FracturedChorus.Combat.Units
             return new UnitStats
             {
                 Element = HarmonyElement.Melody,
-                StrengthType = DamageType.Physical,
                 Strength = 42f,
-                Endurance = 10.8f,
+                Magic = 8.8f,
+                Endurance = 11.8f,
                 HeartBeat = 167,
                 BaseLuck = 18f,
                 CritMultiplier = 1.35f,
@@ -83,9 +89,9 @@ namespace FracturedChorus.Combat.Units
             return new UnitStats
             {
                 Element = HarmonyElement.Rhythm,
-                StrengthType = DamageType.Physical,
                 Strength = 35f,
-                Endurance = 18.2f,
+                Magic = 6.4f,
+                Endurance = 19.2f,
                 HeartBeat = 127,
                 BaseLuck = 8f,
                 CritMultiplier = 1.15f,
@@ -99,9 +105,9 @@ namespace FracturedChorus.Combat.Units
             return new UnitStats
             {
                 Element = HarmonyElement.Harmony,
-                StrengthType = DamageType.Magical,
-                Strength = 50f,
-                Endurance = 9.8f,
+                Strength = 20f,
+                Magic = 50f,
+                Endurance = 10.8f,
                 HeartBeat = 147,
                 BaseLuck = 16f,
                 CritMultiplier = 1.3f,
@@ -115,8 +121,8 @@ namespace FracturedChorus.Combat.Units
             return new UnitStats
             {
                 Element = HarmonyElement.Rhythm,
-                StrengthType = DamageType.Physical,
                 Strength = 60f,
+                Magic = 5f,
                 Endurance = 8f,
                 HeartBeat = 120,
                 BaseLuck = 5f,
@@ -131,8 +137,8 @@ namespace FracturedChorus.Combat.Units
             return new UnitStats
             {
                 Element = HarmonyElement.Rhythm,
-                StrengthType = DamageType.Physical,
                 Strength = 28f,
+                Magic = 7f,
                 Endurance = 6f,
                 HeartBeat = 128,
                 BaseLuck = 7f,

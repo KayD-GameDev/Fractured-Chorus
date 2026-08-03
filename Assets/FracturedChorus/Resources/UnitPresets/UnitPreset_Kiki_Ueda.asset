@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -18,8 +18,8 @@ MonoBehaviour:
   statBlock: {fileID: 11400000, guid: d3e4f5a6b7c84901d2e3f4a506071829, type: 2}
   stats:
     Element: 0
-    StrengthType: 0
     Strength: 28
+    Magic: 10
     Endurance: 6
     HeartBeat: 128
     BaseLuck: 7

@@ -213,8 +213,8 @@ namespace FracturedChorus.Combat.Bootstrap
             preset.stats = new UnitStats
             {
                 Element = HarmonyElement.Rhythm,
-                StrengthType = DamageType.Physical,
                 Strength = 58f,
+                Magic = 8f,
                 Endurance = 20f,
                 HeartBeat = 130,
                 BaseLuck = 5f,

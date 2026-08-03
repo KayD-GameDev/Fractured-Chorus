@@ -49,6 +49,8 @@ Charlotte HP = STR × 6.0 + 50
 Coda HP      = STR × 2.0 + Ma × 0.35 + 15
 ```
 
+**Runtime (Unity):** `UnitStats` / `UnitStatBlockSO` store both `Strength` and `Magic`. Damage uses `skill.damageType` → Physical=`Strength`, Magical=`Magic`. Loadout `MaPoints` apply to Magic; HP recalculated via formulas above in `PartyLoadoutApplicator`. Build UI: scene `CharacterBuild` (standalone).
+
 ### Base Lv1
 
 | | STR | Ma | HB | EN | HP | W |

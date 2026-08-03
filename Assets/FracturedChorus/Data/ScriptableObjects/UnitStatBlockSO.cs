@@ -18,9 +18,11 @@ namespace FracturedChorus.Data
         [Tooltip("Element badge icon on party card UI — if empty, uses the default icon for the element.")]
         public Sprite elementBadgeIcon;
 
-        [Header("Strength — choose Physical/Magical, then enter the value")]
-        public DamageType strengthType = DamageType.Physical;
+        [Header("Attack channels")]
+        [Tooltip("Physical skills use Strength.")]
         public float strength = 100f;
+        [Tooltip("Magical skills use Magic.")]
+        public float magic = 10f;
 
         [Header("Other core stats")]
         public float endurance = 10f;
@@ -37,8 +39,8 @@ namespace FracturedChorus.Data
             return new UnitStats
             {
                 Element = element,
-                StrengthType = strengthType,
                 Strength = strength,
+                Magic = magic,
                 Endurance = endurance,
                 HeartBeat = heartBeat,
                 BaseLuck = baseLuck,
