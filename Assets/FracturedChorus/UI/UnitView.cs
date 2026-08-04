@@ -70,6 +70,8 @@ namespace FracturedChorus.UI
                 case "Charlott":
                 case "charlotte":
                 case "tank":
+                    SetAnimStateIfEmpty(ref counterStateName, "Charlott_Guard");
+                    SetAnimStateIfEmpty(ref guardStateName, "Charlott_Guard");
                     SetAnimStateIfEmpty(ref beCounteredStateName, "Charlott_Hurt");
                     SetAnimStateIfEmpty(ref idleStateName, "Charlott_Idle");
                     break;
@@ -228,6 +230,24 @@ namespace FracturedChorus.UI
             }
 
             _combatAnimRoutine = null;
+        }
+
+        public float AnimatorSpeed
+        {
+            get
+            {
+                ResolveAnimatorReference();
+                return animator != null ? animator.speed : 1f;
+            }
+        }
+
+        public void SetAnimatorSpeed(float speed)
+        {
+            ResolveAnimatorReference();
+            if (animator != null)
+            {
+                animator.speed = Mathf.Max(0.01f, speed);
+            }
         }
 
         private void ResolveAnimatorReference()

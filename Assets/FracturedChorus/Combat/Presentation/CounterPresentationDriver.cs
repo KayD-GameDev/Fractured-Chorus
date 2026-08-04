@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using FracturedChorus.Audio;
 using FracturedChorus.Combat.Core;
@@ -88,8 +89,9 @@ namespace FracturedChorus.Combat.Presentation
             ApplyTunablesToPolicy();
             var dspNow = AudioSettings.dspTime;
             var partyCount = _policy.RegisterPartyPerfect(dspNow, out var burstTriggered);
+            var deferPerfectToEncounter = EncounterDirector.ActiveInstance != null;
 
-            if (sfx != null)
+            if (!deferPerfectToEncounter && sfx != null)
             {
                 sfx.PlayPerfectCounter(targetDspTime);
             }
@@ -116,14 +118,15 @@ namespace FracturedChorus.Combat.Presentation
                     var useBurst = burstTriggered;
                     var mode = _policy.DecideUnitBody(counterBody.UnitId, dspNow, useBurst);
                     PlayPlayerBody(counterBody, mode);
-                    SpawnPerfectAboveUnit(counterBody, tier);
-                    CharlotteVfxChoreographer.PlayCounterIfCharlotte(counterBody);
+                    if (!deferPerfectToEncounter)
+                    {
+                        SpawnPerfectAboveUnit(counterBody, tier);
+                    }
                 }
             }
-            else if (counterBody != null)
+            else if (counterBody != null && !deferPerfectToEncounter)
             {
                 SpawnPerfectAboveUnit(counterBody, tier);
-                CharlotteVfxChoreographer.PlayCounterIfCharlotte(counterBody);
             }
 
             CombatCounterResolver.CollectCounteredEnemyUnits(timeline, beatIndex, _enemiesScratch);
@@ -137,6 +140,27 @@ namespace FracturedChorus.Combat.Presentation
             {
                 timelineView?.ShowOrRefreshMultiBanner(partyCount);
             }
+        }
+
+        public void SpawnPerfectForUnit(CombatUnit unit, BossNoteTier tier = BossNoteTier.Red)
+        {
+            PresentPerfectInEncounter(unit, tier);
+        }
+
+        public void PresentPerfectInEncounter(CombatUnit unit, BossNoteTier tier = BossNoteTier.Red)
+        {
+            ApplyPerfectChipDefaults();
+            if (sfx != null)
+            {
+                sfx.PlayPerfectCounter(-1d);
+            }
+            else
+            {
+                var found = FindAnyObjectByType<CombatSfxController>();
+                found?.PlayPerfectCounter(-1d);
+            }
+
+            SpawnPerfectAboveUnit(unit, tier);
         }
 
         private void CollectCounteringEntries(BeatTimelineEngine timeline, int beatIndex)
@@ -187,7 +211,7 @@ namespace FracturedChorus.Combat.Presentation
                 tier);
         }
 
-        private static void PlayPlayerBody(CombatUnit unit, CounterBodyMode mode)
+        private void PlayPlayerBody(CombatUnit unit, CounterBodyMode mode)
         {
             if (EnemyStrikeChoreographer.OwnsCounterPresentation)
             {
@@ -212,6 +236,17 @@ namespace FracturedChorus.Combat.Presentation
                     view.PlayCounterRestart();
                     break;
             }
+
+            if (CharlotteCounterShieldView.TrySpawnFor(view, maxHoldSeconds: 0.55f) != null)
+            {
+                StartCoroutine(DismissCharlotteShieldAfterBlock());
+            }
+        }
+
+        private IEnumerator DismissCharlotteShieldAfterBlock()
+        {
+            yield return new WaitForSeconds(0.32f);
+            yield return CharlotteCounterShieldView.DismissAllAndWait();
         }
 
         private static void PlayEnemyBody(CombatUnit unit, CounterBodyMode mode)

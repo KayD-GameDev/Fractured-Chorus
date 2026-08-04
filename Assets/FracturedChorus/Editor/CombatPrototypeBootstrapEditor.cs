@@ -23,6 +23,7 @@ namespace FracturedChorus.Editor
         private static bool _foldSkillPanel = false;
         private static bool _foldPartyEnemy = false;
         private static bool _foldAudio = false;
+        private static bool _foldRenSkillVfx = true;
 
         public override void OnInspectorGUI()
         {
@@ -41,6 +42,7 @@ namespace FracturedChorus.Editor
             DrawCounterFeel(bootstrap);
             DrawTimeline(bootstrap);
             DrawSkillPanel(bootstrap);
+            DrawRenSkillVfx(bootstrap);
             DrawPartyEnemy(bootstrap);
             DrawAudio(bootstrap);
 
@@ -267,6 +269,85 @@ namespace FracturedChorus.Editor
             EditorGUILayout.PropertyField(enemyProp);
             var enemy = enemyProp.objectReferenceValue as EnemyStatusBarUIView;
             DrawPingRow(enemy != null ? enemy.gameObject : null, "Select EnemyStatusBarUI");
+            EditorGUI.indentLevel--;
+            serializedObject.ApplyModifiedProperties();
+        }
+
+        private void DrawRenSkillVfx(CombatPrototypeBootstrap bootstrap)
+        {
+            _foldRenSkillVfx = EditorGUILayout.Foldout(_foldRenSkillVfx, "Ren Skill VFX (1 melee / 2 one / 3 triple)", true);
+            if (!_foldRenSkillVfx)
+            {
+                return;
+            }
+
+            EditorGUI.indentLevel++;
+            var prop = serializedObject.FindProperty("playerSkillShotChoreographer");
+            EditorGUILayout.PropertyField(prop, new GUIContent("Choreographer"));
+
+            var choreo = prop.objectReferenceValue as PlayerSkillShotChoreographer;
+            DrawPingRow(choreo != null ? choreo.gameObject : null, "Select PlayerSkillShotChoreographer");
+
+            if (choreo != null)
+            {
+                var so = new SerializedObject(choreo);
+                so.Update();
+                EditorGUILayout.PropertyField(so.FindProperty("shotParent"));
+                EditorGUILayout.PropertyField(so.FindProperty("aimHeightOffset"));
+                EditorGUILayout.Space(2f);
+                EditorGUILayout.LabelField("Skill 1 — Gun butt / counter lunge", EditorStyles.boldLabel);
+                EditorGUILayout.PropertyField(so.FindProperty("meleeArcSprite"));
+                EditorGUILayout.PropertyField(so.FindProperty("meleeImpactSprite"));
+                EditorGUILayout.PropertyField(so.FindProperty("meleeArcSeconds"));
+                EditorGUILayout.PropertyField(so.FindProperty("meleeImpactSeconds"));
+                EditorGUILayout.PropertyField(so.FindProperty("meleeArcWorldSize"));
+                EditorGUILayout.PropertyField(so.FindProperty("meleeImpactWorldSize"));
+                EditorGUILayout.PropertyField(so.FindProperty("meleeStandoffX"));
+                EditorGUILayout.PropertyField(so.FindProperty("meleeHitReach"));
+                EditorGUILayout.PropertyField(so.FindProperty("meleeLungeSpeed"));
+                EditorGUILayout.PropertyField(so.FindProperty("meleeLungeSeconds"));
+                EditorGUILayout.PropertyField(so.FindProperty("meleeRetreatSeconds"));
+                EditorGUILayout.PropertyField(so.FindProperty("meleeImpactNormalizedTime"));
+                EditorGUILayout.Space(2f);
+                EditorGUILayout.LabelField("Skill 2/3 — Bullet", EditorStyles.boldLabel);
+                EditorGUILayout.PropertyField(so.FindProperty("bulletHeadSprite"));
+                EditorGUILayout.PropertyField(so.FindProperty("bulletTrailSprite"));
+                EditorGUILayout.PropertyField(so.FindProperty("bulletImpactSprite"));
+                EditorGUILayout.PropertyField(so.FindProperty("bulletFlightFrames"), true);
+                EditorGUILayout.PropertyField(so.FindProperty("bulletTravelSeconds"));
+                EditorGUILayout.PropertyField(so.FindProperty("bulletImpactSeconds"));
+                EditorGUILayout.PropertyField(so.FindProperty("bulletHeadWorldSize"));
+                EditorGUILayout.PropertyField(so.FindProperty("bulletTrailHeight"));
+                EditorGUILayout.Space(2f);
+                EditorGUILayout.LabelField("Skill 3 — Multi", EditorStyles.boldLabel);
+                EditorGUILayout.PropertyField(so.FindProperty("skill3BulletCount"));
+                EditorGUILayout.PropertyField(so.FindProperty("skill3ShotFrameA"));
+                EditorGUILayout.PropertyField(so.FindProperty("skill3ShotFrameB"));
+                EditorGUILayout.PropertyField(so.FindProperty("skill3VerticalSpread"));
+                EditorGUILayout.PropertyField(so.FindProperty("ultAuraGlowSprite"));
+                EditorGUILayout.PropertyField(so.FindProperty("ultAuraNotesSprite"));
+                EditorGUILayout.PropertyField(so.FindProperty("additiveMaterial"));
+                EditorGUILayout.PropertyField(so.FindProperty("sortingOrder"));
+                EditorGUILayout.PropertyField(so.FindProperty("loadResourcesFallback"));
+                if (GUILayout.Button("Assign Default Ren VFX From Resources"))
+                {
+                    choreo.EnsureDefaults();
+                    EditorUtility.SetDirty(choreo);
+                }
+
+                if (so.ApplyModifiedProperties())
+                {
+                    EditorUtility.SetDirty(choreo);
+                }
+            }
+            else
+            {
+                EditorGUILayout.HelpBox(
+                    "Chưa gán PlayerSkillShotChoreographer. Play sẽ AddComponent trên CombatRoot; " +
+                    "nên gán sẵn trên scene để chỉnh sprite/timing.",
+                    MessageType.Warning);
+            }
+
             EditorGUI.indentLevel--;
             serializedObject.ApplyModifiedProperties();
         }

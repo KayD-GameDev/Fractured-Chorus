@@ -75,6 +75,7 @@ namespace FracturedChorus.Combat.Actions
                 case SkillEffectKind.Damage:
                 default:
                     ApplyDamageTargets(ctx);
+                    TryGrantTimedShieldOverlay(ctx);
                     break;
             }
         }
@@ -119,7 +120,15 @@ namespace FracturedChorus.Combat.Actions
             }
 
             var amount = ctx.Skill.ResolveEffectValue(ctx.IsEmpowered);
-            ctx.Source.AddShield(amount);
+            if (UsesTimedShield(ctx.Skill))
+            {
+                ApplyTimedShields(ctx, amount);
+            }
+            else
+            {
+                ctx.Source.AddShield(amount);
+            }
+
             if (ctx.Entry != null)
             {
                 ctx.Entry.EffectPayloadApplied = true;
@@ -127,9 +136,93 @@ namespace FracturedChorus.Combat.Actions
 
             Debug.Log(
                 $"[SkillAction] {ctx.Source.DisplayName} gains Shield {amount}" +
+                (ctx.Skill.timedShieldAllAllies ? " (party)" : string.Empty) +
                 (ctx.IsEmpowered && ctx.Skill.empowerGuardChargeOnPerfect
                     ? " (empowered · GuardCharge on OnBeat block in S)"
                     : ctx.IsEmpowered ? " (empowered)" : string.Empty));
+        }
+
+        private void TryGrantTimedShieldOverlay(CombatContext ctx)
+        {
+            if (ctx?.Skill == null || !ctx.Skill.grantTimedShield)
+            {
+                return;
+            }
+
+            if (ctx.Entry != null && ctx.Entry.EffectPayloadApplied)
+            {
+                return;
+            }
+
+            var amount = ctx.Skill.timedShieldAmount > 0
+                ? ctx.Skill.timedShieldAmount
+                : ctx.Skill.ResolveEffectValue(ctx.IsEmpowered);
+            ApplyTimedShields(ctx, amount);
+
+            if (ctx.Entry != null)
+            {
+                ctx.Entry.EffectPayloadApplied = true;
+            }
+
+            Debug.Log(
+                $"[SkillAction] {ctx.Source.DisplayName} timed shield +{amount}" +
+                (ctx.Skill.timedShieldAllAllies ? " (party)" : " (self)"));
+        }
+
+        private static bool UsesTimedShield(SkillDefinitionSO skill)
+        {
+            if (skill == null)
+            {
+                return false;
+            }
+
+            return skill.grantTimedShield
+                   || skill.timedShieldAllAllies
+                   || skill.timedShieldUntilPhaseEnd
+                   || skill.timedShieldDurationBeats > 0;
+        }
+
+        private static void ApplyTimedShields(CombatContext ctx, int amount)
+        {
+            if (ctx?.Source == null || amount <= 0)
+            {
+                return;
+            }
+
+            var expireAt = ResolveTimedShieldExpireBeat(ctx);
+            if (ctx.Skill.timedShieldAllAllies && ctx.Grid != null)
+            {
+                foreach (var ally in ctx.Grid.GetAllies(ctx.Source.Side))
+                {
+                    if (ally != null && ally.IsAlive)
+                    {
+                        ally.GrantTimedShield(amount, expireAt);
+                    }
+                }
+
+                return;
+            }
+
+            ctx.Source.GrantTimedShield(amount, expireAt);
+        }
+
+        private static int ResolveTimedShieldExpireBeat(CombatContext ctx)
+        {
+            var skill = ctx.Skill;
+            var castBeat = ctx.Entry != null
+                ? ctx.Entry.BeatIndex + SkillFootprintUtil.GetStandingBefore(skill)
+                : 0;
+
+            if (skill.timedShieldUntilPhaseEnd)
+            {
+                TimelineConstants.GetPhaseBeatRange(
+                    TimelineConstants.GetPhaseIndex(castBeat),
+                    out var start,
+                    out var count);
+                return start + count;
+            }
+
+            return castBeat + Mathf.Max(1, skill.timedShieldDurationBeats);
         }
 
         private void ApplyDelayBossNote(CombatContext ctx)

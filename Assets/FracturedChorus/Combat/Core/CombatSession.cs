@@ -83,10 +83,7 @@ namespace FracturedChorus.Combat.Core
             foreach (var unit in Grid.GetAllUnits())
             {
                 unit.OnHpChanged += u => OnUnitHpChanged?.Invoke(u);
-                if (unit.Side == GridSide.Enemy)
-                {
-                    unit.OnDied += HandleEnemyDied;
-                }
+                unit.OnDied += HandleUnitDied;
             }
 
             BeginPlanningRound();
@@ -110,15 +107,56 @@ namespace FracturedChorus.Combat.Core
             _lastScanBeat = beatIndex;
         }
 
-        private void HandleEnemyDied(CombatUnit unit)
+        private void HandleUnitDied(CombatUnit unit)
         {
-            if (unit == null || unit.Side != GridSide.Enemy || Timeline == null || IsEncounterOver)
+            if (unit == null || Timeline == null || IsEncounterOver)
             {
                 return;
             }
 
-            RemoveTelegraphsForDeadUnit(unit);
-            OnTelegraphsPlanned?.Invoke(GetDeathPhaseIndex());
+            if (unit.Side == GridSide.Player)
+            {
+                RemoveAgendaForDeadUnit(unit);
+                return;
+            }
+
+            if (unit.Side == GridSide.Enemy)
+            {
+                RemoveTelegraphsForDeadUnit(unit);
+                OnTelegraphsPlanned?.Invoke(GetDeathPhaseIndex());
+            }
+        }
+
+        private void RemoveAgendaForDeadUnit(CombatUnit unit)
+        {
+            if (unit == null || Timeline == null)
+            {
+                return;
+            }
+
+            var entries = Timeline.Agenda
+                .Where(a => a != null && a.Unit == unit && a.Skill != null)
+                .ToList();
+            if (entries.Count == 0)
+            {
+                return;
+            }
+
+            if (Phase == CombatPhase.Planning)
+            {
+                foreach (var entry in entries)
+                {
+                    RevertPlanningUtilityEffects(entry);
+                }
+            }
+
+            var removed = Timeline.RemoveAgendaEntriesForUnit(unit);
+            if (removed > 0)
+            {
+                Debug.Log(
+                    $"[Combat] Removed {removed} timeline skill(s) for dead unit {unit.DisplayName}");
+                OnTelegraphsPlanned?.Invoke(GetDeathPhaseIndex());
+            }
         }
 
         /// <summary>Strip dead unit telegraphs from death phase through lookahead horizon.</summary>
@@ -435,6 +473,84 @@ namespace FracturedChorus.Combat.Core
             ResolveUpkeep();
         }
 
+        public bool IsBeatResolved(int beatIndex) => _resolvedBeats.Contains(beatIndex);
+
+        public bool HasResolvableNoteAt(int beatIndex)
+        {
+            return TryGetResolvePairAtBeat(beatIndex, out _, out _);
+        }
+
+        public bool TryGetResolvePairAtBeat(int beatIndex, out CombatUnit player, out CombatUnit enemy)
+        {
+            player = null;
+            enemy = null;
+            if (Timeline == null || Grid == null || beatIndex < 0 || beatIndex >= TimelineConstants.TotalBeats)
+            {
+                return false;
+            }
+
+            if (_resolvedBeats.Contains(beatIndex))
+            {
+                return false;
+            }
+
+            var telegraphs = Timeline.GetImpactTelegraphsAtBeat(beatIndex);
+            var playerEntries = GetPlayerEntriesActiveAtBeat(beatIndex);
+            if ((telegraphs == null || telegraphs.Count == 0) && (playerEntries == null || playerEntries.Count == 0))
+            {
+                return false;
+            }
+
+            if (playerEntries != null && playerEntries.Count > 0)
+            {
+                player = CombatCounterResolver.SelectCounterBody(
+                    playerEntries.Select(e => e.Unit).Where(u => u != null && u.IsAlive).ToList());
+                if (player == null)
+                {
+                    player = playerEntries[0].Unit;
+                }
+            }
+
+            if (telegraphs != null && telegraphs.Count > 0)
+            {
+                for (var i = 0; i < telegraphs.Count; i++)
+                {
+                    var telegraph = telegraphs[i];
+                    if (telegraph?.Unit != null && telegraph.Unit.IsAlive)
+                    {
+                        enemy = telegraph.Unit;
+                        break;
+                    }
+                }
+            }
+
+            if (player == null && enemy != null)
+            {
+                player = CombatTargetPicker.PickEnemyAttackTargetForBeat(Grid, Timeline, beatIndex);
+            }
+
+            if (enemy == null && player != null && playerEntries != null && playerEntries.Count > 0)
+            {
+                enemy = PickTarget(playerEntries[0]);
+                if (enemy != null && enemy.Side == GridSide.Player)
+                {
+                    enemy = Grid.EnemyUnits.FirstOrDefault(u => u != null && u.IsAlive);
+                }
+            }
+
+            if (player == null)
+            {
+                player = Grid.PlayerUnits.FirstOrDefault(u => u != null && u.IsAlive);
+            }
+
+            if (enemy == null)
+            {
+                enemy = Grid.EnemyUnits.FirstOrDefault(u => u != null && u.IsAlive);
+            }
+
+            return player != null && enemy != null && player.IsAlive && enemy.IsAlive;
+        }
+
         /// <summary>Gọi khi scan bar đi qua một beat — resolve player attack + enemy telegraph.</summary>
         public void ResolveBeatAtScan(int beatIndex)
         {
@@ -451,6 +567,8 @@ namespace FracturedChorus.Combat.Core
             var telegraphs = Timeline.GetImpactTelegraphsAtBeat(beatIndex);
             var playerEntries = GetPlayerEntriesActiveAtBeat(beatIndex);
 
+            TickTimedShields(beatIndex);
+
             OnBeforeResolveBeat?.Invoke(beatIndex);
 
             Cover.BeginWindowIfPending();
@@ -466,6 +584,24 @@ namespace FracturedChorus.Combat.Core
 
             Cover.TickBeat();
             TryEndEncounterIfDecided();
+        }
+
+        private void TickTimedShields(int beatIndex)
+        {
+            if (Grid == null)
+            {
+                return;
+            }
+
+            foreach (var unit in Grid.PlayerUnits)
+            {
+                unit?.TickTimedShieldExpiry(beatIndex);
+            }
+
+            foreach (var unit in Grid.EnemyUnits)
+            {
+                unit?.TickTimedShieldExpiry(beatIndex);
+            }
         }
 
         private List<AgendaEntry> GetPlayerEntriesActiveAtBeat(int beatIndex)
@@ -579,7 +715,7 @@ namespace FracturedChorus.Combat.Core
             IReadOnlyList<EnemyTelegraph> telegraphs)
         {
             var players = entries
-                .Where(e => e.Unit != null && e.Skill != null && !e.Skill.IsGuard)
+                .Where(e => e.Unit != null && e.Unit.IsAlive && e.Skill != null && !e.Skill.IsGuard)
                 .OrderBy(e => e.Unit.ActionPriority)
                 .ToList();
 
@@ -606,12 +742,16 @@ namespace FracturedChorus.Combat.Core
 
             var target = CombatTargetPicker.PickEnemyAttackTargetForBeat(Grid, Timeline, beatIndex);
 
+            var swordCount = telegraph.HitsRequired > 0
+                ? telegraph.HitsRequired
+                : System.Math.Max(1, (int)telegraph.NoteTier);
+
             if (CombatCounterResolver.IsTelegraphFullyCountered(telegraph, Timeline))
             {
                 Debug.Log(
                     $"[Counter] Cancelled {telegraph.Unit.DisplayName} @ beat {beatIndex} ({telegraph.NoteTier}, need {telegraph.HitsRequired})");
                 OnEnemyStrikeResolved?.Invoke(
-                    new EnemyStrikeReport(telegraph.Unit, target, wasCountered: true, beatIndex));
+                    new EnemyStrikeReport(telegraph.Unit, target, wasCountered: true, beatIndex, swordCount));
                 return;
             }
 
@@ -671,7 +811,7 @@ namespace FracturedChorus.Combat.Core
                 (Mathf.Approximately(positionalMod, 1f) ? string.Empty : $" pos×={positionalMod:F2}"));
 
             OnEnemyStrikeResolved?.Invoke(
-                new EnemyStrikeReport(telegraph.Unit, target, wasCountered: false, beatIndex));
+                new EnemyStrikeReport(telegraph.Unit, target, wasCountered: false, beatIndex, swordCount));
         }
 
         private void ApplyColumnSlamIfNeeded(CombatUnit primaryTarget, float splashDamage, bool isCritical)

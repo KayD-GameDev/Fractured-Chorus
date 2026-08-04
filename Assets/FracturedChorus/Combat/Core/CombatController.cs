@@ -345,6 +345,7 @@ namespace FracturedChorus.Combat.Core
             deployFormationHint?.Hide();
 
             _boardDrag?.CancelActiveDrag();
+            ForceCancelRelocate();
 
             _boardDrag?.SetSlotFloorsVisible(false);
 
@@ -365,6 +366,10 @@ namespace FracturedChorus.Combat.Core
 
                 _musicController.ExitPlanningDuck();
             }
+
+            var encounterHomes = EncounterDirector.ActiveInstance
+                                 ?? FindAnyObjectByType<EncounterDirector>();
+            encounterHomes?.CapturePhaseHomes();
 
             if (timelineView != null && timelineView.IsPausedForPlanning)
             {
@@ -446,6 +451,11 @@ namespace FracturedChorus.Combat.Core
                 return false;
             }
 
+            if (_relocateSkill != null)
+            {
+                ForceCancelRelocate();
+            }
+
             var entry = _session.Timeline.FindPlayerEntry(unit, beatIndex);
             if (entry?.Skill == null)
             {
@@ -456,14 +466,14 @@ namespace FracturedChorus.Combat.Core
             _relocateSkill = entry.Skill;
             _relocateFromBeat = beatIndex;
 
+            timelineView?.PrepareLaneMarkerRelocate(unit, beatIndex);
+
             if (!_session.TryRemovePlayerAction(unit, beatIndex))
             {
                 ClearRelocateState();
                 return false;
             }
 
-            RefreshBeatsForSkillFootprint(unit, entry.Skill, beatIndex);
-            timelineView?.PrepareLaneMarkerRelocate(unit, beatIndex);
             timelineView?.SoftHideFootprintsForRelocate(unit);
             return true;
         }
@@ -557,6 +567,37 @@ namespace FracturedChorus.Combat.Core
             _relocateFromBeat = -1;
         }
 
+        private void ForceCancelRelocate()
+        {
+            if (_relocateSkill == null)
+            {
+                return;
+            }
+
+            var unit = _relocateUnit;
+            var skill = _relocateSkill;
+            var fromBeat = _relocateFromBeat;
+            ClearRelocateState();
+
+            if (unit != null && skill != null && fromBeat >= 0
+                && _session != null && _session.IsPlanningWindowOpen)
+            {
+                if (!_session.TryAssignPlayerAction(unit, skill, fromBeat))
+                {
+                    var fallback = _session.Timeline != null
+                        ? _session.Timeline.FindFirstAssignableBeat(unit, skill)
+                        : -1;
+                    if (fallback >= 0)
+                    {
+                        _session.TryAssignPlayerAction(unit, skill, fallback);
+                    }
+                }
+            }
+
+            timelineView?.RefreshAll();
+            timelineView?.RefreshLaneMarkers();
+        }
+
 
 
         public void RefreshExecuteOverlayVisibility()
@@ -632,6 +673,10 @@ namespace FracturedChorus.Combat.Core
                 yield break;
             }
 
+            var encounter = EncounterDirector.ActiveInstance
+                            ?? FindAnyObjectByType<EncounterDirector>();
+            encounter?.RestorePhaseHomes();
+
             _musicController?.EnterPlanningDuck();
             _planningPaused = false;
             _awaitingExecute = true;
@@ -662,11 +707,19 @@ namespace FracturedChorus.Combat.Core
         {
             yield return null;
 
-            const float timeoutSec = 10f;
+            const float timeoutSec = 20f;
             var deadline = Time.unscaledTime + timeoutSec;
 
             while (Time.unscaledTime < deadline)
             {
+                var encounter = EncounterDirector.ActiveInstance
+                                ?? FindAnyObjectByType<EncounterDirector>();
+                if (encounter != null && encounter.IsBusy)
+                {
+                    yield return null;
+                    continue;
+                }
+
                 var choreographer = EnemyStrikeChoreographer.ActiveInstance;
                 if (choreographer == null)
                 {
@@ -676,6 +729,13 @@ namespace FracturedChorus.Combat.Core
                 if (choreographer == null || !choreographer.IsBusy)
                 {
                     yield return null;
+                    encounter = EncounterDirector.ActiveInstance
+                                ?? FindAnyObjectByType<EncounterDirector>();
+                    if (encounter != null && encounter.IsBusy)
+                    {
+                        continue;
+                    }
+
                     choreographer = EnemyStrikeChoreographer.ActiveInstance;
                     if (choreographer == null)
                     {
@@ -862,6 +922,11 @@ namespace FracturedChorus.Combat.Core
 
         {
 
+            if (_relocateSkill != null)
+            {
+                ForceCancelRelocate();
+            }
+
             timelineView?.SetPhase(phase);
 
             timelineView?.RefreshAll();
@@ -899,6 +964,11 @@ namespace FracturedChorus.Combat.Core
         private void HandleActionAssigned(AgendaEntry entry)
 
         {
+
+            if (_relocateSkill != null)
+            {
+                return;
+            }
 
             timelineView?.RefreshBeat(entry.BeatIndex);
 

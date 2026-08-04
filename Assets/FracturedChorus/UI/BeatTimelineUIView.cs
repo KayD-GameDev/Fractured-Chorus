@@ -103,6 +103,7 @@ namespace FracturedChorus.UI
         private bool _suppressTelegraphRefresh;
         private Coroutine _delaySlideRoutine;
         private bool _pausedForPlanning;
+        private bool _pausedForEncounter;
         private int _lastHighlightedSlotIndex = -1;
         private int _lastCounterSfxBeat = -1;
         private float _lastScanLineContentPos = -1f;
@@ -855,6 +856,8 @@ namespace FracturedChorus.UI
                 _timeline.OnTelegraphMoved += HandleTelegraphMoved;
                 _timeline.OnTelegraphsDelayedBatch -= HandleTelegraphsDelayedBatch;
                 _timeline.OnTelegraphsDelayedBatch += HandleTelegraphsDelayedBatch;
+                _timeline.OnAgendaChanged -= HandleAgendaChanged;
+                _timeline.OnAgendaChanged += HandleAgendaChanged;
             }
 
             WireReferences();
@@ -883,6 +886,16 @@ namespace FracturedChorus.UI
             }
 
             RefreshTelegraphsAndSlots();
+        }
+
+        private void HandleAgendaChanged()
+        {
+            if (_relocatePendingKey.HasValue)
+            {
+                return;
+            }
+
+            RefreshAll();
         }
 
         private void HandleTelegraphMoved(int fromBeat, int toBeat, int delayBeats)
@@ -1355,8 +1368,6 @@ namespace FracturedChorus.UI
                 var c = kvp.Value.color;
                 kvp.Value.color = new Color(c.r, c.g, c.b, 0f);
                 kvp.Value.raycastTarget = false;
-                var handle = kvp.Value.GetComponent<TimelineLaneSkillDragHandle>();
-                handle?.SetInteractionEnabled(false);
             }
         }
 
@@ -1431,6 +1442,7 @@ namespace FracturedChorus.UI
             _introCompleteCallback = null;
             _autoPlayCompleted = false;
             _pausedForPlanning = false;
+            _pausedForEncounter = false;
             ResetCounterSfxState();
             counterPresentation?.ResetPresentation();
 
@@ -1623,6 +1635,9 @@ namespace FracturedChorus.UI
         /// <summary>Scan đang đóng băng chờ player set up skill (nhạc vẫn chạy).</summary>
         public bool IsPausedForPlanning => _pausedForPlanning;
 
+        /// <summary>Scan đóng băng cho Encounter system (nhạc vẫn chạy, không duck).</summary>
+        public bool IsPausedForEncounter => _pausedForEncounter;
+
         private int _tutorialPauseAtBeat = -1;
 
         public void ArmTutorialScanPause(int absoluteBeat)
@@ -1669,6 +1684,34 @@ namespace FracturedChorus.UI
 
             _pausedForPlanning = false;
             musicController?.ExitPlanningDuck();
+            ResumeScanFromFrozenLocalBeat();
+        }
+
+        public void PauseForEncounter()
+        {
+            _pausedForEncounter = true;
+            _isPlaybackActive = false;
+            if (_autoPlayRoutine != null)
+            {
+                StopCoroutine(_autoPlayRoutine);
+                _autoPlayRoutine = null;
+            }
+        }
+
+        /// <summary>Resume sweep mượt từ đúng vị trí pause; remap theo nhạc đang chạy.</summary>
+        public void ResumeAfterEncounter()
+        {
+            if (!_pausedForEncounter)
+            {
+                return;
+            }
+
+            _pausedForEncounter = false;
+            ResumeScanFromFrozenLocalBeat();
+        }
+
+        private void ResumeScanFromFrozenLocalBeat()
+        {
             AnchorTimelineToNextBar();
             ResetCounterSfxState();
             RebuildCounterBeatCache();
@@ -1676,6 +1719,12 @@ namespace FracturedChorus.UI
             if (_autoPlayRoutine != null)
             {
                 StopCoroutine(_autoPlayRoutine);
+                _autoPlayRoutine = null;
+            }
+
+            if (!isActiveAndEnabled || !gameObject.activeInHierarchy)
+            {
+                return;
             }
 
             _autoPlayRoutine = CanUseMusicSync()
@@ -1744,7 +1793,7 @@ namespace FracturedChorus.UI
                 yield return null;
             }
 
-            if (_pausedForPlanning)
+            if (_pausedForPlanning || _pausedForEncounter)
             {
                 _autoPlayRoutine = null;
                 yield break;
@@ -1788,7 +1837,7 @@ namespace FracturedChorus.UI
                 yield return null;
             }
 
-            if (_pausedForPlanning)
+            if (_pausedForPlanning || _pausedForEncounter)
             {
                 _autoPlayRoutine = null;
                 yield break;
@@ -1835,6 +1884,7 @@ namespace FracturedChorus.UI
             StopAutoPlay();
             _autoPlayCompleted = true;
             _pausedForPlanning = false;
+            _pausedForEncounter = false;
             ResetCounterSfxState();
             ResetAllScanHighlights();
         }
@@ -1954,7 +2004,8 @@ namespace FracturedChorus.UI
             _isPlaybackActive = false;
         }
 
-        public bool IsPlaybackActive => _isPlaybackActive && !_pausedForPlanning;
+        public bool IsPlaybackActive =>
+            _isPlaybackActive && !_pausedForPlanning && !_pausedForEncounter;
 
         public float GetAbsolutePlaybackBeatPublic() => GetAbsolutePlaybackBeat();
 
@@ -2040,7 +2091,7 @@ namespace FracturedChorus.UI
 
         private void ProcessScanLineCrossings()
         {
-            if (!_isPlaybackActive || _pausedForPlanning || !_slotsBuilt)
+            if (!_isPlaybackActive || _pausedForPlanning || _pausedForEncounter || !_slotsBuilt)
             {
                 return;
             }
@@ -2073,6 +2124,12 @@ namespace FracturedChorus.UI
 
                 TryPlayCounterEnterSfx(beat);
                 FireScanBeat(beat);
+
+                if (_pausedForEncounter || _pausedForPlanning)
+                {
+                    _lastScanLineContentPos = contentPos;
+                    return;
+                }
 
                 if (_session != null && _session.IsEncounterOver)
                 {
@@ -2121,6 +2178,16 @@ namespace FracturedChorus.UI
             var introActive = _session != null && _session.IsCombatIntroActive;
             if (!introActive)
             {
+                var encounter = EncounterDirector.ActiveInstance
+                                ?? FindAnyObjectByType<EncounterDirector>();
+                if (encounter != null && encounter.TryInterceptScanBeat(beat))
+                {
+                    RefreshBeat(beat);
+                    RefreshPhaseAvLabel();
+                    UpdateScanHighlights();
+                    return;
+                }
+
                 _session?.ResolveBeatAtScan(beat);
                 PlayAttackAnimationsAtBeat(beat);
             }
@@ -3319,6 +3386,11 @@ namespace FracturedChorus.UI
 
             foreach (var key in stale)
             {
+                if (_relocatePendingKey is { } pending && pending.unit == key.unit)
+                {
+                    continue;
+                }
+
                 if (_footprintDots.TryGetValue(key, out var dot) && dot != null)
                 {
                     Destroy(dot.gameObject);
@@ -4189,6 +4261,14 @@ namespace FracturedChorus.UI
         private void OnDestroy()
         {
             StopAutoPlay();
+            if (_timeline != null)
+            {
+                _timeline.OnTelegraphsChanged -= HandleTelegraphsChanged;
+                _timeline.OnTelegraphMoved -= HandleTelegraphMoved;
+                _timeline.OnTelegraphsDelayedBatch -= HandleTelegraphsDelayedBatch;
+                _timeline.OnAgendaChanged -= HandleAgendaChanged;
+            }
+
             if (_session != null)
             {
                 _session.OnScanBeat -= HandleScanBeat;
