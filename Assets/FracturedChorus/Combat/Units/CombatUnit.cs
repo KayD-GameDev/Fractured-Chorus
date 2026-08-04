@@ -24,6 +24,9 @@ namespace FracturedChorus.Combat.Units
         public int Shield { get; private set; }
         public int PendingReduceS2 { get; private set; }
 
+        private int _timedShieldPool;
+        private int _timedShieldExpireBeatExclusive = int.MaxValue;
+
         /// <summary>Thứ tự đặt lên lưới — dùng sắp xếp thẻ party khi cùng cột/hàng.</summary>
         public int PartyBarOrder { get; internal set; }
 
@@ -93,6 +96,10 @@ namespace FracturedChorus.Combat.Units
                 var absorbed = Mathf.Min(Shield, remaining);
                 Shield -= absorbed;
                 remaining -= absorbed;
+                if (_timedShieldPool > 0)
+                {
+                    _timedShieldPool = Mathf.Min(_timedShieldPool, Shield);
+                }
             }
 
             if (remaining > 0)
@@ -149,6 +156,42 @@ namespace FracturedChorus.Combat.Units
             }
 
             Shield += amount;
+            LastHpChange = HpChangeInfo.Silent;
+            OnHpChanged?.Invoke(this);
+        }
+
+        public void GrantTimedShield(int amount, int expireAtBeatExclusive)
+        {
+            if (!IsAlive || amount <= 0)
+            {
+                return;
+            }
+
+            AddShield(amount);
+            _timedShieldPool += amount;
+            if (_timedShieldExpireBeatExclusive == int.MaxValue)
+            {
+                _timedShieldExpireBeatExclusive = expireAtBeatExclusive;
+            }
+            else
+            {
+                _timedShieldExpireBeatExclusive = Mathf.Max(
+                    _timedShieldExpireBeatExclusive,
+                    expireAtBeatExclusive);
+            }
+        }
+
+        public void TickTimedShieldExpiry(int currentBeat)
+        {
+            if (_timedShieldPool <= 0 || currentBeat < _timedShieldExpireBeatExclusive)
+            {
+                return;
+            }
+
+            var remove = Mathf.Min(Shield, _timedShieldPool);
+            Shield -= remove;
+            _timedShieldPool = 0;
+            _timedShieldExpireBeatExclusive = int.MaxValue;
             LastHpChange = HpChangeInfo.Silent;
             OnHpChanged?.Invoke(this);
         }

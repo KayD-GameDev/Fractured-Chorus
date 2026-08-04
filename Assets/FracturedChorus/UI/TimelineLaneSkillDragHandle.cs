@@ -4,14 +4,14 @@ using UnityEngine.EventSystems;
 
 namespace FracturedChorus.UI
 {
-    /// <summary>Raycast target + drag handle for relocating an assigned skill on a character lane.</summary>
     public class TimelineLaneSkillDragHandle : MonoBehaviour,
-        IPointerDownHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
+        IBeginDragHandler, IDragHandler, IEndDragHandler
     {
         private BeatTimelineUIView _timeline;
         private CombatUnit _unit;
         private int _placementBeat;
         private bool _dragging;
+        private Vector2 _lastScreenPos;
 
         public void Configure(BeatTimelineUIView timeline, CombatUnit unit, int placementBeat)
         {
@@ -29,15 +29,6 @@ namespace FracturedChorus.UI
             }
         }
 
-        public void OnPointerDown(PointerEventData eventData)
-        {
-            ResolveTimeline();
-            if (_timeline == null || !_timeline.CanRelocateLaneMarker())
-            {
-                return;
-            }
-        }
-
         public void OnBeginDrag(PointerEventData eventData)
         {
             _dragging = false;
@@ -48,6 +39,7 @@ namespace FracturedChorus.UI
                 return;
             }
 
+            _lastScreenPos = eventData.position;
             _dragging = _timeline.TryBeginLaneMarkerRelocate(_unit, _placementBeat);
             if (_dragging)
             {
@@ -62,18 +54,35 @@ namespace FracturedChorus.UI
                 return;
             }
 
+            _lastScreenPos = eventData.position;
             _timeline.UpdateLaneMarkerRelocate(eventData.position);
         }
 
         public void OnEndDrag(PointerEventData eventData)
         {
-            if (!_dragging || _timeline == null)
+            FinishDrag(eventData != null ? eventData.position : _lastScreenPos);
+        }
+
+        private void OnDisable()
+        {
+            if (!_dragging)
             {
                 return;
             }
 
-            _timeline.EndLaneMarkerRelocate(eventData.position);
+            FinishDrag(_lastScreenPos);
+        }
+
+        private void FinishDrag(Vector2 screenPos)
+        {
+            if (!_dragging)
+            {
+                return;
+            }
+
             _dragging = false;
+            ResolveTimeline();
+            _timeline?.EndLaneMarkerRelocate(screenPos);
         }
 
         private void ResolveTimeline()

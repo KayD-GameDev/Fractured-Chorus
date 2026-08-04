@@ -91,11 +91,12 @@ Scan / Execute after activate         →  12 beat window: party dmg ×1.25
 
 | # | Tên | S1-S-S2 | Tier | Base | Empower |
 |---|-----|---------|------|------|---------|
-| 1 | **Ram** | 1-1-1 | 1 | Damage | — |
+| 1 | **Ram** | 1-1-1 | 1 | Damage + **Shield 25** (self, **3 beats**) | — |
 | 2 | **Anchor** | 2-2-2 | 2 | **DelayBossNote +2** — chỉ note **sau S**; note trong S không đẩy | ≥1: Delay **+3** · giữ tier |
-| 3 | **Bulwark** | 2-2-3 | 2 | **Shield 65** + counter dmg | ≥2: Shield **100** · OnBeat Space block trong S → **GuardCharge +1** (Early/Late→OnBeat 1 lần) |
+| 3 | **Bulwark** | 2-2-3 | 2 | **Party Shield 65** (**1 phase**) + counter dmg | ≥2: Party Shield **100** · OnBeat Space block trong S → **GuardCharge +1** (Early/Late→OnBeat 1 lần) |
 
-**Asset:** `tank_basic` · `tank_skill` · `tank_ult`
+**Asset:** `Charlott_basic` / `tank_*` · `tank_skill` · `tank_ult`  
+**VFX:** Ram = **music orbit shield** (notes+wave xoay quanh Charlotte, ~1.6 / r1.1, 3 beats) · Bulwark = **1 party dome** (size 7.6 · x -2.39 · y 1.64) bao cả đội trong 1 phase
 
 | Skill | vs CORE | vs MICRO/EYE |
 |-------|---------|--------------|

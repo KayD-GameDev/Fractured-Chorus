@@ -34,8 +34,33 @@ namespace FracturedChorus.Combat.Presentation
         [Tooltip("Battlefield mid X the enemy is knocked toward after a counter.")]
         [SerializeField] private float midStagingX = 0f;
 
+        [Header("Enemy Projectile Volley")]
+        [SerializeField] private Sprite bossSwordSprite;
+        [SerializeField] private Sprite bossSwordImpactSprite;
+        [SerializeField] private Sprite gruntMicBoltSprite;
+        [SerializeField] private Sprite gruntEyeBoltSprite;
+        [SerializeField] private Sprite gruntImpactSprite;
+        [SerializeField] private Material bossSwordAdditiveMaterial;
+        [SerializeField] private float swordTravelSeconds = 0.32f;
+        [SerializeField] private float swordImpactSeconds = 0.18f;
+        [SerializeField] private float swordShotGapSeconds = 0.08f;
+        [SerializeField] private float swordVerticalSpread = 0.22f;
+        [SerializeField] private float swordWorldLength = 1.9f;
+        [SerializeField] private float gruntBoltWorldLength = 1.35f;
+        [SerializeField] private float swordImpactWorldSize = 1.7f;
+        [SerializeField] private float castHoldSeconds = 0.14f;
+        [SerializeField] private bool loadSwordResourcesFallback = true;
+        [SerializeField] private Transform swordShotParent;
+
+        private const string BossDespairUnitId = "boss_despair";
+        private const string GruntEyeUnitId = "grunt_right";
+
         [Header("Refs")]
         [SerializeField] private CombatFocusDimmer focusDimmer;
+        [SerializeField] private PlayerSkillShotChoreographer playerSkillShotChoreographer;
+        [SerializeField] private CharlotteSkillChoreographer charlotteSkillChoreographer;
+
+        private Material _runtimeSwordAdditive;
 
         private static readonly HashSet<CombatUnit> ActiveAttackers = new();
         private static readonly Dictionary<CombatUnit, HpChangeInfo> PendingHpFeedback = new();
@@ -91,6 +116,7 @@ namespace FracturedChorus.Combat.Presentation
             _ownsEnemyBodies = choreographyEnabled && session != null;
             _activeInstance = choreographyEnabled ? this : null;
             EnsureFocusDimmer();
+            EnsurePlayerSkillShotChoreographer();
 
             if (_session == null || !_enabled)
             {
@@ -104,7 +130,7 @@ namespace FracturedChorus.Combat.Presentation
 
         private void HandleBeforeResolveBeat(int beatIndex)
         {
-            if (!_enabled || _session?.Timeline == null)
+            if (!_enabled || _session?.Timeline == null || EncounterDirector.IsPresenting)
             {
                 return;
             }
@@ -159,9 +185,39 @@ namespace FracturedChorus.Combat.Presentation
             focusDimmer.Configure(dimFactor, dimFadeSeconds);
         }
 
+        private void EnsurePlayerSkillShotChoreographer()
+        {
+            if (playerSkillShotChoreographer == null)
+            {
+                playerSkillShotChoreographer = GetComponent<PlayerSkillShotChoreographer>();
+            }
+
+            if (playerSkillShotChoreographer == null)
+            {
+                playerSkillShotChoreographer = FindAnyObjectByType<PlayerSkillShotChoreographer>();
+            }
+        }
+
+        private void EnsureCharlotteSkillChoreographer()
+        {
+            if (charlotteSkillChoreographer != null)
+            {
+                return;
+            }
+
+            charlotteSkillChoreographer = GetComponent<CharlotteSkillChoreographer>()
+                                          ?? FindAnyObjectByType<CharlotteSkillChoreographer>();
+            if (charlotteSkillChoreographer == null)
+            {
+                charlotteSkillChoreographer = gameObject.AddComponent<CharlotteSkillChoreographer>();
+            }
+
+            charlotteSkillChoreographer.EnsureDefaults();
+        }
+
         private void HandleEnemyStrikeResolved(EnemyStrikeReport report)
         {
-            if (!_enabled || !isActiveAndEnabled || !report.IsValid)
+            if (!_enabled || !isActiveAndEnabled || !report.IsValid || EncounterDirector.IsPresenting)
             {
                 return;
             }
@@ -220,11 +276,29 @@ namespace FracturedChorus.Combat.Presentation
             CollectFocusCast(report, attackerView, receiverView);
             focusDimmer?.Focus(_focusScratch);
 
-            var strikeFeet = ResolveStrikeAnchor(receiverView, report.Target);
-            attackerView.PlayMovingLoop();
-            yield return attackerView.MoveFeetToRoutine(
-                strikeFeet,
-                ResolveMoveSeconds(attackerView.FeetWorldPosition, strikeFeet, lungeSpeed, lungeSeconds));
+            EnsureSwordSprites();
+            attackerView.PlayCounterHold();
+            if (report.WasCountered)
+            {
+                CollectCounteringEntries(report.BeatIndex);
+                foreach (var (view, _) in _counterEntriesScratch)
+                {
+                    view.PlayCounterHold();
+                }
+            }
+
+            if (castHoldSeconds > 0f)
+            {
+                yield return new WaitForSeconds(castHoldSeconds);
+            }
+
+            var swordCount = Mathf.Clamp(report.SwordCount, 1, 3);
+            yield return PresentEnemyVolley(
+                attackerView,
+                receiverView,
+                swordCount,
+                report.WasCountered,
+                report.BeatIndex);
 
             if (report.WasCountered)
             {
@@ -232,24 +306,11 @@ namespace FracturedChorus.Combat.Presentation
             }
             else
             {
-                attackerView.PlayCounterHold();
                 receiverView.PlayBeCounteredHold();
-
-                var attackClipLength = Mathf.Max(
-                    attackerView.EstimateCounterClipLength(),
-                    counterHoldSeconds);
-                var impactDelay = attackClipLength * skillImpactNormalizedTime;
-                if (impactDelay > 0f)
-                {
-                    yield return new WaitForSeconds(impactDelay);
-                }
-
                 FlushHpFeedback(report.Target);
-
-                var tail = attackClipLength * (1f - skillImpactNormalizedTime) + impactHoldSeconds;
-                if (tail > 0f)
+                if (impactHoldSeconds > 0f)
                 {
-                    yield return new WaitForSeconds(tail);
+                    yield return new WaitForSeconds(impactHoldSeconds);
                 }
 
                 FlushRemainingHpFeedback();
@@ -262,18 +323,291 @@ namespace FracturedChorus.Combat.Presentation
             focusDimmer?.Release();
         }
 
-        private void EnsureHomeCaptured(CombatUnit attacker, UnitView attackerView)
+        public float GetProjectileContactDelaySeconds()
         {
-            if (_homePositions.ContainsKey(attacker))
+            return Mathf.Max(0.01f, swordTravelSeconds) * 0.55f;
+        }
+
+        public IEnumerator PresentEnemyVolley(
+            UnitView attackerView,
+            UnitView receiverView,
+            int projectileCount,
+            bool countered,
+            int beatIndex = -1)
+        {
+            if (countered)
+            {
+                var shieldHold = Mathf.Max(0.01f, swordTravelSeconds) + 1.2f;
+                SpawnCharlotteCounterShields(beatIndex, receiverView, attackerView, shieldHold);
+            }
+
+            var kit = ResolveProjectileKit(attackerView != null ? attackerView.Unit : null);
+            var mode = !countered
+                ? BossSwordShotMode.Hit
+                : kit == EnemyProjectileKit.DespairSword
+                    ? BossSwordShotMode.Deflect
+                    : BossSwordShotMode.Vanish;
+            yield return PlayEnemyVolley(attackerView, receiverView, projectileCount, mode, kit);
+
+            if (countered)
+            {
+                yield return CharlotteCounterShieldView.DismissAllAndWait();
+            }
+        }
+
+        private void SpawnCharlotteCounterShields(
+            int beatIndex,
+            UnitView receiverView,
+            UnitView attackerView,
+            float holdSeconds)
+        {
+            var faceToward = attackerView != null
+                ? attackerView.FeetWorldPosition
+                : (Vector3?)null;
+            var parent = transform;
+            var spawned = false;
+
+            if (beatIndex >= 0)
+            {
+                CollectCounteringEntries(beatIndex);
+                foreach (var (view, _) in _counterEntriesScratch)
+                {
+                    if (CharlotteCounterShieldView.TrySpawnFor(view, faceToward, holdSeconds, parent) != null)
+                    {
+                        spawned = true;
+                    }
+                }
+            }
+
+            if (!spawned && receiverView != null)
+            {
+                CharlotteCounterShieldView.TrySpawnFor(receiverView, faceToward, holdSeconds, parent);
+            }
+        }
+
+        public IEnumerator PresentSwordVolley(
+            UnitView attackerView,
+            UnitView receiverView,
+            int swordCount,
+            BossSwordShotMode mode)
+        {
+            var kit = ResolveProjectileKit(attackerView != null ? attackerView.Unit : null);
+            yield return PlayEnemyVolley(attackerView, receiverView, swordCount, mode, kit);
+        }
+
+        private enum EnemyProjectileKit
+        {
+            DespairSword = 0,
+            MicBolt = 1,
+            EyeBolt = 2
+        }
+
+        private static EnemyProjectileKit ResolveProjectileKit(CombatUnit attacker)
+        {
+            if (attacker == null)
+            {
+                return EnemyProjectileKit.MicBolt;
+            }
+
+            if (attacker.UnitId == BossDespairUnitId)
+            {
+                return EnemyProjectileKit.DespairSword;
+            }
+
+            if (attacker.UnitId == GruntEyeUnitId)
+            {
+                return EnemyProjectileKit.EyeBolt;
+            }
+
+            return EnemyProjectileKit.MicBolt;
+        }
+
+        private IEnumerator PlayEnemyVolley(
+            UnitView attackerView,
+            UnitView receiverView,
+            int projectileCount,
+            BossSwordShotMode mode,
+            EnemyProjectileKit kit)
+        {
+            var settings = BuildProjectileSettings(kit);
+            if (settings.Sword == null)
+            {
+                yield break;
+            }
+
+            var from = ResolveAim(attackerView);
+            var to = ResolveAim(receiverView);
+            var parent = swordShotParent != null ? swordShotParent : transform;
+            var gap = Mathf.Max(0f, swordShotGapSeconds);
+            var travel = Mathf.Max(0.01f, settings.TravelSeconds);
+            if (mode == BossSwordShotMode.Deflect)
+            {
+                travel = travel * 0.55f + Mathf.Max(0.01f, settings.ImpactSeconds)
+                         + Mathf.Max(0.01f, settings.DeflectSeconds);
+            }
+            else if (mode == BossSwordShotMode.Vanish)
+            {
+                travel = travel * 0.55f + Mathf.Max(0.01f, settings.ImpactSeconds) * 2f;
+            }
+            else
+            {
+                travel += Mathf.Max(0.01f, settings.ImpactSeconds);
+            }
+
+            var count = Mathf.Clamp(projectileCount, 1, 3);
+            for (var i = 0; i < count; i++)
+            {
+                var offsetY = (i - (count - 1) * 0.5f) * swordVerticalSpread;
+                var shotFrom = from + new Vector3(0f, offsetY, 0f);
+                var shotTo = to + new Vector3(0f, offsetY * 0.35f, 0f);
+                BossSwordShotView.Spawn(shotFrom, shotTo, settings, mode, parent);
+                if (gap > 0f && i < count - 1)
+                {
+                    yield return new WaitForSeconds(gap);
+                }
+            }
+
+            if (travel > 0f)
+            {
+                yield return new WaitForSeconds(travel);
+            }
+        }
+
+        private BossSwordShotSettings BuildProjectileSettings(EnemyProjectileKit kit)
+        {
+            EnsureProjectileSprites();
+            Sprite projectile;
+            Sprite impact;
+            var length = swordWorldLength;
+            switch (kit)
+            {
+                case EnemyProjectileKit.DespairSword:
+                    projectile = bossSwordSprite;
+                    impact = bossSwordImpactSprite;
+                    break;
+                case EnemyProjectileKit.EyeBolt:
+                    projectile = gruntEyeBoltSprite;
+                    impact = gruntImpactSprite;
+                    length = gruntBoltWorldLength;
+                    break;
+                default:
+                    projectile = gruntMicBoltSprite;
+                    impact = gruntImpactSprite;
+                    length = gruntBoltWorldLength;
+                    break;
+            }
+
+            var isSword = kit == EnemyProjectileKit.DespairSword;
+            return new BossSwordShotSettings
+            {
+                Sword = projectile,
+                Impact = impact,
+                AdditiveMaterial = ResolveSwordAdditive(),
+                TravelSeconds = swordTravelSeconds,
+                ImpactSeconds = swordImpactSeconds,
+                SwordWorldLength = length,
+                ImpactWorldSize = swordImpactWorldSize,
+                SpriteFacingOffsetDegrees = isSword ? 135f : 0f,
+                ProjectileAdditive = !isSword,
+                SortingOrder = 42
+            };
+        }
+
+        private void EnsureSwordSprites() => EnsureProjectileSprites();
+
+        private void EnsureProjectileSprites()
+        {
+            if (!loadSwordResourcesFallback)
             {
                 return;
             }
 
-            _homePositions[attacker] = ResolveAuthoritativeHome(attacker, attackerView);
+            if (bossSwordSprite == null)
+            {
+                bossSwordSprite = Resources.Load<Sprite>("VFX/Combat/Boss/boss_sword_projectile_v1");
+            }
+
+            if (bossSwordImpactSprite == null)
+            {
+                bossSwordImpactSprite = Resources.Load<Sprite>("VFX/Combat/Boss/boss_sword_impact_v1");
+            }
+
+            if (gruntMicBoltSprite == null)
+            {
+                gruntMicBoltSprite = Resources.Load<Sprite>("VFX/Combat/Grunt/astra_mic_bolt_v1");
+            }
+
+            if (gruntEyeBoltSprite == null)
+            {
+                gruntEyeBoltSprite = Resources.Load<Sprite>("VFX/Combat/Grunt/astra_eye_bolt_v1");
+            }
+
+            if (gruntImpactSprite == null)
+            {
+                gruntImpactSprite = Resources.Load<Sprite>("VFX/Combat/Grunt/astra_grunt_impact_v1");
+            }
+        }
+
+        private Material ResolveSwordAdditive()
+        {
+            if (bossSwordAdditiveMaterial != null)
+            {
+                return bossSwordAdditiveMaterial;
+            }
+
+            if (_runtimeSwordAdditive != null)
+            {
+                return _runtimeSwordAdditive;
+            }
+
+            var shader = Shader.Find("FracturedChorus/VFX/RenBulletAdditive")
+                         ?? Shader.Find("Sprites/Default");
+            if (shader == null)
+            {
+                return null;
+            }
+
+            _runtimeSwordAdditive = new Material(shader)
+            {
+                name = "BossSwordVfxAdditive_Runtime",
+                hideFlags = HideFlags.HideAndDontSave
+            };
+            return _runtimeSwordAdditive;
+        }
+
+        private static Vector3 ResolveAim(UnitView view)
+        {
+            if (view == null)
+            {
+                return Vector3.zero;
+            }
+
+            return view.GetSkillPanelAnchorWorld();
+        }
+
+        private void EnsureHomeCaptured(CombatUnit attacker, UnitView attackerView)
+        {
+            if (_homePositions.ContainsKey(attacker) || attackerView == null)
+            {
+                return;
+            }
+
+            _homePositions[attacker] = attackerView.transform.position;
         }
 
         private static Vector3 ResolveAuthoritativeHome(CombatUnit attacker, UnitView attackerView)
         {
+            if (attackerView == null)
+            {
+                return Vector3.zero;
+            }
+
+            if (EncounterDirector.ActiveInstance != null
+                && EncounterDirector.ActiveInstance.TryGetPhaseHomeRoot(attackerView, out var phaseRoot))
+            {
+                return phaseRoot;
+            }
+
             if (attacker != null && attacker.GridPosition.IsValid())
             {
                 var cell = HexBoardLayout.GetWorldPosition(attacker.GridPosition);
@@ -336,6 +670,67 @@ namespace FracturedChorus.Combat.Presentation
             var counterBody = CombatCounterResolver.SelectCounterBody(
                 _counterEntriesScratch.Select(e => e.Entry.Unit).ToList());
 
+            UnitView bodyView = null;
+            AgendaEntry bodyEntry = null;
+            foreach (var (view, entry) in _counterEntriesScratch)
+            {
+                if (entry.Unit != counterBody)
+                {
+                    continue;
+                }
+
+                bodyView = view;
+                bodyEntry = entry;
+                break;
+            }
+
+            EnsurePlayerSkillShotChoreographer();
+            EnsureCharlotteSkillChoreographer();
+            yield return CharlotteCounterShieldView.DismissAllAndWait();
+
+            if (bodyView != null
+                && bodyEntry?.Skill != null
+                && charlotteSkillChoreographer != null
+                && charlotteSkillChoreographer.Handles(bodyEntry.Skill, bodyView))
+            {
+                attackerView.PlayBeCounteredHold();
+                var charlotteMid = ResolveMidStaging(attackerView);
+                var charlotteKnockback = StartCoroutine(
+                    attackerView.MoveFeetToRoutine(
+                        charlotteMid,
+                        ResolveMoveSeconds(
+                            attackerView.FeetWorldPosition,
+                            charlotteMid,
+                            knockbackSpeed,
+                            knockbackSeconds)));
+
+                yield return charlotteSkillChoreographer.PlaySkillRoutine(
+                    bodyView,
+                    attackerView,
+                    bodyEntry.Skill,
+                    returnHome: true,
+                    onImpact: () => FlushHpFeedback(report.Attacker));
+
+                if (charlotteKnockback != null)
+                {
+                    yield return charlotteKnockback;
+                }
+
+                FlushRemainingHpFeedback();
+                yield break;
+            }
+
+            var useMeleeEngage = bodyView != null
+                                 && bodyEntry?.Skill != null
+                                 && playerSkillShotChoreographer != null
+                                 && playerSkillShotChoreographer.IsMeleeSkill(bodyEntry.Skill);
+
+            if (useMeleeEngage)
+            {
+                yield return PlayMeleeCounterImpact(report, attackerView, bodyView, bodyEntry);
+                yield break;
+            }
+
             foreach (var (view, entry) in _counterEntriesScratch)
             {
                 if (entry.Unit == counterBody)
@@ -386,6 +781,53 @@ namespace FracturedChorus.Combat.Presentation
             if (knockback != null)
             {
                 yield return knockback;
+            }
+
+            FlushRemainingHpFeedback();
+        }
+
+        private IEnumerator PlayMeleeCounterImpact(
+            EnemyStrikeReport report,
+            UnitView attackerView,
+            UnitView bodyView,
+            AgendaEntry bodyEntry)
+        {
+            yield return CharlotteCounterShieldView.DismissAllAndWait();
+            bodyView.PlayCounterHold();
+            attackerView.PlayBeCounteredHold();
+
+            var mid = ResolveMidStaging(attackerView);
+            yield return attackerView.MoveFeetToRoutine(
+                mid,
+                ResolveMoveSeconds(attackerView.FeetWorldPosition, mid, knockbackSpeed, knockbackSeconds));
+
+            if (playerSkillShotChoreographer.TryBeginCounterMeleeEngage(
+                    report.BeatIndex,
+                    bodyView,
+                    attackerView,
+                    bodyEntry.Skill,
+                    () => FlushHpFeedback(report.Attacker),
+                    out var engageRoutine)
+                && engageRoutine != null)
+            {
+                yield return engageRoutine;
+            }
+            else
+            {
+                bodyView.PlayAttackAnimationHold(bodyEntry.Skill);
+                var clipLength = bodyView.EstimateSkillClipLength(bodyEntry.Skill);
+                var impactDelay = clipLength * skillImpactNormalizedTime;
+                if (impactDelay > 0f)
+                {
+                    yield return new WaitForSeconds(impactDelay);
+                }
+
+                FlushHpFeedback(report.Attacker);
+                var tail = Mathf.Max(impactHoldSeconds, clipLength * (1f - skillImpactNormalizedTime));
+                if (tail > 0f)
+                {
+                    yield return new WaitForSeconds(tail);
+                }
             }
 
             FlushRemainingHpFeedback();
@@ -624,6 +1066,12 @@ namespace FracturedChorus.Combat.Presentation
             if (_activeInstance == this)
             {
                 _activeInstance = null;
+            }
+
+            if (_runtimeSwordAdditive != null)
+            {
+                Destroy(_runtimeSwordAdditive);
+                _runtimeSwordAdditive = null;
             }
         }
 

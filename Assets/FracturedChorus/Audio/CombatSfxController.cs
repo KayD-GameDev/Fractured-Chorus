@@ -17,10 +17,18 @@ namespace FracturedChorus.Audio
         private const string RenSkill1ResourcePath = "Audio/SFX/Ren_Skill1";
         private const string RenSkill2ResourcePath = "Audio/SFX/Ren_Skill2";
         private const string RenSkill3ResourcePath = "Audio/SFX/Ren_Skill3";
+        private const string MirrorBreakingClipPath = "Assets/FracturedChorus/Audio/SFX/Mirror_Breaking.wav";
+        private const string MirrorBreakingResourcePath = "Audio/SFX/Mirror_Breaking";
         private const string CodaSkill1ClipPath = "Assets/FracturedChorus/Audio/SFX/Coda_Skill1.mp3";
         private const string CodaSkill1ResourcePath = "Audio/SFX/Coda_Skill1";
         private const string CodaSkill23ClipPath = "Assets/FracturedChorus/Audio/SFX/Coda_Skill23.wav";
         private const string CodaSkill23ResourcePath = "Audio/SFX/Coda_Skill23";
+        private const string CharlotteSkill1ClipPath = "Assets/FracturedChorus/Audio/SFX/Charlotte_Skill1.wav";
+        private const string CharlotteSkill1ResourcePath = "Audio/SFX/Charlotte_Skill1";
+        private const string CharlotteSkill2ClipPath = "Assets/FracturedChorus/Audio/SFX/Charlotte_Skill2.wav";
+        private const string CharlotteSkill2ResourcePath = "Audio/SFX/Charlotte_Skill2";
+        private const string CharlotteSkill3ClipPath = "Assets/FracturedChorus/Audio/SFX/Charlotte_Skill3.wav";
+        private const string CharlotteSkill3ResourcePath = "Audio/SFX/Charlotte_Skill3";
         private const string PlanningTransitionClipPath =
             "Assets/FracturedChorus/Audio/SFX/Combat_PlanningTransition.wav";
         private const string PlanningTransitionResourcePath = "Audio/SFX/Combat_PlanningTransition";
@@ -44,8 +52,13 @@ namespace FracturedChorus.Audio
         [SerializeField] private AudioClip renSkill1Clip;
         [SerializeField] private AudioClip renSkill2Clip;
         [SerializeField] private AudioClip renSkill3Clip;
+        [SerializeField] private AudioClip mirrorBreakingClip;
+        [SerializeField] [Range(0.1f, 1.5f)] private float mirrorBreakingVolume = 1f;
         [SerializeField] private AudioClip codaSkill1Clip;
         [SerializeField] private AudioClip codaSkill23Clip;
+        [SerializeField] private AudioClip charlotteSkill1Clip;
+        [SerializeField] private AudioClip charlotteSkill2Clip;
+        [SerializeField] private AudioClip charlotteSkill3Clip;
         [SerializeField] private float renSkillVolume = 1f;
         [Tooltip("0–1 of skill clip length when character skill SFX fires (lower = earlier).")]
         [SerializeField] [Range(0.05f, 1f)] private float renSkillCueNormalizedTime = 0.45f;
@@ -201,6 +214,12 @@ namespace FracturedChorus.Audio
                 return;
             }
 
+            // Ren NorHit + Charlotte skills play SFX at impact from choreographers.
+            if (UsesImpactSyncedSkillSfx(skill))
+            {
+                return;
+            }
+
             var clip = ResolveCharacterSkillClip(skill);
             if (clip == null)
             {
@@ -210,6 +229,59 @@ namespace FracturedChorus.Audio
             var cueAt = Mathf.Max(0f, clipLengthSeconds) * Mathf.Clamp01(renSkillCueNormalizedTime);
             cueAt = Mathf.Max(0f, cueAt - Mathf.Max(0f, renSkillCueLeadSec));
             StartCoroutine(PlaySkillClipAfterDelay(clip, cueAt));
+        }
+
+        private static bool UsesImpactSyncedSkillSfx(SkillDefinitionSO skill)
+        {
+            var id = skill.skillId;
+            if (string.IsNullOrEmpty(id))
+            {
+                return false;
+            }
+
+            if (id.StartsWith("Charlott", System.StringComparison.OrdinalIgnoreCase)
+                || id.StartsWith("charlotte", System.StringComparison.OrdinalIgnoreCase)
+                || id is "tank_basic" or "tank_skill" or "tank_ult")
+            {
+                return true;
+            }
+
+            if (!id.StartsWith("ren_", System.StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            return skill.slotKind is SkillSlotKind.BasicAttack
+                   or SkillSlotKind.Skill
+                   or SkillSlotKind.Ultimate;
+        }
+
+        public void PlayMirrorBreaking()
+        {
+            EnsureClip(ref mirrorBreakingClip, MirrorBreakingResourcePath, MirrorBreakingClipPath);
+            if (mirrorBreakingClip == null)
+            {
+                return;
+            }
+
+            EnsureRenSkillSource();
+            renSkillSource.spatialBlend = 0f;
+            renSkillSource.mute = false;
+            renSkillSource.volume = renSkillVolume;
+            renSkillSource.PlayOneShot(mirrorBreakingClip, mirrorBreakingVolume);
+        }
+
+        public void PlayRenSkillSlotImmediate(SkillSlotKind slotKind)
+        {
+            EnsureRenSkillClips();
+            var clip = slotKind switch
+            {
+                SkillSlotKind.BasicAttack => renSkill1Clip,
+                SkillSlotKind.Skill => renSkill2Clip,
+                SkillSlotKind.Ultimate => renSkill3Clip,
+                _ => null
+            };
+            PlaySkillClipImmediate(clip);
         }
 
         private IEnumerator PlaySkillClipAfterDelay(AudioClip clip, float delaySeconds)
@@ -250,7 +322,31 @@ namespace FracturedChorus.Audio
                 };
             }
 
+            if (id.StartsWith("Charlott", System.StringComparison.OrdinalIgnoreCase) ||
+                id.StartsWith("charlotte", System.StringComparison.OrdinalIgnoreCase) ||
+                id is "tank_basic" or "tank_skill" or "tank_ult")
+            {
+                EnsureCharlotteSkillClips();
+                return skill.slotKind switch
+                {
+                    SkillSlotKind.BasicAttack => charlotteSkill1Clip,
+                    SkillSlotKind.Skill => charlotteSkill2Clip,
+                    SkillSlotKind.Ultimate => charlotteSkill3Clip,
+                    _ => null
+                };
+            }
+
             return null;
+        }
+
+        public void PlaySkillSfxImmediate(SkillDefinitionSO skill)
+        {
+            if (skill == null)
+            {
+                return;
+            }
+
+            PlaySkillClipImmediate(ResolveCharacterSkillClip(skill));
         }
 
         private void PlaySkillClipImmediate(AudioClip clip)
@@ -478,6 +574,13 @@ namespace FracturedChorus.Audio
             EnsureClip(ref codaSkill23Clip, CodaSkill23ResourcePath, CodaSkill23ClipPath);
         }
 
+        private void EnsureCharlotteSkillClips()
+        {
+            EnsureClip(ref charlotteSkill1Clip, CharlotteSkill1ResourcePath, CharlotteSkill1ClipPath);
+            EnsureClip(ref charlotteSkill2Clip, CharlotteSkill2ResourcePath, CharlotteSkill2ClipPath);
+            EnsureClip(ref charlotteSkill3Clip, CharlotteSkill3ResourcePath, CharlotteSkill3ClipPath);
+        }
+
         private void TryAssignDefaultClips()
         {
             EnsureClip(ref perfectBlockClip, PerfectBlockResourcePath, PerfectBlockClipPath);
@@ -485,7 +588,9 @@ namespace FracturedChorus.Audio
             EnsureClip(ref uiClickClip, UiClickResourcePath, UiClickClipPath);
             EnsureClip(ref skillPlaceClip, SkillPlaceResourcePath, SkillPlaceClipPath);
             EnsureRenSkillClips();
+            EnsureClip(ref mirrorBreakingClip, MirrorBreakingResourcePath, MirrorBreakingClipPath);
             EnsureCodaSkillClips();
+            EnsureCharlotteSkillClips();
 #if UNITY_EDITOR
             if (perfectCounterClip == null)
             {

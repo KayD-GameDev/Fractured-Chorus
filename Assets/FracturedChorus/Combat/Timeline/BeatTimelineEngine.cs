@@ -49,6 +49,7 @@ namespace FracturedChorus.Combat.Timeline
         public event Action<AgendaEntry> OnActionAssigned;
         public event Action<int> OnScanAdvanced;
         public event Action OnAgendaCleared;
+        public event Action OnAgendaChanged;
         public event Action OnTelegraphsChanged;
         public event Action<int, int, int> OnTelegraphMoved;
         public event Action<IReadOnlyList<TelegraphBeatMove>> OnTelegraphsDelayedBatch;
@@ -421,7 +422,28 @@ namespace FracturedChorus.Combat.Timeline
 
             var removed = _agenda.RemoveAll(a =>
                 a.Unit == unit && a.BeatIndex == placementBeat && a.Unit.Side == GridSide.Player);
+            if (removed > 0)
+            {
+                OnAgendaChanged?.Invoke();
+            }
+
             return removed > 0;
+        }
+
+        public int RemoveAgendaEntriesForUnit(CombatUnit unit)
+        {
+            if (unit == null)
+            {
+                return 0;
+            }
+
+            var removed = _agenda.RemoveAll(a => a.Unit == unit);
+            if (removed > 0)
+            {
+                OnAgendaChanged?.Invoke();
+            }
+
+            return removed;
         }
 
         public AgendaEntry FindPlayerEntry(CombatUnit unit, int placementBeat)
