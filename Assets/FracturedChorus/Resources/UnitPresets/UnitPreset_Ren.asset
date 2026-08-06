@@ -1,4 +1,4 @@
-﻿%YAML 1.1
+%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -31,7 +31,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: fe16fe2211245d64da32c504d6ca02a3, type: 2}
   - {fileID: 11400000, guid: 176f90a046cefbd478cd7fa62b23b107, type: 2}
   placeholderColor: {r: 0.047668196, g: 0.18653269, b: 0.24528301, a: 1}
-  timelineLaneColor: {r: 0.9, g: 0.35, b: 0.45, a: 1}
+  timelineLaneColor: {r: 0.7568628, g: 0, b: 0.14901961, a: 1}
   battleSprite: {fileID: 7369638930748108147, guid: 9a437a3dfde73224686f2d2a81ee930e, type: 3}
   timelineAvatarSprite: {fileID: 21300000, guid: 424a93ede08c4c48a1dedc407c30abd7, type: 3}
   combatCardSprite: {fileID: -3077632730411130755, guid: d78403423dceda24ab0eddbe5088a71f, type: 3}
