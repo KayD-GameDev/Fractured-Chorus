@@ -3,26 +3,35 @@ using UnityEngine;
 
 namespace FracturedChorus.Combat.Presentation
 {
+    public sealed class RenMeleeStrikeSettings
+    {
+        public Sprite Arc;
+        public Sprite Impact;
+        public Material AdditiveMaterial;
+        public float ArcSeconds = 0.14f;
+        public float ImpactSeconds = 0.18f;
+        public float ArcWorldSize = 2.325f;
+        public float ImpactWorldSize = 2.025f;
+        public int SortingOrder = 40;
+    }
+
     public class RenMeleeStrikeView : MonoBehaviour
     {
-        private const string ResourceRoot = "VFX/Combat/Ren/";
-        private const float ArcSeconds = 0.14f;
-        private const float ImpactSeconds = 0.18f;
-        private const float ArcWorldSize = 2.325f;
-        private const float ImpactWorldSize = 2.025f;
-        private const int SortingOrder = 40;
-
-        private static Sprite s_arc;
-        private static Sprite s_impact;
-        private static Material s_additiveMat;
-        private static bool s_loaded;
-
         private SpriteRenderer _arc;
         private SpriteRenderer _impact;
+        private RenMeleeStrikeSettings _settings;
 
-        public static RenMeleeStrikeView Spawn(Vector3 from, Vector3 to, Transform parent = null)
+        public static RenMeleeStrikeView Spawn(
+            Vector3 from,
+            Vector3 to,
+            RenMeleeStrikeSettings settings,
+            Transform parent = null)
         {
-            EnsureSprites();
+            if (settings == null || (settings.Arc == null && settings.Impact == null))
+            {
+                return null;
+            }
+
             var go = new GameObject("RenMeleeStrike");
             if (parent != null)
             {
@@ -30,6 +39,7 @@ namespace FracturedChorus.Combat.Presentation
             }
 
             var view = go.AddComponent<RenMeleeStrikeView>();
+            view._settings = settings;
             view.Build();
             view.StartCoroutine(view.PlayRoutine(from, to));
             return view;
@@ -37,8 +47,8 @@ namespace FracturedChorus.Combat.Presentation
 
         private void Build()
         {
-            _arc = CreateChildRenderer("Arc", s_arc, additive: true);
-            _impact = CreateChildRenderer("Impact", s_impact, additive: true);
+            _arc = CreateChildRenderer("Arc", _settings.Arc, additive: true);
+            _impact = CreateChildRenderer("Impact", _settings.Impact, additive: true);
             if (_impact != null)
             {
                 _impact.enabled = false;
@@ -51,52 +61,14 @@ namespace FracturedChorus.Combat.Presentation
             child.transform.SetParent(transform, false);
             var sr = child.AddComponent<SpriteRenderer>();
             sr.sprite = sprite;
-            sr.sortingOrder = SortingOrder;
+            sr.sortingOrder = _settings.SortingOrder;
             sr.color = Color.white;
-            if (additive)
+            if (additive && _settings.AdditiveMaterial != null)
             {
-                EnsureAdditiveMaterial();
-                if (s_additiveMat != null)
-                {
-                    sr.sharedMaterial = s_additiveMat;
-                }
+                sr.sharedMaterial = _settings.AdditiveMaterial;
             }
 
             return sr;
-        }
-
-        private static void EnsureSprites()
-        {
-            if (s_loaded)
-            {
-                return;
-            }
-
-            s_arc = Resources.Load<Sprite>(ResourceRoot + "ren_melee_arc_v1");
-            s_impact = Resources.Load<Sprite>(ResourceRoot + "ren_melee_impact_v1");
-            EnsureAdditiveMaterial();
-            s_loaded = true;
-        }
-
-        private static void EnsureAdditiveMaterial()
-        {
-            if (s_additiveMat != null)
-            {
-                return;
-            }
-
-            var shader = Shader.Find("FracturedChorus/VFX/RenBulletAdditive")
-                         ?? Shader.Find("Sprites/Default");
-            if (shader == null)
-            {
-                return;
-            }
-
-            s_additiveMat = new Material(shader)
-            {
-                name = "RenMeleeAdditive",
-                hideFlags = HideFlags.HideAndDontSave
-            };
         }
 
         private IEnumerator PlayRoutine(Vector3 from, Vector3 to)
@@ -113,22 +85,23 @@ namespace FracturedChorus.Combat.Presentation
             var mid = Vector3.Lerp(from, to, 0.55f);
 
             transform.SetPositionAndRotation(mid, Quaternion.Euler(0f, 0f, angle));
-            FitSprite(_arc, ArcWorldSize);
+            FitSprite(_arc, _settings.ArcWorldSize);
             if (_arc != null)
             {
                 _arc.transform.localPosition = Vector3.zero;
             }
 
+            var arcSeconds = Mathf.Max(0.01f, _settings.ArcSeconds);
             var elapsed = 0f;
-            while (elapsed < ArcSeconds)
+            while (elapsed < arcSeconds)
             {
                 elapsed += Time.deltaTime;
-                var t = Mathf.Clamp01(elapsed / ArcSeconds);
+                var t = Mathf.Clamp01(elapsed / arcSeconds);
                 var eased = 1f - (1f - t) * (1f - t);
                 transform.position = Vector3.Lerp(from, to, Mathf.Lerp(0.25f, 0.9f, eased));
                 if (_arc != null)
                 {
-                    FitSprite(_arc, ArcWorldSize * Mathf.Lerp(0.55f, 1.15f, eased));
+                    FitSprite(_arc, _settings.ArcWorldSize * Mathf.Lerp(0.55f, 1.15f, eased));
                     var alpha = t < 0.7f ? 1f : 1f - (t - 0.7f) / 0.3f;
                     var c = _arc.color;
                     _arc.color = new Color(c.r, c.g, c.b, alpha);
@@ -142,17 +115,18 @@ namespace FracturedChorus.Combat.Presentation
                 _arc.enabled = false;
             }
 
-            if (_impact != null)
+            if (_impact != null && _impact.sprite != null)
             {
                 _impact.enabled = true;
                 _impact.transform.SetPositionAndRotation(to, Quaternion.identity);
-                FitSprite(_impact, ImpactWorldSize);
+                FitSprite(_impact, _settings.ImpactWorldSize);
+                var impactSeconds = Mathf.Max(0.01f, _settings.ImpactSeconds);
                 var impactElapsed = 0f;
-                while (impactElapsed < ImpactSeconds)
+                while (impactElapsed < impactSeconds)
                 {
                     impactElapsed += Time.deltaTime;
-                    var u = Mathf.Clamp01(impactElapsed / ImpactSeconds);
-                    FitSprite(_impact, ImpactWorldSize * Mathf.Lerp(0.75f, 1.3f, u));
+                    var u = Mathf.Clamp01(impactElapsed / impactSeconds);
+                    FitSprite(_impact, _settings.ImpactWorldSize * Mathf.Lerp(0.75f, 1.3f, u));
                     var c = _impact.color;
                     _impact.color = new Color(c.r, c.g, c.b, 1f - u);
                     yield return null;

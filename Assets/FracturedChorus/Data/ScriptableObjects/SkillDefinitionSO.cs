@@ -66,6 +66,13 @@ namespace FracturedChorus.Data
         public int effectValue;
         [HideInInspector] public bool grantsCycleShift;
 
+        [Header("Timed shield")]
+        public bool grantTimedShield;
+        public int timedShieldAmount;
+        public int timedShieldDurationBeats;
+        public bool timedShieldUntilPhaseEnd;
+        public bool timedShieldAllAllies;
+
         [Header("Prep empower")]
         public bool usesPrepEmpower;
         public int prepEmpowerThreshold = 1;

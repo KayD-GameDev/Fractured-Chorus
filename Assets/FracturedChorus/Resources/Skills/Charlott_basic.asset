@@ -16,7 +16,7 @@ MonoBehaviour:
   displayName: Ram
   icon: {fileID: 8712927547302482697, guid: 59196dc1d28948547a3c82f348757c6d, type: 3}
   frame: {fileID: -8981320499329970081, guid: da828e71f04e2f642a123b5cb184084e, type: 3}
-  description: Damage
+  description: Damage + personal Shield 25 for 3 beats
   slotKind: 0
   avCost: 0
   delay: 2
@@ -31,6 +31,11 @@ MonoBehaviour:
   effectKind: 0
   effectValue: 0
   grantsCycleShift: 0
+  grantTimedShield: 1
+  timedShieldAmount: 25
+  timedShieldDurationBeats: 3
+  timedShieldUntilPhaseEnd: 0
+  timedShieldAllAllies: 0
   usesPrepEmpower: 0
   prepEmpowerThreshold: 1
   prepEmpowerCost: 1

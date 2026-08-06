@@ -46,6 +46,18 @@ namespace FracturedChorus.Audio
         public bool IsDucked => _ducked;
         public int LoopCount => _loopCount;
         public float SourceTimeSec => source != null ? source.time : 0f;
+        public AudioSource Source => source;
+
+        public bool TryFillSpectrum(float[] buffer, FFTWindow window = FFTWindow.BlackmanHarris)
+        {
+            if (buffer == null || buffer.Length == 0 || source == null || !source.isPlaying)
+            {
+                return false;
+            }
+
+            source.GetSpectrumData(buffer, 0, window);
+            return true;
+        }
 
         /// <summary>Musical beats consumed by loop jumps, so TotalMusicalBeat never runs backwards.</summary>
         public float LoopBeatOffset => _loopBeatAccum;

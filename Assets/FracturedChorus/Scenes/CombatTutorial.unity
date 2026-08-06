@@ -4933,6 +4933,8 @@ GameObject:
   - component: {fileID: 707156459}
   - component: {fileID: 707156463}
   - component: {fileID: 707156462}
+  - component: {fileID: 707156464}
+  - component: {fileID: 707156465}
   m_Layer: 0
   m_Name: CombatRoot
   m_TagString: Untagged
@@ -4988,7 +4990,9 @@ MonoBehaviour:
   musicController: {fileID: 888001004}
   combatSfxController: {fileID: 888001005}
   counterPresentation: {fileID: 0}
-  enemyStrikeChoreographer: {fileID: 0}
+  enemyStrikeChoreographer: {fileID: 707156463}
+  playerSkillShotChoreographer: {fileID: 707156464}
+  encounterDirector: {fileID: 707156465}
   sideGap: 3.5
   applyStartResourcesOnPlay: 1
   startCoverGauge: 8
@@ -5052,6 +5056,102 @@ MonoBehaviour:
   strikeStandoffX: 2.4
   midStagingX: 0
   focusDimmer: {fileID: 0}
+  playerSkillShotChoreographer: {fileID: 707156464}
+--- !u!114 &707156464
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 707156458}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73de72f8f95548b98ba15a10bf4d2cc7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Combat.Presentation.PlayerSkillShotChoreographer
+  shotParent: {fileID: 0}
+  aimHeightOffset: 0.55
+  meleeArcSprite: {fileID: 21300000, guid: a3b5bd8e03a049a9b24cc35462612bba, type: 3}
+  meleeImpactSprite: {fileID: 21300000, guid: 0b82bafd2db94d9b9c45f34b5c7c83f3, type: 3}
+  meleeArcSeconds: 0.14
+  meleeImpactSeconds: 0.18
+  meleeArcWorldSize: 1.65
+  meleeImpactWorldSize: 1.55
+  meleeStandoffX: 1.85
+  meleeHitReach: 0.62
+  meleeLungeSpeed: 34
+  meleeLungeSeconds: 0.14
+  meleeRetreatSeconds: 0.18
+  meleeAnimSampleRate: 24
+  meleeImpactFrame: 6
+  meleeImpactNormalizedTime: 0.35
+  bulletHeadSprite: {fileID: 21300000, guid: 65ce4539d3ea4beba82ac2b3c0879567, type: 3}
+  bulletTrailSprite: {fileID: 21300000, guid: 8a7007e396db41a0b8f1b6d645828bfb, type: 3}
+  bulletImpactSprite: {fileID: 21300000, guid: c48c30ea97aa494dad0d1171071f9294, type: 3}
+  bulletFlightFrames:
+  - {fileID: 151089341525704821, guid: 90aee0d42a7da0e44960f46954166302, type: 3}
+  - {fileID: -8341574607028436191, guid: 5dad44bcfe49dac45aad12644304a09e, type: 3}
+  - {fileID: -4226763945800355852, guid: 0eb9de9767ed7c348a8c1e46bb5780c2, type: 3}
+  - {fileID: -7791550384470084887, guid: 3dc89586d195f5a4eaefd0c58cb8256e, type: 3}
+  glassCrackSprite: {fileID: 0}
+  glassShatterSprite: {fileID: 0}
+  bulletMuzzleDelaySeconds: 0.1
+  bulletTravelSeconds: 0.16
+  bulletTravelSpeed: 40
+  bulletImpactSeconds: 0.1
+  bulletHeadWorldSize: 1.275
+  bulletTrailHeight: 0.825
+  glassWorldSize: 2.55
+  glassCrackInSeconds: 0.04
+  glassCrackHoldSeconds: 0.06
+  glassShatterSeconds: 0.28
+  skill3BulletCount: 2
+  skill3AnimSampleRate: 24
+  skill3ShotFrameA: 6
+  skill3ShotFrameB: 10
+  skill3VerticalSpread: 0.18
+  skill3GlassDelaySeconds: 0.08
+  ultAuraGlowSprite: {fileID: 0}
+  ultAuraNotesSprite: {fileID: 0}
+  ultAuraWorldSize: 2.8
+  ultAuraOrbitRadius: 1.15
+  additiveMaterial: {fileID: 0}
+  sortingOrder: 40
+  loadResourcesFallback: 1
+--- !u!114 &707156465
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 707156458}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c2e4b7a1d8f40c3a6e5b2f0d4a87193, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Combat.Presentation.EncounterDirector
+  timelineView: {fileID: 1236853536}
+  focusDimmer: {fileID: 707156462}
+  playerSkillShotChoreographer: {fileID: 707156464}
+  focusCamera: {fileID: 272797785}
+  hideUiRoot: {fileID: 0}
+  letterboxOverlay: {fileID: 0}
+  musicController: {fileID: 888001004}
+  stageRow: 1
+  stageColumn: 0
+  sideGap: 3.5
+  stageMoveSeconds: 0.12
+  returnMoveSeconds: 0.12
+  duelSeconds: 1.5
+  resolveAtNormalizedTime: 0.4
+  encounterAnimSpeed: 0.7
+  hideOtherUnits: 1
+  hideUiDuringEncounter: 1
+  focusDimFactor: 0.12
+  focusFadeSeconds: 0.1
+  moveCamera: 1
+  cameraZoomOrtho: 5.2
+  cameraMoveSeconds: 0.16
 --- !u!1 &715640726
 GameObject:
   m_ObjectHideFlags: 0
