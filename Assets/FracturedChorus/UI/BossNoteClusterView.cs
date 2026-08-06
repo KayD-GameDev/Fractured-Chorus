@@ -22,6 +22,7 @@ namespace FracturedChorus.UI
         private System.Func<int, float> _contentXForBeat;
         private float _noteYFromBottom;
         private BossNoteNumberLayout _layout = new();
+        private bool _editShellsPurgedForPlay;
 
         public void Configure(
             RectTransform layer,
@@ -102,13 +103,19 @@ namespace FracturedChorus.UI
         public void Rebuild(BeatTimelineEngine timeline, float viewportHeight)
         {
             Clear();
-            if (_layer == null || timeline == null || _contentXForBeat == null)
+
+            if (_layer == null || _contentXForBeat == null)
             {
                 return;
             }
 
             _catalog?.EnsureDefaultsLoaded();
-            var clusters = BossNoteClusterBuilder.Build(timeline);
+            var authored = ResolveAuthoredSpecsForRebuild();
+            var clusters = BossNoteClusterBuilder.Build(timeline, authored);
+            if (clusters == null || clusters.Count == 0)
+            {
+                return;
+            }
 
             var y = _noteYFromBottom;
             if (viewportHeight > 1f)
@@ -131,6 +138,105 @@ namespace FracturedChorus.UI
             BringLivingNotesToFront();
         }
 
+        /// <summary>
+        /// Edit mode: keep scene NoteSingle_*/NoteBeamed_* shells (BossNoteAuthoring preview).
+        /// Play: destroy seed shells and do not re-spawn from authored — only EnemyAI telegraphs.
+        /// </summary>
+        private List<AuthoredBossNoteSpec> ResolveAuthoredSpecsForRebuild()
+        {
+            if (!Application.isPlaying)
+            {
+                _editShellsPurgedForPlay = false;
+                SetEditModeNoteShellsActive(true);
+                return CollectAuthoredSpecs();
+            }
+
+            if (!_editShellsPurgedForPlay)
+            {
+                DestroyEditModeNoteShells();
+                _editShellsPurgedForPlay = true;
+            }
+
+            // Play notes come only from timeline telegraphs — never from edit-mode seeds.
+            return null;
+        }
+
+        private void SetEditModeNoteShellsActive(bool active)
+        {
+            if (_layer == null)
+            {
+                return;
+            }
+
+            for (var i = 0; i < _layer.childCount; i++)
+            {
+                var child = _layer.GetChild(i);
+                if (child == null)
+                {
+                    continue;
+                }
+
+                var name = child.name;
+                if (name.StartsWith("NoteSingle_") || name.StartsWith("NoteBeamed_"))
+                {
+                    child.gameObject.SetActive(active);
+                }
+            }
+        }
+
+        private void DestroyEditModeNoteShells()
+        {
+            if (_layer == null)
+            {
+                return;
+            }
+
+            for (var i = _layer.childCount - 1; i >= 0; i--)
+            {
+                var child = _layer.GetChild(i);
+                if (child == null)
+                {
+                    continue;
+                }
+
+                var name = child.name;
+                if (!name.StartsWith("NoteSingle_") && !name.StartsWith("NoteBeamed_"))
+                {
+                    continue;
+                }
+
+                if (_spawned.Contains(child.gameObject))
+                {
+                    continue;
+                }
+
+                Destroy(child.gameObject);
+            }
+        }
+
+        private List<AuthoredBossNoteSpec> CollectAuthoredSpecs()
+        {
+            var list = new List<AuthoredBossNoteSpec>();
+            if (_layer == null)
+            {
+                return list;
+            }
+
+            var authored = _layer.GetComponentsInChildren<BossNoteAuthoring>(true);
+            for (var i = 0; i < authored.Length; i++)
+            {
+                var a = authored[i];
+                if (a == null)
+                {
+                    continue;
+                }
+
+                list.Add(new AuthoredBossNoteSpec(a.BeatIndex, a.RemainingHits, a.DisplayTier));
+            }
+
+            return list;
+        }
+
         private void BringLivingNotesToFront()
         {
             foreach (var root in _livingNoteRoots)
@@ -145,10 +251,11 @@ namespace FracturedChorus.UI
         private void SpawnSingle(BossNoteHead head, float y)
         {
             var x = _contentXForBeat(head.BeatIndex);
-            var baseSize = _catalog != null ? Mathf.Max(40f, _catalog.NoteDisplaySize) : 48f;
-            var scale = Mathf.Max(1f, _layout.singleScale);
-            var w = baseSize * scale;
-            var h = w * 1.28f;
+            var size = _catalog != null
+                ? _catalog.ResolveSingleNoteSize()
+                : new Vector2(52.95f, 67.24f);
+            var w = size.x;
+            var h = size.y;
 
             if (head.IsCleared)
             {
@@ -186,10 +293,11 @@ namespace FracturedChorus.UI
             var nudge = _layout.numberNudgeSingle + _layout.ResolveVariantNudge(head.VariantIndex);
             var numberLocal = headLocal + nudge;
 
+            // Pin note-head belly to rail Y (y = BorderTop); Image pivot stays sprite center.
             var living = CreateImage(
                 $"NoteSingle_{head.BeatIndex}",
                 sprite,
-                new Vector2(x, y),
+                new Vector2(x, y - headLocal.y),
                 new Vector2(w, h));
             _livingNoteRoots.Add(living.gameObject);
 
@@ -211,23 +319,23 @@ namespace FracturedChorus.UI
             var x0 = _contentXForBeat(left.BeatIndex);
             var x1 = _contentXForBeat(right.BeatIndex);
             var mid = (x0 + x1) * 0.5f;
-            var baseSize = _catalog != null ? Mathf.Max(40f, _catalog.NoteDisplaySize) : 48f;
-            var height = baseSize * Mathf.Max(1f, _layout.beamedHeightScale);
-            var width = Mathf.Abs(x1 - x0) + baseSize * 1.65f;
+            var size = _catalog != null
+                ? _catalog.ResolveBeamedNoteSize()
+                : new Vector2(99.13f, 125.88f);
             var sprite = _catalog != null ? _catalog.MusicBeamedRedSprite() : null;
+            var leftHeadLocal = FittedLocalFromNorm(_layout.beamedHeadNormLeft, size, sprite);
             var noteImg = CreateImage(
                 $"NoteBeamed_{left.BeatIndex}_{right.BeatIndex}",
                 sprite,
-                new Vector2(mid, y),
-                new Vector2(width, height));
+                new Vector2(mid, y - leftHeadLocal.y),
+                size);
 
             if (!left.IsCleared || !right.IsCleared)
             {
                 _livingNoteRoots.Add(noteImg.gameObject);
             }
 
-            var font = height * _layout.numberSizeFactor;
-            var size = new Vector2(width, height);
+            var font = size.y * _layout.numberSizeFactor;
 
             PlaceBeamedHead(left, noteImg.rectTransform, size, sprite, font, true);
             PlaceBeamedHead(right, noteImg.rectTransform, size, sprite, font, false);

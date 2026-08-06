@@ -21,19 +21,19 @@ namespace FracturedChorus.UI
         [Tooltip("Vị trí khóa sol trong Header (local) — chỉ khi preserveSceneRects = false.")]
         public Vector2 clefAnchoredPosition = new Vector2(105.41f, -47.6f);
 
-        [Tooltip("Độ rộng cột avatar gutter (px). Display target ≈ 72.")]
+        [Tooltip("Độ rộng cột avatar gutter (px) — chỉ khi không preserve scene.")]
         public float avatarGutterWidth = 72f;
 
-        [Tooltip("Offset X fallback khi forceAvatarLayout = false. Khi force = true: tự = Viewport.left − gutterW (cột nằm trong gap, không đè beat track).")]
+        [Tooltip("Offset X gutter — chỉ khi không preserve scene / forceAvatarLayout = false.")]
         public float avatarGutterOffsetX = 139f;
 
-        [Tooltip("Size ô avatar (px). Gốc scene = 40; đề xuất 48–56.")]
-        public float avatarSlotSize = 48f;
+        [Tooltip("Size ô avatar (px) — fallback khi scene chưa có LaneAvatar_*. Ưu tiên size Hierarchy.")]
+        public float avatarSlotSize = 42f;
 
         [Tooltip("Alpha nền cột avatar.")]
         [Range(0.35f, 1f)] public float avatarColumnBackgroundAlpha = 1f;
 
-        [Tooltip("Khi false: giữ RectTransform scene (kéo tay trong Editor). Khi true: ép X = Viewport.left − gutterW.")]
+        [Tooltip("Khi true và không preserve: ép gutter flush Viewport. Mặc định false — lấy Rect trên Scene.")]
         public bool forceAvatarLayout = false;
     }
 }

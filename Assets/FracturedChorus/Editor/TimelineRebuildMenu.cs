@@ -10,8 +10,60 @@ using UnityEngine.UI;
 
 namespace FracturedChorus.Editor
 {
+    [InitializeOnLoad]
     public static class TimelineRebuildMenu
     {
+        private const string SeedLanePreviewTriggerRel =
+            "FracturedChorus/Editor/.seed_timeline_lane_preview_once";
+
+        static TimelineRebuildMenu()
+        {
+            EditorApplication.delayCall += AutoSeedTimelineLanePreviewIfTriggered;
+            EditorApplication.update += AutoSeedTimelineLanePreviewIfTriggeredUpdate;
+        }
+
+        private static int _seedPollFrames;
+
+        private static void AutoSeedTimelineLanePreviewIfTriggeredUpdate()
+        {
+            if (++_seedPollFrames > 120)
+            {
+                EditorApplication.update -= AutoSeedTimelineLanePreviewIfTriggeredUpdate;
+                return;
+            }
+
+            AutoSeedTimelineLanePreviewIfTriggered();
+        }
+
+        private static void AutoSeedTimelineLanePreviewIfTriggered()
+        {
+            var abs = System.IO.Path.Combine(Application.dataPath, SeedLanePreviewTriggerRel);
+            if (!System.IO.File.Exists(abs))
+            {
+                return;
+            }
+
+            try
+            {
+                System.IO.File.Delete(abs);
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogWarning($"[Fractured Chorus] Could not delete seed trigger: {ex.Message}");
+                return;
+            }
+
+            EditorApplication.update -= AutoSeedTimelineLanePreviewIfTriggeredUpdate;
+
+            if (Application.isPlaying)
+            {
+                Debug.LogWarning("[Fractured Chorus] Seed trigger ignored — exit Play Mode first.");
+                return;
+            }
+
+            BatchSeedTimelineLanePreviewAndSave();
+        }
+
         [MenuItem("Fractured Chorus/Fix Execute Overlay (Remove Missing Scripts)")]
         public static void FixExecuteOverlayMissingScripts()
         {
@@ -130,6 +182,56 @@ namespace FracturedChorus.Editor
             EditorSceneManager.MarkSceneDirty(canvasTransform.gameObject.scene);
             Selection.activeGameObject = executeOverlay.gameObject;
             Debug.Log("[Fractured Chorus] ExecuteOverlayUI ready in Hierarchy. Adjust RectTransform in Inspector, then Save scene.");
+        }
+
+        [MenuItem("Fractured Chorus/Seed Timeline Lane Preview (Hierarchy)")]
+        public static void SeedTimelineLanePreview()
+        {
+            if (Application.isPlaying)
+            {
+                EditorUtility.DisplayDialog(
+                    "Fractured Chorus",
+                    "Exit Play Mode trước khi seed Hierarchy preview.",
+                    "OK");
+                return;
+            }
+
+            var timeline = Object.FindAnyObjectByType<BeatTimelineUIView>(FindObjectsInactive.Include);
+            if (timeline == null)
+            {
+                EditorUtility.DisplayDialog(
+                    "Fractured Chorus",
+                    "BeatTimelineUI not found. Open CombatPrototype first.",
+                    "OK");
+                return;
+            }
+
+            if (!TimelineHierarchyBuilder.SeedTimelineLanePreview(timeline))
+            {
+                EditorUtility.DisplayDialog(
+                    "Fractured Chorus",
+                    "Seed Timeline Lane Preview failed. Check Console.",
+                    "OK");
+                return;
+            }
+
+            EditorSceneManager.MarkSceneDirty(timeline.gameObject.scene);
+            Selection.activeGameObject = timeline.gameObject;
+        }
+
+        /// <summary>BatchMode: seed lane/avatar/boss-band/NoteSingle_0 then save CombatPrototype.</summary>
+        public static void BatchSeedTimelineLanePreviewAndSave()
+        {
+            var scenePath = "Assets/FracturedChorus/Scenes/CombatPrototype.unity";
+            var scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+            if (!TimelineHierarchyBuilder.SeedTimelineLanePreview())
+            {
+                Debug.LogError("[Fractured Chorus] Batch seed failed.");
+                return;
+            }
+
+            EditorSceneManager.SaveScene(scene);
+            Debug.Log($"[Fractured Chorus] Batch seeded timeline lane preview and saved {scenePath}.");
         }
 
         [MenuItem("Fractured Chorus/Rebuild Timeline + Skill Panel (Hierarchy)")]

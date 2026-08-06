@@ -51,8 +51,6 @@ namespace FracturedChorus.Combat.Core
 
         private bool _planningPaused;
 
-        private bool _awaitingExecute;
-
         private bool _deployAnnounced;
 
         private CombatUnit _relocateUnit;
@@ -331,8 +329,6 @@ namespace FracturedChorus.Combat.Core
         {
 
             var firstSegment = !_deployAnnounced;
-
-            _awaitingExecute = false;
 
             _planningPaused = false;
 
@@ -634,7 +630,6 @@ namespace FracturedChorus.Combat.Core
 
             _musicController?.EnterPlanningDuck();
             _planningPaused = false;
-            _awaitingExecute = true;
             SetCoverActivateAllowed(true);
             _session.EndRoundSegment();
             timelineView?.HoldAtRoundEnd();
@@ -643,7 +638,6 @@ namespace FracturedChorus.Combat.Core
 
             if (TimelineConstants.GetSegmentStartBeat(_session.RoundSegmentIndex) >= TimelineConstants.TotalBeats)
             {
-                _awaitingExecute = false;
                 executeOverlay?.SetVisible(false);
                 _segmentCompleteRoutine = null;
                 yield break;
@@ -946,7 +940,6 @@ namespace FracturedChorus.Combat.Core
         private void HandleEncounterEnded()
         {
             _planningPaused = false;
-            _awaitingExecute = false;
             skillPanelView?.Hide();
             timelineView?.StopTimelinePlayback();
             executeOverlay?.SetVisible(false);

@@ -16,9 +16,11 @@ namespace FracturedChorus.Data
         public UnitStats stats = new UnitStats();
         public SkillDefinitionSO[] skills;
         public Color placeholderColor = Color.white;
+        [Tooltip("Timeline beat lane line + label tint. Alpha 0 = fall back to PlaceholderColor.")]
+        public Color timelineLaneColor = new Color(0f, 0f, 0f, 0f);
         [Tooltip("Default combat sprite — used when the scene has none assigned or a 1×1 placeholder.")]
         public Sprite battleSprite;
-        [Tooltip("Circular chibi bust for timeline lane avatar gutter. Falls back to PlaceholderColor when null.")]
+        [Tooltip("Circular chibi bust for timeline LaneAvatar gutter. Falls back to timeline lane color when null.")]
         public Sprite timelineAvatarSprite;
         [Tooltip("Full tilted combat card art (name + HP/Prep slots). Party/enemy card UI displays this on CardArt.")]
         public Sprite combatCardSprite;
@@ -34,6 +36,12 @@ namespace FracturedChorus.Data
         public Sprite ResolveCombatCardSprite()
         {
             return combatCardSprite;
+        }
+
+        /// <summary>Lane line / label color on Beat Timeline. Falls back to placeholderColor when unset.</summary>
+        public Color ResolveTimelineLaneColor()
+        {
+            return timelineLaneColor.a > 0.001f ? timelineLaneColor : placeholderColor;
         }
 
         public UnitStats ResolveStats()

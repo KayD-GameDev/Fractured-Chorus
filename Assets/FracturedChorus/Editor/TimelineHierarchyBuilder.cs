@@ -1,7 +1,10 @@
 #if UNITY_EDITOR
+using FracturedChorus.Combat.Presentation;
 using FracturedChorus.Combat.Timeline;
+using FracturedChorus.Data;
 using FracturedChorus.UI;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -22,6 +25,13 @@ namespace FracturedChorus.Editor
         private const float RadialSlotSideX = 93f;
         private const float RadialSlotBottomY = -53f;
         private const int RadialSlotLabelFontSize = 12;
+
+        private static readonly string[] PreviewPresetResourcePaths =
+        {
+            "UnitPresets/UnitPreset_Ren",
+            "UnitPresets/UnitPreset_Tank",
+            "UnitPresets/UnitPreset_Mage",
+        };
 
         public static BeatTimelineUIView BuildTimeline(Transform canvasTransform)
         {
@@ -868,6 +878,694 @@ namespace FracturedChorus.Editor
             }
 
             EnsureBeatSegmentAuthoredVisuals(template);
+        }
+
+        /// <summary>
+        /// Seed edit-mode preview: BorderTop@215, LaneLines Top=15/Bottom=-15,
+        /// 4 lane/avatar shells, NoteSingle_0 + Beat_1 enemy frame/note (RemainingHits editable).
+        /// </summary>
+        public static bool SeedTimelineLanePreview(BeatTimelineUIView timeline = null)
+        {
+            if (timeline == null)
+            {
+                timeline = Object.FindAnyObjectByType<BeatTimelineUIView>(FindObjectsInactive.Include);
+            }
+
+            if (timeline == null)
+            {
+                Debug.LogWarning("[Fractured Chorus] BeatTimelineUIView not found — open CombatPrototype first.");
+                return false;
+            }
+
+            Undo.RegisterFullObjectHierarchyUndo(timeline.gameObject, "Seed Timeline Lane Preview");
+            timeline.WireReferences();
+
+            const int maxLanes = 4;
+            const float railY = 215f;
+            const float laneGap = 32f;
+            const float defaultAvatarSize = 42f;
+            const float noteW = 52.95f;
+            const float noteH = 67.24f;
+            const float beamedW = 99.13f;
+            const float beamedH = 125.88f;
+            const float laneLinesTop = 15f;
+            const float laneLinesBottom = -15f;
+            const int beat1Hits = 3;
+
+            var so = new SerializedObject(timeline);
+            SetFloatProp(so.FindProperty("bossNoteRailAnchoredY"), railY);
+            SetFloatProp(so.FindProperty("laneGapBelowRail"), laneGap);
+            SetFloatProp(so.FindProperty("laneLinesTopInset"), laneLinesTop);
+            SetFloatProp(so.FindProperty("laneLinesBottomInset"), laneLinesBottom);
+            var noteVisuals = so.FindProperty("noteVisuals");
+            if (noteVisuals != null)
+            {
+                SetFloatProp(noteVisuals.FindPropertyRelative("NoteDisplayWidth"), noteW);
+                SetFloatProp(noteVisuals.FindPropertyRelative("NoteDisplayHeight"), noteH);
+                SetFloatProp(noteVisuals.FindPropertyRelative("NoteDisplaySize"), noteW);
+                SetFloatProp(noteVisuals.FindPropertyRelative("NoteBeamedWidth"), beamedW);
+                SetFloatProp(noteVisuals.FindPropertyRelative("NoteBeamedHeight"), beamedH);
+            }
+
+            var leftRail = so.FindProperty("leftRailLayout");
+            if (leftRail != null)
+            {
+                // Hierarchy-first: never force auto gutter layout on seed.
+                var forceProp = leftRail.FindPropertyRelative("forceAvatarLayout");
+                if (forceProp != null)
+                {
+                    forceProp.boolValue = false;
+                }
+
+                var preserveProp = leftRail.FindPropertyRelative("preserveSceneRects");
+                if (preserveProp != null)
+                {
+                    preserveProp.boolValue = true;
+                }
+            }
+
+            so.ApplyModifiedPropertiesWithoutUndo();
+
+            var viewport = so.FindProperty("viewport")?.objectReferenceValue as RectTransform;
+            var laneAvatarGutter = so.FindProperty("laneAvatarGutter")?.objectReferenceValue as RectTransform;
+            var slotsRow = so.FindProperty("slotsRow")?.objectReferenceValue as RectTransform;
+            var laneMinY = so.FindProperty("laneBandMinNormalizedY")?.floatValue ?? 0.12f;
+            var bossBorder = so.FindProperty("bossTrackFrameBorderThickness")?.floatValue ?? 2f;
+            var slotWidth = so.FindProperty("slotWidth")?.floatValue ?? SlotWidth;
+            slotWidth = Mathf.Max(slotWidth, TimelineLayoutLock.SlotWidth);
+
+            if (viewport == null)
+            {
+                viewport = timeline.transform.Find("Viewport") as RectTransform;
+            }
+
+            if (viewport == null)
+            {
+                Debug.LogWarning("[Fractured Chorus] Viewport missing under BeatTimelineUI.");
+                return false;
+            }
+
+            if (slotsRow == null)
+            {
+                slotsRow = viewport.Find("ScrollContent") as RectTransform;
+            }
+
+            if (laneAvatarGutter == null)
+            {
+                laneAvatarGutter = timeline.transform.Find("LaneAvatarGutter") as RectTransform;
+            }
+
+            // Prefer authored avatar size / gutter from scene before recreating shells.
+            var avatarSize = defaultAvatarSize;
+            var avatarAnchorX = 0f;
+            if (laneAvatarGutter != null)
+            {
+                var existing0 = laneAvatarGutter.Find("LaneAvatar_0") as RectTransform;
+                if (existing0 != null && existing0.sizeDelta.x > 1f)
+                {
+                    avatarSize = existing0.sizeDelta.x;
+                    avatarAnchorX = existing0.anchoredPosition.x;
+                }
+            }
+
+            if (leftRail != null)
+            {
+                // Mirror scene size into layout as fallback only (Play reads Hierarchy first).
+                SetFloatProp(leftRail.FindPropertyRelative("avatarSlotSize"), avatarSize);
+                so.ApplyModifiedPropertiesWithoutUndo();
+            }
+
+            Canvas.ForceUpdateCanvases();
+            LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)timeline.transform);
+            LayoutRebuilder.ForceRebuildLayoutImmediate(viewport);
+            var viewportHeight = ResolvePreviewViewportHeight(timeline.transform as RectTransform, viewport);
+
+            var presets = LoadPreviewPartyPresets();
+            var minY = viewportHeight * laneMinY;
+            var maxY = Mathf.Max(minY + 8f, railY - laneGap);
+
+            var laneLines = EnsureStretchLayer(viewport, "LaneLines");
+            ApplyLaneLinesInsets(laneLines, laneLinesTop, laneLinesBottom);
+            ClearNamedChildren(laneLines, "Lane_");
+
+            // Seed 4 shells; aesthetic stretch as if 4 lanes (Play re-stretches by live count).
+            for (var i = 0; i < maxLanes; i++)
+            {
+                var laneY = maxLanes == 1
+                    ? (minY + maxY) * 0.5f
+                    : Mathf.Lerp(maxY, minY, (float)i / (maxLanes - 1));
+                UnitPresetSO preset = i < presets.Length ? presets[i] : null;
+                var tint = preset != null
+                    ? preset.ResolveTimelineLaneColor()
+                    : new Color(0.45f, 0.45f, 0.55f, 0.55f);
+                var label = preset != null
+                    ? (!string.IsNullOrEmpty(preset.displayName)
+                        ? preset.displayName.ToUpperInvariant()
+                        : preset.unitId)
+                    : $"SLOT {i + 1}";
+                CreatePreviewLane(laneLines, i, label, tint, laneY);
+            }
+
+            if (laneAvatarGutter == null)
+            {
+                var gutterGo = CreateUiObject("LaneAvatarGutter", timeline.transform);
+                Undo.RegisterCreatedObjectUndo(gutterGo, "Create LaneAvatarGutter");
+                laneAvatarGutter = gutterGo.GetComponent<RectTransform>();
+                // Only brand-new gutter gets default shell; existing Hierarchy rect is kept.
+                laneAvatarGutter.anchorMin = new Vector2(0f, 0f);
+                laneAvatarGutter.anchorMax = new Vector2(0f, 1f);
+                laneAvatarGutter.pivot = new Vector2(0f, 0.5f);
+                laneAvatarGutter.sizeDelta = new Vector2(72f, 0f);
+                laneAvatarGutter.anchoredPosition = new Vector2(139f, 0f);
+                SetField(timeline, "laneAvatarGutter", laneAvatarGutter);
+            }
+
+            ClearNamedChildren(laneAvatarGutter, "LaneAvatar_");
+            for (var i = 0; i < maxLanes; i++)
+            {
+                var laneY = maxLanes == 1
+                    ? (minY + maxY) * 0.5f
+                    : Mathf.Lerp(maxY, minY, (float)i / (maxLanes - 1));
+                UnitPresetSO preset = i < presets.Length ? presets[i] : null;
+                var tint = preset != null
+                    ? preset.ResolveTimelineLaneColor()
+                    : new Color(0.45f, 0.45f, 0.55f, 0.55f);
+                CreatePreviewLaneAvatar(
+                    laneAvatarGutter,
+                    i,
+                    tint,
+                    laneY,
+                    avatarAnchorX,
+                    avatarSize,
+                    preset != null ? preset.timelineAvatarSprite : null);
+            }
+
+            SeedBossTrackFrame(viewport, railY, bossBorder);
+            SeedExampleNotes(timeline, viewport, slotsRow, railY, slotWidth, noteW, noteH, beat1Hits);
+
+            EditorUtility.SetDirty(timeline);
+            EditorSceneManager.MarkSceneDirty(timeline.gameObject.scene);
+            Debug.Log(
+                "[Fractured Chorus] Seeded rail@215, LaneLines Top=15/Bottom=-15, notes 52.95×67.24 / beamed 99.13×125.88, Beat_1 + NoteSingle_1. Save scene.");
+            return true;
+        }
+
+        private static void SetFloatProp(SerializedProperty prop, float value)
+        {
+            if (prop != null)
+            {
+                prop.floatValue = value;
+            }
+        }
+
+        private static UnitPresetSO[] LoadPreviewPartyPresets()
+        {
+            var list = new System.Collections.Generic.List<UnitPresetSO>();
+            foreach (var path in PreviewPresetResourcePaths)
+            {
+                var preset = Resources.Load<UnitPresetSO>(path);
+                if (preset != null)
+                {
+                    list.Add(preset);
+                }
+            }
+
+            return list.ToArray();
+        }
+
+        private static float ResolvePreviewViewportHeight(RectTransform timelineRoot, RectTransform viewport)
+        {
+            var h = viewport != null ? viewport.rect.height : 0f;
+            if (h >= 40f && h <= 400f)
+            {
+                return h;
+            }
+
+            if (timelineRoot != null)
+            {
+                var rootH = timelineRoot.rect.height;
+                if (rootH >= 40f && rootH <= 400f)
+                {
+                    // Viewport usually fills most of BeatTimelineUI after header gutter.
+                    return Mathf.Max(40f, rootH - 8f);
+                }
+            }
+
+            // Fallback when Canvas has not laid out yet (edit-mode / batch).
+            return TimelineLayoutLock.SlotHeight > 0f
+                ? Mathf.Max(96f, TimelineLayoutLock.SlotHeight)
+                : 130f;
+        }
+
+        private static RectTransform EnsureStretchLayer(RectTransform viewport, string name)
+        {
+            var existing = viewport.Find(name) as RectTransform;
+            if (existing != null)
+            {
+                return existing;
+            }
+
+            var go = CreateUiObject(name, viewport);
+            Undo.RegisterCreatedObjectUndo(go, $"Create {name}");
+            var rect = go.GetComponent<RectTransform>();
+            StretchFull(rect);
+            return rect;
+        }
+
+        private static void ClearNamedChildren(Transform parent, string namePrefix)
+        {
+            if (parent == null)
+            {
+                return;
+            }
+
+            for (var i = parent.childCount - 1; i >= 0; i--)
+            {
+                var child = parent.GetChild(i);
+                if (child != null && child.name.StartsWith(namePrefix))
+                {
+                    Undo.DestroyObjectImmediate(child.gameObject);
+                }
+            }
+        }
+
+        private static void CreatePreviewLane(
+            RectTransform parent, int index, string labelText, Color tint, float laneY)
+        {
+            var lineGo = CreateUiObject($"Lane_{index}", parent);
+            Undo.RegisterCreatedObjectUndo(lineGo, "Create Lane Preview");
+            var lineRect = lineGo.GetComponent<RectTransform>();
+            lineRect.anchorMin = new Vector2(0f, 0f);
+            lineRect.anchorMax = new Vector2(1f, 0f);
+            lineRect.pivot = new Vector2(0.5f, 0.5f);
+            lineRect.sizeDelta = new Vector2(0f, 5f);
+            lineRect.anchoredPosition = new Vector2(0f, laneY);
+            var lineImage = lineGo.AddComponent<Image>();
+            lineImage.color = new Color(
+                Mathf.Min(1f, tint.r * 1.15f + 0.08f),
+                Mathf.Min(1f, tint.g * 1.15f + 0.08f),
+                Mathf.Min(1f, tint.b * 1.15f + 0.08f),
+                0.92f);
+            lineImage.raycastTarget = false;
+
+            var labelGo = CreateUiObject("Label", lineGo.transform);
+            var labelRect = labelGo.GetComponent<RectTransform>();
+            labelRect.anchorMin = new Vector2(0f, 0.5f);
+            labelRect.anchorMax = new Vector2(0f, 0.5f);
+            labelRect.pivot = new Vector2(0f, 0.5f);
+            labelRect.anchoredPosition = new Vector2(4f, 8f);
+            labelRect.sizeDelta = new Vector2(90f, 14f);
+            var label = labelGo.AddComponent<Text>();
+            ApplyText(label);
+            label.fontSize = 10;
+            label.alignment = TextAnchor.MiddleLeft;
+            label.horizontalOverflow = HorizontalWrapMode.Overflow;
+            label.verticalOverflow = VerticalWrapMode.Overflow;
+            label.color = new Color(tint.r, tint.g, tint.b, 0.9f);
+            label.text = labelText;
+            label.raycastTarget = false;
+        }
+
+        private static void CreatePreviewLaneAvatar(
+            RectTransform parent,
+            int index,
+            Color tint,
+            float laneY,
+            float anchorX,
+            float slotSize,
+            Sprite avatarSprite)
+        {
+            var slotGo = CreateUiObject($"LaneAvatar_{index}", parent);
+            Undo.RegisterCreatedObjectUndo(slotGo, "Create LaneAvatar Preview");
+            var slotRect = slotGo.GetComponent<RectTransform>();
+            slotRect.anchorMin = new Vector2(0.5f, 0f);
+            slotRect.anchorMax = new Vector2(0.5f, 0f);
+            slotRect.pivot = new Vector2(0.5f, 0.5f);
+            slotRect.anchoredPosition = new Vector2(anchorX, laneY);
+            slotRect.sizeDelta = new Vector2(slotSize, slotSize);
+
+            var avatar = slotGo.GetComponent<Image>();
+            if (avatar == null)
+            {
+                avatar = slotGo.AddComponent<Image>();
+            }
+
+            if (avatarSprite != null)
+            {
+                avatar.sprite = avatarSprite;
+                avatar.preserveAspect = true;
+                avatar.color = Color.white;
+            }
+            else
+            {
+                avatar.sprite = UiCircleSpriteUtil.Circle;
+                avatar.color = new Color(tint.r, tint.g, tint.b, 1f);
+            }
+
+            avatar.raycastTarget = false;
+
+            // Hierarchy-first FrameRing — Play assigns laneAvatarRingSprite onto this Image.
+            var frameGo = CreateUiObject("FrameRing", slotRect);
+            var frameRect = frameGo.GetComponent<RectTransform>();
+            frameRect.anchorMin = Vector2.zero;
+            frameRect.anchorMax = Vector2.one;
+            frameRect.offsetMin = Vector2.zero;
+            frameRect.offsetMax = Vector2.zero;
+            var frameImage = frameGo.AddComponent<Image>();
+            frameImage.type = Image.Type.Simple;
+            frameImage.preserveAspect = true;
+            frameImage.raycastTarget = false;
+            frameImage.color = Color.white;
+
+            var selGo = CreateUiObject("SelectionRing", slotRect);
+            var selRect = selGo.GetComponent<RectTransform>();
+            selRect.anchorMin = Vector2.zero;
+            selRect.anchorMax = Vector2.one;
+            selRect.offsetMin = new Vector2(-4f, -4f);
+            selRect.offsetMax = new Vector2(4f, 4f);
+            var selImage = selGo.AddComponent<Image>();
+            selImage.type = Image.Type.Simple;
+            selImage.preserveAspect = true;
+            selImage.raycastTarget = false;
+            selImage.color = new Color(1f, 0.55f, 1f, 1f);
+            selImage.enabled = false;
+
+            var slotView = slotGo.AddComponent<TimelineLaneAvatarSlotView>();
+            slotView.Bind(null, null);
+        }
+
+        private static void SeedBossTrackFrame(
+            RectTransform viewport,
+            float railY,
+            float borderThickness)
+        {
+            var existing = viewport.Find("BossTrackFrame");
+            if (existing != null)
+            {
+                Undo.DestroyObjectImmediate(existing.gameObject);
+            }
+
+            var rootGo = CreateUiObject("BossTrackFrame", viewport);
+            Undo.RegisterCreatedObjectUndo(rootGo, "Create BossTrackFrame");
+            var root = rootGo.GetComponent<RectTransform>();
+            root.anchorMin = new Vector2(0f, 0f);
+            root.anchorMax = new Vector2(0f, 0f);
+            root.pivot = new Vector2(0f, 0.5f);
+
+            var borderH = Mathf.Max(1f, borderThickness);
+            var width = Mathf.Max(viewport.rect.width, SlotWidth * 8f);
+            root.sizeDelta = new Vector2(width, borderH);
+            root.anchoredPosition = new Vector2(0f, railY);
+
+            // BorderTop only — note head belly pins here. No Fill / BorderBottom.
+            var top = CreateBossTrackChildPreview("BorderTop", root, stretch: false);
+            top.color = FcColorTokens.WithAlpha(FcColorTokens.Brand.CyanNeonCore, 0.95f);
+            var topRt = top.rectTransform;
+            topRt.anchoredPosition = Vector2.zero;
+            topRt.sizeDelta = new Vector2(0f, borderH);
+        }
+
+        private static Image CreateBossTrackChildPreview(string name, RectTransform parent, bool stretch)
+        {
+            var go = CreateUiObject(name, parent);
+            var rect = go.GetComponent<RectTransform>();
+            if (stretch)
+            {
+                StretchFull(rect);
+            }
+            else
+            {
+                rect.anchorMin = new Vector2(0f, 0.5f);
+                rect.anchorMax = new Vector2(1f, 0.5f);
+                rect.pivot = new Vector2(0.5f, 0.5f);
+                rect.sizeDelta = new Vector2(0f, 2f);
+            }
+
+            var img = go.AddComponent<Image>();
+            img.raycastTarget = false;
+            return img;
+        }
+
+        private static void ApplyLaneLinesInsets(RectTransform laneLines, float topInset, float bottomInset)
+        {
+            if (laneLines == null)
+            {
+                return;
+            }
+
+            laneLines.anchorMin = Vector2.zero;
+            laneLines.anchorMax = Vector2.one;
+            laneLines.pivot = new Vector2(0.5f, 0.5f);
+            laneLines.anchoredPosition = Vector2.zero;
+            laneLines.sizeDelta = Vector2.zero;
+            laneLines.offsetMin = new Vector2(0f, bottomInset);
+            laneLines.offsetMax = new Vector2(0f, -topInset);
+        }
+
+        private static void SeedExampleNotes(
+            BeatTimelineUIView timeline,
+            RectTransform viewport,
+            RectTransform slotsRow,
+            float railY,
+            float slotWidth,
+            float noteW,
+            float noteH,
+            int beat1Hits)
+        {
+            var existingLayer = viewport.Find("BossNoteClusterLayer");
+            RectTransform layer;
+            if (existingLayer != null)
+            {
+                layer = existingLayer as RectTransform;
+                ClearNamedChildren(layer, "NoteSingle_");
+                ClearNamedChildren(layer, "NoteBeamed_");
+            }
+            else
+            {
+                var go = CreateUiObject("BossNoteClusterLayer", viewport);
+                Undo.RegisterCreatedObjectUndo(go, "Create BossNoteClusterLayer");
+                layer = go.GetComponent<RectTransform>();
+                StretchFull(layer);
+                if (go.GetComponent<BossNoteClusterView>() == null)
+                {
+                    go.AddComponent<BossNoteClusterView>();
+                }
+            }
+
+            var catalog = BuildSeedCatalog(timeline, noteW, noteH);
+            CreateAuthoredSingleNote(layer, catalog, beatIndex: 0, railY, slotWidth, noteW, noteH, remainingHits: 1, addAuthoring: false);
+            CreateAuthoredSingleNote(layer, catalog, beatIndex: 1, railY, slotWidth, noteW, noteH, remainingHits: beat1Hits, addAuthoring: true);
+            SeedBeat1EnemyFrame(timeline, slotsRow, slotWidth, catalog, beat1Hits);
+        }
+
+        private static TimelineNoteVisualCatalog BuildSeedCatalog(
+            BeatTimelineUIView timeline, float noteW, float noteH)
+        {
+            var catalog = new TimelineNoteVisualCatalog();
+            var so = new SerializedObject(timeline);
+            var noteVisualsProp = so.FindProperty("noteVisuals");
+            if (noteVisualsProp != null)
+            {
+                catalog.NoteRed = noteVisualsProp.FindPropertyRelative("NoteRed")?.objectReferenceValue as Sprite;
+                catalog.BeatFrameImpact =
+                    noteVisualsProp.FindPropertyRelative("BeatFrameImpact")?.objectReferenceValue as Sprite;
+            }
+
+            catalog.NoteDisplayWidth = noteW;
+            catalog.NoteDisplayHeight = noteH;
+            catalog.NoteDisplaySize = noteW;
+            catalog.EnsureDefaultsLoaded();
+            return catalog;
+        }
+
+        private static void CreateAuthoredSingleNote(
+            RectTransform layer,
+            TimelineNoteVisualCatalog catalog,
+            int beatIndex,
+            float railY,
+            float slotWidth,
+            float noteW,
+            float noteH,
+            int remainingHits,
+            bool addAuthoring)
+        {
+            var sprite = catalog.MusicSingle(0, BossNoteTier.Red) ?? catalog.NoteRed;
+            var layout = new BossNoteNumberLayout();
+            var w = noteW;
+            var h = noteH;
+            var x = slotWidth * (beatIndex + 0.5f);
+            var headNorm = layout.ResolveSingleHeadNorm(0);
+            var headLocalY = headNorm.y * h;
+            if (sprite != null)
+            {
+                var sprAspect = sprite.rect.width / Mathf.Max(1f, sprite.rect.height);
+                var rectAspect = w / h;
+                var drawH = rectAspect > sprAspect ? h : w / sprAspect;
+                headLocalY = headNorm.y * drawH;
+            }
+
+            var noteGo = CreateUiObject($"NoteSingle_{beatIndex}", layer);
+            Undo.RegisterCreatedObjectUndo(noteGo, $"Create NoteSingle_{beatIndex}");
+            var noteRt = noteGo.GetComponent<RectTransform>();
+            noteRt.anchorMin = new Vector2(0f, 0f);
+            noteRt.anchorMax = new Vector2(0f, 0f);
+            noteRt.pivot = new Vector2(0.5f, 0.5f);
+            noteRt.anchoredPosition = new Vector2(x, railY - headLocalY);
+            noteRt.sizeDelta = new Vector2(w, h);
+            var img = noteGo.AddComponent<Image>();
+            img.sprite = sprite;
+            img.preserveAspect = true;
+            img.raycastTarget = addAuthoring;
+            img.color = new Color(1f, 1f, 1f, catalog.NoteAlpha > 0.01f ? catalog.NoteAlpha : 0.78f);
+
+            var numGo = CreateUiObject("NoteNum", noteGo.transform);
+            var numRt = numGo.GetComponent<RectTransform>();
+            numRt.anchorMin = new Vector2(0.5f, 0.5f);
+            numRt.anchorMax = new Vector2(0.5f, 0.5f);
+            numRt.pivot = new Vector2(0.5f, 0.5f);
+            var numberLocal = FittedPreviewNumberLocal(layout, w, h, sprite);
+            numRt.anchoredPosition = numberLocal;
+            numRt.sizeDelta = new Vector2(w * layout.numberSizeFactor, w * layout.numberSizeFactor);
+            var numText = numGo.AddComponent<Text>();
+            ApplyText(numText);
+            numText.fontSize = Mathf.RoundToInt(Mathf.Max(10f, w * layout.numberSizeFactor * 0.55f));
+            numText.alignment = TextAnchor.MiddleCenter;
+            numText.raycastTarget = false;
+            numText.text = remainingHits > 0 ? Mathf.Clamp(remainingHits, 0, 9).ToString() : string.Empty;
+
+            if (!addAuthoring)
+            {
+                return;
+            }
+
+            var authoring = noteGo.AddComponent<BossNoteAuthoring>();
+            authoring.SetBeatIndex(beatIndex);
+            authoring.SetRemainingHits(remainingHits);
+            var soAuth = new SerializedObject(authoring);
+            soAuth.FindProperty("numberLabel").objectReferenceValue = numText;
+            soAuth.FindProperty("displayTier").intValue = (int)BossNoteTier.Red;
+            soAuth.ApplyModifiedPropertiesWithoutUndo();
+            authoring.RefreshNumberLabel();
+        }
+
+        private static Vector2 FittedPreviewNumberLocal(
+            BossNoteNumberLayout layout, float w, float h, Sprite sprite)
+        {
+            var headNorm = layout.ResolveSingleHeadNorm(0);
+            var size = new Vector2(w, h);
+            var headLocal = headNorm;
+            headLocal.x *= w;
+            headLocal.y *= h;
+            if (sprite != null)
+            {
+                var sprAspect = sprite.rect.width / Mathf.Max(1f, sprite.rect.height);
+                var rectAspect = w / h;
+                var drawW = rectAspect > sprAspect ? h * sprAspect : w;
+                var drawH = rectAspect > sprAspect ? h : w / sprAspect;
+                headLocal = new Vector2(headNorm.x * drawW, headNorm.y * drawH);
+            }
+
+            return headLocal + layout.numberNudgeSingle;
+        }
+
+        private static void SeedBeat1EnemyFrame(
+            BeatTimelineUIView timeline,
+            RectTransform slotsRow,
+            float slotWidth,
+            TimelineNoteVisualCatalog catalog,
+            int remainingHits)
+        {
+            if (slotsRow == null)
+            {
+                return;
+            }
+
+            var beat0 = slotsRow.Find("Beat_0");
+            if (beat0 == null)
+            {
+                Debug.LogWarning("[Fractured Chorus] Beat_0 missing — cannot seed Beat_1.");
+                return;
+            }
+
+            var existing = slotsRow.Find("Beat_1");
+            if (existing != null)
+            {
+                Undo.DestroyObjectImmediate(existing.gameObject);
+            }
+
+            var cloneGo = Object.Instantiate(beat0.gameObject, slotsRow);
+            Undo.RegisterCreatedObjectUndo(cloneGo, "Create Beat_1");
+            cloneGo.name = "Beat_1";
+            cloneGo.hideFlags = HideFlags.None;
+
+            var rt = cloneGo.GetComponent<RectTransform>();
+            if (rt != null)
+            {
+                rt.anchoredPosition = new Vector2(slotWidth, rt.anchoredPosition.y);
+                rt.sizeDelta = new Vector2(slotWidth, rt.sizeDelta.y);
+            }
+
+            var segment = cloneGo.GetComponent<BeatSegmentView>();
+            if (segment == null)
+            {
+                segment = cloneGo.AddComponent<BeatSegmentView>();
+            }
+
+            EnsureBeatSegmentAuthoredVisuals(segment);
+            segment.SetDisplayBeatIndex(1);
+            segment.WireReferences();
+            segment.SetNoteVisualCatalog(catalog);
+            segment.SetNoteBandNormalizedY(0.78f);
+
+            // Preview enemy impact frame + hits (edit-mode). Play refreshes from telegraphs.
+            ApplyImpactFramePreview(segment, catalog, remainingHits);
+            EditorUtility.SetDirty(segment);
+            EditorUtility.SetDirty(timeline);
+        }
+
+        private static void ApplyImpactFramePreview(
+            BeatSegmentView segment,
+            TimelineNoteVisualCatalog catalog,
+            int remainingHits)
+        {
+            if (segment == null)
+            {
+                return;
+            }
+
+            var root = segment.transform;
+            var beatFrame = root.Find("BeatFrame")?.GetComponent<Image>();
+            if (beatFrame == null)
+            {
+                return;
+            }
+
+            catalog?.EnsureDefaultsLoaded();
+            var sprite = catalog != null ? catalog.BeatFrame(hasTelegraph: true, isWindup: false) : null;
+            beatFrame.enabled = true;
+            beatFrame.sprite = sprite;
+            beatFrame.type = Image.Type.Simple;
+            beatFrame.preserveAspect = false;
+            beatFrame.color = new Color(1f, 1f, 1f, 0.55f);
+            beatFrame.raycastTarget = false;
+
+            var action = root.Find("ActionLabel")?.GetComponent<Text>();
+            if (action != null)
+            {
+                action.text = remainingHits > 0 ? $"◆ ENEMY · {remainingHits}" : "◆ PERFECT";
+            }
+        }
+
+        private static void SeedExampleNoteOnBeat0(
+            BeatTimelineUIView timeline,
+            RectTransform viewport,
+            float railY,
+            float slotWidth,
+            float noteW,
+            float noteH)
+        {
+            SeedExampleNotes(timeline, viewport, viewport?.Find("ScrollContent") as RectTransform,
+                railY, slotWidth, noteW, noteH, beat1Hits: 3);
         }
 
         private static void EnsureBeatSegmentAuthoredVisuals(BeatSegmentView segment)

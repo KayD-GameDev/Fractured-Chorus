@@ -699,9 +699,15 @@ namespace FracturedChorus.UI
                     return touchPos;
                 }
             }
-#endif
+
+            // Input System only — never fall back to UnityEngine.Input (throws when activeInputHandler=1).
+            return new Vector2(float.NaN, float.NaN);
+#elif ENABLE_LEGACY_INPUT_MANAGER
             var legacyPos = (Vector2)Input.mousePosition;
             return IsValidScreenPosition(legacyPos) ? legacyPos : new Vector2(float.NaN, float.NaN);
+#else
+            return new Vector2(float.NaN, float.NaN);
+#endif
         }
 
         private static bool WasPointerPressedThisFrame()

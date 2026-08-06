@@ -49,22 +49,38 @@ namespace FracturedChorus.Combat.Presentation
         }
     }
 
+    /// <summary>Scene-authored boss note fallback when no telegraph exists at that beat.</summary>
+    public readonly struct AuthoredBossNoteSpec
+    {
+        public int BeatIndex { get; }
+        public int RemainingHits { get; }
+        public BossNoteTier DisplayTier { get; }
+
+        public AuthoredBossNoteSpec(int beatIndex, int remainingHits, BossNoteTier displayTier)
+        {
+            BeatIndex = beatIndex;
+            RemainingHits = remainingHits;
+            DisplayTier = displayTier;
+        }
+    }
+
     public static class BossNoteClusterBuilder
     {
         public const int SingleVariantCount = 5;
 
-        public static int VariantForBeat(int beatIndex) =>
-            (int)((uint)(beatIndex * 2654435761u) % SingleVariantCount);
-
-        public static List<BossNoteCluster> Build(BeatTimelineEngine timeline)
+        public static List<BossNoteCluster> Build(
+            BeatTimelineEngine timeline,
+            IReadOnlyList<AuthoredBossNoteSpec> authoredFallback = null)
         {
             var result = new List<BossNoteCluster>();
             if (timeline == null)
             {
+                AppendAuthoredSingles(result, authoredFallback, covered: null);
                 return result;
             }
 
             var beats = CollectImpactBeats(timeline);
+            var covered = new HashSet<int>();
             var i = 0;
             while (i < beats.Count)
             {
@@ -94,6 +110,8 @@ namespace FracturedChorus.Combat.Presentation
                                 BossNoteGlyphKind.Beamed,
                                 MakeHead(beatA, teleA, remA),
                                 MakeHead(beatB, teleB, remB)));
+                            covered.Add(beatA);
+                            covered.Add(beatB);
                             i += 2;
                             continue;
                         }
@@ -103,10 +121,53 @@ namespace FracturedChorus.Combat.Presentation
                 result.Add(new BossNoteCluster(
                     BossNoteGlyphKind.Single,
                     MakeHead(beatA, teleA, remA)));
+                covered.Add(beatA);
                 i++;
             }
 
+            AppendAuthoredSingles(result, authoredFallback, covered);
             return result;
+        }
+
+        private static void AppendAuthoredSingles(
+            List<BossNoteCluster> result,
+            IReadOnlyList<AuthoredBossNoteSpec> authoredFallback,
+            HashSet<int> covered)
+        {
+            if (authoredFallback == null || authoredFallback.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var spec in authoredFallback)
+            {
+                if (spec.BeatIndex < 0 || spec.RemainingHits < 0)
+                {
+                    continue;
+                }
+
+                if (covered != null && covered.Contains(spec.BeatIndex))
+                {
+                    continue;
+                }
+
+                var tier = spec.DisplayTier;
+                if (spec.RemainingHits > 0 &&
+                    CombatCounterResolver.TryGetDisplayTier(spec.RemainingHits, out var resolved))
+                {
+                    tier = resolved;
+                }
+
+                result.Add(new BossNoteCluster(
+                    BossNoteGlyphKind.Single,
+                    new BossNoteHead(
+                        spec.BeatIndex,
+                        telegraph: null,
+                        spec.RemainingHits,
+                        tier,
+                        VariantForBeat(spec.BeatIndex))));
+                covered?.Add(spec.BeatIndex);
+            }
         }
 
         private static BossNoteHead MakeHead(int beat, EnemyTelegraph tele, int remaining)
@@ -166,5 +227,8 @@ namespace FracturedChorus.Combat.Presentation
 
             return best;
         }
+
+        public static int VariantForBeat(int beatIndex) =>
+            ((beatIndex % SingleVariantCount) + SingleVariantCount) % SingleVariantCount;
     }
 }

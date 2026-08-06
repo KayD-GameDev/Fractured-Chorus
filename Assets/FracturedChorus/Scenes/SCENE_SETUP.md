@@ -122,12 +122,27 @@ Copy/step SoT: `docs/tutorial/TUTORIAL_COPY.md`.
 ```
 BeatTimelineUI
 ├── Header          (PhaseLabel, Budget, AvLabel — optional)
+├── LaneAvatarGutter
+│   ├── AvatarColumnBackground
+│   └── LaneAvatar_0..3   ← size/X Hierarchy; Play sync Y qua world→gutter (không copy Y local LaneLines)
 └── Viewport        (RectMask2D)
-    ├── TrackLine       ← đường track ngang (mờ); tạo sẵn khi Rebuild, hoặc runtime tự tạo
-    ├── ScrollContent   ← hàng ô beat; scroll ngang liên tục khi Play
-    │   └── Beat_0      ← template; thêm BeatSlot_1…N lúc runtime
-    └── ScanBar         ← vạch quét đỏ; trượt dọc track, không nhảy từng ô
+    ├── TrackLine
+    ├── ScrollContent
+    │   ├── Beat_0 / Beat_1  ← template/seed; Play SetActive(false)
+    │   └── BeatSlot_0…N     ← clone runtime từ Beat_0
+    ├── ScanBar         ← rect + sibling order từ Hierarchy (preserveSceneLayout; không SetAsLastSibling)
+    ├── LaneLines       ← Top=15, Bottom=-15; vẽ trên ScanBar
+    │   └── Lane_0..3
+    ├── BossTrackFrame
+    │   └── BorderTop   ← note rail @ Y=215
+    ├── BossNoteClusterLayer
+    │   └── NoteSingle_* seed: Edit preview only; Play destroy + chỉ spawn từ telegraph
+    └── LaneMarkers / LaneFootprint  ← Y neo theo Lane_* (world→layer), không dùng công thức riêng
 ```
+
+`LaneAvatar_*` → child `FrameRing` (Image): Play gán `laneAvatarRingSprite` vào object này — không tạo ring cứng trong code.
+
+Menu **Fractured Chorus → Seed Timeline Lane Preview (Hierarchy)** seed từ `Resources/UnitPresets` (Ren/Tank/Mage). Play **bind** preset lên shell scene; ScanBar/LaneAvatarGutter giữ Hierarchy. `Lane_0` = Character Line 1. Chọn `NoteSingle_1` → Inspector **Remaining Hits**.
 
 ### Độ rộng ô — khóa theo CombatTutorial
 
@@ -213,9 +228,16 @@ Menu **Fractured Chorus → Rebuild Timeline + Skill Panel (Hierarchy)** — t�
 - `BeatTimelineUI/Viewport/ScanBar` (vạch quét đỏ trên track)
 - `SkillPanelUI` (ẩn mặc định, hiện khi click unit)
 
-Save scene sau khi rebuild.
+Menu **Fractured Chorus → Seed Timeline Lane Preview (Hierarchy)** — seed edit-mode từ UnitPresetSO:
 
-> **Lưu ý:** Rebuild (editor) chỉ tạo template `Beat_0`. Lúc Play, runtime mới clone đủ `TotalBeats` ô (`BeatSlot_1…N`) với độ rộng theo giây — không cần các object beat trong Hierarchy.
+- Note rail `BossTrackFrame/BorderTop` @ **Y=215**
+- `NoteSingle_0` size **52.95 × 67.24** (bụng neo BorderTop)
+- `Lane_0..3` + `LaneAvatar_0..3` (max 4; Play **dàn đều** Y theo số party sống; footprint/avatar neo theo `Lane_*`)
+- Avatar slot **42×42** (`leftRailLayout.avatarSlotSize`)
+
+Save scene sau khi rebuild/seed.
+
+> **Lưu ý:** Rebuild (editor) chỉ tạo template `Beat_0`/`Beat_1`. Lúc Play: ẩn template; clone `BeatSlot_0…N`; ẩn note seed trên `BossNoteClusterLayer`; ScanBar giữ draw order Scene (dưới `LaneLines`).
 
 ---
 
@@ -229,6 +251,8 @@ Menu **Fractured Chorus → Setup Combat Scene Hierarchy** → chọn **Tạo l�
 
 | Ngày | Thay đổi |
 |------|----------|
+| 2026-08-06 | **Timeline rail layout:** BorderTop Y=215; note single 52.95×67.24; max 4 party lanes aesthetic stretch; avatar 42×42. |
+| 2026-08-05 | **Timeline lanes preset-bind:** note belly → `BorderTop`; bỏ Fill; BorderBottom → `Lane_0`; Play bind `UnitPresetSO.timelineLaneColor` + `timelineAvatarSprite`; seed từ Resources presets. |
 | 2026-06-27 | **Party bar hierarchy-first:** `Card_Mage/Ren/Tank` trong `CardsRow`; spacing **1.25px**; Tank ngoài cùng phải; `preserveSceneLayout` — không dịch thẻ khi di chuyển unit; icon hệ art (`icon_he_*`). Rule: không code scene + object phải hiện Hierarchy. |
 | 2026-06-26 | **Party status bar:** clone từ `CardTemplate` (max 5); spacing 1px; thứ tự Mage→Ren→Tank; badge hệ tròn (bỏ `RoleBadge`); swap formation refresh bar; menu Find/Remove Missing Scripts. |
 | 2026-06-25 | **Độ rộng ô theo giây**: `width = span × pixelsPerSecond` (data-driven từ `MusicBeatMapSO`); scroll lái bằng musical beat → px/giây không đổi (mượt, khớp nhạc). Render-all `TotalBeats` ô + `RectMask2D`; `childControlWidth = true`. |
