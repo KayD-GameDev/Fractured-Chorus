@@ -140,7 +140,7 @@ BeatTimelineUI
     └── LaneMarkers / LaneFootprint  ← Y neo theo Lane_* (world→layer), không dùng công thức riêng
 ```
 
-`LaneAvatar_*` → child `FrameRing` (Image): Play gán `laneAvatarRingSprite` vào object này — không tạo ring cứng trong code.
+`LaneAvatar_*` → size / X / `FrameRing` Image lấy từ Scene; Play chỉ sync Y song song `Lane_*` (không ghi đè frame nếu scene đã gán sprite).
 
 Menu **Fractured Chorus → Seed Timeline Lane Preview (Hierarchy)** seed từ `Resources/UnitPresets` (Ren/Tank/Mage). Play **bind** preset lên shell scene; ScanBar/LaneAvatarGutter giữ Hierarchy. `Lane_0` = Character Line 1. Chọn `NoteSingle_1` → Inspector **Remaining Hits**.
 

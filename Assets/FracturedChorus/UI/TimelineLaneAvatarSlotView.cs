@@ -31,6 +31,32 @@ namespace FracturedChorus.UI
             ApplyRingSprites();
         }
 
+        /// <summary>
+        /// Keep scene FrameRing Image sprite when authored; only apply fallback if missing.
+        /// </summary>
+        public void ApplyFrameSpriteIfMissing(Sprite fallback)
+        {
+            EnsureBuilt();
+            if (_frameRing == null)
+            {
+                return;
+            }
+
+            if (_frameRing.sprite != null)
+            {
+                _ringSprite = _frameRing.sprite;
+                return;
+            }
+
+            if (fallback == null)
+            {
+                return;
+            }
+
+            _ringSprite = fallback;
+            ApplyRingSprites();
+        }
+
         public void Bind(CombatUnit unit, Action<CombatUnit> onClicked)
         {
             _unit = unit;

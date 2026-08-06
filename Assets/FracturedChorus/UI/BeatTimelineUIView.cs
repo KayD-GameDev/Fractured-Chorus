@@ -3025,6 +3025,7 @@ namespace FracturedChorus.UI
 
             var viewportHeight = viewport != null ? viewport.rect.height : 100f;
             var fallbackSlotSize = ResolveAvatarSlotSizeFromScene();
+            var fallbackSlotX = ResolveAvatarSlotXFromScene();
             for (var i = 0; i < _laneUnits.Count; i++)
             {
                 var unit = _laneUnits[i];
@@ -3050,26 +3051,19 @@ namespace FracturedChorus.UI
                     slotRect.anchorMax = new Vector2(0.5f, 0f);
                     slotRect.pivot = new Vector2(0.5f, 0.5f);
                     slotRect.sizeDelta = new Vector2(fallbackSlotSize, fallbackSlotSize);
+                    slotRect.anchoredPosition = new Vector2(fallbackSlotX, 0f);
                     slotView = slotGo.AddComponent<TimelineLaneAvatarSlotView>();
                 }
 
                 var laneLine = i < _laneLines.Count ? _laneLines[i] : null;
                 var laneY = ResolveAvatarYAlignedToLane(laneLine, viewportHeight, i);
 
-                if (keepScene)
-                {
-                    // Keep scene size + X; sync Y into gutter space from lane world position.
-                    slotRect.anchoredPosition = new Vector2(slotRect.anchoredPosition.x, laneY);
-                }
-                else
-                {
-                    var slotSize = Mathf.Max(24f, leftRailLayout.avatarSlotSize);
-                    slotRect.anchoredPosition = new Vector2(0f, laneY);
-                    slotRect.sizeDelta = new Vector2(slotSize, slotSize);
-                }
+                // Scene is source of truth for size / X / anchors / FrameRing art.
+                // Runtime only keeps avatar parallel with Lane_* (Y sync).
+                slotRect.anchoredPosition = new Vector2(slotRect.anchoredPosition.x, laneY);
 
-                slotView.SetRingSprite(ResolveLaneAvatarFrame(unit));
                 slotView.Bind(unit, _onLaneAvatarClicked);
+                slotView.ApplyFrameSpriteIfMissing(ResolveLaneAvatarFrame(unit));
                 slotView.SetSelected(unit == _selectedLaneUnit);
                 _laneAvatarSlots.Add(slotView);
             }
@@ -3101,6 +3095,24 @@ namespace FracturedChorus.UI
 
             leftRailLayout ??= new LeftRailLayout();
             return Mathf.Max(24f, leftRailLayout.avatarSlotSize);
+        }
+
+        /// <summary>Avatar slot X from authored LaneAvatar_* on scene.</summary>
+        private float ResolveAvatarSlotXFromScene()
+        {
+            if (laneAvatarGutter != null)
+            {
+                for (var i = 0; i < MaxTimelinePartyLanes; i++)
+                {
+                    var rt = laneAvatarGutter.Find($"LaneAvatar_{i}") as RectTransform;
+                    if (rt != null)
+                    {
+                        return rt.anchoredPosition.x;
+                    }
+                }
+            }
+
+            return 0f;
         }
 
         /// <summary>
