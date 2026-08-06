@@ -24,6 +24,7 @@ namespace FracturedChorus.Combat.Presentation
         [SerializeField] private CombatFocusDimmer focusDimmer;
         [SerializeField] private PlayerSkillShotChoreographer playerSkillShotChoreographer;
         [SerializeField] private CharlotteSkillChoreographer charlotteSkillChoreographer;
+        [SerializeField] private CodaSkillChoreographer codaSkillChoreographer;
         [SerializeField] private CounterPresentationDriver counterPresentation;
         [SerializeField] private Camera focusCamera;
         [SerializeField] private CanvasGroup hideUiRoot;
@@ -35,12 +36,17 @@ namespace FracturedChorus.Combat.Presentation
         [SerializeField] private int stageRow = 1;
         [SerializeField] private int stageColumn;
         [SerializeField] private float sideGap = HexBoardLayout.DefaultSideGap;
+        [Tooltip("Đẩy player/enemy ra xa thêm trên trục X khi vào stage encounter.")]
+        [SerializeField] private float stageSpreadExtra = 0.85f;
         [SerializeField] private float stageMoveSeconds = 0.12f;
         [SerializeField] private float returnMoveSeconds = 0.12f;
         [SerializeField] private float duelSeconds = 1.5f;
         [SerializeField] [Range(0.05f, 0.95f)] private float resolveAtNormalizedTime = 0.4f;
         [Tooltip("Animator speed during encounter duel (1 = normal, 0.7 ≈ chậm nhẹ).")]
         [SerializeField] [Range(0.25f, 1f)] private float encounterAnimSpeed = 0.7f;
+        [Tooltip("Animator speed khi Skill 3 / Ultimate — chậm hơn để gồng lực.")]
+        [SerializeField] [Range(0.2f, 1f)] private float ultimateEncounterAnimSpeed = 0.42f;
+        [SerializeField] private float ultimateAftermathHoldSeconds = 0.55f;
 
         [Header("Presentation")]
         [SerializeField] private bool hideOtherUnits = true;
@@ -65,6 +71,7 @@ namespace FracturedChorus.Combat.Presentation
         private float _cameraHomeOrtho;
         private bool _cameraCaptured;
         private float _hideUiHomeAlpha = 1f;
+        private float _activeEncounterAnimSpeed = 1f;
 
         public bool IsBusy => _busy;
 
@@ -215,6 +222,7 @@ namespace FracturedChorus.Combat.Presentation
 
             focusDimmer?.Configure(focusDimFactor, focusFadeSeconds);
             EnsureLetterbox();
+            CombatImpactFeel.Ensure(transform, focusCamera != null ? focusCamera : Camera.main);
         }
 
         private void EnsureLetterbox()
@@ -235,7 +243,10 @@ namespace FracturedChorus.Combat.Presentation
             _busy = true;
             timelineView.PauseForEncounter();
             EnsureLetterbox();
-            letterboxOverlay?.Show(musicController);
+            if (letterboxOverlay != null)
+            {
+                letterboxOverlay.Show(musicController);
+            }
 
             var playerView = UnitView.FindForUnit(playerUnit);
             var enemyView = UnitView.FindForUnit(enemyUnit);
@@ -253,7 +264,8 @@ namespace FracturedChorus.Combat.Presentation
                 CapturePhaseHomes();
             }
 
-            ApplyEncounterAnimSpeed(playerView, enemyView);
+            var playerSkill = ResolvePlayerSkill(beatIndex, playerUnit);
+            ApplyEncounterAnimSpeed(playerSkill, playerView, enemyView);
 
             CharlotteDomeRingView.SetEncounterHidden(true);
             CharlotteMusicOrbitShieldView.SetEncounterHidden(true);
@@ -264,10 +276,7 @@ namespace FracturedChorus.Combat.Presentation
             _focusScratch.Add(enemyView);
             focusDimmer?.Focus(_focusScratch);
 
-            var playerStage = HexBoardLayout.GetWorldPosition(
-                new GridPosition(GridSide.Player, stageRow, stageColumn), sideGap);
-            var enemyStage = HexBoardLayout.GetWorldPosition(
-                new GridPosition(GridSide.Enemy, stageRow, stageColumn), sideGap);
+            ResolveStageFeet(out var playerStage, out var enemyStage);
 
             if (moveCamera)
             {
@@ -279,8 +288,12 @@ namespace FracturedChorus.Combat.Presentation
             yield return playerView.MoveFeetToRoutine(playerStage, stageMoveSeconds);
             yield return enemyView.MoveFeetToRoutine(enemyStage, stageMoveSeconds);
 
-            var playerSkill = ResolvePlayerSkill(beatIndex, playerUnit);
             yield return PlayDuelAndResolve(beatIndex, playerView, enemyView, playerSkill);
+
+            if (IsUltimateSkill(playerSkill) && ultimateAftermathHoldSeconds > 0f)
+            {
+                yield return new WaitForSeconds(ultimateAftermathHoldSeconds);
+            }
 
             yield return ReturnParticipantsHome(playerView, enemyView);
             RestorePhaseHomes();
@@ -381,7 +394,7 @@ namespace FracturedChorus.Combat.Presentation
                     1.5f,
                     transform);
                 PresentPerfectNow(playerView.Unit, ResolveNoteTier(beatIndex));
-                yield return new WaitForSeconds(0.28f / Mathf.Max(0.01f, encounterAnimSpeed));
+                yield return new WaitForSeconds(0.28f / ResolveActiveAnimSpeed());
                 yield return CharlotteCounterShieldView.DismissAllAndWait();
             }
 
@@ -390,6 +403,14 @@ namespace FracturedChorus.Combat.Presentation
                 && charlotteSkillChoreographer.Handles(playerSkill, playerView))
             {
                 yield return PlayCharlotteResolve(beatIndex, playerView, enemyView, playerSkill);
+                yield break;
+            }
+
+            EnsureCodaSkillChoreographer();
+            if (codaSkillChoreographer != null
+                && codaSkillChoreographer.Handles(playerSkill, playerView))
+            {
+                yield return PlayCodaResolve(beatIndex, playerView, enemyView, playerSkill);
                 yield break;
             }
 
@@ -442,8 +463,9 @@ namespace FracturedChorus.Combat.Presentation
                 yield break;
             }
 
-            var animSpeed = Mathf.Max(0.01f, encounterAnimSpeed);
-            var wait = Mathf.Max(0.05f, duelSeconds) / animSpeed;
+            var animSpeed = ResolveActiveAnimSpeed();
+            var duel = IsUltimateSkill(playerSkill) ? Mathf.Max(duelSeconds, 2.35f) : duelSeconds;
+            var wait = Mathf.Max(0.05f, duel) / animSpeed;
             var impactAt = wait * resolveAtNormalizedTime;
             if (impactAt > 0f)
             {
@@ -474,7 +496,7 @@ namespace FracturedChorus.Combat.Presentation
 
             if (swordCastHoldSeconds > 0f)
             {
-                yield return new WaitForSeconds(swordCastHoldSeconds / Mathf.Max(0.01f, encounterAnimSpeed));
+                yield return new WaitForSeconds(swordCastHoldSeconds / ResolveActiveAnimSpeed());
             }
 
             var strike = EnemyStrikeChoreographer.ActiveInstance
@@ -516,6 +538,16 @@ namespace FracturedChorus.Combat.Presentation
             {
                 enemyView.PlayBeCounteredHold();
                 yield return PlayCharlotteResolve(beatIndex, playerView, enemyView, playerSkill);
+                yield break;
+            }
+
+            EnsureCodaSkillChoreographer();
+            if (countered
+                && codaSkillChoreographer != null
+                && codaSkillChoreographer.Handles(playerSkill, playerView))
+            {
+                enemyView.PlayBeCounteredHold();
+                yield return PlayCodaResolve(beatIndex, playerView, enemyView, playerSkill);
                 yield break;
             }
 
@@ -564,7 +596,7 @@ namespace FracturedChorus.Combat.Presentation
                     yield break;
                 }
 
-                var animSpeed = Mathf.Max(0.01f, encounterAnimSpeed);
+                var animSpeed = ResolveActiveAnimSpeed();
                 var wait = Mathf.Max(0.05f, duelSeconds) / animSpeed;
                 var impactAt = wait * resolveAtNormalizedTime;
                 if (impactAt > 0f)
@@ -586,7 +618,7 @@ namespace FracturedChorus.Combat.Presentation
             ResolveAndShowHp(beatIndex, playerView, enemyView);
             if (duelSeconds > 0f)
             {
-                yield return new WaitForSeconds(duelSeconds * 0.35f / Mathf.Max(0.01f, encounterAnimSpeed));
+                yield return new WaitForSeconds(duelSeconds * 0.35f / ResolveActiveAnimSpeed());
             }
         }
 
@@ -652,6 +684,58 @@ namespace FracturedChorus.Combat.Presentation
             {
                 ResolveAndShowHp(beatIndex, playerView, enemyView);
             }
+        }
+
+        private IEnumerator PlayCodaResolve(
+            int beatIndex,
+            UnitView playerView,
+            UnitView enemyView,
+            SkillDefinitionSO playerSkill)
+        {
+            EnsureCodaSkillChoreographer();
+            if (codaSkillChoreographer == null)
+            {
+                yield break;
+            }
+
+            var resolveFired = false;
+            yield return codaSkillChoreographer.PlaySkillRoutine(
+                playerView,
+                enemyView,
+                playerSkill,
+                returnHome: false,
+                onImpact: () =>
+                {
+                    if (resolveFired)
+                    {
+                        return;
+                    }
+
+                    resolveFired = true;
+                    ResolveAndShowHp(beatIndex, playerView, enemyView);
+                });
+
+            if (!resolveFired)
+            {
+                ResolveAndShowHp(beatIndex, playerView, enemyView);
+            }
+        }
+
+        private void EnsureCodaSkillChoreographer()
+        {
+            if (codaSkillChoreographer != null)
+            {
+                return;
+            }
+
+            codaSkillChoreographer = GetComponent<CodaSkillChoreographer>()
+                                     ?? FindAnyObjectByType<CodaSkillChoreographer>();
+            if (codaSkillChoreographer == null)
+            {
+                codaSkillChoreographer = gameObject.AddComponent<CodaSkillChoreographer>();
+            }
+
+            codaSkillChoreographer.EnsureDefaults();
         }
 
         private void EnsureCharlotteSkillChoreographer()
@@ -750,10 +834,12 @@ namespace FracturedChorus.Combat.Presentation
             counterPresentation?.PresentPerfectInEncounter(unit, tier);
         }
 
-        private void ApplyEncounterAnimSpeed(params UnitView[] views)
+        private void ApplyEncounterAnimSpeed(SkillDefinitionSO skill, params UnitView[] views)
         {
             _animatorSpeedByView.Clear();
-            var speed = Mathf.Clamp(encounterAnimSpeed, 0.25f, 1f);
+            _activeEncounterAnimSpeed = IsUltimateSkill(skill)
+                ? Mathf.Clamp(ultimateEncounterAnimSpeed, 0.2f, 1f)
+                : Mathf.Clamp(encounterAnimSpeed, 0.25f, 1f);
             for (var i = 0; i < views.Length; i++)
             {
                 var view = views[i];
@@ -763,9 +849,17 @@ namespace FracturedChorus.Combat.Presentation
                 }
 
                 _animatorSpeedByView[view] = view.AnimatorSpeed;
-                view.SetAnimatorSpeed(speed);
+                view.SetAnimatorSpeed(_activeEncounterAnimSpeed);
             }
         }
+
+        private float ResolveActiveAnimSpeed() =>
+            Mathf.Max(0.01f, _activeEncounterAnimSpeed > 0.01f
+                ? _activeEncounterAnimSpeed
+                : encounterAnimSpeed);
+
+        private static bool IsUltimateSkill(SkillDefinitionSO skill) =>
+            skill != null && skill.slotKind == SkillSlotKind.Ultimate;
 
         private void RestoreEncounterAnimSpeed()
         {
@@ -883,6 +977,22 @@ namespace FracturedChorus.Combat.Presentation
             }
         }
 
+        private void ResolveStageFeet(out Vector3 playerStage, out Vector3 enemyStage)
+        {
+            playerStage = HexBoardLayout.GetWorldPosition(
+                new GridPosition(GridSide.Player, stageRow, stageColumn), sideGap);
+            enemyStage = HexBoardLayout.GetWorldPosition(
+                new GridPosition(GridSide.Enemy, stageRow, stageColumn), sideGap);
+            var spread = Mathf.Max(0f, stageSpreadExtra) * 0.5f;
+            if (spread <= 0f)
+            {
+                return;
+            }
+
+            playerStage.x -= spread;
+            enemyStage.x += spread;
+        }
+
         private IEnumerator MoveCameraToStage(Vector3 playerStage, Vector3 enemyStage)
         {
             if (focusCamera == null)
@@ -957,7 +1067,8 @@ namespace FracturedChorus.Combat.Presentation
 
         private void FinishEncounter()
         {
-            letterboxOverlay?.Hide();
+            CombatImpactFeel.ActiveInstance?.CancelAll();
+            HideLetterboxSafe();
             _busy = false;
             _routine = null;
             timelineView?.ResumeAfterEncounter();
@@ -971,7 +1082,8 @@ namespace FracturedChorus.Combat.Presentation
                 _routine = null;
             }
 
-            letterboxOverlay?.Hide();
+            CombatImpactFeel.ActiveInstance?.CancelAll();
+            HideLetterboxSafe();
             RestorePhaseHomes();
             focusDimmer?.ReleaseImmediate();
             ApplyUiHide(false);
@@ -1014,6 +1126,16 @@ namespace FracturedChorus.Combat.Presentation
             }
 
             view.PlayHpFeedback(unit.LastHpChange);
+        }
+
+        private void HideLetterboxSafe()
+        {
+            if (letterboxOverlay == null)
+            {
+                return;
+            }
+
+            letterboxOverlay.Hide();
         }
 
         private void OnDisable()
