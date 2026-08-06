@@ -246,6 +246,15 @@ namespace FracturedChorus.Audio
                 return true;
             }
 
+            if (id.StartsWith("mage_", System.StringComparison.OrdinalIgnoreCase)
+                || id.StartsWith("coda_", System.StringComparison.OrdinalIgnoreCase)
+                || id.StartsWith("Coda_", System.StringComparison.OrdinalIgnoreCase))
+            {
+                return skill.slotKind is SkillSlotKind.BasicAttack
+                       or SkillSlotKind.Skill
+                       or SkillSlotKind.Ultimate;
+            }
+
             if (!id.StartsWith("ren_", System.StringComparison.OrdinalIgnoreCase))
             {
                 return false;

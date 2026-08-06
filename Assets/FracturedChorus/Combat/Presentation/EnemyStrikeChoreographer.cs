@@ -59,6 +59,7 @@ namespace FracturedChorus.Combat.Presentation
         [SerializeField] private CombatFocusDimmer focusDimmer;
         [SerializeField] private PlayerSkillShotChoreographer playerSkillShotChoreographer;
         [SerializeField] private CharlotteSkillChoreographer charlotteSkillChoreographer;
+        [SerializeField] private CodaSkillChoreographer codaSkillChoreographer;
 
         private Material _runtimeSwordAdditive;
 
@@ -213,6 +214,23 @@ namespace FracturedChorus.Combat.Presentation
             }
 
             charlotteSkillChoreographer.EnsureDefaults();
+        }
+
+        private void EnsureCodaSkillChoreographer()
+        {
+            if (codaSkillChoreographer != null)
+            {
+                return;
+            }
+
+            codaSkillChoreographer = GetComponent<CodaSkillChoreographer>()
+                                     ?? FindAnyObjectByType<CodaSkillChoreographer>();
+            if (codaSkillChoreographer == null)
+            {
+                codaSkillChoreographer = gameObject.AddComponent<CodaSkillChoreographer>();
+            }
+
+            codaSkillChoreographer.EnsureDefaults();
         }
 
         private void HandleEnemyStrikeResolved(EnemyStrikeReport report)
@@ -686,6 +704,7 @@ namespace FracturedChorus.Combat.Presentation
 
             EnsurePlayerSkillShotChoreographer();
             EnsureCharlotteSkillChoreographer();
+            EnsureCodaSkillChoreographer();
             yield return CharlotteCounterShieldView.DismissAllAndWait();
 
             if (bodyView != null
@@ -714,6 +733,38 @@ namespace FracturedChorus.Combat.Presentation
                 if (charlotteKnockback != null)
                 {
                     yield return charlotteKnockback;
+                }
+
+                FlushRemainingHpFeedback();
+                yield break;
+            }
+
+            if (bodyView != null
+                && bodyEntry?.Skill != null
+                && codaSkillChoreographer != null
+                && codaSkillChoreographer.Handles(bodyEntry.Skill, bodyView))
+            {
+                attackerView.PlayBeCounteredHold();
+                var codaMid = ResolveMidStaging(attackerView);
+                var codaKnockback = StartCoroutine(
+                    attackerView.MoveFeetToRoutine(
+                        codaMid,
+                        ResolveMoveSeconds(
+                            attackerView.FeetWorldPosition,
+                            codaMid,
+                            knockbackSpeed,
+                            knockbackSeconds)));
+
+                yield return codaSkillChoreographer.PlaySkillRoutine(
+                    bodyView,
+                    attackerView,
+                    bodyEntry.Skill,
+                    returnHome: true,
+                    onImpact: () => FlushHpFeedback(report.Attacker));
+
+                if (codaKnockback != null)
+                {
+                    yield return codaKnockback;
                 }
 
                 FlushRemainingHpFeedback();

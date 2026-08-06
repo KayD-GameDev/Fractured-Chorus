@@ -75,6 +75,11 @@ namespace FracturedChorus.UI
 
         public void Hide()
         {
+            if (!this)
+            {
+                return;
+            }
+
             _visible = false;
             if (_topWave != null)
             {
@@ -91,7 +96,10 @@ namespace FracturedChorus.UI
                 _group.alpha = 0f;
             }
 
-            gameObject.SetActive(false);
+            if (gameObject != null)
+            {
+                gameObject.SetActive(false);
+            }
         }
 
         private void LateUpdate()

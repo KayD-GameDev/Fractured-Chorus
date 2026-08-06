@@ -38,27 +38,29 @@ namespace FracturedChorus.Combat.Presentation
         [SerializeField] [Range(0.1f, 0.9f)] private float skill2HitNormalized = 0.45f;
 
         [Header("Ultimate")]
-        [SerializeField] private float ultWindupSeconds = 0.14f;
+        [SerializeField] private float ultWindupSeconds = 0.48f;
         [SerializeField] private float ultStandoffX = 0.95f;
-        [SerializeField] private float ultLungeSpeed = 34f;
-        [SerializeField] private float ultLungeSeconds = 0.12f;
-        [SerializeField] private float ultAnimSampleRate = 24f;
+        [SerializeField] private float ultLungeSpeed = 22f;
+        [SerializeField] private float ultLungeSeconds = 0.2f;
+        [SerializeField] private float ultAnimSampleRate = 20f;
         [SerializeField] private int ultImpactFrame = 7;
-        [SerializeField] private float ultBossKnockDistance = 2.6f;
-        [SerializeField] private float ultBossKnockSeconds = 0.2f;
+        [SerializeField] private float ultImpactHoldSeconds = 0.18f;
+        [SerializeField] private float ultBossKnockDistance = 3.25f;
+        [SerializeField] private float ultBossKnockSeconds = 0.34f;
         [SerializeField] private float ultDomeWorldSize = 7.6f;
         [SerializeField] private float ultDomeXOffset = -2.39f;
         [SerializeField] private float ultDomeHeightOffset = 1.64f;
-        [SerializeField] private float ultDomeHoldSeconds = 0.55f;
+        [SerializeField] private float ultDomeHoldSeconds = 0.9f;
         [SerializeField] private float ultDomeWaveFps = 24f;
         [SerializeField] private float ultDomeWaveSizeScale = 1.22f;
         [SerializeField] private Sprite ultSmashImpactSprite;
         [SerializeField] private Sprite[] ultRockSprites;
-        [SerializeField] private float ultSmashWorldSize = 3.8f;
-        [SerializeField] private float ultSmashSeconds = 0.3f;
-        [SerializeField] private float ultRockWorldSize = 0.58f;
-        [SerializeField] private int ultRockCount = 11;
-        [SerializeField] private float ultRockBurstSeconds = 0.58f;
+        [SerializeField] private float ultSmashWorldSize = 5.2f;
+        [SerializeField] private float ultSmashSeconds = 0.48f;
+        [SerializeField] private float ultRockWorldSize = 0.72f;
+        [SerializeField] private int ultRockCount = 14;
+        [SerializeField] private float ultRockBurstSeconds = 0.78f;
+        [SerializeField] private float ultAftermathHoldSeconds = 0.4f;
 
         [Header("Hit VFX")]
         [SerializeField] private float hitWorldSize = 2.1f;
@@ -260,7 +262,6 @@ namespace FracturedChorus.Combat.Presentation
                 charlotte.CaptureAnchor();
             }
 
-            charlotte.PlayCounterHold();
             if (ultWindupSeconds > 0f)
             {
                 yield return new WaitForSeconds(ultWindupSeconds);
@@ -280,8 +281,14 @@ namespace FracturedChorus.Combat.Presentation
             }
 
             SpawnUltSmashVfx(charlotte, boss, skill);
+            CombatImpactFeel.PunchUltimateNow();
             boss.PlayBeCounteredHold();
             onImpact?.Invoke();
+
+            if (ultImpactHoldSeconds > 0f)
+            {
+                yield return new WaitForSeconds(ultImpactHoldSeconds);
+            }
 
             var knockDir = Mathf.Sign(boss.FeetWorldPosition.x - charlotte.FeetWorldPosition.x);
             if (Mathf.Approximately(knockDir, 0f))
@@ -292,9 +299,9 @@ namespace FracturedChorus.Combat.Presentation
             var knockFeet = boss.FeetWorldPosition + Vector3.right * (knockDir * ultBossKnockDistance);
             yield return boss.MoveFeetToRoutine(
                 knockFeet,
-                ResolveMoveSeconds(boss.FeetWorldPosition, knockFeet, 18f, ultBossKnockSeconds));
+                ResolveMoveSeconds(boss.FeetWorldPosition, knockFeet, 14f, ultBossKnockSeconds));
 
-            var holdSeconds = ResolveShieldHoldSeconds(skill);
+            var holdSeconds = Mathf.Max(ResolveShieldHoldSeconds(skill), ultDomeHoldSeconds);
             if (EncounterDirector.IsPresenting)
             {
                 QueuePartyDome(charlotte, holdSeconds);
@@ -305,10 +312,15 @@ namespace FracturedChorus.Combat.Presentation
             }
 
             var clipLen = Mathf.Max(0.2f, charlotte.EstimateSkillClipLength(skill));
-            var clipTail = Mathf.Max(0.12f, clipLen - impactAt);
+            var clipTail = Mathf.Max(0.2f, clipLen - impactAt);
             if (clipTail > 0f)
             {
                 yield return new WaitForSeconds(clipTail);
+            }
+
+            if (ultAftermathHoldSeconds > 0f)
+            {
+                yield return new WaitForSeconds(ultAftermathHoldSeconds);
             }
 
             if (returnHome)
@@ -318,7 +330,7 @@ namespace FracturedChorus.Combat.Presentation
 
             yield return boss.MoveFeetToRoutine(
                 bossHome,
-                ResolveMoveSeconds(boss.FeetWorldPosition, bossHome, 10f, 0.35f));
+                ResolveMoveSeconds(boss.FeetWorldPosition, bossHome, 10f, 0.42f));
             boss.PlayIdleState();
         }
 

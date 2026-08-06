@@ -143,7 +143,9 @@ namespace FracturedChorus.Combat.Presentation
                 return;
             }
 
-            var native = Mathf.Max(0.001f, sr.sprite.bounds.size.y);
+            var native = Mathf.Max(
+                0.001f,
+                Mathf.Max(sr.sprite.bounds.size.x, sr.sprite.bounds.size.y));
             var scale = worldSize / native;
             sr.transform.localScale = new Vector3(scale, scale, 1f);
         }
