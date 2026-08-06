@@ -6,6 +6,9 @@ using FracturedChorus.Meta.Economy;
 using FracturedChorus.UI;
 using UnityEngine;
 using UnityEngine.UI;
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+#endif
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -102,12 +105,23 @@ namespace FracturedChorus.Hub
                 Hide();
             }
 
-            if (_tab == Tab.System && Input.GetKeyDown(KeyCode.H))
+            if (_tab == Tab.System && WasHealHotkeyPressed())
             {
                 var hub = Object.FindAnyObjectByType<CampusHubController>();
                 hub?.TryHubHealService();
                 Refresh();
             }
+        }
+
+        private static bool WasHealHotkeyPressed()
+        {
+#if ENABLE_INPUT_SYSTEM
+            return Keyboard.current != null && Keyboard.current.hKey.wasPressedThisFrame;
+#elif ENABLE_LEGACY_INPUT_MANAGER
+            return Input.GetKeyDown(KeyCode.H);
+#else
+            return false;
+#endif
         }
 
         public bool IsOpen => root != null && root.activeSelf;

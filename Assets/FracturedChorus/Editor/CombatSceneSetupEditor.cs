@@ -367,7 +367,9 @@ namespace FracturedChorus.Editor
             {
                 var child = scroll.transform.GetChild(i);
                 if (child.name.StartsWith("BeatSlot_")
-                    || (child.name.StartsWith("Beat_") && child.name != "Beat_0"))
+                    || (child.name.StartsWith("Beat_")
+                        && child.name != "Beat_0"
+                        && child.name != "Beat_1"))
                 {
                     Undo.DestroyObjectImmediate(child.gameObject);
                     removed++;

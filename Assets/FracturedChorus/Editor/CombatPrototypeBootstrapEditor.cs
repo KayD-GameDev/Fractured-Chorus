@@ -194,6 +194,8 @@ namespace FracturedChorus.Editor
                     EditorGUILayout.PropertyField(catalog.FindPropertyRelative("BeatFrameImpact"));
                     EditorGUILayout.PropertyField(catalog.FindPropertyRelative("BeatFrameWindup"));
                     EditorGUILayout.PropertyField(catalog.FindPropertyRelative("NoteDisplaySize"));
+                    EditorGUILayout.PropertyField(catalog.FindPropertyRelative("NoteDisplayWidth"));
+                    EditorGUILayout.PropertyField(catalog.FindPropertyRelative("NoteDisplayHeight"));
                     EditorGUILayout.PropertyField(catalog.FindPropertyRelative("NoteAlpha"));
                     EditorGUILayout.PropertyField(catalog.FindPropertyRelative("CoverPerfectAlpha"));
                     EditorGUILayout.PropertyField(catalog.FindPropertyRelative("NoteRedSizeScale"));
@@ -205,13 +207,12 @@ namespace FracturedChorus.Editor
 
                 EditorGUILayout.Space(4f);
                 EditorGUILayout.LabelField("Band layout (Approach A)", EditorStyles.boldLabel);
-                EditorGUILayout.PropertyField(so.FindProperty("noteBandNormalizedY"), new GUIContent("Note / Boss Band Y"));
+                EditorGUILayout.PropertyField(so.FindProperty("noteBandNormalizedY"), new GUIContent("Note Band Y (legacy)"));
+                EditorGUILayout.PropertyField(so.FindProperty("bossNoteRailAnchoredY"), new GUIContent("Note Rail Y (BorderTop)"));
+                EditorGUILayout.PropertyField(so.FindProperty("laneGapBelowRail"), new GUIContent("Lane Gap Below Rail"));
                 EditorGUILayout.PropertyField(so.FindProperty("laneBandMinNormalizedY"), new GUIContent("Lane Band Min Y"));
-                EditorGUILayout.PropertyField(so.FindProperty("laneBandMaxNormalizedY"), new GUIContent("Lane Band Max Y"));
-                EditorGUILayout.PropertyField(so.FindProperty("bossTrackFrameHeight"), new GUIContent("Boss Track Height"));
-                EditorGUILayout.PropertyField(so.FindProperty("bossTrackFrameFill"), new GUIContent("Boss Track Fill"));
+                EditorGUILayout.PropertyField(so.FindProperty("laneBandMaxNormalizedY"), new GUIContent("Lane Band Max Y (legacy)"));
                 EditorGUILayout.PropertyField(so.FindProperty("bossTrackFrameBorderTop"), new GUIContent("Boss Border Top (Holo)"));
-                EditorGUILayout.PropertyField(so.FindProperty("bossTrackFrameBorderBottom"), new GUIContent("Boss Border Bottom (Holo)"));
                 EditorGUILayout.PropertyField(so.FindProperty("bossTrackFrameBorderThickness"), new GUIContent("Boss Track Border Thickness"));
                 EditorGUILayout.PropertyField(so.FindProperty("timelineStaffBackground"), new GUIContent("Staff Background"));
                 EditorGUILayout.PropertyField(so.FindProperty("timelineStaffBackgroundAlpha"), new GUIContent("Staff BG Alpha"));
@@ -221,8 +222,25 @@ namespace FracturedChorus.Editor
                     EditorUtility.SetDirty(view);
                 }
 
+                EditorGUILayout.Space(4f);
+                if (GUILayout.Button("Seed Lane Preview (Hierarchy)"))
+                {
+                    if (Application.isPlaying)
+                    {
+                        EditorUtility.DisplayDialog(
+                            "Fractured Chorus",
+                            "Exit Play Mode trước khi seed Hierarchy preview.",
+                            "OK");
+                    }
+                    else if (TimelineHierarchyBuilder.SeedTimelineLanePreview(view))
+                    {
+                        EditorUtility.SetDirty(view);
+                    }
+                }
+
                 EditorGUILayout.HelpBox(
-                    "Staff BG = thanh nhạc hologram dưới beat (Viewport). Boss notes trong BossTrackFrame; party = lane dưới.",
+                    "Staff BG = thanh nhạc hologram. Note rail = BossTrackFrame/BorderTop (bụng nốt neo vào đây).\n" +
+                    "Seed từ UnitPresetSO: Lane_*/LaneAvatar_* + BorderTop + Beat_1 + NoteSingle_1 (Remaining Hits). Play bind preset, giữ Y scene.",
                     MessageType.Info);
             }
             else

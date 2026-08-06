@@ -24,6 +24,14 @@ namespace FracturedChorus.Combat.Presentation
         public Sprite BeatFrameWindup;
 
         public float NoteDisplaySize = 52f;
+        [Tooltip("Boss single-note width (px).")]
+        public float NoteDisplayWidth = 52.95f;
+        [Tooltip("Boss single-note height (px).")]
+        public float NoteDisplayHeight = 67.24f;
+        [Tooltip("Boss beamed-note width (px).")]
+        public float NoteBeamedWidth = 99.13f;
+        [Tooltip("Boss beamed-note height (px).")]
+        public float NoteBeamedHeight = 125.88f;
         public float GhostDisplaySize = 42f;
         public float CoverDisplaySize = 24f;
         [Range(0.35f, 1f)] public float NoteAlpha = 0.78f;
@@ -75,6 +83,20 @@ namespace FracturedChorus.Combat.Presentation
                 BossNoteTier.Blue => NoteBlueSizeScale > 0f ? NoteBlueSizeScale : 1f,
                 _ => NoteRedSizeScale > 0f ? NoteRedSizeScale : 1f
             };
+        }
+
+        public Vector2 ResolveSingleNoteSize()
+        {
+            var w = NoteDisplayWidth > 1f ? NoteDisplayWidth : Mathf.Max(40f, NoteDisplaySize);
+            var h = NoteDisplayHeight > 1f ? NoteDisplayHeight : w * 1.28f;
+            return new Vector2(w, h);
+        }
+
+        public Vector2 ResolveBeamedNoteSize()
+        {
+            var w = NoteBeamedWidth > 1f ? NoteBeamedWidth : 99.13f;
+            var h = NoteBeamedHeight > 1f ? NoteBeamedHeight : 125.88f;
+            return new Vector2(w, h);
         }
 
         public Sprite DropGhost(bool valid) =>

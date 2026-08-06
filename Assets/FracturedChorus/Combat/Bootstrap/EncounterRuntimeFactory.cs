@@ -176,6 +176,7 @@ namespace FracturedChorus.Combat.Bootstrap
             preset.role = UnitRole.Dps;
             preset.stats = UnitStats.CreateRenPreset();
             preset.placeholderColor = new Color(0.9f, 0.35f, 0.45f);
+            preset.timelineLaneColor = new Color(0.9f, 0.35f, 0.45f);
             preset.skills = CreateStandardKit("ren", "Strike", "Riposte", "Finale");
             return preset;
         }
@@ -188,6 +189,7 @@ namespace FracturedChorus.Combat.Bootstrap
             preset.role = UnitRole.Tank;
             preset.stats = UnitStats.CreateTankPreset();
             preset.placeholderColor = new Color(0.35f, 0.55f, 0.95f);
+            preset.timelineLaneColor = new Color(0.35f, 0.55f, 0.95f);
             preset.skills = CreateStandardKit("tank", "Ram", "Bulwark", "Hold");
             return preset;
         }
@@ -200,6 +202,7 @@ namespace FracturedChorus.Combat.Bootstrap
             preset.role = UnitRole.Mage;
             preset.stats = UnitStats.CreateMagePreset();
             preset.placeholderColor = new Color(0.65f, 0.35f, 0.95f);
+            preset.timelineLaneColor = new Color(0.65f, 0.35f, 0.95f);
             preset.skills = CreateStandardKit("mage", "Pulse", "Arc", "Cataclysm");
             return preset;
         }

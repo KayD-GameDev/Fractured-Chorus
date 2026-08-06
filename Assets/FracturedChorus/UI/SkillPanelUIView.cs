@@ -725,8 +725,18 @@ namespace FracturedChorus.UI
             {
                 return Mouse.current.position.ReadValue();
             }
-#endif
+
+            if (Touchscreen.current != null)
+            {
+                return Touchscreen.current.primaryTouch.position.ReadValue();
+            }
+
+            return Vector2.zero;
+#elif ENABLE_LEGACY_INPUT_MANAGER
             return Input.mousePosition;
+#else
+            return Vector2.zero;
+#endif
         }
 
         private static bool WasMouseButtonReleasedThisFrame()
@@ -736,8 +746,18 @@ namespace FracturedChorus.UI
             {
                 return Mouse.current.leftButton.wasReleasedThisFrame;
             }
-#endif
+
+            if (Touchscreen.current != null)
+            {
+                return Touchscreen.current.primaryTouch.press.wasReleasedThisFrame;
+            }
+
+            return false;
+#elif ENABLE_LEGACY_INPUT_MANAGER
             return Input.GetMouseButtonUp(0);
+#else
+            return false;
+#endif
         }
 
         private void HandleKeyboardSelection()

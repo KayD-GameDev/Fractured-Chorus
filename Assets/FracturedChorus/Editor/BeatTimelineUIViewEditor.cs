@@ -132,8 +132,11 @@ namespace FracturedChorus.Editor
                 "2) Thả chuột = ghi nudge (chưa cần Bake)\n" +
                 "3) Bấm Save layout (giữ sau Exit Play)\n" +
                 "4) Stop Play → Ctrl+S lưu scene\n\n" +
-                "Bake selected = chỉ khi kéo NoteNum_* bằng Rect Tool.",
+                "Bake selected = chỉ khi kéo NoteNum_* bằng Rect Tool.\n" +
+                "Beat_1 / NoteSingle_1: chọn object → Inspector Remaining Hits.",
                 MessageType.Info);
+
+            DrawAuthoredBossNotesHelp();
 
             using (new EditorGUI.DisabledScope(!Application.isPlaying))
             {
@@ -156,6 +159,46 @@ namespace FracturedChorus.Editor
                 {
                     BakeSelected((BeatTimelineUIView)target);
                 }
+            }
+        }
+
+        private static void DrawAuthoredBossNotesHelp()
+        {
+            var authored = Object.FindObjectsByType<BossNoteAuthoring>(FindObjectsInactive.Include);
+            if (authored == null || authored.Length == 0)
+            {
+                EditorGUILayout.HelpBox(
+                    "Chưa có BossNoteAuthoring — chạy Fractured Chorus → Seed Timeline Lane Preview.",
+                    MessageType.None);
+                return;
+            }
+
+            EditorGUILayout.LabelField("Authored enemy notes", EditorStyles.boldLabel);
+            foreach (var a in authored)
+            {
+                if (a == null)
+                {
+                    continue;
+                }
+
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField($"Beat {a.BeatIndex}", GUILayout.Width(56f));
+                EditorGUI.BeginChangeCheck();
+                var hits = EditorGUILayout.IntField(a.RemainingHits, GUILayout.Width(40f));
+                if (EditorGUI.EndChangeCheck())
+                {
+                    Undo.RecordObject(a, "Edit Authored Remaining Hits");
+                    a.SetRemainingHits(hits);
+                    EditorUtility.SetDirty(a);
+                }
+
+                if (GUILayout.Button("Select", GUILayout.Width(56f)))
+                {
+                    Selection.activeGameObject = a.gameObject;
+                    EditorGUIUtility.PingObject(a.gameObject);
+                }
+
+                EditorGUILayout.EndHorizontal();
             }
         }
 
