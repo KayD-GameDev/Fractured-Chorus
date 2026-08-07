@@ -7047,6 +7047,7 @@ MonoBehaviour:
   focusDimmer: {fileID: 707156462}
   playerSkillShotChoreographer: {fileID: 707156464}
   charlotteSkillChoreographer: {fileID: 0}
+  codaSkillChoreographer: {fileID: 0}
 --- !u!114 &707156464
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7099,8 +7100,12 @@ MonoBehaviour:
   skill3AnimSampleRate: 24
   skill3ShotFrameA: 6
   skill3ShotFrameB: 10
+  skill3MinChargeSeconds: 0.95
   skill3VerticalSpread: 0.18
   skill3GlassDelaySeconds: 0.08
+  skill3GlassWorldSize: 3.45
+  skill3ImpactHoldSeconds: 0.16
+  skill3AftermathHoldSeconds: 0.35
   ultAuraGlowSprite: {fileID: 0}
   ultAuraWaveformSprite: {fileID: 0}
   ultAuraNotesSprite: {fileID: 0}
@@ -7128,6 +7133,7 @@ MonoBehaviour:
   focusDimmer: {fileID: 707156462}
   playerSkillShotChoreographer: {fileID: 707156464}
   charlotteSkillChoreographer: {fileID: 0}
+  codaSkillChoreographer: {fileID: 0}
   counterPresentation: {fileID: 0}
   focusCamera: {fileID: 272797785}
   hideUiRoot: {fileID: 0}
@@ -7136,11 +7142,14 @@ MonoBehaviour:
   stageRow: 1
   stageColumn: 0
   sideGap: 3.5
+  stageSpreadExtra: 0.85
   stageMoveSeconds: 0.12
   returnMoveSeconds: 0.12
   duelSeconds: 1.5
   resolveAtNormalizedTime: 0.4
   encounterAnimSpeed: 0.7
+  ultimateEncounterAnimSpeed: 0.42
+  ultimateAftermathHoldSeconds: 0.55
   hideOtherUnits: 1
   hideUiDuringEncounter: 1
   focusDimFactor: 0.12
@@ -12376,7 +12385,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -4.24, y: -10.8}
+  m_AnchoredPosition: {x: -0.1, y: 16.2}
   m_SizeDelta: {x: 23.22, y: 23.44}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!212 &1269199328
@@ -15490,9 +15499,47 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 115.2, y: 226.1}
+  m_AnchoredPosition: {x: 112.5, y: 198.9}
   m_SizeDelta: {x: 64, y: 71.47}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1720837774
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1720837771}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.78}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: 22010376ed2ddf548a134eab2c48ed19, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 1
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1720837775
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1720837771}
+  m_CullTransparentMesh: 1
 --- !u!114 &1720837776
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15506,7 +15553,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.BossNoteSimulator
   timeline: {fileID: 1236853536}
-  shapePreview: 2
+  shapePreview: 3
   shapeLayouts:
   - knobLocal: {x: -4.24, y: -10.8}
     knobSize: {x: 23.22, y: 23.44}
@@ -15520,7 +15567,7 @@ MonoBehaviour:
     knobSize: {x: 23.22, y: 23.44}
     railAnchorLocal: {x: 0, y: 0}
     noteNumLocal: {x: 0, y: 0}
-  - knobLocal: {x: -4.24, y: -10.8}
+  - knobLocal: {x: -0.1, y: 16.2}
     knobSize: {x: 23.22, y: 23.44}
     railAnchorLocal: {x: 0, y: 0}
     noteNumLocal: {x: 0, y: 0}
@@ -15577,44 +15624,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.BossNoteRailAnchor
   gizmoSize: {x: 12, y: 6}
---- !u!114 &1720837774
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1720837771}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.78}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 7c019ad65faa62d062e6a826ec3e9797, type: 3}
-  m_Type: 0
-  m_PreserveAspect: 1
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
---- !u!222 &1720837775
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1720837771}
-  m_CullTransparentMesh: 1
 --- !u!1 &1722269007
 GameObject:
   m_ObjectHideFlags: 0
