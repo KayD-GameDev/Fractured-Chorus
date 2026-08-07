@@ -7,14 +7,6 @@ namespace FracturedChorus.Combat.Presentation
     public sealed class LuxeArenaBackgroundDirector : MonoBehaviour
     {
         [Serializable]
-        public sealed class AudiencePanel
-        {
-            public RawImage Primary;
-            public RawImage Secondary;
-            [Range(0f, 1f)] public float WaveAnchorX = 0.5f;
-        }
-
-        [Serializable]
         public sealed class SpotlightBinding
         {
             public RectTransform Transform;
@@ -22,47 +14,48 @@ namespace FracturedChorus.Combat.Presentation
             public float BaseAngle;
         }
 
+        [SerializeField] private LuxeArenaBackgroundConfig config;
         [SerializeField] private Image baseImage;
+        [SerializeField] private Image floorImage;
+        [SerializeField] private Image grandstandImage;
         [SerializeField] private RectTransform layersRoot;
-        [SerializeField] private AudiencePanel[] audiencePanels;
+        [SerializeField] private RawImage audiencePrimary;
+        [SerializeField] private RawImage audienceSecondary;
         [SerializeField] private SpotlightBinding[] spotlights;
         [SerializeField] private Texture2D[] audienceWaveFrames;
-        [SerializeField] [Range(0.1f, 4f)] private float waveCyclesPerSecond = 0.35f;
-        [SerializeField] [Range(0.5f, 4f)] private float waveCrestWidth = 1.35f;
-        [SerializeField] [Range(0f, 1f)] private float waveTroughAlpha = 0.28f;
-        [SerializeField] [Range(0f, 1f)] private float wavePeakAlpha = 0.85f;
-        [SerializeField] [Range(0.1f, 1f)] private float audienceAlpha = 0.55f;
-        [SerializeField] [Range(0.2f, 8f)] private float frameMorphSpeed = 1.1f;
-        [SerializeField] [Range(0f, 0.03f)] private float shimmerAmount = 0.008f;
-        [SerializeField] private bool enableSpotlightRig = true;
-        [SerializeField] [Range(0.05f, 0.6f)] private float spotlightMaxAlpha = 0.28f;
-        [SerializeField] [Range(0.05f, 2f)] private float spotlightPulseSpeed = 0.35f;
-        [SerializeField] [Range(0f, 12f)] private float spotlightSwayDegrees = 4.5f;
-        [SerializeField] [Range(0.05f, 1f)] private float spotlightSwaySpeed = 0.22f;
 
-        private float _wavePhase;
         private float _framePhase;
         private float _pulsePhase;
         private float _swayPhase;
-        private Rect[] _primaryBaseUv;
-        private Rect[] _secondaryBaseUv;
+        private float _audiencePulsePhase;
+        private Rect _primaryBaseUv;
+        private Rect _secondaryBaseUv;
         private bool _uvCached;
 
+        public LuxeArenaBackgroundConfig Config => config;
+
         public void ApplySceneWiring(
+            LuxeArenaBackgroundConfig cfg,
             Image baseImg,
+            Image floor,
+            Image grandstand,
             RectTransform layers,
-            AudiencePanel[] panels,
+            RawImage primary,
+            RawImage secondary,
             SpotlightBinding[] spots,
             Texture2D[] frames)
         {
+            config = cfg;
             baseImage = baseImg;
+            floorImage = floor;
+            grandstandImage = grandstand;
             layersRoot = layers;
-            audiencePanels = panels;
+            audiencePrimary = primary;
+            audienceSecondary = secondary;
             spotlights = spots;
             audienceWaveFrames = frames;
             _uvCached = false;
             CacheUvRects();
-            EnsurePanelAnchors();
             SnapAudienceTextures();
         }
 
@@ -70,74 +63,64 @@ namespace FracturedChorus.Combat.Presentation
         {
             _uvCached = false;
             CacheUvRects();
-            EnsurePanelAnchors();
             SnapAudienceTextures();
         }
 
         private void Update()
         {
-            TickAudienceWave();
+            TickAudience();
             TickSpotlights();
         }
 
-        private void TickAudienceWave()
+        private Texture2D[] ResolveFrames()
         {
-            if (audienceWaveFrames == null || audienceWaveFrames.Length == 0 || audiencePanels == null ||
-                audiencePanels.Length == 0)
+            if (config != null && config.AudienceFrames != null && config.AudienceFrames.Length > 0)
+            {
+                return config.AudienceFrames;
+            }
+
+            return audienceWaveFrames;
+        }
+
+        private void TickAudience()
+        {
+            var frames = ResolveFrames();
+            if (frames == null || frames.Length == 0 || audiencePrimary == null)
             {
                 return;
             }
 
             CacheUvRects();
-            EnsurePanelAnchors();
 
-            _wavePhase = Mathf.Repeat(_wavePhase + Time.unscaledDeltaTime * waveCyclesPerSecond, 1f);
-            _framePhase += Time.unscaledDeltaTime * frameMorphSpeed;
+            var morphSpeed = config != null ? config.FrameMorphSpeed : 1.1f;
+            var audAlpha = config != null ? config.AudienceAlpha : 0.7f;
+            var shimmer = config != null ? config.ShimmerAmount : 0.006f;
+            var pulseAmount = config != null ? config.PulseAmount : 0.12f;
+            var pulseSpeed = config != null ? config.PulseSpeed : 0.4f;
 
-            var frameCount = audienceWaveFrames.Length;
+            _framePhase += Time.unscaledDeltaTime * morphSpeed;
+            _audiencePulsePhase += Time.unscaledDeltaTime * pulseSpeed * Mathf.PI * 2f;
+
+            var frameCount = frames.Length;
             var frameFloat = Mathf.Repeat(_framePhase, frameCount);
             var indexA = Mathf.FloorToInt(frameFloat) % frameCount;
             var indexB = (indexA + 1) % frameCount;
             var frameBlend = Smooth01(frameFloat - indexA);
 
-            var texA = audienceWaveFrames[indexA];
-            var texB = audienceWaveFrames[indexB];
-
-            for (var i = 0; i < audiencePanels.Length; i++)
+            audiencePrimary.texture = frames[indexA];
+            if (audienceSecondary != null)
             {
-                var panel = audiencePanels[i];
-                if (panel == null)
-                {
-                    continue;
-                }
-
-                if (panel.Primary != null)
-                {
-                    panel.Primary.texture = texA;
-                }
-
-                if (panel.Secondary != null)
-                {
-                    panel.Secondary.texture = texB;
-                }
-
-                var x = panel.WaveAnchorX;
-                var crest = TravelingCrest(x, _wavePhase, waveCrestWidth);
-                var localAlpha = Mathf.Lerp(waveTroughAlpha, wavePeakAlpha, crest) * audienceAlpha;
-
-                SetRawAlpha(panel.Primary, localAlpha * (1f - frameBlend));
-                SetRawAlpha(panel.Secondary, localAlpha * frameBlend);
-
-                ApplyShimmer(panel.Primary, i, _primaryBaseUv);
-                ApplyShimmer(panel.Secondary, i, _secondaryBaseUv);
+                audienceSecondary.texture = frames[indexB];
             }
-        }
 
-        private static float TravelingCrest(float x, float phase, float width)
-        {
-            var delta = Mathf.Abs(Mathf.Repeat(x - phase + 0.5f, 1f) - 0.5f) * 2f;
-            var soft = Mathf.Clamp01(1f - delta * width);
-            return Smooth01(soft);
+            var pulse = 1f - pulseAmount + pulseAmount * (0.5f + 0.5f * Mathf.Sin(_audiencePulsePhase));
+            var alpha = audAlpha * pulse;
+
+            SetRawAlpha(audiencePrimary, alpha * (1f - frameBlend));
+            SetRawAlpha(audienceSecondary, alpha * frameBlend);
+
+            ApplyShimmer(audiencePrimary, _primaryBaseUv, shimmer, 0f);
+            ApplyShimmer(audienceSecondary, _secondaryBaseUv, shimmer, 0.37f);
         }
 
         private static float Smooth01(float t)
@@ -146,97 +129,65 @@ namespace FracturedChorus.Combat.Presentation
             return t * t * (3f - 2f * t);
         }
 
-        private void ApplyShimmer(RawImage image, int panelIndex, Rect[] baseUv)
+        private void ApplyShimmer(RawImage image, Rect baseUv, float shimmerAmount, float phaseOffset)
         {
-            if (image == null || baseUv == null || panelIndex < 0 || panelIndex >= baseUv.Length ||
-                shimmerAmount <= 0f)
+            if (image == null || shimmerAmount <= 0f)
             {
                 return;
             }
 
-            var uv = baseUv[panelIndex];
-            var bob = Mathf.Sin((_wavePhase + panelIndex * 0.17f) * Mathf.PI * 2f) * shimmerAmount;
+            var uv = baseUv;
+            var bob = Mathf.Sin((_framePhase + phaseOffset) * Mathf.PI * 2f) * shimmerAmount;
             uv.y = Mathf.Clamp01(uv.y + bob);
             image.uvRect = uv;
         }
 
         private void CacheUvRects()
         {
-            if (_uvCached || audiencePanels == null)
+            if (_uvCached)
             {
                 return;
             }
 
-            _primaryBaseUv = new Rect[audiencePanels.Length];
-            _secondaryBaseUv = new Rect[audiencePanels.Length];
-            for (var i = 0; i < audiencePanels.Length; i++)
-            {
-                var panel = audiencePanels[i];
-                _primaryBaseUv[i] = panel?.Primary != null ? panel.Primary.uvRect : new Rect(0f, 0f, 1f, 1f);
-                _secondaryBaseUv[i] = panel?.Secondary != null ? panel.Secondary.uvRect : _primaryBaseUv[i];
-            }
-
+            _primaryBaseUv = audiencePrimary != null ? audiencePrimary.uvRect : new Rect(0f, 0f, 1f, 1f);
+            _secondaryBaseUv = audienceSecondary != null ? audienceSecondary.uvRect : _primaryBaseUv;
             _uvCached = true;
-        }
-
-        private void EnsurePanelAnchors()
-        {
-            if (audiencePanels == null)
-            {
-                return;
-            }
-
-            for (var i = 0; i < audiencePanels.Length; i++)
-            {
-                var panel = audiencePanels[i];
-                if (panel?.Primary == null)
-                {
-                    continue;
-                }
-
-                var uv = panel.Primary.uvRect;
-                panel.WaveAnchorX = Mathf.Clamp01(uv.x + uv.width * 0.5f);
-            }
         }
 
         private void SnapAudienceTextures()
         {
-            if (audienceWaveFrames == null || audienceWaveFrames.Length == 0 || audiencePanels == null)
+            var frames = ResolveFrames();
+            if (frames == null || frames.Length == 0)
             {
                 return;
             }
 
-            var a = audienceWaveFrames[0];
-            var b = audienceWaveFrames.Length > 1 ? audienceWaveFrames[1] : a;
-            for (var i = 0; i < audiencePanels.Length; i++)
+            if (audiencePrimary != null)
             {
-                var panel = audiencePanels[i];
-                if (panel == null)
-                {
-                    continue;
-                }
+                audiencePrimary.texture = frames[0];
+            }
 
-                if (panel.Primary != null)
-                {
-                    panel.Primary.texture = a;
-                }
-
-                if (panel.Secondary != null)
-                {
-                    panel.Secondary.texture = b;
-                }
+            if (audienceSecondary != null)
+            {
+                audienceSecondary.texture = frames.Length > 1 ? frames[1] : frames[0];
             }
         }
 
         private void TickSpotlights()
         {
-            if (!enableSpotlightRig || spotlights == null || spotlights.Length == 0)
+            var enabled = config == null || config.EnableSpotlightRig;
+            if (!enabled || spotlights == null || spotlights.Length == 0)
             {
                 return;
             }
 
-            _pulsePhase += Time.unscaledDeltaTime * spotlightPulseSpeed * Mathf.PI * 2f;
-            _swayPhase += Time.unscaledDeltaTime * spotlightSwaySpeed * Mathf.PI * 2f;
+            var maxAlpha = config != null ? config.SpotlightMaxAlpha : 0.28f;
+            var pulseSpeed = config != null ? config.SpotlightPulseSpeed : 0.35f;
+            var swayDegrees = config != null ? config.SpotlightSwayDegrees : 4.5f;
+            var swaySpeed = config != null ? config.SpotlightSwaySpeed : 0.22f;
+
+            _pulsePhase += Time.unscaledDeltaTime * pulseSpeed * Mathf.PI * 2f;
+            _swayPhase += Time.unscaledDeltaTime * swaySpeed * Mathf.PI * 2f;
 
             for (var i = 0; i < spotlights.Length; i++)
             {
@@ -250,13 +201,13 @@ namespace FracturedChorus.Combat.Presentation
                 {
                     var pulse = 0.62f + 0.38f * (0.5f + 0.5f * Mathf.Sin(_pulsePhase + i * 0.7f));
                     var c = spot.Image.color;
-                    c.a = spotlightMaxAlpha * pulse;
+                    c.a = maxAlpha * pulse;
                     spot.Image.color = c;
                 }
 
                 if (spot.Transform != null)
                 {
-                    var sway = Mathf.Sin(_swayPhase + i * 0.9f) * spotlightSwayDegrees;
+                    var sway = Mathf.Sin(_swayPhase + i * 0.9f) * swayDegrees;
                     spot.Transform.localRotation = Quaternion.Euler(0f, 0f, spot.BaseAngle + sway);
                 }
             }

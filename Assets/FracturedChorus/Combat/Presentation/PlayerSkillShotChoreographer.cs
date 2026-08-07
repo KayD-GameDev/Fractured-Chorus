@@ -63,6 +63,8 @@ namespace FracturedChorus.Combat.Presentation
         [SerializeField] private float skill3GlassWorldSize = 3.45f;
         [SerializeField] private float skill3ImpactHoldSeconds = 0.16f;
         [SerializeField] private float skill3AftermathHoldSeconds = 0.35f;
+        [SerializeField] private Sprite[] skill3FlightFrames;
+        [SerializeField] private float skill3BulletWorldSize = 2.85f;
         [SerializeField] private Sprite ultAuraGlowSprite;
         [SerializeField] private Sprite ultAuraWaveformSprite;
         [SerializeField] private Sprite ultAuraNotesSprite;
@@ -113,6 +115,7 @@ namespace FracturedChorus.Combat.Presentation
             skill3GlassWorldSize = Mathf.Max(glassWorldSize, skill3GlassWorldSize);
             skill3ImpactHoldSeconds = Mathf.Max(0f, skill3ImpactHoldSeconds);
             skill3AftermathHoldSeconds = Mathf.Max(0f, skill3AftermathHoldSeconds);
+            skill3BulletWorldSize = Mathf.Max(0.5f, skill3BulletWorldSize);
         }
 
         private void OnDestroy()
@@ -535,6 +538,8 @@ namespace FracturedChorus.Combat.Presentation
 
             settings = BuildPierceBulletSettings(to, withGlassShatter: true);
             settings.GlassShatter = BuildGlassShatterSettings(skill3GlassWorldSize);
+            settings.FlightFrames = ResolveSkill3FlightFrames();
+            settings.HeadWorldSize = Mathf.Max(0.6f, skill3BulletWorldSize);
             var impactFxFired = false;
             settings.OnImpact = world =>
             {
@@ -678,6 +683,9 @@ namespace FracturedChorus.Combat.Presentation
             built.TravelSeconds = source.TravelSeconds;
             built.TravelSpeed = source.TravelSpeed;
             built.ImpactSeconds = source.ImpactSeconds;
+            built.HeadWorldSize = source.HeadWorldSize;
+            built.TrailHeight = source.TrailHeight;
+            built.FlightFrames = source.FlightFrames;
             built.PierceThroughScreen = source.PierceThroughScreen;
             built.ImpactWorld = source.ImpactWorld;
             built.GlassShatter = source.GlassShatter;
@@ -933,6 +941,28 @@ namespace FracturedChorus.Combat.Presentation
                     LoadSprite("ren_bullet_flight_04_v1")
                 };
             }
+
+            if (skill3FlightFrames == null || skill3FlightFrames.Length == 0
+                || AllNull(skill3FlightFrames))
+            {
+                var ultBullet = LoadSprite("ren_ult_bullet_flight_v1");
+                if (ultBullet != null)
+                {
+                    skill3FlightFrames = new[] { ultBullet };
+                }
+            }
+        }
+
+        private Sprite[] ResolveSkill3FlightFrames()
+        {
+            EnsureDefaults();
+            if (skill3FlightFrames != null && skill3FlightFrames.Length > 0
+                && !AllNull(skill3FlightFrames))
+            {
+                return skill3FlightFrames;
+            }
+
+            return bulletFlightFrames;
         }
 
         private static readonly Rect[] EerieWaveRects =

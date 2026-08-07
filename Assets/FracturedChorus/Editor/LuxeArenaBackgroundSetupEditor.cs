@@ -1,4 +1,6 @@
 #if UNITY_EDITOR
+using System.Collections.Generic;
+using System.Linq;
 using FracturedChorus.Combat.Presentation;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -11,11 +13,14 @@ namespace FracturedChorus.Editor
     public static class LuxeArenaBackgroundSetupEditor
     {
         private const string ArenaRoot = "Assets/FracturedChorus/Art/Backgrounds/LuxeArena";
-        private const string PreviewPath = ArenaRoot + "/luxe_arena_preview_v6.png";
-        private const string AudienceWaveDir = ArenaRoot + "/Audience/Wave";
+        private const string ConfigPath = ArenaRoot + "/LuxeArenaBackgroundConfig.asset";
+        private const string FloorPath = ArenaRoot + "/luxe_arena_floor_v2.png";
+        private const string GrandstandPath = ArenaRoot + "/luxe_arena_grandstand_v1.png";
+        private const string EmotionScreenPath = ArenaRoot + "/luxe_arena_emotion_screen_v4.png";
+        private const string AudienceFxDir = ArenaRoot + "/Audience";
         private const string SoftConePath = ArenaRoot + "/Lights/luxe_arena_soft_cone_v1.png";
-        private const string LayoutPath = ArenaRoot + "/LuxeArenaAudienceLayout.asset";
         private const string LayerRootName = "LuxeArenaLayers";
+        private const string AudienceRootName = "AudienceFx";
 
         [InitializeOnLoadMethod]
         private static void AutoWireAfterReload()
@@ -36,50 +41,16 @@ namespace FracturedChorus.Editor
                 return;
             }
 
-            var director = Object.FindAnyObjectByType<LuxeArenaBackgroundDirector>(FindObjectsInactive.Include);
-            if (director == null)
+            var bgRoot = GameObject.Find(CombatUiHierarchy.BackgroundCanvasName);
+            if (bgRoot == null)
             {
                 return;
             }
 
-            var layers = GameObject.Find(CombatUiHierarchy.BackgroundCanvasName)?.transform.Find(LayerRootName);
-            var band = layers?.Find("AudienceBand");
-            var hasCenter = band != null && band.Find("AudienceCenter") != null;
-            var so = new SerializedObject(director);
-            var panels = so.FindProperty("audiencePanels");
-            if (hasCenter && panels != null && panels.arraySize >= 3 &&
-                panels.GetArrayElementAtIndex(0).FindPropertyRelative("Primary").objectReferenceValue != null)
+            if (NeedsRewire(bgRoot))
             {
-                return;
-            }
-
-            Debug.Log("[LuxeArena] Auto-wire scene hierarchy (AudienceBand L/C/R + SpotlightRig).");
-            WireBossArenaBackground();
-        }
-
-        private static readonly SpotSeed[] SpotSeeds =
-        {
-            new SpotSeed(0.12f, 0.93f, -18f, 0.95f),
-            new SpotSeed(0.22f, 0.95f, -10f, 1.05f),
-            new SpotSeed(0.34f, 0.96f, -4f, 0.9f),
-            new SpotSeed(0.66f, 0.96f, 4f, 0.9f),
-            new SpotSeed(0.78f, 0.95f, 10f, 1.05f),
-            new SpotSeed(0.88f, 0.93f, 18f, 0.95f),
-        };
-
-        private readonly struct SpotSeed
-        {
-            public readonly float Ax;
-            public readonly float Ay;
-            public readonly float Angle;
-            public readonly float Scale;
-
-            public SpotSeed(float ax, float ay, float angle, float scale)
-            {
-                Ax = ax;
-                Ay = ay;
-                Angle = angle;
-                Scale = scale;
+                Debug.Log("[LuxeArena] Auto-wire: Grandstand + single AudienceFx.");
+                WireBossArenaBackground();
             }
         }
 
@@ -89,81 +60,15 @@ namespace FracturedChorus.Editor
             WireBossArenaBackground();
         }
 
-        [MenuItem("Fractured Chorus/Luxe Arena/Save Audience Layout From Scene")]
-        public static void SaveAudienceLayoutFromScene()
+        [MenuItem("Fractured Chorus/Luxe Arena/Refresh Background Config From Art Folder")]
+        public static void RefreshConfigFromArtMenu()
         {
-            var band = FindAudienceBand();
-            if (band == null)
-            {
-                EditorUtility.DisplayDialog("Luxe Arena", "Không tìm thấy AudienceBand.", "OK");
-                return;
-            }
-
-            var layout = LoadOrCreateLayout();
-            Undo.RecordObject(layout, "Save Audience Layout");
-            CaptureBand(band, layout);
-            CapturePanel(band.Find("AudienceLeft") as RectTransform, layout.Left);
-            CapturePanel(band.Find("AudienceCenter") as RectTransform, layout.Center);
-            CapturePanel(band.Find("AudienceRight") as RectTransform, layout.Right);
-            EditorUtility.SetDirty(layout);
+            var config = LoadOrCreateConfig();
+            PopulateConfigFromArt(config);
+            EditorUtility.SetDirty(config);
             AssetDatabase.SaveAssets();
-            Debug.Log("[LuxeArena] Đã lưu vị trí Audience L/C/R → " + LayoutPath);
-        }
-
-        [MenuItem("Fractured Chorus/Luxe Arena/Apply Layout + Wave To All 3 Panels")]
-        public static void ApplyLayoutAndWaveToAllThree()
-        {
-            var bgRoot = GameObject.Find(CombatUiHierarchy.BackgroundCanvasName);
-            if (bgRoot == null)
-            {
-                EditorUtility.DisplayDialog("Luxe Arena", "Không tìm thấy Background canvas.", "OK");
-                return;
-            }
-
-            var frames = LoadWaveTextures(AudienceWaveDir, "luxe_arena_audience_wave_", 4);
-            if (frames.Length < 2)
-            {
-                EditorUtility.DisplayDialog("Luxe Arena", "Thiếu audience wave textures.", "OK");
-                return;
-            }
-
-            var layout = LoadOrCreateLayout();
-            var layers = EnsureRect(bgRoot.transform, LayerRootName);
-            StretchFull(layers);
-            var audienceRoot = EnsureRect(layers, "AudienceBand");
-            ApplyBand(audienceRoot, layout);
-            CleanupDuplicateMiddles(audienceRoot);
-
-            var left = BuildAudiencePanel(audienceRoot, "AudienceLeft", layout.Left, frames);
-            var center = BuildAudiencePanel(audienceRoot, "AudienceCenter", layout.Center, frames);
-            var right = BuildAudiencePanel(audienceRoot, "AudienceRight", layout.Right, frames);
-            audienceRoot.Find("AudienceCenter")?.SetSiblingIndex(1);
-
-            var director = bgRoot.GetComponent<LuxeArenaBackgroundDirector>();
-            if (director == null)
-            {
-                director = Undo.AddComponent<LuxeArenaBackgroundDirector>(bgRoot);
-            }
-
-            WireAudiencePanelsToDirector(director, audienceRoot, frames);
-            AssignWaveTextures(left, center, right, frames);
-            EditorSceneManager.MarkSceneDirty(bgRoot.scene);
-            EditorSceneManager.SaveScene(bgRoot.scene);
-            Selection.activeGameObject = audienceRoot.gameObject;
-            Debug.Log("[LuxeArena] Applied layout + waveform cho cả 3 panel L/C/R.");
-        }
-
-        [MenuItem("Fractured Chorus/Luxe Arena/Create Audience Center (hand-tune)")]
-        public static void CreateAudienceCenterMenu()
-        {
-            ApplyLayoutAndWaveToAllThree();
-            var band = FindAudienceBand();
-            var center = band != null ? band.Find("AudienceCenter") : null;
-            if (center != null)
-            {
-                Selection.activeGameObject = center.gameObject;
-                EditorGUIUtility.PingObject(center.gameObject);
-            }
+            Selection.activeObject = config;
+            Debug.Log("[LuxeArena] Config refreshed from Art/LuxeArena.");
         }
 
         public static void WireFromBatch()
@@ -187,6 +92,25 @@ namespace FracturedChorus.Editor
                 return;
             }
 
+            var config = LoadOrCreateConfig();
+            PopulateConfigFromArt(config);
+            EditorUtility.SetDirty(config);
+            AssetDatabase.SaveAssets();
+
+            var floorSprite = config.Floor != null ? config.Floor : config.BasePlate;
+            if (floorSprite == null ||
+                config.Grandstand == null ||
+                config.AudienceFrames == null ||
+                config.AudienceFrames.Length == 0 ||
+                config.SoftCone == null)
+            {
+                EditorUtility.DisplayDialog(
+                    "Luxe Arena",
+                    "Config thiếu Floor/BasePlate / Grandstand / AudienceFrames / SoftCone.",
+                    "OK");
+                return;
+            }
+
             var baseImage = ResolveBaseImage(bgRoot);
             if (baseImage == null)
             {
@@ -194,46 +118,59 @@ namespace FracturedChorus.Editor
                 return;
             }
 
-            var preview = LoadFirstSprite(PreviewPath);
-            var frames = LoadWaveTextures(AudienceWaveDir, "luxe_arena_audience_wave_", 4);
-            var cone = LoadFirstSprite(SoftConePath);
-            if (preview == null || frames.Length == 0 || cone == null)
-            {
-                EditorUtility.DisplayDialog(
-                    "Luxe Arena",
-                    "Thiếu preview / audience wave / soft cone sprites.",
-                    "OK");
-                return;
-            }
+            PurgeLegacyAudience(bgRoot);
 
             Undo.RecordObject(baseImage, "Luxe Arena Base");
-            baseImage.sprite = preview;
+            baseImage.sprite = floorSprite;
             baseImage.color = Color.white;
             baseImage.raycastTarget = false;
+            baseImage.preserveAspect = false;
             EditorUtility.SetDirty(baseImage);
 
             var layers = EnsureRect(bgRoot.transform, LayerRootName);
             StretchFull(layers);
-            DisableLegacy(layers);
+
+            var grandstand = EnsureLayerImage(layers, "Grandstand", config.Grandstand, Color.white);
+            PlaceRect(grandstand, config.GrandstandAnchorMin, config.GrandstandAnchorMax);
+
+            var floor = EnsureLayerImage(layers, "Floor", floorSprite, Color.white);
+            PlaceRect(floor, config.FloorAnchorMin, config.FloorAnchorMax);
+
+            if (config.EmotionScreen != null)
+            {
+                var tv = EnsureLayerImage(layers, "EmotionScreen", config.EmotionScreen, Color.white);
+                PlaceRect(tv, config.EmotionAnchorMin, config.EmotionAnchorMax);
+            }
 
             var spotRig = EnsureRect(layers, "SpotlightRig");
             StretchFull(spotRig);
-            spotRig.SetAsFirstSibling();
-            var spots = BuildSpotlights(spotRig, cone);
+            var spots = BuildSpotlights(spotRig, config);
 
-            var audienceRoot = EnsureRect(layers, "AudienceBand");
-            audienceRoot.SetAsLastSibling();
-
-            DisableOldFullAudience(layers);
+            var audienceRoot = EnsureRect(layers, AudienceRootName);
+            PlaceRect(audienceRoot, config.AudienceAnchorMin, config.AudienceAnchorMax);
+            DestroyNamedChild(audienceRoot, "AudienceLeft");
+            DestroyNamedChild(audienceRoot, "AudienceCenter");
+            DestroyNamedChild(audienceRoot, "AudienceRight");
             CleanupDuplicateMiddles(audienceRoot);
 
-            var layout = LoadOrCreateLayout();
-            ApplyBand(audienceRoot, layout);
-            var left = BuildAudiencePanel(audienceRoot, "AudienceLeft", layout.Left, frames);
-            var center = BuildAudiencePanel(audienceRoot, "AudienceCenter", layout.Center, frames);
-            var right = BuildAudiencePanel(audienceRoot, "AudienceRight", layout.Right, frames);
-            audienceRoot.Find("AudienceCenter")?.SetSiblingIndex(1);
-            AssignWaveTextures(left, center, right, frames);
+            var primary = EnsureRaw(audienceRoot, "Primary", config.AudienceFrames[0], new Rect(0f, 0f, 1f, 1f), 0.7f);
+            var secondary = EnsureRaw(
+                audienceRoot,
+                "Secondary",
+                config.AudienceFrames.Length > 1 ? config.AudienceFrames[1] : config.AudienceFrames[0],
+                new Rect(0f, 0f, 1f, 1f),
+                0f);
+
+            grandstand.SetAsFirstSibling();
+            floor.SetSiblingIndex(1);
+            var emotion = layers.Find("EmotionScreen") as RectTransform;
+            if (emotion != null)
+            {
+                emotion.SetSiblingIndex(2);
+            }
+
+            spotRig.SetAsLastSibling();
+            audienceRoot.SetAsLastSibling();
 
             var director = bgRoot.GetComponent<LuxeArenaBackgroundDirector>();
             if (director == null)
@@ -241,13 +178,106 @@ namespace FracturedChorus.Editor
                 director = Undo.AddComponent<LuxeArenaBackgroundDirector>(bgRoot);
             }
 
-            var so = new SerializedObject(director);
-            so.FindProperty("baseImage").objectReferenceValue = baseImage;
-            so.FindProperty("layersRoot").objectReferenceValue = layers;
-            so.ApplyModifiedPropertiesWithoutUndo();
-            WireAudiencePanelsToDirector(director, audienceRoot, frames);
+            WireDirector(
+                director,
+                config,
+                baseImage,
+                floor.GetComponent<Image>(),
+                grandstand.GetComponent<Image>(),
+                layers,
+                primary,
+                secondary,
+                spots);
 
-            so = new SerializedObject(director);
+            EditorSceneManager.MarkSceneDirty(bgRoot.scene);
+            EditorSceneManager.SaveScene(bgRoot.scene);
+            Selection.activeGameObject = floor.gameObject;
+            Debug.Log(
+                $"[LuxeArena] Wired Floor + Grandstand + AudienceFx ({config.AudienceFrames.Length} frames).");
+        }
+
+        private static bool NeedsRewire(GameObject bgRoot)
+        {
+            if (bgRoot.transform.Find(LayerRootName + "/AudienceBand") != null)
+            {
+                return true;
+            }
+
+            if (bgRoot.transform.Find(LayerRootName + "/AudienceLeft") != null ||
+                FindDeep(bgRoot.transform, "AudienceLeft") != null)
+            {
+                return true;
+            }
+
+            var director = bgRoot.GetComponent<LuxeArenaBackgroundDirector>();
+            if (director == null)
+            {
+                return true;
+            }
+
+            var layers = bgRoot.transform.Find(LayerRootName);
+            if (layers == null ||
+                layers.Find("Grandstand") == null ||
+                layers.Find("Floor") == null ||
+                layers.Find(AudienceRootName) == null)
+            {
+                return true;
+            }
+
+            var so = new SerializedObject(director);
+            return so.FindProperty("audiencePrimary") == null ||
+                   so.FindProperty("audiencePrimary").objectReferenceValue == null ||
+                   so.FindProperty("floorImage") == null ||
+                   so.FindProperty("floorImage").objectReferenceValue == null ||
+                   so.FindProperty("config").objectReferenceValue == null;
+        }
+
+        private static Transform FindDeep(Transform root, string name)
+        {
+            if (root.name == name)
+            {
+                return root;
+            }
+
+            for (var i = 0; i < root.childCount; i++)
+            {
+                var hit = FindDeep(root.GetChild(i), name);
+                if (hit != null)
+                {
+                    return hit;
+                }
+            }
+
+            return null;
+        }
+
+        private static void WireDirector(
+            LuxeArenaBackgroundDirector director,
+            LuxeArenaBackgroundConfig config,
+            Image baseImage,
+            Image floor,
+            Image grandstand,
+            RectTransform layers,
+            RawImage primary,
+            RawImage secondary,
+            (RectTransform transform, Image image, float baseAngle)[] spots)
+        {
+            var so = new SerializedObject(director);
+            so.FindProperty("config").objectReferenceValue = config;
+            so.FindProperty("baseImage").objectReferenceValue = baseImage;
+            so.FindProperty("floorImage").objectReferenceValue = floor;
+            so.FindProperty("grandstandImage").objectReferenceValue = grandstand;
+            so.FindProperty("layersRoot").objectReferenceValue = layers;
+            so.FindProperty("audiencePrimary").objectReferenceValue = primary;
+            so.FindProperty("audienceSecondary").objectReferenceValue = secondary;
+
+            var frames = config.AudienceFrames;
+            so.FindProperty("audienceWaveFrames").arraySize = frames.Length;
+            for (var i = 0; i < frames.Length; i++)
+            {
+                so.FindProperty("audienceWaveFrames").GetArrayElementAtIndex(i).objectReferenceValue = frames[i];
+            }
+
             var spotsProp = so.FindProperty("spotlights");
             spotsProp.arraySize = spots.Length;
             for (var i = 0; i < spots.Length; i++)
@@ -258,78 +288,197 @@ namespace FracturedChorus.Editor
                 el.FindPropertyRelative("BaseAngle").floatValue = spots[i].baseAngle;
             }
 
-            so.FindProperty("audienceFps").floatValue = 1.8f;
-            so.FindProperty("audienceAlpha").floatValue = 0.5f;
-            so.FindProperty("crossfadeSeconds").floatValue = 0.55f;
-            so.FindProperty("enableSpotlightRig").boolValue = true;
-            so.FindProperty("spotlightMaxAlpha").floatValue = 0.28f;
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(director);
-
-            EditorSceneManager.MarkSceneDirty(bgRoot.scene);
-            EditorSceneManager.SaveScene(bgRoot.scene);
-            Selection.activeGameObject = audienceRoot.gameObject;
-            Debug.Log("[LuxeArena] Wired L/C/R từ layout đã lưu + waveform cả 3 panel.");
         }
 
-        private static void WireAudiencePanelsToDirector(
-            LuxeArenaBackgroundDirector director,
-            Transform audienceRoot,
-            Texture2D[] frames)
+        private static void PurgeLegacyAudience(GameObject bgRoot)
         {
-            var left = ResolvePanel(audienceRoot, "AudienceLeft");
-            var center = ResolvePanel(audienceRoot, "AudienceCenter");
-            var right = ResolvePanel(audienceRoot, "AudienceRight");
-
-            var so = new SerializedObject(director);
-            if (frames != null && frames.Length > 0)
+            var layers = bgRoot != null ? bgRoot.transform.Find(LayerRootName) : null;
+            if (layers != null)
             {
-                so.FindProperty("audienceWaveFrames").arraySize = frames.Length;
-                for (var i = 0; i < frames.Length; i++)
+                DestroyNamedChild(layers, "AudienceBand");
+                DestroyNamedChild(layers, "AudienceWave");
+                DestroyNamedChild(layers, "AudienceWaveB");
+                DestroyNamedChild(layers, "AudienceFar");
+                DestroyNamedChild(layers, "AudienceMid");
+                DestroyNamedChild(layers, "AudienceNear");
+                DestroyChildrenByPrefix(layers, "LightsSweep");
+            }
+
+            var transforms = Object.FindObjectsByType<Transform>(FindObjectsInactive.Include);
+            for (var i = transforms.Length - 1; i >= 0; i--)
+            {
+                var t = transforms[i];
+                if (t == null)
                 {
-                    so.FindProperty("audienceWaveFrames").GetArrayElementAtIndex(i).objectReferenceValue =
-                        frames[i];
+                    continue;
+                }
+
+                if (t.name is "AudienceLeft" or "AudienceCenter" or "AudienceRight" or "AudienceBand" or
+                    "AudienceMiddle")
+                {
+                    Undo.DestroyObjectImmediate(t.gameObject);
+                }
+            }
+        }
+
+        private static bool IsAudienceFxAssetPath(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return false;
+            }
+
+            var normalized = path.Replace('\\', '/');
+            if (!normalized.StartsWith(AudienceFxDir + "/"))
+            {
+                return false;
+            }
+
+            if (normalized.Contains("/Wave/") ||
+                normalized.Contains("audience_wave") ||
+                normalized.Contains("/AudienceWave/"))
+            {
+                return false;
+            }
+
+            return normalized.EndsWith(".png", System.StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static Texture2D[] LoadAudienceFxFrames()
+        {
+            var guids = AssetDatabase.FindAssets("t:Texture2D", new[] { AudienceFxDir });
+            var list = new List<Texture2D>(guids.Length);
+            for (var i = 0; i < guids.Length; i++)
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guids[i]);
+                if (!IsAudienceFxAssetPath(path))
+                {
+                    continue;
+                }
+
+                var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+                if (tex != null)
+                {
+                    list.Add(tex);
                 }
             }
 
-            var panelsProp = so.FindProperty("audiencePanels");
-            var list = new System.Collections.Generic.List<(RawImage p, RawImage s)>(3);
-            if (left.primary != null)
-            {
-                list.Add(left);
-            }
-
-            if (center.primary != null)
-            {
-                list.Add(center);
-            }
-
-            if (right.primary != null)
-            {
-                list.Add(right);
-            }
-
-            panelsProp.arraySize = list.Count;
-            for (var i = 0; i < list.Count; i++)
-            {
-                WritePanel(panelsProp.GetArrayElementAtIndex(i), list[i].p, list[i].s);
-            }
-
-            so.ApplyModifiedPropertiesWithoutUndo();
-            EditorUtility.SetDirty(director);
+            return list.OrderBy(t => t.name, System.StringComparer.OrdinalIgnoreCase).ToArray();
         }
 
-        private static (RawImage primary, RawImage secondary) ResolvePanel(Transform audienceRoot, string name)
+        private static LuxeArenaBackgroundConfig LoadOrCreateConfig()
         {
-            var root = audienceRoot.Find(name);
-            if (root == null)
+            var config = AssetDatabase.LoadAssetAtPath<LuxeArenaBackgroundConfig>(ConfigPath);
+            if (config != null)
             {
-                return (null, null);
+                return config;
             }
 
-            var primary = root.Find("Primary")?.GetComponent<RawImage>();
-            var secondary = root.Find("Secondary")?.GetComponent<RawImage>();
-            return (primary, secondary);
+            config = ScriptableObject.CreateInstance<LuxeArenaBackgroundConfig>();
+            AssetDatabase.CreateAsset(config, ConfigPath);
+            AssetDatabase.SaveAssets();
+            return config;
+        }
+
+        private static void PopulateConfigFromArt(LuxeArenaBackgroundConfig config)
+        {
+            Undo.RecordObject(config, "Populate Luxe Arena Config");
+
+            var floor = LoadFirstSprite(FloorPath);
+            if (floor != null)
+            {
+                config.BasePlate = floor;
+                config.Floor = floor;
+            }
+
+            var grandstand = LoadFirstSprite(GrandstandPath);
+            if (grandstand != null)
+            {
+                config.Grandstand = grandstand;
+            }
+
+            config.FloorAnchorMin = Vector2.zero;
+            config.FloorAnchorMax = Vector2.one;
+            config.GrandstandAnchorMin = Vector2.zero;
+            config.GrandstandAnchorMax = Vector2.one;
+
+            var emotion = LoadFirstSprite(EmotionScreenPath);
+            if (emotion == null)
+            {
+                emotion = LoadFirstSprite(ArenaRoot + "/luxe_arena_emotion_screen_v2.png");
+            }
+
+            if (emotion == null)
+            {
+                emotion = LoadFirstSprite(ArenaRoot + "/luxe_arena_emotion_screen_v1.png");
+            }
+
+            if (emotion != null)
+            {
+                config.EmotionScreen = emotion;
+            }
+
+            var cone = LoadFirstSprite(SoftConePath);
+            if (cone != null)
+            {
+                config.SoftCone = cone;
+            }
+
+            config.AudienceFrames = LoadAudienceFxFrames();
+
+            if (config.Spotlights == null || config.Spotlights.Length == 0)
+            {
+                config.Spotlights = CreateDefaultSpotlightSeeds();
+            }
+        }
+
+        private static LuxeArenaBackgroundConfig.SpotlightSeed[] CreateDefaultSpotlightSeeds()
+        {
+            return new[]
+            {
+                new LuxeArenaBackgroundConfig.SpotlightSeed
+                    { AnchorX = 0.12f, AnchorY = 0.93f, Angle = -18f, Scale = 0.95f },
+                new LuxeArenaBackgroundConfig.SpotlightSeed
+                    { AnchorX = 0.22f, AnchorY = 0.95f, Angle = -10f, Scale = 1.05f },
+                new LuxeArenaBackgroundConfig.SpotlightSeed
+                    { AnchorX = 0.34f, AnchorY = 0.96f, Angle = -4f, Scale = 0.9f },
+                new LuxeArenaBackgroundConfig.SpotlightSeed
+                    { AnchorX = 0.66f, AnchorY = 0.96f, Angle = 4f, Scale = 0.9f },
+                new LuxeArenaBackgroundConfig.SpotlightSeed
+                    { AnchorX = 0.78f, AnchorY = 0.95f, Angle = 10f, Scale = 1.05f },
+                new LuxeArenaBackgroundConfig.SpotlightSeed
+                    { AnchorX = 0.88f, AnchorY = 0.93f, Angle = 18f, Scale = 0.95f },
+            };
+        }
+
+        private static int DestroyNamedChild(Transform parent, string name)
+        {
+            var child = parent.Find(name);
+            if (child == null)
+            {
+                return 0;
+            }
+
+            Undo.DestroyObjectImmediate(child.gameObject);
+            return 1;
+        }
+
+        private static int DestroyChildrenByPrefix(Transform parent, string prefix)
+        {
+            var removed = 0;
+            for (var i = parent.childCount - 1; i >= 0; i--)
+            {
+                var child = parent.GetChild(i);
+                if (child.name.StartsWith(prefix))
+                {
+                    Undo.DestroyObjectImmediate(child.gameObject);
+                    removed++;
+                }
+            }
+
+            return removed;
         }
 
         private static void CleanupDuplicateMiddles(Transform audienceRoot)
@@ -344,171 +493,38 @@ namespace FracturedChorus.Editor
             }
         }
 
-        private static void WritePanel(SerializedProperty panel, RawImage primary, RawImage secondary)
-        {
-            panel.FindPropertyRelative("Primary").objectReferenceValue = primary;
-            panel.FindPropertyRelative("Secondary").objectReferenceValue = secondary;
-            if (primary != null)
-            {
-                var uv = primary.uvRect;
-                panel.FindPropertyRelative("WaveAnchorX").floatValue = Mathf.Clamp01(uv.x + uv.width * 0.5f);
-            }
-        }
-
-        private static RectTransform FindAudienceBand()
-        {
-            var bg = GameObject.Find(CombatUiHierarchy.BackgroundCanvasName);
-            return bg != null
-                ? bg.transform.Find(LayerRootName + "/AudienceBand") as RectTransform
-                : null;
-        }
-
-        private static LuxeArenaAudienceLayout LoadOrCreateLayout()
-        {
-            var layout = AssetDatabase.LoadAssetAtPath<LuxeArenaAudienceLayout>(LayoutPath);
-            if (layout != null)
-            {
-                return layout;
-            }
-
-            layout = ScriptableObject.CreateInstance<LuxeArenaAudienceLayout>();
-            AssetDatabase.CreateAsset(layout, LayoutPath);
-            AssetDatabase.SaveAssets();
-            return layout;
-        }
-
-        private static void CaptureBand(RectTransform band, LuxeArenaAudienceLayout layout)
-        {
-            layout.BandAnchorMin = band.anchorMin;
-            layout.BandAnchorMax = band.anchorMax;
-            layout.BandAnchoredPosition = band.anchoredPosition;
-            layout.BandSizeDelta = band.sizeDelta;
-        }
-
-        private static void CapturePanel(RectTransform root, LuxeArenaAudienceLayout.PanelLayout panel)
-        {
-            if (root == null || panel == null)
-            {
-                return;
-            }
-
-            panel.AnchorMin = root.anchorMin;
-            panel.AnchorMax = root.anchorMax;
-            panel.AnchoredPosition = root.anchoredPosition;
-            panel.SizeDelta = root.sizeDelta;
-            var primary = root.Find("Primary")?.GetComponent<RawImage>();
-            if (primary != null)
-            {
-                panel.UvRect = primary.uvRect;
-            }
-        }
-
-        private static void ApplyBand(RectTransform band, LuxeArenaAudienceLayout layout)
-        {
-            Undo.RecordObject(band, "Apply Audience Band");
-            band.anchorMin = layout.BandAnchorMin;
-            band.anchorMax = layout.BandAnchorMax;
-            band.anchoredPosition = layout.BandAnchoredPosition;
-            band.sizeDelta = layout.BandSizeDelta;
-            band.localScale = Vector3.one;
-            band.localRotation = Quaternion.identity;
-            EditorUtility.SetDirty(band);
-        }
-
-        private static void ApplyPanelRect(RectTransform root, LuxeArenaAudienceLayout.PanelLayout panel)
-        {
-            Undo.RecordObject(root, "Apply Audience Panel");
-            root.anchorMin = panel.AnchorMin;
-            root.anchorMax = panel.AnchorMax;
-            root.anchoredPosition = panel.AnchoredPosition;
-            root.sizeDelta = panel.SizeDelta;
-            root.localScale = Vector3.one;
-            root.localRotation = Quaternion.identity;
-            EditorUtility.SetDirty(root);
-        }
-
-        private static void AssignWaveTextures(
-            (RawImage primary, RawImage secondary) left,
-            (RawImage primary, RawImage secondary) center,
-            (RawImage primary, RawImage secondary) right,
-            Texture2D[] frames)
-        {
-            var frame0 = frames[0];
-            var frame1 = frames.Length > 1 ? frames[1] : frames[0];
-            ApplyWavePair(left, frame0, frame1);
-            ApplyWavePair(center, frame0, frame1);
-            ApplyWavePair(right, frame0, frame1);
-        }
-
-        private static void ApplyWavePair(
-            (RawImage primary, RawImage secondary) panel,
-            Texture2D frame0,
-            Texture2D frame1)
-        {
-            if (panel.primary != null)
-            {
-                Undo.RecordObject(panel.primary, "Wave Primary");
-                panel.primary.texture = frame0;
-                var c = panel.primary.color;
-                c.a = 0.5f;
-                panel.primary.color = c;
-                EditorUtility.SetDirty(panel.primary);
-            }
-
-            if (panel.secondary != null)
-            {
-                Undo.RecordObject(panel.secondary, "Wave Secondary");
-                panel.secondary.texture = frame1;
-                var c = panel.secondary.color;
-                c.a = 0f;
-                panel.secondary.color = c;
-                EditorUtility.SetDirty(panel.secondary);
-            }
-        }
-
-        private static void DisableLegacy(Transform layers)
-        {
-            for (var i = 0; i < layers.childCount; i++)
-            {
-                var child = layers.GetChild(i);
-                if (child.name.StartsWith("LightsSweep"))
-                {
-                    Undo.RecordObject(child.gameObject, "Disable legacy lights");
-                    child.gameObject.SetActive(false);
-                }
-            }
-        }
-
-        private static void DisableOldFullAudience(Transform layers)
-        {
-            var old = layers.Find("AudienceWave");
-            if (old != null)
-            {
-                Undo.RecordObject(old.gameObject, "Disable old AudienceWave");
-                old.gameObject.SetActive(false);
-            }
-
-            var oldB = layers.Find("AudienceWaveB");
-            if (oldB != null)
-            {
-                Undo.RecordObject(oldB.gameObject, "Disable old AudienceWaveB");
-                oldB.gameObject.SetActive(false);
-            }
-        }
-
-        private static (RawImage primary, RawImage secondary) BuildAudiencePanel(
+        private static RectTransform EnsureLayerImage(
             Transform parent,
             string name,
-            LuxeArenaAudienceLayout.PanelLayout layout,
-            Texture2D[] frames)
+            Sprite sprite,
+            Color color)
         {
-            var root = EnsureRect(parent, name);
-            ApplyPanelRect(root, layout);
-            var frame0 = frames[0];
-            var frame1 = frames.Length > 1 ? frames[1] : frames[0];
-            var primary = EnsureRaw(root, "Primary", frame0, layout.UvRect, 0.5f);
-            var secondary = EnsureRaw(root, "Secondary", frame1, layout.UvRect, 0f);
-            return (primary, secondary);
+            var rt = EnsureRect(parent, name);
+            var image = rt.GetComponent<Image>();
+            if (image == null)
+            {
+                image = Undo.AddComponent<Image>(rt.gameObject);
+            }
+
+            Undo.RecordObject(image, "Setup " + name);
+            image.sprite = sprite;
+            image.color = color;
+            image.raycastTarget = false;
+            image.preserveAspect = false;
+            EditorUtility.SetDirty(image);
+            return rt;
+        }
+
+        private static void PlaceRect(RectTransform rt, Vector2 anchorMin, Vector2 anchorMax)
+        {
+            Undo.RecordObject(rt, "Place " + rt.name);
+            rt.anchorMin = anchorMin;
+            rt.anchorMax = anchorMax;
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = Vector2.zero;
+            rt.localScale = Vector3.one;
+            rt.localRotation = Quaternion.identity;
+            EditorUtility.SetDirty(rt);
         }
 
         private static RawImage EnsureRaw(Transform parent, string name, Texture2D tex, Rect uv, float alpha)
@@ -532,18 +548,35 @@ namespace FracturedChorus.Editor
 
         private static (RectTransform transform, Image image, float baseAngle)[] BuildSpotlights(
             RectTransform rig,
-            Sprite cone)
+            LuxeArenaBackgroundConfig config)
         {
-            var result = new (RectTransform transform, Image image, float baseAngle)[SpotSeeds.Length];
-            for (var i = 0; i < SpotSeeds.Length; i++)
+            var seeds = config.Spotlights;
+            if (seeds == null || seeds.Length == 0)
             {
-                var seed = SpotSeeds[i];
+                seeds = CreateDefaultSpotlightSeeds();
+                config.Spotlights = seeds;
+                EditorUtility.SetDirty(config);
+            }
+
+            for (var i = rig.childCount - 1; i >= 0; i--)
+            {
+                var child = rig.GetChild(i);
+                if (child.name.StartsWith("Spot_"))
+                {
+                    Undo.DestroyObjectImmediate(child.gameObject);
+                }
+            }
+
+            var result = new (RectTransform transform, Image image, float baseAngle)[seeds.Length];
+            for (var i = 0; i < seeds.Length; i++)
+            {
+                var seed = seeds[i];
                 var rt = EnsureRect(rig, "Spot_" + i);
-                rt.anchorMin = new Vector2(seed.Ax, seed.Ay);
-                rt.anchorMax = new Vector2(seed.Ax, seed.Ay);
+                rt.anchorMin = new Vector2(seed.AnchorX, seed.AnchorY);
+                rt.anchorMax = new Vector2(seed.AnchorX, seed.AnchorY);
                 rt.pivot = new Vector2(0.5f, 1f);
                 rt.anchoredPosition = Vector2.zero;
-                rt.sizeDelta = new Vector2(220f * seed.Scale, 520f * seed.Scale);
+                rt.sizeDelta = seed.Size * seed.Scale;
                 rt.localRotation = Quaternion.Euler(0f, 0f, seed.Angle);
 
                 var image = rt.GetComponent<Image>();
@@ -553,10 +586,10 @@ namespace FracturedChorus.Editor
                 }
 
                 Undo.RecordObject(image, "Setup spot");
-                image.sprite = cone;
+                image.sprite = config.SoftCone;
                 image.preserveAspect = true;
                 image.raycastTarget = false;
-                image.color = new Color(0.72f, 0.45f, 1f, 0.18f);
+                image.color = seed.Color;
                 EditorUtility.SetDirty(image);
                 result[i] = (rt, image, seed.Angle);
             }
@@ -596,33 +629,7 @@ namespace FracturedChorus.Editor
 
         private static void StretchFull(RectTransform rt)
         {
-            SetAnchors(rt, Vector2.zero, Vector2.one);
-        }
-
-        private static void SetAnchors(RectTransform rt, Vector2 min, Vector2 max)
-        {
-            rt.anchorMin = min;
-            rt.anchorMax = max;
-            rt.offsetMin = Vector2.zero;
-            rt.offsetMax = Vector2.zero;
-            rt.localScale = Vector3.one;
-            rt.localRotation = Quaternion.identity;
-        }
-
-        private static Texture2D[] LoadWaveTextures(string dir, string prefix, int count)
-        {
-            var list = new System.Collections.Generic.List<Texture2D>(count);
-            for (var i = 1; i <= count; i++)
-            {
-                var path = $"{dir}/{prefix}{i:00}.png";
-                var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
-                if (tex != null)
-                {
-                    list.Add(tex);
-                }
-            }
-
-            return list.ToArray();
+            PlaceRect(rt, Vector2.zero, Vector2.one);
         }
 
         private static Sprite LoadFirstSprite(string assetPath)

@@ -1,0 +1,80 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f3a2c1e9b6d4e0a7c5f1d8e2a4b6c90, type: 3}
+  m_Name: LuxeArenaBackgroundConfig
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Combat.Presentation.LuxeArenaBackgroundConfig
+  BasePlate: {fileID: 21300000, guid: a0cf9ccbc9a909c40b316b46d966e0b3, type: 3}
+  Floor: {fileID: 21300000, guid: a0cf9ccbc9a909c40b316b46d966e0b3, type: 3}
+  Grandstand: {fileID: 21300000, guid: 06130bc88b6c08949960d19c330df65e, type: 3}
+  EmotionScreen: {fileID: 4117286574846551847, guid: f15383563ebe27b42932a72b02d1d163, type: 3}
+  SoftCone: {fileID: 21300000, guid: 8dd3c23f93fd440fb92113aba6f6128f, type: 3}
+  AudienceFrames:
+  - {fileID: 2800000, guid: c0ddafbd3a164b7b9bf769971e5e6846, type: 3}
+  - {fileID: 2800000, guid: 2e6918c1bd8543e39b09105e5ca9dfcd, type: 3}
+  - {fileID: 2800000, guid: d86a5535a3284b958ff89990cdc33815, type: 3}
+  - {fileID: 2800000, guid: b93079a89c204f0db747079f7ec63d78, type: 3}
+  - {fileID: 2800000, guid: 9cc339d57d2b449ca84bd20b3a32b2ea, type: 3}
+  FloorAnchorMin: {x: 0, y: 0}
+  FloorAnchorMax: {x: 1, y: 1}
+  GrandstandAnchorMin: {x: 0, y: 0}
+  GrandstandAnchorMax: {x: 1, y: 1}
+  AudienceAnchorMin: {x: 0, y: 0.52}
+  AudienceAnchorMax: {x: 1, y: 0.88}
+  EmotionAnchorMin: {x: 0.435, y: 0.805}
+  EmotionAnchorMax: {x: 0.565, y: 0.955}
+  Spotlights:
+  - AnchorX: 0.12
+    AnchorY: 0.93
+    Angle: -18
+    Scale: 0.95
+    Size: {x: 220, y: 520}
+    Color: {r: 0.72, g: 0.45, b: 1, a: 0.18}
+  - AnchorX: 0.22
+    AnchorY: 0.95
+    Angle: -10
+    Scale: 1.05
+    Size: {x: 220, y: 520}
+    Color: {r: 0.72, g: 0.45, b: 1, a: 0.18}
+  - AnchorX: 0.34
+    AnchorY: 0.96
+    Angle: -4
+    Scale: 0.9
+    Size: {x: 220, y: 520}
+    Color: {r: 0.72, g: 0.45, b: 1, a: 0.18}
+  - AnchorX: 0.66
+    AnchorY: 0.96
+    Angle: 4
+    Scale: 0.9
+    Size: {x: 220, y: 520}
+    Color: {r: 0.72, g: 0.45, b: 1, a: 0.18}
+  - AnchorX: 0.78
+    AnchorY: 0.95
+    Angle: 10
+    Scale: 1.05
+    Size: {x: 220, y: 520}
+    Color: {r: 0.72, g: 0.45, b: 1, a: 0.18}
+  - AnchorX: 0.88
+    AnchorY: 0.93
+    Angle: 18
+    Scale: 0.95
+    Size: {x: 220, y: 520}
+    Color: {r: 0.72, g: 0.45, b: 1, a: 0.18}
+  AudienceAlpha: 0.7
+  FrameMorphSpeed: 1.1
+  ShimmerAmount: 0.006
+  PulseAmount: 0.12
+  PulseSpeed: 0.4
+  EnableSpotlightRig: 1
+  SpotlightMaxAlpha: 0.28
+  SpotlightPulseSpeed: 0.35
+  SpotlightSwayDegrees: 4.5
+  SpotlightSwaySpeed: 0.22

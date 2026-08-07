@@ -310,6 +310,22 @@ namespace FracturedChorus.Combat.Presentation
                 yield return new WaitForSeconds(castHoldSeconds);
             }
 
+            var lungeFeet = ResolveStrikeAnchor(receiverView, report.Target);
+            if (Vector2.Distance(
+                    new Vector2(attackerView.FeetWorldPosition.x, attackerView.FeetWorldPosition.y),
+                    new Vector2(lungeFeet.x, lungeFeet.y)) > 0.08f)
+            {
+                attackerView.PlayMovingLoop();
+                yield return attackerView.MoveFeetToRoutine(
+                    lungeFeet,
+                    ResolveMoveSeconds(
+                        attackerView.FeetWorldPosition,
+                        lungeFeet,
+                        lungeSpeed,
+                        lungeSeconds));
+                attackerView.PlayCounterHold();
+            }
+
             var swordCount = Mathf.Clamp(report.SwordCount, 1, 3);
             yield return PresentEnemyVolley(
                 attackerView,
