@@ -50,11 +50,21 @@ namespace FracturedChorus.UI
         public Vector2[] variantNudges = new Vector2[5];
 
         [Header("Neo đầu nốt trong sprite (0–1, gốc giữa ảnh)")]
-        [Tooltip("Stem-up (v0,v1,v2,v4): tâm vòng đầu nốt (−Y = xuống).")]
+        [Tooltip("Legacy stem-up fallback (v0,v1,v2,v4) khi mảng per-variant trống.")]
         public Vector2 singleHeadNormStemUp = new Vector2(-0.08f, -0.30f);
 
-        [Tooltip("Stem-down (v3).")]
+        [Tooltip("Legacy stem-down fallback (v3).")]
         public Vector2 singleHeadNormStemDown = new Vector2(0.06f, 0.28f);
+
+        [Tooltip("Neo đầu nốt theo variant note_music v0–v4 (0–1, gốc giữa ảnh).")]
+        public Vector2[] singleHeadNormByVariant =
+        {
+            new Vector2(-0.08f, -0.30f),
+            new Vector2(-0.08f, -0.30f),
+            new Vector2(-0.08f, -0.30f),
+            new Vector2(0.06f, 0.28f),
+            new Vector2(-0.08f, -0.30f)
+        };
 
         [Tooltip("Beamed: đầu trái trong sprite.")]
         public Vector2 beamedHeadNormLeft = new Vector2(-0.32f, -0.10f);
@@ -62,8 +72,12 @@ namespace FracturedChorus.UI
         [Tooltip("Beamed: đầu phải trong sprite.")]
         public Vector2 beamedHeadNormRight = new Vector2(0.28f, -0.10f);
 
-        public Vector2 ResolveSingleHeadNorm(int variantIndex) =>
-            variantIndex == 3 ? singleHeadNormStemDown : singleHeadNormStemUp;
+        public Vector2 ResolveSingleHeadNorm(int variantIndex)
+        {
+            EnsureSingleHeadNormByVariant();
+            var i = Mathf.Clamp(variantIndex, 0, singleHeadNormByVariant.Length - 1);
+            return singleHeadNormByVariant[i];
+        }
 
         public Vector2 ResolveVariantNudge(int variantIndex)
         {
@@ -73,6 +87,23 @@ namespace FracturedChorus.UI
             }
 
             return variantNudges[variantIndex];
+        }
+
+        public void EnsureSingleHeadNormByVariant()
+        {
+            if (singleHeadNormByVariant != null && singleHeadNormByVariant.Length == 5)
+            {
+                return;
+            }
+
+            singleHeadNormByVariant = new[]
+            {
+                singleHeadNormStemUp,
+                singleHeadNormStemUp,
+                singleHeadNormStemUp,
+                singleHeadNormStemDown,
+                singleHeadNormStemUp
+            };
         }
     }
 }

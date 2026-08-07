@@ -262,7 +262,8 @@ namespace FracturedChorus.Editor
 
         private static Transform ResolveCharlotteFollow()
         {
-            foreach (var view in Object.FindObjectsByType<UnitView>(FindObjectsSortMode.None))
+            // Unity 6.4+: FindObjectsInactive overload — FindObjectsSortMode is obsolete.
+            foreach (var view in Object.FindObjectsByType<UnitView>(FindObjectsInactive.Exclude))
             {
                 if (CharlotteCounterShieldView.IsCharlotteUnit(view.Unit, view))
                 {

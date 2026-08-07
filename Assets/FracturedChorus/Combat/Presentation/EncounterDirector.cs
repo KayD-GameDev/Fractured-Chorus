@@ -957,7 +957,7 @@ namespace FracturedChorus.Combat.Presentation
 
         private void FinishEncounter()
         {
-            letterboxOverlay?.Hide();
+            HideLetterboxSafe();
             _busy = false;
             _routine = null;
             timelineView?.ResumeAfterEncounter();
@@ -971,7 +971,7 @@ namespace FracturedChorus.Combat.Presentation
                 _routine = null;
             }
 
-            letterboxOverlay?.Hide();
+            HideLetterboxSafe();
             RestorePhaseHomes();
             focusDimmer?.ReleaseImmediate();
             ApplyUiHide(false);
@@ -1014,6 +1014,15 @@ namespace FracturedChorus.Combat.Presentation
             }
 
             view.PlayHpFeedback(unit.LastHpChange);
+        }
+
+        private void HideLetterboxSafe()
+        {
+            // C# ?. does not treat destroyed UnityObjects as null.
+            if (letterboxOverlay != null)
+            {
+                letterboxOverlay.Hide();
+            }
         }
 
         private void OnDisable()

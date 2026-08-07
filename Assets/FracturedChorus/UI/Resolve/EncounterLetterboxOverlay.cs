@@ -75,6 +75,12 @@ namespace FracturedChorus.UI
 
         public void Hide()
         {
+            // Unity fake-null: destroyed overlays still reach here via ?. from C#.
+            if (!this)
+            {
+                return;
+            }
+
             _visible = false;
             if (_topWave != null)
             {
@@ -91,7 +97,10 @@ namespace FracturedChorus.UI
                 _group.alpha = 0f;
             }
 
-            gameObject.SetActive(false);
+            if (gameObject != null)
+            {
+                gameObject.SetActive(false);
+            }
         }
 
         private void LateUpdate()

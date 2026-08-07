@@ -133,7 +133,7 @@ namespace FracturedChorus.Editor
                 "3) Bấm Save layout (giữ sau Exit Play)\n" +
                 "4) Stop Play → Ctrl+S lưu scene\n\n" +
                 "Bake selected = chỉ khi kéo NoteNum_* bằng Rect Tool.\n" +
-                "Beat_1 / NoteSingle_1: chọn object → Inspector Remaining Hits.",
+                "NoteSimulator: chỉnh size + RailAnchor (vị trí đứng trên line quái).",
                 MessageType.Info);
 
             DrawAuthoredBossNotesHelp();

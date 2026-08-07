@@ -59,6 +59,10 @@ namespace FracturedChorus.UI
 
         public BossNoteNumberLayout BossNoteNumberLayout => bossNoteNumberLayout;
 
+        /// <summary>Monster note rail Y (BorderTop) in viewport bottom-space pixels.</summary>
+        public float BossNoteRailAnchoredY =>
+            bossNoteRailAnchoredY > 1f ? bossNoteRailAnchoredY : 215f;
+
         public void RebuildBossNoteClustersPublic() => RebuildBossNoteClusters();
         [Tooltip("Party lane band — mép dưới (normalized từ đáy viewport).")]
         [SerializeField] [Range(0.05f, 0.45f)] private float laneBandMinNormalizedY = 0.12f;
@@ -306,6 +310,30 @@ namespace FracturedChorus.UI
             {
                 EnsureNoteVisuals();
                 return noteVisuals;
+            }
+        }
+
+        /// <summary>
+        /// Apply size/alpha from NoteSingle template so Play spawn matches Scene edit sizing.
+        /// Does not change telegraph spawn rules.
+        /// </summary>
+        public void ApplyBossNoteTemplateSettings(Vector2 size, float alpha)
+        {
+            EnsureNoteVisuals();
+            if (size.x > 1f)
+            {
+                noteVisuals.NoteDisplayWidth = size.x;
+                noteVisuals.NoteDisplaySize = size.x;
+            }
+
+            if (size.y > 1f)
+            {
+                noteVisuals.NoteDisplayHeight = size.y;
+            }
+
+            if (alpha > 0.01f)
+            {
+                noteVisuals.NoteAlpha = Mathf.Clamp(alpha, 0.35f, 1f);
             }
         }
 
@@ -4904,6 +4932,8 @@ namespace FracturedChorus.UI
                 {
                     bossNoteNumberLayout.variantNudges = new Vector2[5];
                 }
+
+                bossNoteNumberLayout.EnsureSingleHeadNormByVariant();
 
                 if (bossNoteNumberLayout.perfectMarkScaleVsNumber >= 1.7f)
                 {

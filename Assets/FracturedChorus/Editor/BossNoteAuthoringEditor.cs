@@ -13,8 +13,8 @@ namespace FracturedChorus.Editor
             serializedObject.Update();
 
             EditorGUILayout.HelpBox(
-                "Chọn NoteSingle_* trên Hierarchy — chỉnh Remaining Hits rồi Ctrl+S.\n" +
-                "Play: note authored ẩn; runtime spawn từ telegraph (hoặc fallback Remaining Hits nếu beat không có telegraph).",
+                "Legacy seed authoring. Dùng NoteSimulator để chỉnh size + RailAnchor (vị trí đứng trên line quái).\n" +
+                "Play: note authored ẩn; runtime spawn từ telegraph.",
                 MessageType.Info);
 
             EditorGUILayout.PropertyField(serializedObject.FindProperty("beatIndex"));

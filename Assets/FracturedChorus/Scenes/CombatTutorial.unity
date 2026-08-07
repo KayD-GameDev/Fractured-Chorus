@@ -5043,13 +5043,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d024d51c1e5bfc544b7c2454c4208ffb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Combat.Presentation.EnemyStrikeChoreographer
-  lungeSeconds: 0.1
-  lungeSpeed: 32
   impactHoldSeconds: 0.22
   retreatSeconds: 0.22
   knockbackSeconds: 0.12
   knockbackSpeed: 40
-  counterHoldSeconds: 0.28
   skillImpactNormalizedTime: 0.35
   dimFactor: 0.35
   dimFadeSeconds: 0.12
