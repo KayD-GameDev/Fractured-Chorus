@@ -53,20 +53,24 @@ namespace FracturedChorus.Combat.Presentation
         [SerializeField] private float glassShatterSeconds = 0.28f;
 
         [Header("Skill 3 — Multi shot (Ultimate)")]
-        [SerializeField] [Min(1)] private int skill3BulletCount = 2;
+        [SerializeField] [Min(1)] private int skill3BulletCount = 3;
         [SerializeField] private float skill3AnimSampleRate = 24f;
-        [SerializeField] private int skill3ShotFrameA = 6;
-        [SerializeField] private int skill3ShotFrameB = 10;
-        [SerializeField] private float skill3VerticalSpread = 0.18f;
+        [SerializeField] private int skill3ShotFrameA = 14;
+        [SerializeField] private int skill3ShotFrameB = 22;
+        [SerializeField] private float skill3MinChargeSeconds = 0.95f;
+        [SerializeField] private float skill3VerticalSpread = 0.22f;
         [SerializeField] private float skill3GlassDelaySeconds = 0.08f;
+        [SerializeField] private float skill3GlassWorldSize = 3.45f;
+        [SerializeField] private float skill3ImpactHoldSeconds = 0.16f;
+        [SerializeField] private float skill3AftermathHoldSeconds = 0.35f;
         [SerializeField] private Sprite ultAuraGlowSprite;
         [SerializeField] private Sprite ultAuraWaveformSprite;
         [SerializeField] private Sprite ultAuraNotesSprite;
         [SerializeField] private Sprite[] ultAuraWaveVariants;
         [SerializeField] private Sprite[] ultAuraNoteVariants;
-        [SerializeField] private float ultAuraWorldSize = 3.4f;
+        [SerializeField] private float ultAuraWorldSize = 4.6f;
         [SerializeField] private float ultAuraOrbitRadius = 1.45f;
-        [SerializeField] [Range(0.35f, 0.9f)] private float ultAuraConvergeNormalized = 0.72f;
+        [SerializeField] [Range(0.35f, 0.9f)] private float ultAuraConvergeNormalized = 0.68f;
 
         [Header("Shared")]
         [SerializeField] private Material additiveMaterial;
@@ -100,11 +104,15 @@ namespace FracturedChorus.Combat.Presentation
             skill3AnimSampleRate = Mathf.Max(1f, skill3AnimSampleRate);
             skill3ShotFrameA = Mathf.Max(0, skill3ShotFrameA);
             skill3ShotFrameB = Mathf.Max(skill3ShotFrameA, skill3ShotFrameB);
+            skill3MinChargeSeconds = Mathf.Max(0.2f, skill3MinChargeSeconds);
             meleeAnimSampleRate = Mathf.Max(1f, meleeAnimSampleRate);
             meleeImpactFrame = Mathf.Max(0, meleeImpactFrame);
             meleeStandoffX = Mathf.Max(0.35f, meleeStandoffX);
             meleeHitReach = Mathf.Max(0.1f, meleeHitReach);
             skill3GlassDelaySeconds = Mathf.Max(0f, skill3GlassDelaySeconds);
+            skill3GlassWorldSize = Mathf.Max(glassWorldSize, skill3GlassWorldSize);
+            skill3ImpactHoldSeconds = Mathf.Max(0f, skill3ImpactHoldSeconds);
+            skill3AftermathHoldSeconds = Mathf.Max(0f, skill3AftermathHoldSeconds);
         }
 
         private void OnDestroy()
@@ -164,7 +172,8 @@ namespace FracturedChorus.Combat.Presentation
                     yield return PlaySingleBulletRoutine(skill, from, to, parent, onImpact);
                     break;
                 case RenSkillPresentation.MultiBullet:
-                    yield return PlayMultiBulletRoutine(sourceView, skill, from, to, parent, onImpact);
+                    yield return PlayMultiBulletRoutine(
+                        sourceView, skill, from, to, parent, onImpact, playAttackAnimation: false);
                     break;
             }
         }
@@ -228,7 +237,14 @@ namespace FracturedChorus.Combat.Presentation
                     StartCoroutine(PlaySingleBulletRoutine(report.Skill, from, to, parent, null));
                     break;
                 case RenSkillPresentation.MultiBullet:
-                    StartCoroutine(PlayMultiBulletRoutine(sourceView, report.Skill, from, to, parent, null));
+                    StartCoroutine(PlayMultiBulletRoutine(
+                        sourceView,
+                        report.Skill,
+                        from,
+                        to,
+                        parent,
+                        null,
+                        playAttackAnimation: ShouldOwnOpenFieldAttackAnimation(report.BeatIndex)));
                     break;
             }
         }
@@ -309,7 +325,6 @@ namespace FracturedChorus.Combat.Presentation
                 ResolveMoveSeconds(renView.FeetWorldPosition, strikeFeet, meleeLungeSpeed, meleeLungeSeconds));
 
             renView.PlayAttackAnimationHold(skill);
-            SpawnCloseMeleeHit(renView, targetView);
 
             var clipLength = Mathf.Max(renView.EstimateSkillClipLength(skill), meleeArcSeconds + meleeImpactSeconds);
             var animSpeed = Mathf.Max(0.01f, renView.AnimatorSpeed);
@@ -325,6 +340,7 @@ namespace FracturedChorus.Combat.Presentation
                 yield return new WaitForSeconds(impactDelay);
             }
 
+            SpawnCloseMeleeHit(renView, targetView);
             FindAnyObjectByType<CombatSfxController>()?.PlaySkillSfxImmediate(skill);
             onImpact?.Invoke();
 
@@ -446,13 +462,24 @@ namespace FracturedChorus.Combat.Presentation
             return false;
         }
 
+        private bool ShouldOwnOpenFieldAttackAnimation(int beatIndex)
+        {
+            if (_session?.Timeline == null)
+            {
+                return true;
+            }
+
+            return CombatCounterResolver.HasCounterOnBeat(_session.Timeline, beatIndex);
+        }
+
         private IEnumerator PlayMultiBulletRoutine(
             UnitView sourceView,
             SkillDefinitionSO skill,
             Vector3 from,
             Vector3 to,
             Transform parent,
-            Action onImpact)
+            Action onImpact,
+            bool playAttackAnimation)
         {
             EnsureDefaults();
             var count = Mathf.Max(1, skill3BulletCount);
@@ -474,7 +501,7 @@ namespace FracturedChorus.Combat.Presentation
                 onImpact.Invoke();
             };
 
-            if (sourceView != null && skill != null)
+            if (playAttackAnimation && sourceView != null && skill != null)
             {
                 sourceView.PlayAttackAnimationHold(skill);
             }
@@ -491,18 +518,23 @@ namespace FracturedChorus.Combat.Presentation
                     BuildUltAuraSettings(),
                     parent);
 
-                var charge = Mathf.Max(0.12f, timeA);
+                var charge = Mathf.Max(Mathf.Max(0.12f, timeA), skill3MinChargeSeconds);
                 var convergeAt = Mathf.Clamp01(ultAuraConvergeNormalized);
                 var orbitSeconds = charge * convergeAt;
                 var convergeSeconds = charge * (1f - convergeAt);
                 yield return aura.PlayOrbitThenConverge(from, orbitSeconds, convergeSeconds);
             }
-            else if (timeA > 0f)
+            else
             {
-                yield return new WaitForSeconds(timeA);
+                var charge = Mathf.Max(Mathf.Max(0f, timeA), skill3MinChargeSeconds);
+                if (charge > 0f)
+                {
+                    yield return new WaitForSeconds(charge);
+                }
             }
 
             settings = BuildPierceBulletSettings(to, withGlassShatter: true);
+            settings.GlassShatter = BuildGlassShatterSettings(skill3GlassWorldSize);
             var impactFxFired = false;
             settings.OnImpact = world =>
             {
@@ -514,28 +546,32 @@ namespace FracturedChorus.Combat.Presentation
 
                 impactFxFired = true;
                 FindAnyObjectByType<CombatSfxController>()?.PlayRenSkillSlotImmediate(SkillSlotKind.Ultimate);
+                CombatImpactFeel.PunchUltimateNow();
             };
 
-            FindAnyObjectByType<CombatSfxController>()?.PlayRenSkillSlotImmediate(SkillSlotKind.Skill);
-            SpawnSkill3Bullet(from, to, 0, count, settings, parent, withGlassShatter: true);
-
-            if (count > 1)
+            var span = Mathf.Max(0f, timeB - timeA);
+            for (var i = 0; i < count; i++)
             {
-                var gap = Mathf.Max(0f, timeB - timeA);
-                if (gap > 0f)
+                if (i > 0)
                 {
-                    yield return new WaitForSeconds(gap);
+                    var gap = count <= 1 ? 0f : span / (count - 1);
+                    if (gap > 0f)
+                    {
+                        yield return new WaitForSeconds(gap);
+                    }
                 }
 
                 FindAnyObjectByType<CombatSfxController>()?.PlayRenSkillSlotImmediate(SkillSlotKind.Skill);
-                SpawnSkill3Bullet(from, to, 1, count, settings, parent, withGlassShatter: false);
+                SpawnSkill3Bullet(from, to, i, count, settings, parent, withGlassShatter: i == 0);
             }
 
             var flightWait = RenBulletShotView.EstimatePresentationSeconds(from, to, settings);
+            var staggerTail = count <= 1 ? 0f : span;
             var wait = Mathf.Max(
                 flightWait,
                 EstimateSkill3ImpactTravelSeconds(from, to, settings)
-                + RenGlassShatterView.EstimateSeconds(BuildGlassShatterSettings()));
+                + RenGlassShatterView.EstimateSeconds(BuildGlassShatterSettings(skill3GlassWorldSize)))
+                       + staggerTail;
             if (wait > 0f)
             {
                 yield return new WaitForSeconds(wait);
@@ -546,7 +582,17 @@ namespace FracturedChorus.Combat.Presentation
                 fireResolve();
             }
 
+            if (skill3ImpactHoldSeconds > 0f)
+            {
+                yield return new WaitForSeconds(skill3ImpactHoldSeconds);
+            }
+
             aura?.StopAndDestroy();
+
+            if (skill3AftermathHoldSeconds > 0f)
+            {
+                yield return new WaitForSeconds(skill3AftermathHoldSeconds);
+            }
         }
 
         private float EstimateSkill3ImpactTravelSeconds(
@@ -639,7 +685,7 @@ namespace FracturedChorus.Combat.Presentation
             return built;
         }
 
-        private RenGlassShatterSettings BuildGlassShatterSettings()
+        private RenGlassShatterSettings BuildGlassShatterSettings(float? worldSizeOverride = null)
         {
             EnsureDefaults();
             if (glassCrackSprite == null && glassShatterSprite == null)
@@ -652,7 +698,7 @@ namespace FracturedChorus.Combat.Presentation
                 Crack = glassCrackSprite,
                 Shatter = glassShatterSprite,
                 AdditiveMaterial = ResolveAdditiveMaterial(),
-                WorldSize = glassWorldSize,
+                WorldSize = Mathf.Max(0.4f, worldSizeOverride ?? glassWorldSize),
                 CrackInSeconds = Mathf.Max(0.01f, glassCrackInSeconds),
                 CrackHoldSeconds = Mathf.Max(0.01f, glassCrackHoldSeconds),
                 ShatterSeconds = Mathf.Max(0.01f, glassShatterSeconds),
@@ -786,6 +832,18 @@ namespace FracturedChorus.Combat.Presentation
             return _runtimeAdditive;
         }
 
+        public void ApplySkill3Tuning(
+            float auraWorldSize,
+            float orbitRadius,
+            float bulletHeadSize,
+            float aimHeight)
+        {
+            ultAuraWorldSize = Mathf.Max(0.4f, auraWorldSize);
+            ultAuraOrbitRadius = Mathf.Max(0.2f, orbitRadius);
+            bulletHeadWorldSize = Mathf.Max(0.3f, bulletHeadSize);
+            aimHeightOffset = aimHeight;
+        }
+
         [ContextMenu("Assign Default Ren VFX From Resources")]
         public void EnsureDefaults()
         {
@@ -799,7 +857,13 @@ namespace FracturedChorus.Combat.Presentation
                 meleeArcSprite = LoadSprite("ren_melee_arc_v1");
             }
 
-            if (meleeImpactSprite == null)
+            var preferredImpact = LoadSprite("ren_melee_impact_v2");
+            if (preferredImpact != null
+                && (meleeImpactSprite == null || meleeImpactSprite.name.Contains("ren_melee_impact_v1")))
+            {
+                meleeImpactSprite = preferredImpact;
+            }
+            else if (meleeImpactSprite == null)
             {
                 meleeImpactSprite = LoadSprite("ren_melee_impact_v1");
             }
