@@ -16,6 +16,8 @@ namespace FracturedChorus.Editor
         private const string ConfigPath = ArenaRoot + "/LuxeArenaBackgroundConfig.asset";
         private const string FloorPath = ArenaRoot + "/luxe_arena_floor_v2.png";
         private const string GrandstandPath = ArenaRoot + "/luxe_arena_grandstand_v1.png";
+        private const string TvFramePath = ArenaRoot + "/luxe_arena_layer_tv_v1.png";
+        private const string EmotionContentPath = ArenaRoot + "/luxe_arena_emotion_screen_square_v1.png";
         private const string EmotionScreenPath = ArenaRoot + "/luxe_arena_emotion_screen_v4.png";
         private const string AudienceFxDir = ArenaRoot + "/Audience";
         private const string SoftConePath = ArenaRoot + "/Lights/luxe_arena_soft_cone_v1.png";
@@ -136,11 +138,7 @@ namespace FracturedChorus.Editor
             var floor = EnsureLayerImage(layers, "Floor", floorSprite, Color.white);
             PlaceRect(floor, config.FloorAnchorMin, config.FloorAnchorMax);
 
-            if (config.EmotionScreen != null)
-            {
-                var tv = EnsureLayerImage(layers, "EmotionScreen", config.EmotionScreen, Color.white);
-                PlaceRect(tv, config.EmotionAnchorMin, config.EmotionAnchorMax);
-            }
+            BuildTvRig(layers, config);
 
             var spotRig = EnsureRect(layers, "SpotlightRig");
             StretchFull(spotRig);
@@ -163,11 +161,13 @@ namespace FracturedChorus.Editor
 
             grandstand.SetAsFirstSibling();
             floor.SetSiblingIndex(1);
-            var emotion = layers.Find("EmotionScreen") as RectTransform;
-            if (emotion != null)
+            var tv = layers.Find("TV") as RectTransform;
+            if (tv != null)
             {
-                emotion.SetSiblingIndex(2);
+                tv.SetSiblingIndex(2);
             }
+
+            DestroyNamedChild(layers, "EmotionScreen");
 
             spotRig.SetAsLastSibling();
             audienceRoot.SetAsLastSibling();
@@ -193,7 +193,7 @@ namespace FracturedChorus.Editor
             EditorSceneManager.SaveScene(bgRoot.scene);
             Selection.activeGameObject = floor.gameObject;
             Debug.Log(
-                $"[LuxeArena] Wired Floor + Grandstand + AudienceFx ({config.AudienceFrames.Length} frames).");
+                $"[LuxeArena] Wired Floor + Grandstand + TV + AudienceFx ({config.AudienceFrames.Length} frames).");
         }
 
         private static bool NeedsRewire(GameObject bgRoot)
@@ -219,6 +219,7 @@ namespace FracturedChorus.Editor
             if (layers == null ||
                 layers.Find("Grandstand") == null ||
                 layers.Find("Floor") == null ||
+                layers.Find("TV") == null ||
                 layers.Find(AudienceRootName) == null)
             {
                 return true;
@@ -404,20 +405,43 @@ namespace FracturedChorus.Editor
             config.GrandstandAnchorMin = Vector2.zero;
             config.GrandstandAnchorMax = Vector2.one;
 
-            var emotion = LoadFirstSprite(EmotionScreenPath);
-            if (emotion == null)
+            var tvFrame = LoadFirstSprite(TvFramePath);
+            if (tvFrame == null)
             {
-                emotion = LoadFirstSprite(ArenaRoot + "/luxe_arena_emotion_screen_v2.png");
+                tvFrame = LoadFirstSprite(
+                    "Assets/FracturedChorus/Resources/Backgrounds/LuxeArena/Layers/TV/luxe_arena_layer_tv_v1.png");
             }
 
-            if (emotion == null)
+            if (tvFrame != null)
             {
-                emotion = LoadFirstSprite(ArenaRoot + "/luxe_arena_emotion_screen_v1.png");
+                config.TvFrame = tvFrame;
             }
 
-            if (emotion != null)
+            var emotionContent = LoadFirstSprite(EmotionContentPath);
+            if (emotionContent == null)
             {
-                config.EmotionScreen = emotion;
+                emotionContent = LoadFirstSprite(
+                    "Assets/FracturedChorus/Resources/Backgrounds/LuxeArena/luxe_arena_emotion_screen_square_v1.png");
+            }
+
+            if (emotionContent == null)
+            {
+                emotionContent = LoadFirstSprite(EmotionScreenPath);
+            }
+
+            if (emotionContent == null)
+            {
+                emotionContent = LoadFirstSprite(ArenaRoot + "/luxe_arena_emotion_screen_v2.png");
+            }
+
+            if (emotionContent == null)
+            {
+                emotionContent = LoadFirstSprite(ArenaRoot + "/luxe_arena_emotion_screen_v1.png");
+            }
+
+            if (emotionContent != null)
+            {
+                config.EmotionScreen = emotionContent;
             }
 
             var cone = LoadFirstSprite(SoftConePath);
@@ -490,6 +514,61 @@ namespace FracturedChorus.Editor
                 {
                     Undo.DestroyObjectImmediate(child.gameObject);
                 }
+            }
+        }
+
+        private static void BuildTvRig(Transform layers, LuxeArenaBackgroundConfig config)
+        {
+            if (config.TvFrame == null && config.EmotionScreen == null)
+            {
+                DestroyNamedChild(layers, "TV");
+                DestroyNamedChild(layers, "EmotionScreen");
+                return;
+            }
+
+            var tv = EnsureRect(layers, "TV");
+            PlaceRect(tv, config.TvAnchorMin, config.TvAnchorMax);
+
+            DestroyNamedChild(tv, "EmotionScreen");
+
+            if (config.EmotionScreen != null)
+            {
+                var contentRt = EnsureRect(tv, "Content");
+                PlaceRect(contentRt, config.TvContentInsetMin, config.TvContentInsetMax);
+                var raw = contentRt.GetComponent<RawImage>();
+                if (raw == null)
+                {
+                    raw = Undo.AddComponent<RawImage>(contentRt.gameObject);
+                }
+
+                var image = contentRt.GetComponent<Image>();
+                if (image != null)
+                {
+                    Undo.DestroyObjectImmediate(image);
+                }
+
+                Undo.RecordObject(raw, "Setup TV Content");
+                raw.texture = config.EmotionScreen.texture;
+                raw.uvRect = config.TvContentUvRect;
+                raw.color = Color.white;
+                raw.raycastTarget = false;
+                EditorUtility.SetDirty(raw);
+                contentRt.SetAsFirstSibling();
+            }
+            else
+            {
+                DestroyNamedChild(tv, "Content");
+            }
+
+            if (config.TvFrame != null)
+            {
+                var frameRt = EnsureLayerImage(tv, "Frame", config.TvFrame, Color.white);
+                StretchFull(frameRt);
+                frameRt.SetAsLastSibling();
+            }
+            else
+            {
+                DestroyNamedChild(tv, "Frame");
             }
         }
 

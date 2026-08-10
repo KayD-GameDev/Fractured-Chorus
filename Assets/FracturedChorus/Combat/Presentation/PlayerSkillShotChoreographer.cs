@@ -86,6 +86,9 @@ namespace FracturedChorus.Combat.Presentation
         public bool IsMeleeSkill(SkillDefinitionSO skill) =>
             ResolvePresentation(skill) == RenSkillPresentation.MeleeStock;
 
+        public bool IsMultiBulletSkill(SkillDefinitionSO skill) =>
+            ResolvePresentation(skill) == RenSkillPresentation.MultiBullet;
+
         public void Configure(CombatSession session)
         {
             Unsubscribe();
@@ -176,7 +179,7 @@ namespace FracturedChorus.Combat.Presentation
                     break;
                 case RenSkillPresentation.MultiBullet:
                     yield return PlayMultiBulletRoutine(
-                        sourceView, skill, from, to, parent, onImpact, playAttackAnimation: false);
+                        sourceView, skill, from, to, parent, onImpact, playAttackAnimation: true);
                     break;
             }
         }
@@ -240,6 +243,11 @@ namespace FracturedChorus.Combat.Presentation
                     StartCoroutine(PlaySingleBulletRoutine(report.Skill, from, to, parent, null));
                     break;
                 case RenSkillPresentation.MultiBullet:
+                    if (ShouldDeferMultiBulletToCounterChoreo(report))
+                    {
+                        return;
+                    }
+
                     StartCoroutine(PlayMultiBulletRoutine(
                         sourceView,
                         report.Skill,
@@ -250,6 +258,29 @@ namespace FracturedChorus.Combat.Presentation
                         playAttackAnimation: ShouldOwnOpenFieldAttackAnimation(report.BeatIndex)));
                     break;
             }
+        }
+
+        public IEnumerator PlayMultiBulletOwnedRoutine(
+            UnitView sourceView,
+            UnitView targetView,
+            SkillDefinitionSO skill,
+            Action onImpact = null)
+        {
+            if (sourceView == null || targetView == null || skill == null)
+            {
+                yield break;
+            }
+
+            EnsureDefaults();
+            var parent = shotParent != null ? shotParent : transform;
+            yield return PlayMultiBulletRoutine(
+                sourceView,
+                skill,
+                ResolveAimPoint(sourceView),
+                ResolveAimPoint(targetView),
+                parent,
+                onImpact,
+                playAttackAnimation: true);
         }
 
         public IEnumerator PlaySingleBulletRoutine(
@@ -423,6 +454,17 @@ namespace FracturedChorus.Combat.Presentation
             return Mathf.Clamp(distance / speed, 0.04f, Mathf.Max(0.04f, fallbackSeconds));
         }
 
+        private bool ShouldDeferMultiBulletToCounterChoreo(PlayerSkillResolvedReport report)
+        {
+            if (!EnemyStrikeChoreographer.OwnsCounterPresentation || _session?.Timeline == null)
+            {
+                return false;
+            }
+
+            return CombatCounterResolver.ShouldPresentCounterBodyAtBeat(
+                _session.Timeline, report.BeatIndex);
+        }
+
         private bool ShouldDeferMeleeToCounterChoreo(PlayerSkillResolvedReport report)
         {
             if (!EnemyStrikeChoreographer.OwnsCounterPresentation || _session?.Timeline == null)
@@ -467,12 +509,22 @@ namespace FracturedChorus.Combat.Presentation
 
         private bool ShouldOwnOpenFieldAttackAnimation(int beatIndex)
         {
+            if (EncounterDirector.IsPresenting)
+            {
+                return false;
+            }
+
             if (_session?.Timeline == null)
             {
                 return true;
             }
 
-            return CombatCounterResolver.HasCounterOnBeat(_session.Timeline, beatIndex);
+            if (!CombatCounterResolver.HasCounterOnBeat(_session.Timeline, beatIndex))
+            {
+                return false;
+            }
+
+            return !EnemyStrikeChoreographer.OwnsCounterPresentation;
         }
 
         private IEnumerator PlayMultiBulletRoutine(

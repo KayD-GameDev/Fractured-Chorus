@@ -23,6 +23,7 @@ namespace FracturedChorus.Combat.Presentation
         public Sprite BasePlate;
         public Sprite Floor;
         public Sprite Grandstand;
+        public Sprite TvFrame;
         public Sprite EmotionScreen;
         public Sprite SoftCone;
 
@@ -36,8 +37,11 @@ namespace FracturedChorus.Combat.Presentation
         public Vector2 GrandstandAnchorMax = new(1f, 1f);
         public Vector2 AudienceAnchorMin = new(0f, 0.52f);
         public Vector2 AudienceAnchorMax = new(1f, 0.88f);
-        public Vector2 EmotionAnchorMin = new(0.435f, 0.805f);
-        public Vector2 EmotionAnchorMax = new(0.565f, 0.955f);
+        public Vector2 TvAnchorMin = new(0.04f, 0.735f);
+        public Vector2 TvAnchorMax = new(0.96f, 0.995f);
+        public Vector2 TvContentInsetMin = new(0.117f, 0.063f);
+        public Vector2 TvContentInsetMax = new(0.883f, 0.647f);
+        public Rect TvContentUvRect = new(0.079f, 0.079f, 0.842f, 0.842f);
 
         [Header("Spotlights")]
         public SpotlightSeed[] Spotlights =

@@ -15,7 +15,8 @@ MonoBehaviour:
   BasePlate: {fileID: 21300000, guid: a0cf9ccbc9a909c40b316b46d966e0b3, type: 3}
   Floor: {fileID: 21300000, guid: a0cf9ccbc9a909c40b316b46d966e0b3, type: 3}
   Grandstand: {fileID: 21300000, guid: 06130bc88b6c08949960d19c330df65e, type: 3}
-  EmotionScreen: {fileID: 4117286574846551847, guid: f15383563ebe27b42932a72b02d1d163, type: 3}
+  TvFrame: {fileID: 21300000, guid: 8680fbf94a54410090372944c47108a0, type: 3}
+  EmotionScreen: {fileID: -3666860857584440614, guid: e0d42a774d1094a46bea5ccb1cd7fa57, type: 3}
   SoftCone: {fileID: 21300000, guid: 8dd3c23f93fd440fb92113aba6f6128f, type: 3}
   AudienceFrames:
   - {fileID: 2800000, guid: c0ddafbd3a164b7b9bf769971e5e6846, type: 3}
@@ -29,8 +30,16 @@ MonoBehaviour:
   GrandstandAnchorMax: {x: 1, y: 1}
   AudienceAnchorMin: {x: 0, y: 0.52}
   AudienceAnchorMax: {x: 1, y: 0.88}
-  EmotionAnchorMin: {x: 0.435, y: 0.805}
-  EmotionAnchorMax: {x: 0.565, y: 0.955}
+  TvAnchorMin: {x: 0.04, y: 0.735}
+  TvAnchorMax: {x: 0.96, y: 0.995}
+  TvContentInsetMin: {x: 0.117, y: 0.063}
+  TvContentInsetMax: {x: 0.883, y: 0.647}
+  TvContentUvRect:
+    serializedVersion: 2
+    x: 0.079
+    y: 0.079
+    width: 0.842
+    height: 0.842
   Spotlights:
   - AnchorX: 0.12
     AnchorY: 0.93

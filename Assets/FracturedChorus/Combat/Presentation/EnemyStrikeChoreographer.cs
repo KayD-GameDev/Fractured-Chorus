@@ -798,6 +798,37 @@ namespace FracturedChorus.Combat.Presentation
                 yield break;
             }
 
+            if (bodyView != null
+                && bodyEntry?.Skill != null
+                && playerSkillShotChoreographer != null
+                && playerSkillShotChoreographer.IsMultiBulletSkill(bodyEntry.Skill))
+            {
+                attackerView.PlayBeCounteredHold();
+                var ultMid = ResolveMidStaging(attackerView);
+                var ultKnockback = StartCoroutine(
+                    attackerView.MoveFeetToRoutine(
+                        ultMid,
+                        ResolveMoveSeconds(
+                            attackerView.FeetWorldPosition,
+                            ultMid,
+                            knockbackSpeed,
+                            knockbackSeconds)));
+
+                yield return playerSkillShotChoreographer.PlayMultiBulletOwnedRoutine(
+                    bodyView,
+                    attackerView,
+                    bodyEntry.Skill,
+                    onImpact: () => FlushHpFeedback(report.Attacker));
+
+                if (ultKnockback != null)
+                {
+                    yield return ultKnockback;
+                }
+
+                FlushRemainingHpFeedback();
+                yield break;
+            }
+
             foreach (var (view, entry) in _counterEntriesScratch)
             {
                 if (entry.Unit == counterBody)

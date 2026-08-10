@@ -16,8 +16,19 @@ namespace FracturedChorus.Combat.Presentation
     {
         public static EncounterDirector ActiveInstance { get; private set; }
 
-        public static bool IsPresenting =>
-            ActiveInstance != null && ActiveInstance._busy;
+        public static bool IsPresenting
+        {
+            get
+            {
+                if (ActiveInstance != null)
+                {
+                    return ActiveInstance._busy;
+                }
+
+                var found = FindAnyObjectByType<EncounterDirector>();
+                return found != null && found._busy;
+            }
+        }
 
         [Header("Refs")]
         [SerializeField] private BeatTimelineUIView timelineView;
@@ -160,6 +171,11 @@ namespace FracturedChorus.Combat.Presentation
 
             ActiveInstance = this;
             EnsureRefs();
+        }
+
+        private void OnEnable()
+        {
+            ActiveInstance = this;
         }
 
         public bool TryInterceptScanBeat(int beatIndex)
@@ -421,6 +437,13 @@ namespace FracturedChorus.Combat.Presentation
                 yield break;
             }
 
+            if (playerSkillShotChoreographer != null
+                && playerSkillShotChoreographer.IsMultiBulletSkill(playerSkill))
+            {
+                yield return PlayRenMultiBulletResolve(beatIndex, playerView, enemyView, playerSkill);
+                yield break;
+            }
+
             if (playerSkill != null)
             {
                 playerView.PlayAttackAnimationHold(playerSkill);
@@ -560,6 +583,15 @@ namespace FracturedChorus.Combat.Presentation
                 yield break;
             }
 
+            if (countered
+                && playerSkillShotChoreographer != null
+                && playerSkillShotChoreographer.IsMultiBulletSkill(playerSkill))
+            {
+                enemyView.PlayBeCounteredHold();
+                yield return PlayRenMultiBulletResolve(beatIndex, playerView, enemyView, playerSkill);
+                yield break;
+            }
+
             if (countered)
             {
                 enemyView.PlayBeCounteredHold();
@@ -634,6 +666,40 @@ namespace FracturedChorus.Combat.Presentation
                 enemyView,
                 playerSkill,
                 returnHome: false,
+                onImpact: () =>
+                {
+                    if (resolveFired)
+                    {
+                        return;
+                    }
+
+                    resolveFired = true;
+                    ResolveAndShowHp(beatIndex, playerView, enemyView);
+                });
+
+            if (!resolveFired)
+            {
+                ResolveAndShowHp(beatIndex, playerView, enemyView);
+            }
+        }
+
+        private IEnumerator PlayRenMultiBulletResolve(
+            int beatIndex,
+            UnitView playerView,
+            UnitView enemyView,
+            SkillDefinitionSO playerSkill)
+        {
+            if (!IsBeatFullyCountered(beatIndex))
+            {
+                enemyView.PlayCounterHold();
+            }
+
+            var resolveFired = false;
+            yield return playerSkillShotChoreographer.PlayBulletPresentationForCutsceneRoutine(
+                playerSkill,
+                playerView,
+                ResolveAim(playerView),
+                ResolveAim(enemyView),
                 onImpact: () =>
                 {
                     if (resolveFired)
