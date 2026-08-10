@@ -11,6 +11,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using FracturedChorus.UI;
 
@@ -59,9 +60,12 @@ namespace FracturedChorus.UI
 
         public BossNoteNumberLayout BossNoteNumberLayout => bossNoteNumberLayout;
 
-        /// <summary>Monster note rail Y (BorderTop) in viewport bottom-space pixels.</summary>
-        public float BossNoteRailAnchoredY =>
-            bossNoteRailAnchoredY > 1f ? bossNoteRailAnchoredY : 215f;
+        /// <summary>
+        /// Monster note rail Y (BorderTop) in viewport bottom-space pixels.
+        /// Prefers authored BossTrackFrame on scene when preserveSceneLayout.
+        /// </summary>
+        public float BossNoteRailAnchoredY => ResolveNoteRailAnchoredY(
+            viewport != null ? viewport.rect.height : 0f);
 
         public void RebuildBossNoteClustersPublic() => RebuildBossNoteClusters();
         [Tooltip("Party lane band — mép dưới (normalized từ đáy viewport).")]
@@ -69,6 +73,7 @@ namespace FracturedChorus.UI
         [Tooltip("Party lane band — mép trên (normalized từ đáy viewport). Legacy; maxY lấy từ rail − gap.")]
         [SerializeField] [Range(0.25f, 0.6f)] private float laneBandMaxNormalizedY = 0.42f;
         [SerializeField] private Color bossTrackFrameBorderTop = new Color(0.45f, 0.98f, 1f, 0.95f);
+        [Tooltip("Fallback BorderTop thickness when BossTrackFrame is not authored on scene.")]
         [SerializeField] private float bossTrackFrameBorderThickness = 2f;
         [SerializeField] private Sprite timelineStaffBackground;
         [SerializeField] [Range(0.15f, 1f)] private float timelineStaffBackgroundAlpha = 1f;
@@ -89,6 +94,12 @@ namespace FracturedChorus.UI
         [SerializeField] private LeftRailLayout leftRailLayout = new LeftRailLayout();
         [Tooltip("Keep Header / outer BeatTimeline frame position. Internal layout (TrackLine, ScrollContent, ScanBar) still auto-layouts.")]
         [SerializeField] private bool preserveSceneLayout = true;
+
+        [Header("Browse Chevrons (scene SoT — layout on RectTransform)")]
+        [SerializeField] private Button browseLeftButton;
+        [SerializeField] private Button browseRightButton;
+        [Tooltip("Browse pan speed (px/sec). Authored on scene component.")]
+        [SerializeField] private float browsePanSpeedPx = 900f;
 
         private BeatTimelineEngine _timeline;
         private CombatSession _session;
@@ -141,6 +152,7 @@ namespace FracturedChorus.UI
         private RectTransform _laneMarkersLayer;
         private RectTransform _footprintLayer;
         private RectTransform _bossTrackFrame;
+        private bool _bossTrackFrameAuthoredInScene;
         private Image _staffBackground;
         private readonly List<CombatUnit> _laneUnits = new();
         private readonly Dictionary<CombatUnit, int> _laneIndex = new();
@@ -176,6 +188,15 @@ namespace FracturedChorus.UI
         // Intro-pause sau Deploy: snap cuối beat 0 vào ScanBar (anchor-based, không dùng localBeat threshold).
         private const float PhaseDividerVisualOffsetPx = 2f;
         private const float AnchorScrollEpsilonPx = 0.01f;
+        private const float BrowsePanEpsilonPx = 0.5f;
+
+        private float _browsePanPx;
+        private float _playheadHoldScrollPx;
+        private float _scanBarHomeAnchoredX;
+        private bool _scanBarHomeCaptured;
+        private int _browseHoldDir;
+        private Coroutine _browsePanRoutine;
+        private bool _browseInputBound;
 
         private static int TotalBeats => TimelineConstants.TotalBeats;
 
@@ -263,6 +284,11 @@ namespace FracturedChorus.UI
                 confirmButton = transform.Find("ConfirmButton")?.GetComponent<Button>();
             }
 
+            WireBrowseChevronReferences();
+            CaptureScanBarHomeFromScene();
+            BindBrowseChevronInput();
+            RefreshBrowseChevronVisibility();
+
             if (phaseLabel == null)
             {
                 phaseLabel = transform.Find("Header/PhaseLabel")?.GetComponent<Text>()
@@ -302,6 +328,34 @@ namespace FracturedChorus.UI
 
             EnsureCombatSfx();
             EnsureNoteVisuals();
+        }
+
+        /// <summary>
+        /// Bind scene-authored browse buttons only. Never rewrite RectTransform layout
+        /// when preserveSceneLayout — position/size live on the scene hierarchy.
+        /// </summary>
+        private void WireBrowseChevronReferences()
+        {
+            if (browseLeftButton == null)
+            {
+                browseLeftButton = transform.Find("BrowseLeftButton")?.GetComponent<Button>();
+            }
+
+            if (browseRightButton == null)
+            {
+                browseRightButton = transform.Find("BrowseRightButton")?.GetComponent<Button>();
+            }
+        }
+
+        private void CaptureScanBarHomeFromScene()
+        {
+            if (scanBar == null || _browsePanPx > BrowsePanEpsilonPx)
+            {
+                return;
+            }
+
+            _scanBarHomeAnchoredX = scanBar.anchoredPosition.x;
+            _scanBarHomeCaptured = true;
         }
 
         public TimelineNoteVisualCatalog NoteVisuals
@@ -1476,6 +1530,8 @@ namespace FracturedChorus.UI
                 return;
             }
 
+            ResetBrowsePanToPlayhead();
+
             _introEndAudioTimeSec = -1f;
             _introCompleteCallback = null;
             _autoPlayCompleted = false;
@@ -1619,7 +1675,8 @@ namespace FracturedChorus.UI
             _localBeat = 0f;
             _lastFiredBeat = _segmentStartBeat - 1;
             _totalScrollPx = GetSegmentStartScrollPx();
-            ApplyScrollVisual(_totalScrollPx);
+            CapturePlayheadHoldScroll();
+            ResetBrowsePanToPlayhead();
             if (_timeline != null)
             {
                 _timeline.PlanningHorizonBeat = _segmentStartBeat;
@@ -1642,7 +1699,8 @@ namespace FracturedChorus.UI
             _lastFiredBeat = -1;
             _totalScrollPx = 0f;
             ResetScrollState();
-            ApplyScrollVisual(0f);
+            CapturePlayheadHoldScroll();
+            ResetBrowsePanToPlayhead();
             ResetAllScanHighlights();
             musicController?.EnterPlanningDuck();
         }
@@ -1663,6 +1721,8 @@ namespace FracturedChorus.UI
             _localBeat = 0f;
             _lastFiredBeat = _segmentStartBeat - 1;
             SnapScrollToAnchor(GetSegmentPhaseDividerAnchorPx(completedSegmentIndex));
+            CapturePlayheadHoldScroll();
+            ResetBrowsePanToPlayhead();
             ResetAllScanHighlights();
             if (_timeline != null)
             {
@@ -2000,6 +2060,220 @@ namespace FracturedChorus.UI
             ApplyScrollVisual(_totalScrollPx);
         }
 
+        private void CapturePlayheadHoldScroll()
+        {
+            _playheadHoldScrollPx = _totalScrollPx;
+        }
+
+        private void ResetBrowsePanToPlayhead()
+        {
+            StopBrowsePan();
+            _browsePanPx = 0f;
+            CapturePlayheadHoldScroll();
+            // Restore ScanBar to cached scene home — do not re-capture from a mid-browse position.
+            ApplyScrollVisual(_totalScrollPx);
+            RefreshBrowseChevronVisibility();
+        }
+
+        private void BindBrowseChevronInput()
+        {
+            if (_browseInputBound)
+            {
+                return;
+            }
+
+            BindBrowseButtonHold(browseLeftButton, -1);
+            BindBrowseButtonHold(browseRightButton, +1);
+            _browseInputBound = browseLeftButton != null || browseRightButton != null;
+        }
+
+        private void BindBrowseButtonHold(Button button, int direction)
+        {
+            if (button == null)
+            {
+                return;
+            }
+
+            var trigger = button.GetComponent<EventTrigger>();
+            if (trigger == null)
+            {
+                trigger = button.gameObject.AddComponent<EventTrigger>();
+            }
+
+            trigger.triggers.RemoveAll(static e =>
+                e.eventID == EventTriggerType.PointerDown || e.eventID == EventTriggerType.PointerUp
+                || e.eventID == EventTriggerType.PointerExit);
+
+            AddBrowseTrigger(trigger, EventTriggerType.PointerDown, _ => BeginBrowsePan(direction));
+            AddBrowseTrigger(trigger, EventTriggerType.PointerUp, _ => StopBrowsePan());
+            AddBrowseTrigger(trigger, EventTriggerType.PointerExit, _ => StopBrowsePan());
+        }
+
+        private static void AddBrowseTrigger(
+            EventTrigger trigger,
+            EventTriggerType type,
+            UnityEngine.Events.UnityAction<BaseEventData> action)
+        {
+            var entry = new EventTrigger.Entry { eventID = type };
+            entry.callback.AddListener(action);
+            trigger.triggers.Add(entry);
+        }
+
+        private void BeginBrowsePan(int direction)
+        {
+            if (direction == 0 || IsPlaybackActive || !_slotsBuilt)
+            {
+                return;
+            }
+
+            if (_browsePanPx <= BrowsePanEpsilonPx)
+            {
+                CapturePlayheadHoldScroll();
+                if (!_scanBarHomeCaptured)
+                {
+                    CaptureScanBarHomeFromScene();
+                }
+            }
+
+            _browseHoldDir = direction;
+            if (_browsePanRoutine != null)
+            {
+                StopCoroutine(_browsePanRoutine);
+            }
+
+            _browsePanRoutine = StartCoroutine(BrowsePanRoutine());
+        }
+
+        private void StopBrowsePan()
+        {
+            _browseHoldDir = 0;
+            if (_browsePanRoutine != null)
+            {
+                StopCoroutine(_browsePanRoutine);
+                _browsePanRoutine = null;
+            }
+
+            RefreshBrowseChevronVisibility();
+        }
+
+        private IEnumerator BrowsePanRoutine()
+        {
+            while (_browseHoldDir != 0 && !IsPlaybackActive)
+            {
+                var maxPan = GetBrowseMaxPanPx();
+                var speed = Mathf.Max(1f, browsePanSpeedPx);
+                _browsePanPx = Mathf.Clamp(
+                    _browsePanPx + _browseHoldDir * speed * Time.unscaledDeltaTime,
+                    0f,
+                    maxPan);
+                ApplyBrowseVisual();
+
+                var atPlayhead = _browsePanPx <= BrowsePanEpsilonPx;
+                var atRightLimit = _browsePanPx >= maxPan - BrowsePanEpsilonPx;
+                if ((_browseHoldDir < 0 && atPlayhead) || (_browseHoldDir > 0 && atRightLimit))
+                {
+                    break;
+                }
+
+                yield return null;
+            }
+
+            _browsePanRoutine = null;
+            _browseHoldDir = 0;
+            RefreshBrowseChevronVisibility();
+        }
+
+        /// <summary>
+        /// Pan needed so beat 2 of the next phrase sits on the viewport's right edge.
+        /// slotsRow is left-anchored in the viewport, so right edge = contentScroll + viewportWidth
+        /// (not viewport.rect.xMax, which is +width/2 when the viewport pivot is centered).
+        /// </summary>
+        private float GetBrowseMaxPanPx()
+        {
+            if (viewport == null || !_slotsBuilt)
+            {
+                return 0f;
+            }
+
+            if (!TryGetBrowseRightLimitContentPx(out var limitContentX))
+            {
+                return 0f;
+            }
+
+            var viewportWidth = GetViewportWidth();
+            if (viewportWidth <= 1f)
+            {
+                return 0f;
+            }
+
+            // Left-anchored ScrollContent: visible content is [scroll, scroll + width].
+            var scrollForLimitAtRight = limitContentX - viewportWidth;
+            var maxScroll = Mathf.Max(0f, _contentWidthPx - viewportWidth);
+            scrollForLimitAtRight = Mathf.Clamp(scrollForLimitAtRight, 0f, maxScroll);
+            return Mathf.Max(0f, scrollForLimitAtRight - _playheadHoldScrollPx);
+        }
+
+        /// <summary>
+        /// Content X of the left edge of the 2nd beat in the phrase after the current segment.
+        /// </summary>
+        private bool TryGetBrowseRightLimitContentPx(out float contentPx)
+        {
+            contentPx = 0f;
+            var nextPhase = TimelineConstants.GetPhaseIndex(_segmentStartBeat) + 1;
+            if (nextPhase >= TimelineConstants.PhaseCount)
+            {
+                return false;
+            }
+
+            TimelineConstants.GetPhaseBeatRange(nextPhase, out var nextStart, out var nextCount);
+            if (nextCount < 2)
+            {
+                return false;
+            }
+
+            contentPx = PxOfAbsoluteBeat(nextStart + 1);
+            return true;
+        }
+
+        private void ApplyBrowseVisual()
+        {
+            if (slotsRow == null || scanBar == null || !_slotsBuilt)
+            {
+                return;
+            }
+
+            var maxPan = GetBrowseMaxPanPx();
+            _browsePanPx = Mathf.Clamp(_browsePanPx, 0f, maxPan);
+
+            var viewportWidth = GetViewportWidth();
+            var maxScroll = Mathf.Max(0f, _contentWidthPx - viewportWidth);
+            var contentScroll = Mathf.Clamp(_playheadHoldScrollPx + _browsePanPx, 0f, maxScroll);
+            var homeX = GetScanBarReadLineX();
+
+            slotsRow.anchoredPosition = new Vector2(-contentScroll, 0f);
+            scanBar.anchoredPosition = new Vector2(homeX - _browsePanPx, 0f);
+            SyncLaneMarkersScroll();
+            RefreshBrowseChevronVisibility();
+        }
+
+        private void RefreshBrowseChevronVisibility()
+        {
+            var browsingAllowed = !IsPlaybackActive && _slotsBuilt;
+            var maxPan = browsingAllowed ? GetBrowseMaxPanPx() : 0f;
+            var atPlayhead = _browsePanPx <= BrowsePanEpsilonPx;
+            var atRightLimit = maxPan <= BrowsePanEpsilonPx || _browsePanPx >= maxPan - BrowsePanEpsilonPx;
+
+            if (browseLeftButton != null)
+            {
+                browseLeftButton.gameObject.SetActive(browsingAllowed && !atPlayhead);
+            }
+
+            if (browseRightButton != null)
+            {
+                browseRightButton.gameObject.SetActive(browsingAllowed && !atRightLimit && maxPan > BrowsePanEpsilonPx);
+            }
+        }
+
         /// <summary>
         /// Only move scroll forward to the beat position — never jump backward when resuming a hold.
         /// </summary>
@@ -2287,6 +2561,13 @@ namespace FracturedChorus.UI
                 return;
             }
 
+            // Execute / hold path pins ScanBar to scene home; browse pan uses ApplyBrowseVisual.
+            if (_browsePanPx > BrowsePanEpsilonPx && !IsPlaybackActive)
+            {
+                ApplyBrowseVisual();
+                return;
+            }
+
             var viewportWidth = GetViewportWidth();
             var maxScroll = Mathf.Max(0f, _contentWidthPx - viewportWidth);
             var readLineX = GetScanBarReadLineX();
@@ -2298,6 +2579,7 @@ namespace FracturedChorus.UI
             SyncLaneMarkersScroll();
             ProcessScanLineCrossings();
             UpdateScanHighlights();
+            RefreshBrowseChevronVisibility();
         }
 
         private void UpdateScanHighlights()
@@ -2809,6 +3091,7 @@ namespace FracturedChorus.UI
                 if (existing != null)
                 {
                     _bossTrackFrame = existing;
+                    _bossTrackFrameAuthoredInScene = true;
                 }
                 else
                 {
@@ -2819,6 +3102,7 @@ namespace FracturedChorus.UI
                     _bossTrackFrame.anchorMax = new Vector2(0f, 0f);
                     _bossTrackFrame.pivot = new Vector2(0f, 0.5f);
                     CreateBossTrackChild("BorderTop", _bossTrackFrame, stretch: false);
+                    _bossTrackFrameAuthoredInScene = false;
                 }
             }
 
@@ -2925,9 +3209,29 @@ namespace FracturedChorus.UI
                 return;
             }
 
-            var borderH = Mathf.Max(1f, bossTrackFrameBorderThickness);
             var width = Mathf.Max(_contentWidthPx, viewport.rect.width);
-            var scrollX = slotsRow != null ? slotsRow.anchoredPosition.x : 0f;
+            var scrollX = slotsRow != null ? slotsRow.anchoredPosition.x : _bossTrackFrame.anchoredPosition.x;
+            var top = _bossTrackFrame.Find("BorderTop") as RectTransform;
+
+            // Scene is source of truth for Y / thickness / BorderTop anchors.
+            // Runtime only keeps horizontal scroll width + X in sync with beat content.
+            if (preserveSceneLayout && _bossTrackFrameAuthoredInScene)
+            {
+                var sceneY = _bossTrackFrame.anchoredPosition.y;
+                // Keep authored frame height so BorderTop stretch anchors stay proportional.
+                var sceneH = _bossTrackFrame.sizeDelta.y;
+                if (sceneH <= 0.01f)
+                {
+                    sceneH = ResolveBossTrackFrameHeight(top);
+                }
+
+                _bossTrackFrame.pivot = new Vector2(0f, 0.5f);
+                _bossTrackFrame.sizeDelta = new Vector2(width, sceneH);
+                _bossTrackFrame.anchoredPosition = new Vector2(scrollX, sceneY);
+                return;
+            }
+
+            var borderH = Mathf.Max(1f, bossTrackFrameBorderThickness);
             var railY = GetNoteCoverYFromBottom(viewport.rect.height);
 
             // Frame pivots on the note rail (BorderTop at local y=0).
@@ -2935,13 +3239,37 @@ namespace FracturedChorus.UI
             _bossTrackFrame.anchoredPosition = new Vector2(scrollX, railY);
             _bossTrackFrame.pivot = new Vector2(0f, 0.5f);
 
-            var top = _bossTrackFrame.Find("BorderTop") as RectTransform;
             LayoutBossTrackBorder(top, 0f, borderH);
             var topImg = top != null ? top.GetComponent<Image>() : null;
             if (topImg != null)
             {
                 topImg.color = bossTrackFrameBorderTop;
             }
+        }
+
+        private float ResolveBossTrackFrameHeight(RectTransform borderTop)
+        {
+            if (borderTop != null)
+            {
+                var borderH = borderTop.rect.height;
+                if (borderH > 0.01f)
+                {
+                    return borderH;
+                }
+
+                if (borderTop.sizeDelta.y > 0.01f)
+                {
+                    return borderTop.sizeDelta.y;
+                }
+            }
+
+            var frameH = _bossTrackFrame != null ? _bossTrackFrame.sizeDelta.y : 0f;
+            if (frameH > 0.01f)
+            {
+                return frameH;
+            }
+
+            return Mathf.Max(1f, bossTrackFrameBorderThickness);
         }
 
         private static void LayoutBossTrackBorder(RectTransform border, float y, float thickness)
@@ -3319,7 +3647,8 @@ namespace FracturedChorus.UI
         {
             var count = Mathf.Clamp(_laneUnits.Count, 0, MaxTimelinePartyLanes);
             var minY = height * Mathf.Min(laneBandMinNormalizedY, laneBandMaxNormalizedY);
-            var maxY = Mathf.Max(minY + 8f, bossNoteRailAnchoredY - Mathf.Max(8f, laneGapBelowRail));
+            var railY = ResolveNoteRailAnchoredY(height);
+            var maxY = Mathf.Max(minY + 8f, railY - Mathf.Max(8f, laneGapBelowRail));
 
             if (count <= 0)
             {
@@ -3339,7 +3668,39 @@ namespace FracturedChorus.UI
         /// Note rail Y (BorderTop). Boss notes pin their head belly to this line.
         /// </summary>
         private float GetNoteCoverYFromBottom(float viewportHeight) =>
-            bossNoteRailAnchoredY > 1f ? bossNoteRailAnchoredY : viewportHeight * noteBandNormalizedY;
+            ResolveNoteRailAnchoredY(viewportHeight);
+
+        /// <summary>
+        /// Prefer authored BossTrackFrame Y on scene; fallback to serialized rail / normalized band.
+        /// </summary>
+        private float ResolveNoteRailAnchoredY(float viewportHeight)
+        {
+            if (preserveSceneLayout)
+            {
+                if (_bossTrackFrame == null && viewport != null)
+                {
+                    _bossTrackFrame = viewport.Find("BossTrackFrame") as RectTransform;
+                    if (_bossTrackFrame != null)
+                    {
+                        _bossTrackFrameAuthoredInScene = true;
+                    }
+                }
+
+                if (_bossTrackFrameAuthoredInScene
+                    && _bossTrackFrame != null
+                    && _bossTrackFrame.anchoredPosition.y > 1f)
+                {
+                    return _bossTrackFrame.anchoredPosition.y;
+                }
+            }
+
+            if (bossNoteRailAnchoredY > 1f)
+            {
+                return bossNoteRailAnchoredY;
+            }
+
+            return viewportHeight > 1f ? viewportHeight * noteBandNormalizedY : 215f;
+        }
 
         private float ContentXForBeat(int beat)
         {
@@ -4251,6 +4612,11 @@ namespace FracturedChorus.UI
 
         private float GetScanLineX()
         {
+            if (preserveSceneLayout && _scanBarHomeCaptured)
+            {
+                return _scanBarHomeAnchoredX;
+            }
+
             if (preserveSceneLayout && scanBar != null)
             {
                 return scanBar.anchoredPosition.x;

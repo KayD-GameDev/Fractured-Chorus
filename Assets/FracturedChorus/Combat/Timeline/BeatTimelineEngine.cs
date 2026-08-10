@@ -208,7 +208,7 @@ namespace FracturedChorus.Combat.Timeline
 
         /// <summary>
         /// Delay every impact note after Anchor S (and every note after those — full cascade).
-        /// Notes may cross into later phases; they are kept (lookahead plan never clears them).
+        /// Destinations stay inside the source note's phase (no spill into the next phrase).
         /// </summary>
         public IReadOnlyList<TelegraphBeatMove> DelayImpactTelegraphsAfterBeat(
             int afterBeat,
@@ -269,7 +269,7 @@ namespace FracturedChorus.Combat.Timeline
 
         /// <summary>
         /// Push +delayBeats, then keep sliding forward while landing on a note that is not also moving
-        /// (or already claimed by a later note we already relocated).
+        /// (or already claimed by a later note we already relocated). Never leaves the source phase.
         /// </summary>
         private int ResolveCascadeDestination(
             EnemyTelegraph self,
@@ -277,18 +277,33 @@ namespace FracturedChorus.Combat.Timeline
             int delayBeats,
             HashSet<EnemyTelegraph> moving)
         {
-            var dest = Mathf.Min(BeatCount - 1, fromBeat + delayBeats);
-            while (dest < BeatCount - 1 && IsImpactOccupiedByNonMoving(dest, self, moving))
+            var phaseMaxBeat = GetPhaseMaxBeatInclusive(fromBeat);
+            var dest = Mathf.Min(phaseMaxBeat, fromBeat + delayBeats);
+            while (dest < phaseMaxBeat && IsImpactOccupiedByNonMoving(dest, self, moving))
             {
                 dest++;
             }
 
-            if (IsImpactOccupiedByNonMoving(dest, self, moving))
+            if (dest > phaseMaxBeat || IsImpactOccupiedByNonMoving(dest, self, moving))
             {
                 return fromBeat;
             }
 
             return dest;
+        }
+
+        private static int GetPhaseMaxBeatInclusive(int beatIndex)
+        {
+            TimelineConstants.GetPhaseBeatRange(
+                TimelineConstants.GetPhaseIndex(beatIndex),
+                out var startBeat,
+                out var count);
+            if (count <= 0)
+            {
+                return beatIndex;
+            }
+
+            return startBeat + count - 1;
         }
 
         private bool IsImpactOccupiedByNonMoving(int beatIndex, EnemyTelegraph self, HashSet<EnemyTelegraph> moving)

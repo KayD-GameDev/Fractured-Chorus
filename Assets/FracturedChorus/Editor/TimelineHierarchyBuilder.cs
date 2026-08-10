@@ -58,8 +58,121 @@ namespace FracturedChorus.Editor
             SetField(ui, "segmentTemplate", segmentTemplate);
             SetField(ui, "scanBar", scanBar);
             SetField(ui, "slotWidth", SlotWidth);
+            EnsureBrowseChevrons(ui);
             ui.WireReferences();
             return ui;
+        }
+
+        /// <summary>
+        /// Scene-first browse chevrons: create only if missing; never overwrite existing RectTransform layout.
+        /// </summary>
+        public static void EnsureBrowseChevrons(BeatTimelineUIView timeline)
+        {
+            if (timeline == null)
+            {
+                return;
+            }
+
+            var left = EnsureBrowseButton(timeline.transform, "BrowseLeftButton", pointLeft: true);
+            var right = EnsureBrowseButton(timeline.transform, "BrowseRightButton", pointLeft: false);
+            SetField(timeline, "browseLeftButton", left);
+            SetField(timeline, "browseRightButton", right);
+            EditorUtility.SetDirty(timeline);
+        }
+
+        private static Button EnsureBrowseButton(Transform root, string name, bool pointLeft)
+        {
+            var normal = Resources.Load<Sprite>(pointLeft
+                ? "UI/Combat/Timeline/Controls/tlb_browse_chevron_left_v1"
+                : "UI/Combat/Timeline/Controls/tlb_browse_chevron_right_v1");
+            var hover = Resources.Load<Sprite>(pointLeft
+                ? "UI/Combat/Timeline/Controls/tlb_browse_chevron_left_hover_v1"
+                : "UI/Combat/Timeline/Controls/tlb_browse_chevron_right_hover_v1");
+
+            var existing = root.Find(name);
+            if (existing != null)
+            {
+                var existingBtn = existing.GetComponent<Button>();
+                if (existingBtn == null)
+                {
+                    existingBtn = existing.gameObject.AddComponent<Button>();
+                }
+
+                var existingImg = existing.GetComponent<Image>();
+                if (existingImg != null && existingBtn.targetGraphic == null)
+                {
+                    existingBtn.targetGraphic = existingImg;
+                }
+
+                // Seed SpriteSwap hover only when scene has not authored one yet.
+                if (existingBtn.transition != Selectable.Transition.SpriteSwap
+                    || existingBtn.spriteState.highlightedSprite == null)
+                {
+                    ApplyBrowseSpriteSwap(existingBtn, existingImg, normal, hover, overwriteNormalSprite: false);
+                }
+
+                return existingBtn;
+            }
+
+            var go = CreateUiObject(name, root);
+            var rt = go.GetComponent<RectTransform>();
+            // Initial seed only — scene becomes SoT after first authoring pass.
+            if (pointLeft)
+            {
+                rt.anchorMin = new Vector2(0f, 0.5f);
+                rt.anchorMax = new Vector2(0f, 0.5f);
+                rt.pivot = new Vector2(0f, 0.5f);
+                rt.anchoredPosition = new Vector2(214f, 0f);
+            }
+            else
+            {
+                rt.anchorMin = new Vector2(1f, 0.5f);
+                rt.anchorMax = new Vector2(1f, 0.5f);
+                rt.pivot = new Vector2(1f, 0.5f);
+                rt.anchoredPosition = new Vector2(-8f, 0f);
+            }
+
+            rt.sizeDelta = new Vector2(36f, 36f);
+
+            var img = go.AddComponent<Image>();
+            img.raycastTarget = true;
+            img.preserveAspect = true;
+            img.color = Color.white;
+
+            var btn = go.AddComponent<Button>();
+            btn.targetGraphic = img;
+            ApplyBrowseSpriteSwap(btn, img, normal, hover, overwriteNormalSprite: true);
+            go.transform.SetAsLastSibling();
+            return btn;
+        }
+
+        private static void ApplyBrowseSpriteSwap(
+            Button btn,
+            Image img,
+            Sprite normal,
+            Sprite hover,
+            bool overwriteNormalSprite)
+        {
+            if (btn == null)
+            {
+                return;
+            }
+
+            if (img != null && overwriteNormalSprite && normal != null)
+            {
+                img.sprite = normal;
+            }
+
+            btn.transition = Selectable.Transition.SpriteSwap;
+            var state = btn.spriteState;
+            if (hover != null)
+            {
+                state.highlightedSprite = hover;
+                state.selectedSprite = hover;
+                state.pressedSprite = hover;
+            }
+
+            btn.spriteState = state;
         }
 
         public static PartyStatusBarUIView BuildPartyStatusBar(Transform canvasTransform)
@@ -867,6 +980,8 @@ namespace FracturedChorus.Editor
             {
                 return;
             }
+
+            EnsureBrowseChevrons(timeline);
 
             var templateField = typeof(BeatTimelineUIView).GetField("segmentTemplate",
                 System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic

@@ -35,8 +35,8 @@ namespace FracturedChorus.Combat.Timeline
         /// <summary>Timeline phases executed per round segment before returning to Planning.</summary>
         public const int RoundPhaseCount = 1;
 
-        /// <summary>How many phases of boss notes to keep pre-spawned ahead of the current phase.</summary>
-        public const int TelegraphLookaheadPhases = 3;
+        /// <summary>How many phases of boss notes to keep pre-spawned ahead of the current phase (1 = current phrase only).</summary>
+        public const int TelegraphLookaheadPhases = 1;
 
         /// <summary>Boss Remix first-beat offset — keep in sync with MusicBeatMapSO.</summary>
         public const float BossRemixFirstBeatOffsetSec = 1.161f;

@@ -284,7 +284,7 @@ namespace FracturedChorus.Combat.Presentation
 #if UNITY_EDITOR
             if (cam == null)
             {
-                var cams = FindObjectsByType<Camera>(FindObjectsSortMode.None);
+                var cams = FindObjectsByType<Camera>(FindObjectsInactive.Exclude);
                 if (cams != null && cams.Length > 0)
                 {
                     cam = cams[0];
