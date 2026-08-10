@@ -1196,12 +1196,11 @@ namespace FracturedChorus.Combat.Presentation
 
         private void HideLetterboxSafe()
         {
-            if (letterboxOverlay == null)
+            // C# ?. does not treat destroyed UnityObjects as null.
+            if (letterboxOverlay != null)
             {
-                return;
+                letterboxOverlay.Hide();
             }
-
-            letterboxOverlay.Hide();
         }
 
         private void OnDisable()

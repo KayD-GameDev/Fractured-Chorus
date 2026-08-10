@@ -75,6 +75,7 @@ namespace FracturedChorus.UI
 
         public void Hide()
         {
+            // Unity fake-null: destroyed overlays still reach here via ?. from C#.
             if (!this)
             {
                 return;

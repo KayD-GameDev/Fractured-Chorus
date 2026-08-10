@@ -139,7 +139,7 @@ namespace FracturedChorus.Editor
 
         private static Transform ResolveRen()
         {
-            foreach (var view in Object.FindObjectsByType<UnitView>(FindObjectsSortMode.None))
+            foreach (var view in Object.FindObjectsByType<UnitView>(FindObjectsInactive.Exclude))
             {
                 var id = view.Unit != null ? view.Unit.UnitId ?? string.Empty : string.Empty;
                 var n = view.name ?? string.Empty;
@@ -156,7 +156,7 @@ namespace FracturedChorus.Editor
 
         private static Transform ResolveBoss()
         {
-            foreach (var view in Object.FindObjectsByType<UnitView>(FindObjectsSortMode.None))
+            foreach (var view in Object.FindObjectsByType<UnitView>(FindObjectsInactive.Exclude))
             {
                 var id = view.Unit != null ? view.Unit.UnitId ?? string.Empty : string.Empty;
                 var n = view.name ?? string.Empty;

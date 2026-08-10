@@ -23,6 +23,10 @@ namespace FracturedChorus.UI
         private float _noteYFromBottom;
         private BossNoteNumberLayout _layout = new();
         private bool _editShellsPurgedForPlay;
+        private bool _simLayoutCaptured;
+        private Vector2 _simNoteSize;
+        private float _simNoteAlpha = 0.78f;
+        private BossNoteShapeLayout[] _simShapeLayouts;
 
         public void Configure(
             RectTransform layer,
@@ -41,6 +45,8 @@ namespace FracturedChorus.UI
             {
                 _layout.variantNudges = new Vector2[5];
             }
+
+            _layout.EnsureSingleHeadNormByVariant();
         }
 
         public void Clear()
@@ -125,9 +131,11 @@ namespace FracturedChorus.UI
 
             foreach (var cluster in clusters)
             {
+                // Double notes: one note per beat (each with its own RailAnchor), not one beamed glyph.
                 if (cluster.Kind == BossNoteGlyphKind.Beamed)
                 {
-                    SpawnBeamed(cluster, y);
+                    SpawnSingle(cluster.Left, y);
+                    SpawnSingle(cluster.Right, y);
                 }
                 else
                 {
@@ -139,26 +147,52 @@ namespace FracturedChorus.UI
         }
 
         /// <summary>
-        /// Edit mode: keep scene NoteSingle_*/NoteBeamed_* shells (BossNoteAuthoring preview).
-        /// Play: destroy seed shells and do not re-spawn from authored — only EnemyAI telegraphs.
+        /// Edit mode: keep NoteSimulator + optional seed shells.
+        /// Play: capture simulator layout, hide simulator, purge other seeds — telegraphs only.
         /// </summary>
         private List<AuthoredBossNoteSpec> ResolveAuthoredSpecsForRebuild()
         {
             if (!Application.isPlaying)
             {
                 _editShellsPurgedForPlay = false;
+                _simLayoutCaptured = false;
                 SetEditModeNoteShellsActive(true);
+                var simEdit = BossNoteSimulator.FindInLayer(_layer);
+                if (simEdit != null)
+                {
+                    simEdit.gameObject.SetActive(true);
+                }
+
                 return CollectAuthoredSpecs();
             }
 
             if (!_editShellsPurgedForPlay)
             {
+                CaptureSimulatorLayoutForPlay();
                 DestroyEditModeNoteShells();
                 _editShellsPurgedForPlay = true;
             }
 
-            // Play notes come only from timeline telegraphs — never from edit-mode seeds.
             return null;
+        }
+
+        private void CaptureSimulatorLayoutForPlay()
+        {
+            var sim = BossNoteSimulator.FindInLayer(_layer);
+            if (sim == null || !sim.TryCapturePlayLayout(out var size, out var alpha, out var layouts))
+            {
+                _simLayoutCaptured = false;
+                _simShapeLayouts = null;
+                return;
+            }
+
+            _simNoteSize = size;
+            _simNoteAlpha = alpha;
+            _simShapeLayouts = layouts;
+            _simLayoutCaptured = true;
+            sim.SyncLayoutToCatalog();
+            // Keep alive (hidden) so layout stays available; never destroy NoteSimulator.
+            sim.gameObject.SetActive(false);
         }
 
         private void SetEditModeNoteShellsActive(bool active)
@@ -173,6 +207,12 @@ namespace FracturedChorus.UI
                 var child = _layer.GetChild(i);
                 if (child == null)
                 {
+                    continue;
+                }
+
+                if (IsSimulatorObject(child))
+                {
+                    child.gameObject.SetActive(active);
                     continue;
                 }
 
@@ -194,7 +234,7 @@ namespace FracturedChorus.UI
             for (var i = _layer.childCount - 1; i >= 0; i--)
             {
                 var child = _layer.GetChild(i);
-                if (child == null)
+                if (child == null || IsSimulatorObject(child))
                 {
                     continue;
                 }
@@ -212,6 +252,56 @@ namespace FracturedChorus.UI
 
                 Destroy(child.gameObject);
             }
+        }
+
+        private static bool IsSimulatorObject(Transform child)
+        {
+            if (child == null)
+            {
+                return false;
+            }
+
+            return child.GetComponent<BossNoteSimulator>() != null
+                   || child.name == BossNoteSimulator.ObjectName;
+        }
+
+        private Vector2 ResolveSingleNoteSize()
+        {
+            if (_simLayoutCaptured && _simNoteSize.x > 1f && _simNoteSize.y > 1f)
+            {
+                return _simNoteSize;
+            }
+
+            return _catalog != null
+                ? _catalog.ResolveSingleNoteSize()
+                : _simNoteSize.x > 1f ? _simNoteSize : new Vector2(52.95f, 67.24f);
+        }
+
+        private BossNoteShapeLayout ResolveShapeLayout(int variantIndex, Vector2 size, Sprite sprite)
+        {
+            if (_simLayoutCaptured && _simShapeLayouts != null && _simShapeLayouts.Length > 0)
+            {
+                var i = Mathf.Clamp(variantIndex, 0, _simShapeLayouts.Length - 1);
+                var saved = _simShapeLayouts[i];
+                if (saved.HasData)
+                {
+                    if (saved.knobSize.x < 0.5f && saved.knobSize.y < 0.5f)
+                    {
+                        return BossNoteShapeLayout.FromLegacyNoteSpace(
+                            saved.railAnchorLocal,
+                            saved.noteNumLocal);
+                    }
+
+                    return saved;
+                }
+            }
+
+            var pin = FittedLocalFromNorm(_layout.ResolveSingleHeadNorm(variantIndex), size, sprite);
+            return BossNoteShapeLayout.FromKnob(
+                pin,
+                new Vector2(24f, 24f),
+                Vector2.zero,
+                Vector2.zero);
         }
 
         private List<AuthoredBossNoteSpec> CollectAuthoredSpecs()
@@ -251,9 +341,7 @@ namespace FracturedChorus.UI
         private void SpawnSingle(BossNoteHead head, float y)
         {
             var x = _contentXForBeat(head.BeatIndex);
-            var size = _catalog != null
-                ? _catalog.ResolveSingleNoteSize()
-                : new Vector2(52.95f, 67.24f);
+            var size = ResolveSingleNoteSize();
             var w = size.x;
             var h = size.y;
 
@@ -288,94 +376,44 @@ namespace FracturedChorus.UI
             var sprite = _catalog != null
                 ? _catalog.MusicSingle(head.VariantIndex, head.DisplayTier)
                 : null;
-            var norm = _layout.ResolveSingleHeadNorm(head.VariantIndex);
-            var headLocal = FittedLocalFromNorm(norm, new Vector2(w, h), sprite);
-            var nudge = _layout.numberNudgeSingle + _layout.ResolveVariantNudge(head.VariantIndex);
-            var numberLocal = headLocal + nudge;
+            var shape = ResolveShapeLayout(head.VariantIndex, size, sprite);
+            var pin = shape.PinInNoteSpace;
 
-            // Pin note-head belly to rail Y (y = BorderTop); Image pivot stays sprite center.
+            // Pin like FeetAnchor: notePos + (Knob + RailAnchor) = (beatX, railY).
             var living = CreateImage(
                 $"NoteSingle_{head.BeatIndex}",
                 sprite,
-                new Vector2(x, y - headLocal.y),
+                new Vector2(x - pin.x, y - pin.y),
                 new Vector2(w, h));
+            ApplyNoteAlpha(living);
+
+            var knob = BossNoteSimulator.EnsureKnobOn(living.rectTransform, shape);
             _livingNoteRoots.Add(living.gameObject);
 
             var numSlot = CreateNumberSlot(
                 head.BeatIndex,
-                living.rectTransform,
-                numberLocal,
+                knob != null ? knob : living.rectTransform,
+                shape.noteNumLocal,
                 w * _layout.numberSizeFactor,
                 BossNoteNumberRole.Single,
-                headLocal,
+                shape.railAnchorLocal,
                 head.VariantIndex);
             FillNumberText(numSlot, head);
         }
 
-        private void SpawnBeamed(BossNoteCluster cluster, float y)
+        private void ApplyNoteAlpha(Image image)
         {
-            var left = cluster.Left;
-            var right = cluster.Right;
-            var x0 = _contentXForBeat(left.BeatIndex);
-            var x1 = _contentXForBeat(right.BeatIndex);
-            var mid = (x0 + x1) * 0.5f;
-            var size = _catalog != null
-                ? _catalog.ResolveBeamedNoteSize()
-                : new Vector2(99.13f, 125.88f);
-            var sprite = _catalog != null ? _catalog.MusicBeamedRedSprite() : null;
-            var leftHeadLocal = FittedLocalFromNorm(_layout.beamedHeadNormLeft, size, sprite);
-            var noteImg = CreateImage(
-                $"NoteBeamed_{left.BeatIndex}_{right.BeatIndex}",
-                sprite,
-                new Vector2(mid, y - leftHeadLocal.y),
-                size);
-
-            if (!left.IsCleared || !right.IsCleared)
+            if (image == null)
             {
-                _livingNoteRoots.Add(noteImg.gameObject);
+                return;
             }
 
-            var font = size.y * _layout.numberSizeFactor;
-
-            PlaceBeamedHead(left, noteImg.rectTransform, size, sprite, font, true);
-            PlaceBeamedHead(right, noteImg.rectTransform, size, sprite, font, false);
-        }
-
-        private void PlaceBeamedHead(
-            BossNoteHead head,
-            RectTransform noteParent,
-            Vector2 noteSize,
-            Sprite sprite,
-            float fontSize,
-            bool isLeft)
-        {
-            var norm = isLeft ? _layout.beamedHeadNormLeft : _layout.beamedHeadNormRight;
-            var role = isLeft ? BossNoteNumberRole.BeamedLeft : BossNoteNumberRole.BeamedRight;
-            var sideNudge = isLeft ? _layout.numberNudgeBeamedLeft : _layout.numberNudgeBeamedRight;
-            var baseLocal = FittedLocalFromNorm(norm, noteSize, sprite);
-            var numberLocal = baseLocal + _layout.numberNudgeBeamed + sideNudge;
-
-            var slot = CreateNumberSlot(
-                head.BeatIndex,
-                noteParent,
-                numberLocal,
-                fontSize,
-                role,
-                baseLocal,
-                0);
-
-            if (head.IsCleared)
-            {
-                SpawnPerfectOnSlot(
-                    slot,
-                    head.BeatIndex,
-                    _catalog != null ? _catalog.CoverPerfect : null,
-                    preview: false);
-            }
-            else
-            {
-                FillNumberText(slot, head);
-            }
+            var a = _simLayoutCaptured && _simNoteAlpha > 0.01f
+                ? _simNoteAlpha
+                : (_catalog != null && _catalog.NoteAlpha > 0.01f ? _catalog.NoteAlpha : 0.78f);
+            var c = image.color;
+            c.a = a;
+            image.color = c;
         }
 
         private Vector2 ResolvePerfectMarkSize(bool preview)

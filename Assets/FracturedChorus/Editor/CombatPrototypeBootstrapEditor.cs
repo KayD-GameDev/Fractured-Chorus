@@ -240,7 +240,7 @@ namespace FracturedChorus.Editor
 
                 EditorGUILayout.HelpBox(
                     "Staff BG = thanh nhạc hologram. Note rail = BossTrackFrame/BorderTop (bụng nốt neo vào đây).\n" +
-                    "Seed từ UnitPresetSO: Lane_*/LaneAvatar_* + BorderTop + Beat_1 + NoteSingle_1 (Remaining Hits). Play bind preset, giữ Y scene.",
+                    "Seed từ UnitPresetSO: Lane_*/LaneAvatar_* + BorderTop + Beat_1 + NoteSimulator (size + RailAnchor). Play bind preset, giữ Y scene.",
                     MessageType.Info);
             }
             else

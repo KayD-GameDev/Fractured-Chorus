@@ -15,13 +15,10 @@ namespace FracturedChorus.Combat.Presentation
         private const int MaxQueuedStrikes = 8;
 
         [Header("Timing")]
-        [SerializeField] private float lungeSeconds = 0.1f;
-        [SerializeField] private float lungeSpeed = 32f;
         [SerializeField] private float impactHoldSeconds = 0.22f;
         [SerializeField] private float retreatSeconds = 0.22f;
         [SerializeField] private float knockbackSeconds = 0.12f;
         [SerializeField] private float knockbackSpeed = 40f;
-        [SerializeField] private float counterHoldSeconds = 0.28f;
         [SerializeField] [Range(0.05f, 0.95f)] private float skillImpactNormalizedTime = 0.35f;
 
         [Header("Focus")]

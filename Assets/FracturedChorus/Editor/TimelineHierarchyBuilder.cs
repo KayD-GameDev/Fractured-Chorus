@@ -58,8 +58,121 @@ namespace FracturedChorus.Editor
             SetField(ui, "segmentTemplate", segmentTemplate);
             SetField(ui, "scanBar", scanBar);
             SetField(ui, "slotWidth", SlotWidth);
+            EnsureBrowseChevrons(ui);
             ui.WireReferences();
             return ui;
+        }
+
+        /// <summary>
+        /// Scene-first browse chevrons: create only if missing; never overwrite existing RectTransform layout.
+        /// </summary>
+        public static void EnsureBrowseChevrons(BeatTimelineUIView timeline)
+        {
+            if (timeline == null)
+            {
+                return;
+            }
+
+            var left = EnsureBrowseButton(timeline.transform, "BrowseLeftButton", pointLeft: true);
+            var right = EnsureBrowseButton(timeline.transform, "BrowseRightButton", pointLeft: false);
+            SetField(timeline, "browseLeftButton", left);
+            SetField(timeline, "browseRightButton", right);
+            EditorUtility.SetDirty(timeline);
+        }
+
+        private static Button EnsureBrowseButton(Transform root, string name, bool pointLeft)
+        {
+            var normal = Resources.Load<Sprite>(pointLeft
+                ? "UI/Combat/Timeline/Controls/tlb_browse_chevron_left_v1"
+                : "UI/Combat/Timeline/Controls/tlb_browse_chevron_right_v1");
+            var hover = Resources.Load<Sprite>(pointLeft
+                ? "UI/Combat/Timeline/Controls/tlb_browse_chevron_left_hover_v1"
+                : "UI/Combat/Timeline/Controls/tlb_browse_chevron_right_hover_v1");
+
+            var existing = root.Find(name);
+            if (existing != null)
+            {
+                var existingBtn = existing.GetComponent<Button>();
+                if (existingBtn == null)
+                {
+                    existingBtn = existing.gameObject.AddComponent<Button>();
+                }
+
+                var existingImg = existing.GetComponent<Image>();
+                if (existingImg != null && existingBtn.targetGraphic == null)
+                {
+                    existingBtn.targetGraphic = existingImg;
+                }
+
+                // Seed SpriteSwap hover only when scene has not authored one yet.
+                if (existingBtn.transition != Selectable.Transition.SpriteSwap
+                    || existingBtn.spriteState.highlightedSprite == null)
+                {
+                    ApplyBrowseSpriteSwap(existingBtn, existingImg, normal, hover, overwriteNormalSprite: false);
+                }
+
+                return existingBtn;
+            }
+
+            var go = CreateUiObject(name, root);
+            var rt = go.GetComponent<RectTransform>();
+            // Initial seed only — scene becomes SoT after first authoring pass.
+            if (pointLeft)
+            {
+                rt.anchorMin = new Vector2(0f, 0.5f);
+                rt.anchorMax = new Vector2(0f, 0.5f);
+                rt.pivot = new Vector2(0f, 0.5f);
+                rt.anchoredPosition = new Vector2(214f, 0f);
+            }
+            else
+            {
+                rt.anchorMin = new Vector2(1f, 0.5f);
+                rt.anchorMax = new Vector2(1f, 0.5f);
+                rt.pivot = new Vector2(1f, 0.5f);
+                rt.anchoredPosition = new Vector2(-8f, 0f);
+            }
+
+            rt.sizeDelta = new Vector2(36f, 36f);
+
+            var img = go.AddComponent<Image>();
+            img.raycastTarget = true;
+            img.preserveAspect = true;
+            img.color = Color.white;
+
+            var btn = go.AddComponent<Button>();
+            btn.targetGraphic = img;
+            ApplyBrowseSpriteSwap(btn, img, normal, hover, overwriteNormalSprite: true);
+            go.transform.SetAsLastSibling();
+            return btn;
+        }
+
+        private static void ApplyBrowseSpriteSwap(
+            Button btn,
+            Image img,
+            Sprite normal,
+            Sprite hover,
+            bool overwriteNormalSprite)
+        {
+            if (btn == null)
+            {
+                return;
+            }
+
+            if (img != null && overwriteNormalSprite && normal != null)
+            {
+                img.sprite = normal;
+            }
+
+            btn.transition = Selectable.Transition.SpriteSwap;
+            var state = btn.spriteState;
+            if (hover != null)
+            {
+                state.highlightedSprite = hover;
+                state.selectedSprite = hover;
+                state.pressedSprite = hover;
+            }
+
+            btn.spriteState = state;
         }
 
         public static PartyStatusBarUIView BuildPartyStatusBar(Transform canvasTransform)
@@ -868,6 +981,8 @@ namespace FracturedChorus.Editor
                 return;
             }
 
+            EnsureBrowseChevrons(timeline);
+
             var templateField = typeof(BeatTimelineUIView).GetField("segmentTemplate",
                 System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic
                 | System.Reflection.BindingFlags.Public);
@@ -1066,7 +1181,7 @@ namespace FracturedChorus.Editor
             EditorUtility.SetDirty(timeline);
             EditorSceneManager.MarkSceneDirty(timeline.gameObject.scene);
             Debug.Log(
-                "[Fractured Chorus] Seeded rail@215, LaneLines Top=15/Bottom=-15, notes 52.95×67.24 / beamed 99.13×125.88, Beat_1 + NoteSingle_1. Save scene.");
+                "[Fractured Chorus] Seeded rail@215, LaneLines Top=15/Bottom=-15, notes from NoteSimulator, Beat_1. Save scene.");
             return true;
         }
 
@@ -1339,6 +1454,7 @@ namespace FracturedChorus.Editor
                 layer = existingLayer as RectTransform;
                 ClearNamedChildren(layer, "NoteSingle_");
                 ClearNamedChildren(layer, "NoteBeamed_");
+                // Keep NoteSimulator — user-tuned size + RailAnchor survive reseeds.
             }
             else
             {
@@ -1353,8 +1469,7 @@ namespace FracturedChorus.Editor
             }
 
             var catalog = BuildSeedCatalog(timeline, noteW, noteH);
-            CreateAuthoredSingleNote(layer, catalog, beatIndex: 0, railY, slotWidth, noteW, noteH, remainingHits: 1, addAuthoring: false);
-            CreateAuthoredSingleNote(layer, catalog, beatIndex: 1, railY, slotWidth, noteW, noteH, remainingHits: beat1Hits, addAuthoring: true);
+            CreateNoteSimulator(layer, catalog, railY, slotWidth, noteW, noteH, beat1Hits);
             SeedBeat1EnemyFrame(timeline, slotsRow, slotWidth, catalog, beat1Hits);
         }
 
@@ -1378,95 +1493,98 @@ namespace FracturedChorus.Editor
             return catalog;
         }
 
-        private static void CreateAuthoredSingleNote(
+        private static void CreateNoteSimulator(
             RectTransform layer,
             TimelineNoteVisualCatalog catalog,
-            int beatIndex,
             float railY,
             float slotWidth,
             float noteW,
             float noteH,
-            int remainingHits,
-            bool addAuthoring)
+            int remainingHits)
         {
-            var sprite = catalog.MusicSingle(0, BossNoteTier.Red) ?? catalog.NoteRed;
-            var layout = new BossNoteNumberLayout();
-            var w = noteW;
-            var h = noteH;
-            var x = slotWidth * (beatIndex + 0.5f);
-            var headNorm = layout.ResolveSingleHeadNorm(0);
-            var headLocalY = headNorm.y * h;
-            if (sprite != null)
+            var existing = BossNoteSimulator.FindInLayer(layer);
+            if (existing != null)
             {
-                var sprAspect = sprite.rect.width / Mathf.Max(1f, sprite.rect.height);
-                var rectAspect = w / h;
-                var drawH = rectAspect > sprAspect ? h : w / sprAspect;
-                headLocalY = headNorm.y * drawH;
+                existing.SyncLayoutToCatalog();
+                return;
             }
 
-            var noteGo = CreateUiObject($"NoteSingle_{beatIndex}", layer);
-            Undo.RegisterCreatedObjectUndo(noteGo, $"Create NoteSingle_{beatIndex}");
+            var sprite = catalog.MusicSingle(0, BossNoteTier.Red) ?? catalog.NoteRed;
+            var layout = new BossNoteNumberLayout();
+            layout.EnsureSingleHeadNormByVariant();
+            var w = noteW;
+            var h = noteH;
+            var x = slotWidth * 1.5f;
+            var headLocal = FittedPreviewHeadLocal(layout, w, h, sprite);
+            var knobSize = new Vector2(
+                Mathf.Max(20f, w * layout.numberSizeFactor),
+                Mathf.Max(20f, w * layout.numberSizeFactor));
+
+            var noteGo = CreateUiObject(BossNoteSimulator.ObjectName, layer);
+            Undo.RegisterCreatedObjectUndo(noteGo, "Create NoteSimulator");
             var noteRt = noteGo.GetComponent<RectTransform>();
             noteRt.anchorMin = new Vector2(0f, 0f);
             noteRt.anchorMax = new Vector2(0f, 0f);
             noteRt.pivot = new Vector2(0.5f, 0.5f);
-            noteRt.anchoredPosition = new Vector2(x, railY - headLocalY);
+            noteRt.anchoredPosition = new Vector2(x - headLocal.x, railY - headLocal.y);
             noteRt.sizeDelta = new Vector2(w, h);
             var img = noteGo.AddComponent<Image>();
             img.sprite = sprite;
             img.preserveAspect = true;
-            img.raycastTarget = addAuthoring;
+            img.raycastTarget = true;
             img.color = new Color(1f, 1f, 1f, catalog.NoteAlpha > 0.01f ? catalog.NoteAlpha : 0.78f);
 
-            var numGo = CreateUiObject("NoteNum", noteGo.transform);
+            var shape = BossNoteShapeLayout.FromKnob(headLocal, knobSize, Vector2.zero, Vector2.zero);
+            var knob = BossNoteSimulator.EnsureKnobOn(noteRt, shape);
+
+            var numGo = CreateUiObject(BossNoteSimulator.NoteNumName, knob);
             var numRt = numGo.GetComponent<RectTransform>();
             numRt.anchorMin = new Vector2(0.5f, 0.5f);
             numRt.anchorMax = new Vector2(0.5f, 0.5f);
             numRt.pivot = new Vector2(0.5f, 0.5f);
-            var numberLocal = FittedPreviewNumberLocal(layout, w, h, sprite);
-            numRt.anchoredPosition = numberLocal;
-            numRt.sizeDelta = new Vector2(w * layout.numberSizeFactor, w * layout.numberSizeFactor);
+            numRt.anchoredPosition = Vector2.zero;
+            numRt.sizeDelta = knobSize;
             var numText = numGo.AddComponent<Text>();
             ApplyText(numText);
-            numText.fontSize = Mathf.RoundToInt(Mathf.Max(10f, w * layout.numberSizeFactor * 0.55f));
+            numText.fontSize = Mathf.RoundToInt(Mathf.Max(10f, knobSize.x * 0.55f));
             numText.alignment = TextAnchor.MiddleCenter;
             numText.raycastTarget = false;
             numText.text = remainingHits > 0 ? Mathf.Clamp(remainingHits, 0, 9).ToString() : string.Empty;
 
-            if (!addAuthoring)
+            var sim = noteGo.AddComponent<BossNoteSimulator>();
+            var soTpl = new SerializedObject(sim);
+            var timelineProp = soTpl.FindProperty("timeline");
+            if (timelineProp != null)
             {
-                return;
+                timelineProp.objectReferenceValue = layer.GetComponentInParent<BeatTimelineUIView>();
             }
 
-            var authoring = noteGo.AddComponent<BossNoteAuthoring>();
-            authoring.SetBeatIndex(beatIndex);
-            authoring.SetRemainingHits(remainingHits);
-            var soAuth = new SerializedObject(authoring);
-            soAuth.FindProperty("numberLabel").objectReferenceValue = numText;
-            soAuth.FindProperty("displayTier").intValue = (int)BossNoteTier.Red;
-            soAuth.ApplyModifiedPropertiesWithoutUndo();
-            authoring.RefreshNumberLabel();
+            soTpl.FindProperty("shapePreview").enumValueIndex = (int)BossNoteSimulator.NoteShapePreview.V0;
+            soTpl.ApplyModifiedPropertiesWithoutUndo();
+            sim.EnsureKnobHierarchy();
+            sim.SaveCurrentShapeLayout();
         }
 
-        private static Vector2 FittedPreviewNumberLocal(
+        private static Vector2 FittedPreviewHeadLocal(
             BossNoteNumberLayout layout, float w, float h, Sprite sprite)
         {
             var headNorm = layout.ResolveSingleHeadNorm(0);
-            var size = new Vector2(w, h);
-            var headLocal = headNorm;
-            headLocal.x *= w;
-            headLocal.y *= h;
-            if (sprite != null)
+            var headLocal = new Vector2(headNorm.x * w, headNorm.y * h);
+            if (sprite == null)
             {
-                var sprAspect = sprite.rect.width / Mathf.Max(1f, sprite.rect.height);
-                var rectAspect = w / h;
-                var drawW = rectAspect > sprAspect ? h * sprAspect : w;
-                var drawH = rectAspect > sprAspect ? h : w / sprAspect;
-                headLocal = new Vector2(headNorm.x * drawW, headNorm.y * drawH);
+                return headLocal;
             }
 
-            return headLocal + layout.numberNudgeSingle;
+            var sprAspect = sprite.rect.width / Mathf.Max(1f, sprite.rect.height);
+            var rectAspect = w / Mathf.Max(0.01f, h);
+            var drawW = rectAspect > sprAspect ? h * sprAspect : w;
+            var drawH = rectAspect > sprAspect ? h : w / sprAspect;
+            return new Vector2(headNorm.x * drawW, headNorm.y * drawH);
         }
+
+        private static Vector2 FittedPreviewNumberLocal(
+            BossNoteNumberLayout layout, float w, float h, Sprite sprite) =>
+            FittedPreviewHeadLocal(layout, w, h, sprite) + layout.numberNudgeSingle;
 
         private static void SeedBeat1EnemyFrame(
             BeatTimelineUIView timeline,
