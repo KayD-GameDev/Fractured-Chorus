@@ -47,11 +47,11 @@ namespace FracturedChorus.UI
         [SerializeField] [Range(0.55f, 0.92f)] private float noteBandNormalizedY = 0.78f;
         [Tooltip("Note rail / BorderTop anchored Y từ đáy Viewport (px).")]
         [SerializeField] private float bossNoteRailAnchoredY = 215f;
-        [Tooltip("Khoảng cách từ note rail xuống lane nhân vật trên cùng.")]
+        [Tooltip("Fallback only when preserveSceneLayout=false — gap dưới note rail.")]
         [SerializeField] private float laneGapBelowRail = 32f;
-        [Tooltip("LaneLines container — Unity Rect Top inset (px). Top=15 → offsetMax.y=-15.")]
+        [Tooltip("Fallback only when preserveSceneLayout=false — LaneLines Top inset.")]
         [SerializeField] private float laneLinesTopInset = 15f;
-        [Tooltip("LaneLines container — Unity Rect Bottom inset (px). Bottom=-15 → offsetMin.y=-15.")]
+        [Tooltip("Fallback only when preserveSceneLayout=false — LaneLines Bottom inset.")]
         [SerializeField] private float laneLinesBottomInset = -15f;
         [Header("Boss Note Number Layout (chỉnh tay vị trí số)")]
         [SerializeField] private BossNoteNumberLayout bossNoteNumberLayout = new BossNoteNumberLayout();
@@ -68,9 +68,23 @@ namespace FracturedChorus.UI
             viewport != null ? viewport.rect.height : 0f);
 
         public void RebuildBossNoteClustersPublic() => RebuildBossNoteClusters();
-        [Tooltip("Party lane band — mép dưới (normalized từ đáy viewport).")]
+
+        /// <summary>
+        /// Rebuild character lanes immediately to match current party-card formation order.
+        /// </summary>
+        public void SyncPartyLanesNow()
+        {
+            if (_session == null)
+            {
+                return;
+            }
+
+            BuildLanes();
+            RefreshLaneMarkers();
+        }
+        [Tooltip("Fallback only when preserveSceneLayout=false — mép dưới band (normalized).")]
         [SerializeField] [Range(0.05f, 0.45f)] private float laneBandMinNormalizedY = 0.12f;
-        [Tooltip("Party lane band — mép trên (normalized từ đáy viewport). Legacy; maxY lấy từ rail − gap.")]
+        [Tooltip("Fallback only when preserveSceneLayout=false — mép trên band (normalized).")]
         [SerializeField] [Range(0.25f, 0.6f)] private float laneBandMaxNormalizedY = 0.42f;
         [SerializeField] private Color bossTrackFrameBorderTop = new Color(0.45f, 0.98f, 1f, 0.95f);
         [Tooltip("Fallback BorderTop thickness when BossTrackFrame is not authored on scene.")]
@@ -153,9 +167,18 @@ namespace FracturedChorus.UI
         private RectTransform _footprintLayer;
         private RectTransform _bossTrackFrame;
         private bool _bossTrackFrameAuthoredInScene;
+        private bool _laneLinesLayerAuthoredInScene;
+        /// <summary>Scene-authored vertical band (viewport bottom-space). Captured once before redistribute.</summary>
+        private bool _sceneLaneBandCaptured;
+        private float _sceneLaneBandMinY;
+        private float _sceneLaneBandMaxY;
+        /// <summary>Even-layout boss rail Y in viewport bottom-space (slot 0). &lt;0 = unset.</summary>
+        private float _layoutBossRailY = -1f;
         private Image _staffBackground;
         private readonly List<CombatUnit> _laneUnits = new();
         private readonly Dictionary<CombatUnit, int> _laneIndex = new();
+        /// <summary>Scene shell index (Lane_i / LaneAvatar_i) for each active entry in _laneUnits.</summary>
+        private readonly List<int> _laneShellIndices = new();
         private readonly List<TimelineLaneAvatarSlotView> _laneAvatarSlots = new();
         private Action<CombatUnit> _onLaneAvatarClicked;
         private CombatUnit _selectedLaneUnit;
@@ -2784,17 +2807,19 @@ namespace FracturedChorus.UI
                 if (existingLines != null)
                 {
                     _laneLinesLayer = existingLines;
+                    _laneLinesLayerAuthoredInScene = true;
                 }
                 else
                 {
                     var go = new GameObject("LaneLines", typeof(RectTransform));
                     _laneLinesLayer = go.GetComponent<RectTransform>();
                     _laneLinesLayer.SetParent(viewport, false);
+                    _laneLinesLayerAuthoredInScene = false;
                 }
-
-                ApplyLaneLinesLayerInsets();
             }
-            else
+
+            // Scene LaneLines rect is SoT — do not overwrite insets/pos when authored.
+            if (!preserveSceneLayout || !_laneLinesLayerAuthoredInScene)
             {
                 ApplyLaneLinesLayerInsets();
             }
@@ -2939,6 +2964,7 @@ namespace FracturedChorus.UI
             _laneLines.Clear();
             _laneUnits.Clear();
             _laneIndex.Clear();
+            _laneShellIndices.Clear();
 
             ClearLaneMarkers();
             ClearFootprintDots();
@@ -2949,46 +2975,53 @@ namespace FracturedChorus.UI
                 return;
             }
 
-            foreach (var unit in _session.Grid.PlayerUnits)
+            // Line 1 (below monster) → Line N follows party card order (formation).
+            var ordered = CollectAlivePartyInCardOrder();
+            for (var i = 0; i < ordered.Count && i < MaxTimelinePartyLanes; i++)
             {
-                if (unit == null || !unit.IsAlive)
-                {
-                    continue;
-                }
-
-                if (_laneUnits.Count >= MaxTimelinePartyLanes)
-                {
-                    break;
-                }
-
-                _laneIndex[unit] = _laneUnits.Count;
-                _laneUnits.Add(unit);
-            }
-
-            for (var i = 0; i < _laneUnits.Count; i++)
-            {
-                var unit = _laneUnits[i];
+                var unit = ordered[i];
                 var existing = _laneLinesLayer.Find($"Lane_{i}") as RectTransform;
                 var lineRect = existing != null ? existing : CreateFallbackLaneRect(i);
                 lineRect.gameObject.SetActive(true);
                 BindLaneVisual(lineRect, unit, i);
+                _laneIndex[unit] = _laneUnits.Count;
+                _laneUnits.Add(unit);
                 _laneLines.Add(lineRect);
+                _laneShellIndices.Add(i);
             }
 
-            // Hide leftover authored lanes beyond current party (max 4 shells).
-            for (var i = _laneUnits.Count; i < MaxTimelinePartyLanes; i++)
+            for (var shell = ordered.Count; shell < MaxTimelinePartyLanes; shell++)
             {
-                var extra = _laneLinesLayer.Find($"Lane_{i}");
-                if (extra == null)
+                var extra = _laneLinesLayer.Find($"Lane_{shell}");
+                if (extra != null)
                 {
-                    continue;
+                    extra.gameObject.SetActive(false);
                 }
-
-                extra.gameObject.SetActive(false);
             }
 
             LayoutLanes();
             EnsureLaneAvatarColumn();
+        }
+
+        /// <summary>Alive player units in the same order as party status cards.</summary>
+        private List<CombatUnit> CollectAlivePartyInCardOrder()
+        {
+            var ordered = new List<CombatUnit>();
+            if (_session?.Grid == null)
+            {
+                return ordered;
+            }
+
+            foreach (var unit in _session.Grid.PlayerUnits)
+            {
+                if (unit != null && unit.IsAlive)
+                {
+                    ordered.Add(unit);
+                }
+            }
+
+            ordered.Sort(PartyCardDisplayOrder.CompareUnits);
+            return ordered;
         }
 
         private RectTransform CreateFallbackLaneRect(int index)
@@ -3000,9 +3033,13 @@ namespace FracturedChorus.UI
             lineRect.anchorMax = new Vector2(1f, 0f);
             lineRect.pivot = new Vector2(0.5f, 0.5f);
             lineRect.sizeDelta = new Vector2(0f, 5f);
-            lineRect.anchoredPosition = new Vector2(
-                0f,
-                GetLaneYFromBottom(index, viewport != null ? viewport.rect.height : 100f));
+            lineRect.anchoredPosition = Vector2.zero;
+            if (viewport != null)
+            {
+                SetRectYFromViewportBottom(
+                    lineRect,
+                    GetLaneYFromBottom(index, viewport.rect.height));
+            }
             lineGo.AddComponent<Image>().raycastTarget = false;
             EnsureLaneLabel(lineRect);
             return lineRect;
@@ -3032,13 +3069,14 @@ namespace FracturedChorus.UI
             label.raycastTarget = false;
         }
 
-        private static void BindLaneVisual(RectTransform lineRect, CombatUnit unit, int index)
+        private void BindLaneVisual(RectTransform lineRect, CombatUnit unit, int index)
         {
             if (lineRect == null || unit == null)
             {
                 return;
             }
 
+            var hadLabel = lineRect.Find("Label") != null;
             EnsureLaneLabel(lineRect);
             var tint = unit.TimelineLaneColor;
             var lineImage = lineRect.GetComponent<Image>();
@@ -3055,19 +3093,28 @@ namespace FracturedChorus.UI
             lineImage.raycastTarget = false;
 
             var label = lineRect.Find("Label")?.GetComponent<Text>();
-            if (label != null)
+            if (label == null)
             {
-                label.font = UiFontCatalog.Body;
-                label.fontSize = 10;
-                label.alignment = TextAnchor.MiddleLeft;
-                label.horizontalOverflow = HorizontalWrapMode.Overflow;
-                label.verticalOverflow = VerticalWrapMode.Overflow;
-                label.color = new Color(tint.r, tint.g, tint.b, 0.9f);
-                label.text = !string.IsNullOrEmpty(unit.DisplayName)
-                    ? unit.DisplayName.ToUpperInvariant()
-                    : $"UNIT {index}";
-                label.raycastTarget = false;
+                return;
             }
+
+            label.raycastTarget = false;
+            label.color = new Color(tint.r, tint.g, tint.b, 0.9f);
+            label.text = !string.IsNullOrEmpty(unit.DisplayName)
+                ? unit.DisplayName.ToUpperInvariant()
+                : $"UNIT {index}";
+
+            // Keep authored Label layout (font/size/pos); only sync name + tint when scene SoT.
+            if (preserveSceneLayout && hadLabel)
+            {
+                return;
+            }
+
+            label.font = UiFontCatalog.Body;
+            label.fontSize = 10;
+            label.alignment = TextAnchor.MiddleLeft;
+            label.horizontalOverflow = HorizontalWrapMode.Overflow;
+            label.verticalOverflow = VerticalWrapMode.Overflow;
         }
 
         private void EnsureBossTrackFrame()
@@ -3213,12 +3260,13 @@ namespace FracturedChorus.UI
             var scrollX = slotsRow != null ? slotsRow.anchoredPosition.x : _bossTrackFrame.anchoredPosition.x;
             var top = _bossTrackFrame.Find("BorderTop") as RectTransform;
 
-            // Scene is source of truth for Y / thickness / BorderTop anchors.
-            // Runtime only keeps horizontal scroll width + X in sync with beat content.
+            // Thickness / BorderTop stay scene-authored; Y follows even staff layout when set.
+            // Runtime also keeps horizontal scroll width + X in sync with beat content.
             if (preserveSceneLayout && _bossTrackFrameAuthoredInScene)
             {
-                var sceneY = _bossTrackFrame.anchoredPosition.y;
-                // Keep authored frame height so BorderTop stretch anchors stay proportional.
+                var railY = _layoutBossRailY > 1f
+                    ? _layoutBossRailY
+                    : _bossTrackFrame.anchoredPosition.y;
                 var sceneH = _bossTrackFrame.sizeDelta.y;
                 if (sceneH <= 0.01f)
                 {
@@ -3227,16 +3275,18 @@ namespace FracturedChorus.UI
 
                 _bossTrackFrame.pivot = new Vector2(0f, 0.5f);
                 _bossTrackFrame.sizeDelta = new Vector2(width, sceneH);
-                _bossTrackFrame.anchoredPosition = new Vector2(scrollX, sceneY);
+                _bossTrackFrame.anchoredPosition = new Vector2(scrollX, railY);
                 return;
             }
 
             var borderH = Mathf.Max(1f, bossTrackFrameBorderThickness);
-            var railY = GetNoteCoverYFromBottom(viewport.rect.height);
+            var fallbackRailY = _layoutBossRailY > 1f
+                ? _layoutBossRailY
+                : GetNoteCoverYFromBottom(viewport.rect.height);
 
             // Frame pivots on the note rail (BorderTop at local y=0).
             _bossTrackFrame.sizeDelta = new Vector2(width, borderH);
-            _bossTrackFrame.anchoredPosition = new Vector2(scrollX, railY);
+            _bossTrackFrame.anchoredPosition = new Vector2(scrollX, fallbackRailY);
             _bossTrackFrame.pivot = new Vector2(0f, 0.5f);
 
             LayoutBossTrackBorder(top, 0f, borderH);
@@ -3293,27 +3343,23 @@ namespace FracturedChorus.UI
                 return;
             }
 
-            var changed = false;
-            var idx = 0;
-            foreach (var unit in _session.Grid.PlayerUnits)
+            var expected = CollectAlivePartyInCardOrder();
+            if (expected.Count > MaxTimelinePartyLanes)
             {
-                if (unit == null || !unit.IsAlive)
-                {
-                    continue;
-                }
-
-                if (idx >= _laneUnits.Count || _laneUnits[idx] != unit)
-                {
-                    changed = true;
-                    break;
-                }
-
-                idx++;
+                expected.RemoveRange(MaxTimelinePartyLanes, expected.Count - MaxTimelinePartyLanes);
             }
 
-            if (!changed && idx != _laneUnits.Count)
+            var changed = expected.Count != _laneUnits.Count;
+            if (!changed)
             {
-                changed = true;
+                for (var i = 0; i < expected.Count; i++)
+                {
+                    if (_laneUnits[i] != expected[i])
+                    {
+                        changed = true;
+                        break;
+                    }
+                }
             }
 
             if (changed)
@@ -3330,9 +3376,14 @@ namespace FracturedChorus.UI
             }
 
             Canvas.ForceUpdateCanvases();
+            CaptureSceneLaneBandIfNeeded();
+
             var height = viewport.rect.height;
-            // Always redistribute active party lanes in the band under the note rail
-            // (1–Max slots stretch evenly). Footprints/avatars then snap to Lane_* via world map.
+            var partyCount = Mathf.Clamp(_laneLines.Count, 0, MaxTimelinePartyLanes);
+            ResolveEvenStaffYs(partyCount, height, out var bossY, out var partyYs);
+            _layoutBossRailY = bossY;
+
+            // Redistribute active party lanes + boss rail evenly across the scene band.
             for (var i = 0; i < _laneLines.Count; i++)
             {
                 if (_laneLines[i] == null)
@@ -3340,7 +3391,7 @@ namespace FracturedChorus.UI
                     continue;
                 }
 
-                _laneLines[i].anchoredPosition = new Vector2(0f, GetLaneYFromBottom(i, height));
+                SetRectYFromViewportBottom(_laneLines[i], partyYs[i]);
             }
 
             LayoutBossTrackFrame();
@@ -3382,10 +3433,13 @@ namespace FracturedChorus.UI
             var viewportHeight = viewport != null ? viewport.rect.height : 100f;
             var fallbackSlotSize = ResolveAvatarSlotSizeFromScene();
             var fallbackSlotX = ResolveAvatarSlotXFromScene();
+            var activeShells = new HashSet<int>();
             for (var i = 0; i < _laneUnits.Count; i++)
             {
                 var unit = _laneUnits[i];
-                var existing = laneAvatarGutter.Find($"LaneAvatar_{i}") as RectTransform;
+                var shell = i < _laneShellIndices.Count ? _laneShellIndices[i] : i;
+                activeShells.Add(shell);
+                var existing = laneAvatarGutter.Find($"LaneAvatar_{shell}") as RectTransform;
                 RectTransform slotRect;
                 TimelineLaneAvatarSlotView slotView;
                 if (existing != null)
@@ -3400,7 +3454,7 @@ namespace FracturedChorus.UI
                 }
                 else
                 {
-                    var slotGo = new GameObject($"LaneAvatar_{i}", typeof(RectTransform));
+                    var slotGo = new GameObject($"LaneAvatar_{shell}", typeof(RectTransform));
                     slotRect = slotGo.GetComponent<RectTransform>();
                     slotRect.SetParent(laneAvatarGutter, false);
                     slotRect.anchorMin = new Vector2(0.5f, 0f);
@@ -3424,9 +3478,14 @@ namespace FracturedChorus.UI
                 _laneAvatarSlots.Add(slotView);
             }
 
-            for (var i = _laneUnits.Count; i < MaxTimelinePartyLanes; i++)
+            for (var shell = 0; shell < MaxTimelinePartyLanes; shell++)
             {
-                var extra = laneAvatarGutter.Find($"LaneAvatar_{i}");
+                if (activeShells.Contains(shell))
+                {
+                    continue;
+                }
+
+                var extra = laneAvatarGutter.Find($"LaneAvatar_{shell}");
                 if (extra != null)
                 {
                     extra.gameObject.SetActive(false);
@@ -3643,25 +3702,180 @@ namespace FracturedChorus.UI
             return GetLaneYFromBottom(laneIndex, viewportHeight);
         }
 
+        /// <summary>
+        /// Capture authored vertical band once: boss rail (max) → Lane_3 / SLOT 4 (min).
+        /// Party Lane_* Y is redistributed and must not redefine the band after capture.
+        /// </summary>
+        private void CaptureSceneLaneBandIfNeeded()
+        {
+            if (_sceneLaneBandCaptured || viewport == null)
+            {
+                return;
+            }
+
+            Canvas.ForceUpdateCanvases();
+
+            if (_bossTrackFrame == null)
+            {
+                _bossTrackFrame = viewport.Find("BossTrackFrame") as RectTransform;
+                if (_bossTrackFrame != null)
+                {
+                    _bossTrackFrameAuthoredInScene = true;
+                }
+            }
+
+            if (_laneLinesLayer == null)
+            {
+                _laneLinesLayer = viewport.Find("LaneLines") as RectTransform;
+                if (_laneLinesLayer != null)
+                {
+                    _laneLinesLayerAuthoredInScene = true;
+                }
+            }
+
+            if (_bossTrackFrame == null)
+            {
+                return;
+            }
+
+            var maxY = GetViewportBottomY(_bossTrackFrame);
+
+            // Bottom band = authored Slot 4 / Lane_3 (scene SoT), not Viewport / LaneLines edge.
+            RectTransform slot4 = null;
+            if (_laneLinesLayer != null)
+            {
+                slot4 = _laneLinesLayer.Find("Lane_3") as RectTransform;
+            }
+
+            if (slot4 == null && viewport != null)
+            {
+                slot4 = viewport.Find("LaneLines/Lane_3") as RectTransform;
+            }
+
+            if (slot4 == null)
+            {
+                return;
+            }
+
+            var minY = GetViewportBottomY(slot4);
+
+            if (maxY - minY < 8f)
+            {
+                // No usable authored band — leave uncaptured; ResolveLaneBand uses serialized fallback.
+                return;
+            }
+
+            _sceneLaneBandMinY = minY;
+            _sceneLaneBandMaxY = maxY;
+            _sceneLaneBandCaptured = true;
+        }
+
+        private float GetViewportBottomY(RectTransform rt)
+        {
+            if (rt == null || viewport == null)
+            {
+                return 0f;
+            }
+
+            var world = rt.TransformPoint(Vector3.zero);
+            var local = viewport.InverseTransformPoint(world);
+            return local.y - viewport.rect.yMin;
+        }
+
+        /// <summary>
+        /// Set a bottom-anchored (or viewport absolute) rect's Y so its pivot sits at viewport bottom-space Y.
+        /// </summary>
+        private void SetRectYFromViewportBottom(RectTransform rt, float yFromBottom)
+        {
+            if (rt == null || viewport == null)
+            {
+                return;
+            }
+
+            var parent = rt.parent as RectTransform;
+            if (parent == null)
+            {
+                return;
+            }
+
+            var world = viewport.TransformPoint(new Vector3(0f, viewport.rect.yMin + yFromBottom, 0f));
+            var local = parent.InverseTransformPoint(world);
+            rt.anchoredPosition = new Vector2(rt.anchoredPosition.x, local.y - parent.rect.yMin);
+        }
+
+        private void ResolveLaneBand(float height, out float minY, out float maxY)
+        {
+            if (_sceneLaneBandCaptured)
+            {
+                minY = _sceneLaneBandMinY;
+                maxY = _sceneLaneBandMaxY;
+                return;
+            }
+
+            minY = height * Mathf.Min(laneBandMinNormalizedY, laneBandMaxNormalizedY);
+            var railY = ResolveNoteRailAnchoredY(height);
+            maxY = Mathf.Max(minY + 8f, railY);
+            if (!preserveSceneLayout)
+            {
+                maxY = Mathf.Max(minY + 8f, railY - Mathf.Max(8f, laneGapBelowRail));
+            }
+        }
+
+        /// <summary>
+        /// Staff lines across band [minY, maxY]:
+        /// N=1 → boss at max, party at midpoint; N≥2 → even N+1 slots (boss + party).
+        /// </summary>
+        private void ResolveEvenStaffYs(
+            int partyCount,
+            float height,
+            out float bossY,
+            out float[] partyYs)
+        {
+            partyCount = Mathf.Clamp(partyCount, 0, MaxTimelinePartyLanes);
+            partyYs = new float[Mathf.Max(0, partyCount)];
+            ResolveLaneBand(height, out var minY, out var maxY);
+
+            bossY = maxY;
+            if (partyCount <= 0)
+            {
+                return;
+            }
+
+            // Single survivor: center between monster line and timeline bottom.
+            if (partyCount == 1)
+            {
+                partyYs[0] = (maxY + minY) * 0.5f;
+                return;
+            }
+
+            // N≥2: evenly space N+1 lines including the monster rail.
+            var totalSlots = partyCount + 1;
+            for (var slot = 0; slot < totalSlots; slot++)
+            {
+                var t = (float)slot / (totalSlots - 1);
+                var y = Mathf.Lerp(maxY, minY, t);
+                if (slot == 0)
+                {
+                    bossY = y;
+                }
+                else
+                {
+                    partyYs[slot - 1] = y;
+                }
+            }
+        }
+
         private float GetLaneYFromBottom(int laneIndex, float height)
         {
-            var count = Mathf.Clamp(_laneUnits.Count, 0, MaxTimelinePartyLanes);
-            var minY = height * Mathf.Min(laneBandMinNormalizedY, laneBandMaxNormalizedY);
-            var railY = ResolveNoteRailAnchoredY(height);
-            var maxY = Mathf.Max(minY + 8f, railY - Mathf.Max(8f, laneGapBelowRail));
-
-            if (count <= 0)
+            var count = Mathf.Clamp(_laneUnits.Count > 0 ? _laneUnits.Count : _laneLines.Count, 0, MaxTimelinePartyLanes);
+            ResolveEvenStaffYs(count, height, out _, out var partyYs);
+            if (laneIndex < 0 || laneIndex >= partyYs.Length)
             {
+                ResolveLaneBand(height, out var minY, out var maxY);
                 return (minY + maxY) * 0.5f;
             }
 
-            if (count == 1)
-            {
-                return (minY + maxY) * 0.5f;
-            }
-
-            var t = (float)laneIndex / (count - 1);
-            return Mathf.Lerp(maxY, minY, t);
+            return partyYs[laneIndex];
         }
 
         /// <summary>
@@ -3671,10 +3885,15 @@ namespace FracturedChorus.UI
             ResolveNoteRailAnchoredY(viewportHeight);
 
         /// <summary>
-        /// Prefer authored BossTrackFrame Y on scene; fallback to serialized rail / normalized band.
+        /// Prefer even-layout boss Y, then authored BossTrackFrame, then serialized fallbacks.
         /// </summary>
         private float ResolveNoteRailAnchoredY(float viewportHeight)
         {
+            if (_layoutBossRailY > 1f)
+            {
+                return _layoutBossRailY;
+            }
+
             if (preserveSceneLayout)
             {
                 if (_bossTrackFrame == null && viewport != null)
