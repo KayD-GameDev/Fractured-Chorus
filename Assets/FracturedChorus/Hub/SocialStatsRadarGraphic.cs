@@ -18,9 +18,8 @@ namespace FracturedChorus.Hub
         [SerializeField] private Color strokeColor;
         [SerializeField] private float strokeWidth = 2.5f;
 
-        protected override void Reset()
+        private void Reset()
         {
-            base.Reset();
             ApplyTokenDefaults();
         }
 

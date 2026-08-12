@@ -12318,8 +12318,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.031645853, y: 0.02}
   m_AnchorMax: {x: 0.9792916, y: 0.2652963}
-  m_AnchoredPosition: {x: -0.0024414062, y: 3}
-  m_SizeDelta: {x: 0.005127, y: 6}
+  m_AnchoredPosition: {x: -0.0024414062, y: 7.51001}
+  m_SizeDelta: {x: 0.01, y: 15.01}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1236853534
 MonoBehaviour:
@@ -12630,7 +12630,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.1, y: 16.2}
+  m_AnchoredPosition: {x: -4.24, y: -10.8}
   m_SizeDelta: {x: 23.22, y: 23.44}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!212 &1269199328
@@ -15744,7 +15744,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 112.5, y: 197.7}
+  m_AnchoredPosition: {x: 116.599976, y: 226}
   m_SizeDelta: {x: 64, y: 71.47}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1720837774
@@ -15767,7 +15767,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 22010376ed2ddf548a134eab2c48ed19, type: 3}
+  m_Sprite: {fileID: 21300000, guid: e26554bfc8238fcd0d66b79b1a73a0ea, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -15798,7 +15798,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.BossNoteSimulator
   timeline: {fileID: 1236853536}
-  shapePreview: 3
+  shapePreview: 4
   shapeLayouts:
   - knobLocal: {x: -4.24, y: -10.8}
     knobSize: {x: 23.22, y: 23.44}
