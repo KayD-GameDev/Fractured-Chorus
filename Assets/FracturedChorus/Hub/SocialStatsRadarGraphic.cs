@@ -18,10 +18,13 @@ namespace FracturedChorus.Hub
         [SerializeField] private Color strokeColor;
         [SerializeField] private float strokeWidth = 2.5f;
 
-        private void Reset()
+#if UNITY_EDITOR
+        protected override void Reset()
         {
+            base.Reset();
             ApplyTokenDefaults();
         }
+#endif
 
         protected override void Awake()
         {

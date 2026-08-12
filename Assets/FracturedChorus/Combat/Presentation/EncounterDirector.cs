@@ -757,9 +757,10 @@ namespace FracturedChorus.Combat.Presentation
 
         private void ResolveAndShowHp(int beatIndex, UnitView playerView, UnitView enemyView)
         {
+            _ = playerView;
+            _ = enemyView;
             _session.ResolveBeatAtScan(beatIndex);
-            PlayHpFeedback(playerView);
-            PlayHpFeedback(enemyView);
+            // HP popups: CombatController → UnitView.FindForUnit (includes inactive duel extras).
         }
 
         private int ResolveSwordCount(int beatIndex)
@@ -1115,17 +1116,6 @@ namespace FracturedChorus.Combat.Presentation
         {
             var feet = view.FeetWorldPosition;
             return new Vector3(feet.x, feet.y + 0.55f, feet.z);
-        }
-
-        private static void PlayHpFeedback(UnitView view)
-        {
-            var unit = view?.Unit;
-            if (unit == null || !unit.LastHpChange.ShouldShowFeedback)
-            {
-                return;
-            }
-
-            view.PlayHpFeedback(unit.LastHpChange);
         }
 
         private void HideLetterboxSafe()

@@ -157,6 +157,7 @@ namespace FracturedChorus.UI
         private float _roundStartMusicalBeat;
         private int _roundSegmentIndex;
         private int _segmentStartBeat;
+        private int _windowStartBeat;
         private float _introEndAudioTimeSec = -1f;
         private Action _introCompleteCallback;
 
@@ -222,6 +223,26 @@ namespace FracturedChorus.UI
         private bool _browseInputBound;
 
         private static int TotalBeats => TimelineConstants.TotalBeats;
+        private static int UiSlotCount => TimelineConstants.UiSlotCount;
+
+        private int AbsoluteBeatFromSlot(int slotIndex) => _windowStartBeat + slotIndex;
+
+        private int SlotIndexFromAbsolute(int absoluteBeat)
+        {
+            if (_slots == null)
+            {
+                return -1;
+            }
+
+            var slot = absoluteBeat - _windowStartBeat;
+            return slot >= 0 && slot < _slots.Length ? slot : -1;
+        }
+
+        private BeatSegmentView TryGetSlotView(int absoluteBeat)
+        {
+            var slot = SlotIndexFromAbsolute(absoluteBeat);
+            return slot >= 0 ? _slots[slot] : null;
+        }
 
         private void Awake()
         {
@@ -1108,15 +1129,8 @@ namespace FracturedChorus.UI
             {
                 foreach (var move in moves)
                 {
-                    if (move.ToBeat >= 0 && move.ToBeat < _slots.Length)
-                    {
-                        _slots[move.ToBeat]?.ClearEnemyVisualOnly();
-                    }
-
-                    if (move.FromBeat >= 0 && move.FromBeat < _slots.Length)
-                    {
-                        _slots[move.FromBeat]?.ClearEnemyVisualOnly();
-                    }
+                    TryGetSlotView(move.ToBeat)?.ClearEnemyVisualOnly();
+                    TryGetSlotView(move.FromBeat)?.ClearEnemyVisualOnly();
                 }
             }
 
@@ -1152,13 +1166,21 @@ namespace FracturedChorus.UI
 
         private Vector2 GetBeatNoteLocalPos(int beatIndex)
         {
-            if (_resolveChipLayer == null || _slots == null
-                || beatIndex < 0 || beatIndex >= _slots.Length || _slots[beatIndex] == null)
+            if (_resolveChipLayer == null)
             {
                 return Vector2.zero;
             }
 
-            var slotRt = _slots[beatIndex].transform as RectTransform;
+            var slot = TryGetSlotView(beatIndex);
+            if (slot == null)
+            {
+                // Out-of-window beats still need a stable X for delay slides / chips.
+                var fallbackX = ContentXForBeat(Mathf.Clamp(beatIndex, 0, TotalBeats - 1));
+                var bandY = (viewport != null ? viewport.rect.height : 200f) * noteBandNormalizedY;
+                return new Vector2(fallbackX + (slotsRow != null ? slotsRow.anchoredPosition.x : 0f), bandY);
+            }
+
+            var slotRt = slot.transform as RectTransform;
             if (slotRt == null)
             {
                 return Vector2.zero;
@@ -1784,12 +1806,7 @@ namespace FracturedChorus.UI
 
         public RectTransform TryGetBeatSlotRect(int absoluteBeat)
         {
-            if (_slots == null || absoluteBeat < 0 || absoluteBeat >= _slots.Length)
-            {
-                return null;
-            }
-
-            var slot = _slots[absoluteBeat];
+            var slot = TryGetSlotView(absoluteBeat);
             return slot != null ? slot.transform as RectTransform : null;
         }
 
@@ -2050,6 +2067,58 @@ namespace FracturedChorus.UI
         {
             _roundSegmentIndex = _session != null ? _session.RoundSegmentIndex : 0;
             _segmentStartBeat = TimelineConstants.GetSegmentStartBeat(_roundSegmentIndex);
+            SyncBeatWindow();
+        }
+
+        /// <summary>
+        /// Sliding UI window: phases N / N+1 / N+2. When the active segment advances,
+        /// N+1 becomes N and a new N+2 is bound onto the recycled slot pool.
+        /// </summary>
+        private void SyncBeatWindow(bool forceRebind = false)
+        {
+            var phase = TimelineConstants.GetPhaseIndex(_segmentStartBeat);
+            var newStart = TimelineConstants.GetUiWindowStartBeat(phase);
+            if (!forceRebind && _slotsBuilt && _slots != null && newStart == _windowStartBeat)
+            {
+                return;
+            }
+
+            _windowStartBeat = newStart;
+            if (_slotsBuilt && _slots != null)
+            {
+                RebindWindowSlotRects();
+                PopulateAllSlots();
+            }
+        }
+
+        private void RebindWindowSlotRects()
+        {
+            if (_slots == null || _slotOffsetPx == null || _slotWidths == null)
+            {
+                return;
+            }
+
+            ClearHighlightedSlot();
+            for (var i = 0; i < _slots.Length; i++)
+            {
+                var absBeat = AbsoluteBeatFromSlot(i);
+                if (absBeat < 0 || absBeat >= TotalBeats)
+                {
+                    if (_slots[i] != null)
+                    {
+                        _slots[i].gameObject.SetActive(false);
+                    }
+
+                    continue;
+                }
+
+                if (_slots[i] != null)
+                {
+                    _slots[i].gameObject.SetActive(true);
+                }
+
+                ApplySlotRect(_slots[i], _slotWidths[absBeat], _slotOffsetPx[absBeat]);
+            }
         }
 
         private int GetSegmentBeatSpan() => TimelineConstants.GetSegmentBeatCountForSegment(_roundSegmentIndex);
@@ -2237,7 +2306,8 @@ namespace FracturedChorus.UI
         }
 
         /// <summary>
-        /// Content X of the left edge of the 2nd beat in the phrase after the current segment.
+        /// Content X of the left edge of the 2nd beat in the next phase — pan shows
+        /// current phase fully plus beat 1 of N+1 at the viewport's right edge.
         /// </summary>
         private bool TryGetBrowseRightLimitContentPx(out float contentPx)
         {
@@ -2614,9 +2684,10 @@ namespace FracturedChorus.UI
 
             var rowX = slotsRow != null ? slotsRow.anchoredPosition.x : 0f;
             var contentPos = scanBar.anchoredPosition.x - rowX;
-            var index = FindSlotAtContentPos(contentPos);
+            var absoluteBeat = FindSlotAtContentPos(contentPos);
+            var slotIndex = SlotIndexFromAbsolute(absoluteBeat);
 
-            if (index < 0)
+            if (slotIndex < 0 || absoluteBeat < 0 || absoluteBeat >= TotalBeats)
             {
                 if (_lastHighlightedSlotIndex >= 0)
                 {
@@ -2626,20 +2697,20 @@ namespace FracturedChorus.UI
                 return;
             }
 
-            var width = _slotWidths[index];
-            var inSlot = contentPos - _slotOffsetPx[index];
+            var width = _slotWidths[absoluteBeat];
+            var inSlot = contentPos - _slotOffsetPx[absoluteBeat];
             var p = width > 0f ? inSlot / width : 0.5f;
             var intensity = p <= 0.5f ? Mathf.SmoothStep(0f, 1f, p / 0.5f) : 0f;
 
             if (_lastHighlightedSlotIndex >= 0 &&
-                _lastHighlightedSlotIndex != index &&
+                _lastHighlightedSlotIndex != slotIndex &&
                 _lastHighlightedSlotIndex < _slots.Length)
             {
                 _slots[_lastHighlightedSlotIndex]?.SetScanIntensity(0f);
             }
 
-            _slots[index]?.SetScanIntensity(intensity);
-            _lastHighlightedSlotIndex = index;
+            _slots[slotIndex]?.SetScanIntensity(intensity);
+            _lastHighlightedSlotIndex = slotIndex;
         }
 
         private void EnsureCombatSfx()
@@ -4980,13 +5051,16 @@ namespace FracturedChorus.UI
             slotWidth = ResolveLockedSlotWidth();
             minSlotWidth = Mathf.Max(minSlotWidth, TimelineLayoutLock.MinSlotWidth);
 
-            if (!_slotsBuilt || _slots == null || _slots.Length != TotalBeats)
+            SyncSegmentFromSession();
+
+            if (!_slotsBuilt || _slots == null || _slots.Length != UiSlotCount)
             {
                 BuildAllSlots();
             }
 
             _pixelsPerSecond = ComputePixelsPerSecond();
 
+            // Virtual song-length layout (floats only) keeps scroll/music math absolute.
             if (_slotWidths == null || _slotWidths.Length != TotalBeats)
             {
                 _slotWidths = new float[TotalBeats];
@@ -5005,7 +5079,6 @@ namespace FracturedChorus.UI
             {
                 _slotWidths[i] = uniformWidth;
                 _slotOffsetPx[i] = cumulative;
-                ApplySlotRect(_slots[i], uniformWidth, cumulative);
                 cumulative += uniformWidth;
             }
 
@@ -5013,6 +5086,7 @@ namespace FracturedChorus.UI
             _contentWidthPx = cumulative;
 
             slotsRow.sizeDelta = new Vector2(cumulative, 0f);
+            RebindWindowSlotRects();
 
             _lastViewportWidth = viewport.rect.width;
 
@@ -5104,19 +5178,21 @@ namespace FracturedChorus.UI
                 }
             }
 
-            _slots = new BeatSegmentView[TotalBeats];
-            for (var i = 0; i < TotalBeats; i++)
+            _slots = new BeatSegmentView[UiSlotCount];
+            for (var i = 0; i < UiSlotCount; i++)
             {
                 var cloneGo = Instantiate(templateGo, slotsRow);
                 cloneGo.name = $"BeatSlot_{i}";
                 cloneGo.SetActive(true);
                 MarkRuntimeClone(cloneGo);
                 var clone = cloneGo.GetComponent<BeatSegmentView>();
-                clone.SetDisplayBeatIndex(i);
+                var absBeat = AbsoluteBeatFromSlot(i);
+                clone.SetDisplayBeatIndex(absBeat);
                 clone.WireReferences();
                 clone.SetNoteVisualCatalog(NoteVisuals);
                 clone.SetNoteBandNormalizedY(noteBandNormalizedY);
-                ApplySlotRect(clone, templateWidth, i * templateWidth);
+                var x = absBeat >= 0 && absBeat < TotalBeats ? absBeat * templateWidth : i * templateWidth;
+                ApplySlotRect(clone, templateWidth, x);
                 _slots[i] = clone;
             }
 
@@ -5296,6 +5372,7 @@ namespace FracturedChorus.UI
             ResetScrollState();
             _slotsBuilt = false;
             _slots = null;
+            _windowStartBeat = 0;
             _autoPlayCompleted = false;
             CleanupExtraBeatChildren();
 
@@ -5350,9 +5427,10 @@ namespace FracturedChorus.UI
                 return;
             }
 
-            if (beatIndex >= 0 && beatIndex < _slots.Length)
+            var slot = TryGetSlotView(beatIndex);
+            if (slot != null)
             {
-                PopulateSlot(_slots[beatIndex], beatIndex);
+                PopulateSlot(slot, beatIndex);
             }
 
             if (rebuildBossNotes)
@@ -5372,9 +5450,10 @@ namespace FracturedChorus.UI
             {
                 foreach (var beatIndex in beatIndices)
                 {
-                    if (beatIndex >= 0 && beatIndex < _slots.Length)
+                    var slot = TryGetSlotView(beatIndex);
+                    if (slot != null)
                     {
-                        PopulateSlot(_slots[beatIndex], beatIndex);
+                        PopulateSlot(slot, beatIndex);
                     }
                 }
             }
@@ -5392,7 +5471,24 @@ namespace FracturedChorus.UI
             ClearHighlightedSlot();
             for (var i = 0; i < _slots.Length; i++)
             {
-                PopulateSlot(_slots[i], i);
+                var absBeat = AbsoluteBeatFromSlot(i);
+                if (absBeat < 0 || absBeat >= TotalBeats)
+                {
+                    if (_slots[i] != null)
+                    {
+                        _slots[i].gameObject.SetActive(false);
+                        _slots[i].SetEmpty();
+                    }
+
+                    continue;
+                }
+
+                if (_slots[i] != null)
+                {
+                    _slots[i].gameObject.SetActive(true);
+                }
+
+                PopulateSlot(_slots[i], absBeat);
             }
 
             ReapplySlotRectsFromCache();
@@ -5407,10 +5503,15 @@ namespace FracturedChorus.UI
                 return;
             }
 
-            var count = Mathf.Min(_slots.Length, _slotWidths.Length);
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < _slots.Length; i++)
             {
-                ApplySlotRect(_slots[i], _slotWidths[i], _slotOffsetPx[i]);
+                var absBeat = AbsoluteBeatFromSlot(i);
+                if (absBeat < 0 || absBeat >= TotalBeats || absBeat >= _slotWidths.Length)
+                {
+                    continue;
+                }
+
+                ApplySlotRect(_slots[i], _slotWidths[absBeat], _slotOffsetPx[absBeat]);
             }
         }
 

@@ -269,6 +269,10 @@ namespace FracturedChorus.Combat.Core
                 IsEmpowerActiveForCounters(entry));
         }
 
+        /// <summary>
+        /// One counter hit per Active-beat overlap. Empower bonus hits do not stack onto a
+        /// single note — Blue/Purple still need 2/3 skills on that beat.
+        /// </summary>
         public static int ResolveHitContribution(
             SkillDefinitionSO skill,
             int placementBeat,
@@ -287,19 +291,7 @@ namespace FracturedChorus.Combat.Core
                 return 0;
             }
 
-            var hits = 1;
-            if (!empowerActive || skill.empowerExtraHits <= 0 || timeline == null)
-            {
-                return hits;
-            }
-
-            var firstNoteBeat = FindFirstActiveImpactBeatForPlacement(skill, placementBeat, timeline);
-            if (firstNoteBeat == beatIndex)
-            {
-                hits += skill.empowerExtraHits;
-            }
-
-            return hits;
+            return 1;
         }
 
         public static int FindFirstActiveImpactBeatForPlacement(

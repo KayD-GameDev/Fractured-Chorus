@@ -189,13 +189,13 @@ Menu **Fractured Chorus → Seed Timeline Lane Preview (Hierarchy)** seed từ `
 | `Scan Fade In Duration` | Thời lượng sáng lên tối thiểu (mặc định 0.08s; tăng nếu nốt ngắn còn giật) |
 | `Scan Fade Out Duration` | Thời lượng tắt dần (mặc định 0.35s; tăng = tắt chậm rãi hơn) |
 
-**Runtime tạo đủ `TimelineConstants.TotalBeats` ô** (render-all, không còn carousel ảo): hàng `ScrollContent` dài hơn viewport và được `RectMask2D` cắt viền. `HorizontalLayoutGroup` để `childControlWidth = true` để áp `preferredWidth` (độ rộng theo giây) cho từng ô.
+**Runtime chỉ mount `TimelineConstants.UiSlotCount` ô (66 = 3 phase × 22 beat)** — cửa sổ trượt N / N+1 / N+2; hết phase N thì recycle slot cho phase mới. Layout ảo vẫn theo `TotalBeats` (scroll/music tuyệt đối). Hàng `ScrollContent` dài theo bài và được `RectMask2D` cắt viền.
 
 **Scene cũ thiếu `TrackLine`:** vẫn chạy; `BeatTimelineUIView` tự tạo `TrackLine` lúc Play. Rebuild UI để có sẵn trong scene.
 
 ### Phase divider
 
-Vạch trắng **PhaseDivider** sau beat 21, 43, 65… (mỗi **22 beat** một phase). **`TimelineConstants.TotalBeats = 677`** — Boss Remix 152 BPM. **30 phase**. Mỗi Execute đủ **22 beat** mới Planning. Intro **12 beat** không nốt; hết intro mới spawn phase 1–3.
+Vạch trắng **PhaseDivider** sau beat 21, 43, 65… (mỗi **22 beat** một phase). **`TimelineConstants.TotalBeats = 677`** — Boss Remix 152 BPM. **~31 phase**. Mỗi Execute đủ **22 beat** mới Planning. UI luôn giữ **3 phase** (`TelegraphLookaheadPhases = 3`). Intro **12 beat** không nốt; hết intro mới spawn phase cửa sổ đầu.
 
 ---
 

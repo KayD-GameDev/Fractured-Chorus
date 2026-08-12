@@ -107,7 +107,8 @@ namespace FracturedChorus.UI
                 return null;
             }
 
-            foreach (var view in Object.FindObjectsByType<UnitView>(FindObjectsInactive.Exclude))
+            // Include inactive: EncounterDirector hides non-participants during duels.
+            foreach (var view in Object.FindObjectsByType<UnitView>(FindObjectsInactive.Include))
             {
                 if (view != null && view.Unit == unit)
                 {
@@ -1073,6 +1074,12 @@ namespace FracturedChorus.UI
 
         private void PunchBody(bool isCritical)
         {
+            // EncounterDirector may hide non-duel units; coroutines cannot start on inactive objects.
+            if (!isActiveAndEnabled || !gameObject.activeInHierarchy)
+            {
+                return;
+            }
+
             if (!_hpPunchBaseCaptured)
             {
                 _hpPunchBaseScale = transform.localScale;
