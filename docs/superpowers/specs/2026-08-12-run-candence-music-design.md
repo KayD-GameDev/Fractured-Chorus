@@ -2,6 +2,7 @@
 
 > **Ngày:** 2026-08-12  
 > **Trạng thái:** Approved  
+> **Plan:** [`docs/superpowers/plans/2026-08-12-run-candence-music.md`](../plans/2026-08-12-run-candence-music.md)  
 > **Track nguồn:** `Eternal Spark - Candence.mp3` (user Downloads → import project)  
 > **Liên quan:** [`2026-08-01-uniform-beat-continuous-music-design.md`](2026-08-01-uniform-beat-continuous-music-design.md) (boss path — không thay đổi)
 
