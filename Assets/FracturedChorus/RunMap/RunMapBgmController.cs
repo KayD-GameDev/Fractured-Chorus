@@ -1,3 +1,4 @@
+using FracturedChorus.Audio;
 using UnityEngine;
 
 namespace FracturedChorus.RunMap
@@ -23,6 +24,11 @@ namespace FracturedChorus.RunMap
 
         private void Start()
         {
+            if (RunMusicSession.Instance != null && RunMusicSession.Instance.IsActive)
+            {
+                return;
+            }
+
             StartLoop();
         }
 

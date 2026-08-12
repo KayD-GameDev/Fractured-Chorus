@@ -44,7 +44,8 @@ namespace FracturedChorus.Combat.Core
 
         private BeatTimelineEngine _timeline;
 
-        private CombatMusicController _musicController;
+        private ICombatMusicSync _musicSync;
+        private bool _usesRunMusic;
         private CombatSfxController _combatSfx;
 
         private BoardDragController _boardDrag;
@@ -69,11 +70,15 @@ namespace FracturedChorus.Combat.Core
         }
 
         public void Initialize(CombatSession session, BeatTimelineEngine timeline,
-
             BeatTimelineUIView timelineUi, SkillPanelUIView skillPanel, CombatMusicController music = null,
-
             CombatExecuteOverlayUIView executeOverlayView = null, BoardDragController boardDrag = null)
+        {
+            InitializeWithMusic(session, timeline, timelineUi, skillPanel, music, executeOverlayView, boardDrag);
+        }
 
+        public void InitializeWithMusic(CombatSession session, BeatTimelineEngine timeline,
+            BeatTimelineUIView timelineUi, SkillPanelUIView skillPanel, ICombatMusicSync music = null,
+            CombatExecuteOverlayUIView executeOverlayView = null, BoardDragController boardDrag = null)
         {
 
             _session = session;
@@ -84,8 +89,11 @@ namespace FracturedChorus.Combat.Core
 
             skillPanelView = skillPanel;
 
-            _musicController = music;
-            _combatSfx = music != null ? music.GetComponent<CombatSfxController>() : null;
+            _musicSync = music;
+            _usesRunMusic = music != null && music.UsesRunSession;
+            _combatSfx = music is MonoBehaviour behaviour
+                ? behaviour.GetComponent<CombatSfxController>()
+                : null;
             if (_combatSfx == null)
             {
                 _combatSfx = FindAnyObjectByType<CombatSfxController>();
@@ -135,9 +143,9 @@ namespace FracturedChorus.Combat.Core
             {
 
                 CombatSfxController combatSfx = null;
-                if (music != null)
+                if (music is MonoBehaviour musicBehaviour)
                 {
-                    combatSfx = music.GetComponent<CombatSfxController>();
+                    combatSfx = musicBehaviour.GetComponent<CombatSfxController>();
                 }
 
                 var presentation = GetComponent<CounterPresentationDriver>();
@@ -185,9 +193,19 @@ namespace FracturedChorus.Combat.Core
         /// </summary>
         private void StartCombatIntro()
         {
-            if (_musicController != null && !_musicController.IsPlaying)
+            if (_usesRunMusic)
             {
-                _musicController.PlayBossMusic();
+                RunMusicSession.Instance?.SetMode(RunMusicMode.Combat);
+                UpdateExecuteOverlayVisibility(_session?.Phase ?? CombatPhase.Planning);
+                ApplySlotFloorVisibilityForCurrentPhase();
+                RefreshDeployFormationHint();
+                OnCombatIntroComplete();
+                return;
+            }
+
+            if (_musicSync != null && !_musicSync.IsPlaying)
+            {
+                _musicSync.PlayBossMusic();
             }
 
             UpdateExecuteOverlayVisibility(_session?.Phase ?? CombatPhase.Planning);
@@ -198,7 +216,7 @@ namespace FracturedChorus.Combat.Core
             if (timelineView != null)
             {
                 timelineView.BeginIntroPlayback(
-                    TimelineConstants.CombatIntroDurationSec,
+                    CombatTimelineProfile.CombatIntroDurationSec,
                     OnCombatIntroComplete);
                 return;
             }
@@ -213,7 +231,7 @@ namespace FracturedChorus.Combat.Core
 
         private IEnumerator CombatIntroFallbackRoutine()
         {
-            var wait = Mathf.Max(0f, TimelineConstants.CombatIntroDurationSec);
+            var wait = Mathf.Max(0f, CombatTimelineProfile.CombatIntroDurationSec);
             if (wait > 0f)
             {
                 yield return new WaitForSeconds(wait);
@@ -232,7 +250,7 @@ namespace FracturedChorus.Combat.Core
 
             _session.EndCombatIntro();
             _session.SetTimelineRunning(false);
-            _musicController?.EnterPlanningDuck();
+            _musicSync?.EnterPlanningDuck();
             PlayPlanningTransitionSfx();
             timelineView?.RefreshTelegraphsAndSlots();
             UpdateExecuteOverlayVisibility(_session.Phase);
@@ -255,8 +273,8 @@ namespace FracturedChorus.Combat.Core
         {
             if (_combatSfx == null)
             {
-                _combatSfx = _musicController != null
-                    ? _musicController.GetComponent<CombatSfxController>()
+                _combatSfx = _musicSync is MonoBehaviour behaviour
+                    ? behaviour.GetComponent<CombatSfxController>()
                     : FindAnyObjectByType<CombatSfxController>();
             }
 
@@ -353,14 +371,14 @@ namespace FracturedChorus.Combat.Core
 
 
 
-            if (_musicController != null)
+            if (_musicSync != null)
             {
-                if (!_musicController.IsPlaying)
+                if (!_usesRunMusic && !_musicSync.IsPlaying)
                 {
-                    _musicController.PlayBossMusic();
+                    _musicSync.PlayBossMusic();
                 }
 
-                _musicController.ExitPlanningDuck();
+                _musicSync.ExitPlanningDuck();
             }
 
             var encounterHomes = EncounterDirector.ActiveInstance
@@ -400,9 +418,9 @@ namespace FracturedChorus.Combat.Core
             if (timelineView != null && _session != null && blockInput != null)
             {
                 CombatSfxController combatSfx = null;
-                if (_musicController != null)
+                if (_musicSync is MonoBehaviour musicBehaviour)
                 {
-                    combatSfx = _musicController.GetComponent<CombatSfxController>();
+                    combatSfx = musicBehaviour.GetComponent<CombatSfxController>();
                 }
 
                 if (combatSfx == null)
@@ -673,7 +691,7 @@ namespace FracturedChorus.Combat.Core
                             ?? FindAnyObjectByType<EncounterDirector>();
             encounter?.RestorePhaseHomes();
 
-            _musicController?.EnterPlanningDuck();
+            _musicSync?.EnterPlanningDuck();
             _planningPaused = false;
             SetCoverActivateAllowed(true);
             _session.EndRoundSegment();
@@ -681,7 +699,7 @@ namespace FracturedChorus.Combat.Core
             timelineView?.RefreshTelegraphsAndSlots();
             RefreshCoverHud();
 
-            if (TimelineConstants.GetSegmentStartBeat(_session.RoundSegmentIndex) >= TimelineConstants.TotalBeats)
+            if (TimelineConstants.GetSegmentStartBeat(_session.RoundSegmentIndex) >= CombatTimelineProfile.TotalBeats)
             {
                 executeOverlay?.SetVisible(false);
                 _segmentCompleteRoutine = null;
@@ -984,6 +1002,11 @@ namespace FracturedChorus.Combat.Core
                 return;
             }
 
+            if (EncounterDirector.IsPresenting)
+            {
+                return;
+            }
+
             var view = UnitView.FindForUnit(unit);
             if (view != null)
             {
@@ -1013,7 +1036,14 @@ namespace FracturedChorus.Combat.Core
             skillPanelView?.Hide();
             timelineView?.StopTimelinePlayback();
             executeOverlay?.SetVisible(false);
-            _musicController?.StopMusic();
+            if (_usesRunMusic)
+            {
+                RunMusicSession.Instance?.SetMode(RunMusicMode.Map);
+            }
+            else
+            {
+                _musicSync?.StopMusic();
+            }
             var victory = _session != null && _session.Phase == CombatPhase.Victory;
             if (victory)
             {
@@ -1122,6 +1152,15 @@ namespace FracturedChorus.Combat.Core
             if (victory)
             {
                 CadenceMapController.MarkBossVictoryPending();
+            }
+
+            if (_usesRunMusic)
+            {
+                RunMusicSession.Instance?.SetMode(RunMusicMode.Map);
+            }
+            else if (RunMusicSession.Instance != null && RunMusicSession.Instance.IsActive)
+            {
+                RunMusicSession.Instance.ResumeFromBoss();
             }
 
             var sceneName = string.IsNullOrWhiteSpace(CombatEncounterHandoff.ReturnSceneName)

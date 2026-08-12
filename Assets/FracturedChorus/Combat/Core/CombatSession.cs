@@ -301,7 +301,7 @@ namespace FracturedChorus.Combat.Core
             {
                 var delay = Mathf.Max(1, skill.ResolveEffectValue(empowerPreview));
                 var sEnd = entry.BeatIndex + SkillFootprintUtil.GetActiveBeats(skill) - 1;
-                var moves = Timeline.DelayImpactTelegraphsAfterBeat(sEnd, TimelineConstants.TotalBeats, delay);
+                var moves = Timeline.DelayImpactTelegraphsAfterBeat(sEnd, CombatTimelineProfile.TotalBeats, delay);
                 entry.PlanningDelayMoves.Clear();
                 entry.PlanningDelayMoves.AddRange(moves);
                 entry.PlanningDelayAmount = delay;
@@ -484,7 +484,7 @@ namespace FracturedChorus.Combat.Core
         {
             player = null;
             enemy = null;
-            if (Timeline == null || Grid == null || beatIndex < 0 || beatIndex >= TimelineConstants.TotalBeats)
+            if (Timeline == null || Grid == null || beatIndex < 0 || beatIndex >= CombatTimelineProfile.TotalBeats)
             {
                 return false;
             }
@@ -554,7 +554,7 @@ namespace FracturedChorus.Combat.Core
         /// <summary>Gọi khi scan bar đi qua một beat — resolve player attack + enemy telegraph.</summary>
         public void ResolveBeatAtScan(int beatIndex)
         {
-            if (Timeline == null || beatIndex < 0 || beatIndex >= TimelineConstants.TotalBeats || IsEncounterOver)
+            if (Timeline == null || beatIndex < 0 || beatIndex >= CombatTimelineProfile.TotalBeats || IsEncounterOver)
             {
                 return;
             }
@@ -927,7 +927,7 @@ namespace FracturedChorus.Combat.Core
 
         private void ResolveAnyRemainingBeats()
         {
-            for (var beat = 0; beat < TimelineConstants.TotalBeats; beat++)
+            for (var beat = 0; beat < CombatTimelineProfile.TotalBeats; beat++)
             {
                 if (!_resolvedBeats.Contains(beat))
                 {

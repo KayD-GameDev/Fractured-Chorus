@@ -1,4 +1,5 @@
 using System.Collections;
+using FracturedChorus.Audio;
 using FracturedChorus.Combat.Bootstrap;
 using FracturedChorus.Data;
 using FracturedChorus.RunMap.Core;
@@ -7,11 +8,20 @@ using FracturedChorus.Tutorial;
 using FracturedChorus.UI;
 using UnityEngine;
 using UnityEngine.UI;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace FracturedChorus.RunMap
 {
     public class CadenceMapController : MonoBehaviour
     {
+        public enum RunMapEditorPreview
+        {
+            MapSelect = 0,
+            MapNodes = 1
+        }
+
         public static CadenceMapController Instance { get; private set; }
 
         [SerializeField] private CadenceMapLayoutSO layout;
@@ -27,11 +37,18 @@ namespace FracturedChorus.RunMap
         [SerializeField] private Button backToMacroButton;
         [SerializeField] private Button returnToHubButton;
         [SerializeField] private SceneLinkHotkeyUI campusHubHotkey;
+        [SerializeField] private MapNodeIconSetSO nodeIconSet;
 
         [Header("Combat")]
         [SerializeField] private string bossCombatSceneName = RunMapSceneCatalog.CombatPrototype;
         [SerializeField] private float bossSceneLoadDelaySec = 0.35f;
         [SerializeField] private bool simulateBossVictoryOnReturn;
+
+#if UNITY_EDITOR
+        [Header("Edit Mode Preview")]
+        [SerializeField] private RunMapEditorPreview editorPreview = RunMapEditorPreview.MapSelect;
+        [SerializeField] private MapNodeEditPreview nodeEditPreview;
+#endif
 
         public CadenceRunProgress Progress => CadenceRunProgress.Session;
 
@@ -216,6 +233,8 @@ namespace FracturedChorus.RunMap
 
             var seed = bootstrap != null ? bootstrap.ResolveSeed() : Random.Range(1, int.MaxValue);
             Progress.BeginPinkyRun(seed);
+            var beatMap = Resources.Load<MusicBeatMapSO>("Music/EternalSpark_Candence_BeatMap");
+            RunMusicSession.Ensure().Begin(beatMap != null ? beatMap.Clip : null, beatMap);
             EnterInnerSector(Progress.CurrentSector, seed);
         }
 
@@ -279,10 +298,11 @@ namespace FracturedChorus.RunMap
             innerController.Initialize(graph, seed);
             var defeatReturn = CombatEncounterHandoff.PendingReturnToNearestCamp;
             innerController.ApplyCombatReturnHandoff();
+            RunMusicSession.Instance?.SetMode(RunMusicMode.Map);
 
             if (mapView != null)
             {
-                mapView.ScrollToStartFloor();
+                mapView.EnsureScrollShowsStartOnOpen(true);
             }
 
             var bossLabel = pinkyVaultConfig != null
@@ -312,6 +332,7 @@ namespace FracturedChorus.RunMap
             ResolveLayerReferences();
             SetMacroLayerActive(true);
             SetInnerUiActive(false);
+            HideEditPreviewRuntime();
 
             if (macroMapRoot != null)
             {
@@ -336,6 +357,7 @@ namespace FracturedChorus.RunMap
             ResolveLayerReferences();
             SetMacroLayerActive(false);
             SetInnerUiActive(true);
+            HideEditPreviewRuntime();
 
             if (innerMapRoot != null)
             {
@@ -345,6 +367,20 @@ namespace FracturedChorus.RunMap
             if (backToMacroButton != null)
             {
                 backToMacroButton.gameObject.SetActive(true);
+            }
+        }
+
+        private void HideEditPreviewRuntime()
+        {
+            if (innerMapRoot == null)
+            {
+                return;
+            }
+
+            var preview = innerMapRoot.transform.Find("NodeEditPreview");
+            if (preview != null && preview.gameObject.activeSelf)
+            {
+                preview.gameObject.SetActive(false);
             }
         }
 
@@ -498,5 +534,205 @@ namespace FracturedChorus.RunMap
                 statusLabel.text = message;
             }
         }
+
+#if UNITY_EDITOR
+        private bool _applyingEditorPreview;
+
+        private void OnEnable()
+        {
+            if (!Application.isPlaying)
+            {
+                EditorApplication.delayCall += ApplyEditorPreviewDeferred;
+            }
+        }
+
+        private void OnValidate()
+        {
+            if (Application.isPlaying)
+            {
+                return;
+            }
+
+            EditorApplication.delayCall += ApplyEditorPreviewDeferred;
+        }
+
+        private void ApplyEditorPreviewDeferred()
+        {
+            if (this == null || Application.isPlaying)
+            {
+                return;
+            }
+
+            ApplyEditorPreview();
+        }
+
+        public void SetEditorPreview(RunMapEditorPreview preview)
+        {
+            editorPreview = preview;
+            ApplyEditorPreview();
+        }
+
+        public void ApplyEditorPreview()
+        {
+            if (_applyingEditorPreview)
+            {
+                return;
+            }
+
+            _applyingEditorPreview = true;
+            try
+            {
+                ResolveLayerReferences();
+
+                switch (editorPreview)
+                {
+                    case RunMapEditorPreview.MapSelect:
+                        SetMacroLayerActive(true);
+                        SetInnerUiActive(false);
+                        HideNodeEditPreview();
+                        if (macroMapRoot != null)
+                        {
+                            macroMapRoot.transform.SetAsLastSibling();
+                        }
+
+                        if (backToMacroButton != null)
+                        {
+                            backToMacroButton.gameObject.SetActive(false);
+                        }
+
+                        break;
+                    case RunMapEditorPreview.MapNodes:
+                        SetMacroLayerActive(false);
+                        SetInnerUiActive(true);
+                        ShowNodeEditPreview();
+                        EnsureNodeInfoSidebarForEdit();
+                        if (innerMapRoot != null)
+                        {
+                            innerMapRoot.transform.SetAsLastSibling();
+                        }
+
+                        if (backToMacroButton != null)
+                        {
+                            backToMacroButton.gameObject.SetActive(true);
+                        }
+
+                        break;
+                }
+
+                EditorUtility.SetDirty(this);
+                if (macroMapRoot != null)
+                {
+                    EditorUtility.SetDirty(macroMapRoot);
+                }
+
+                if (innerMapRoot != null)
+                {
+                    EditorUtility.SetDirty(innerMapRoot);
+                }
+            }
+            finally
+            {
+                _applyingEditorPreview = false;
+            }
+        }
+
+        private void EnsureNodeInfoSidebarForEdit()
+        {
+            ResolveLayerReferences();
+            if (mapScrollView == null)
+            {
+                return;
+            }
+
+            var scrollRect = mapScrollView.GetComponent<ScrollRect>();
+            var parent = scrollRect != null && scrollRect.viewport != null
+                ? scrollRect.viewport
+                : mapScrollView.transform;
+            var existing = parent.Find("NodeInfoSidebar");
+            var panel = existing != null
+                ? existing.GetComponent<RunMapNodeInfoPanel>()
+                : RunMapNodeInfoPanelBuilder.EnsureSidebar(parent, showEditPreview: true);
+            if (panel == null)
+            {
+                return;
+            }
+
+            panel.ShowEditPreview();
+
+            if (innerController != null)
+            {
+                var so = new SerializedObject(innerController);
+                var prop = so.FindProperty("nodeInfoPanel");
+                if (prop != null && prop.objectReferenceValue != panel)
+                {
+                    prop.objectReferenceValue = panel;
+                    so.ApplyModifiedPropertiesWithoutUndo();
+                }
+            }
+        }
+
+        private void ShowNodeEditPreview()
+        {
+            EnsureNodeEditPreview();
+            if (nodeEditPreview == null)
+            {
+                return;
+            }
+
+            if (nodeIconSet == null)
+            {
+                nodeIconSet = AssetDatabase.LoadAssetAtPath<MapNodeIconSetSO>(
+                    "Assets/FracturedChorus/Data/ScriptableObjects/Presets/MapNodeIconSet_Default.asset");
+            }
+
+            nodeEditPreview.SetIconSet(nodeIconSet);
+            nodeEditPreview.Show();
+            EditorUtility.SetDirty(nodeEditPreview);
+        }
+
+        private void HideNodeEditPreview()
+        {
+            if (nodeEditPreview != null)
+            {
+                nodeEditPreview.Hide();
+            }
+        }
+
+        private void EnsureNodeEditPreview()
+        {
+            if (nodeEditPreview != null)
+            {
+                return;
+            }
+
+            ResolveLayerReferences();
+            var parent = innerMapRoot != null ? innerMapRoot.transform : transform;
+            var existing = parent.Find("NodeEditPreview");
+            if (existing != null)
+            {
+                nodeEditPreview = existing.GetComponent<MapNodeEditPreview>()
+                                  ?? existing.gameObject.AddComponent<MapNodeEditPreview>();
+                EditorUtility.SetDirty(this);
+                return;
+            }
+
+            var go = new GameObject("NodeEditPreview", typeof(RectTransform));
+            go.transform.SetParent(parent, false);
+            var rect = go.GetComponent<RectTransform>();
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+            nodeEditPreview = go.AddComponent<MapNodeEditPreview>();
+            EditorUtility.SetDirty(this);
+        }
+
+        public void WireSceneEditChrome()
+        {
+            editorPreview = RunMapEditorPreview.MapNodes;
+            ApplyEditorPreview();
+            EditorUtility.SetDirty(this);
+        }
+#endif
     }
 }

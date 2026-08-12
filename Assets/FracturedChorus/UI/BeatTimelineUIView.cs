@@ -40,6 +40,8 @@ namespace FracturedChorus.UI
         [Tooltip("Vị trí hit trong mỗi slot (0 = đầu nốt / downbeat, 0.5 = giữa, 1 = cuối). SFX + resolve dùng cùng anchor.")]
         [SerializeField] [Range(0f, 1f)] private float beatHitAnchorT = 0f;
         [SerializeField] private CombatMusicController musicController;
+        private ICombatMusicSync _musicSync;
+        private ICombatMusicSync ActiveMusic => _musicSync ?? musicController;
         [SerializeField] private CombatSfxController combatSfxController;
         [SerializeField] private CounterPresentationDriver counterPresentation;
         [SerializeField] private TimelineNoteVisualCatalog noteVisuals = new TimelineNoteVisualCatalog();
@@ -198,7 +200,7 @@ namespace FracturedChorus.UI
         private Coroutine _browsePanRoutine;
         private bool _browseInputBound;
 
-        private static int TotalBeats => TimelineConstants.TotalBeats;
+        private static int TotalBeats => CombatTimelineProfile.TotalBeats;
 
         private void Awake()
         {
@@ -321,9 +323,10 @@ namespace FracturedChorus.UI
             ConfigureAvLabelLayout();
             ExpandViewportWidth();
 
-            if (musicController == null)
+            if (ActiveMusic == null)
             {
                 musicController = FindAnyObjectByType<CombatMusicController>();
+                _musicSync = FindAnyObjectByType<RunCombatMusicBridge>();
             }
 
             EnsureCombatSfx();
@@ -902,12 +905,13 @@ namespace FracturedChorus.UI
         }
 
         public void Bind(BeatTimelineEngine timeline, CombatSession session,
-            CombatMusicController music = null, Action onPlanningPause = null, Action onRoundSegmentComplete = null,
+            ICombatMusicSync music = null, Action onPlanningPause = null, Action onRoundSegmentComplete = null,
             CombatSfxController combatSfx = null, CounterPresentationDriver presentation = null)
         {
             if (music != null)
             {
-                musicController = music;
+                _musicSync = music;
+                musicController = music as CombatMusicController;
             }
 
             if (combatSfx != null)
@@ -1579,7 +1583,7 @@ namespace FracturedChorus.UI
 
         private IEnumerator IntroMusicDrivenScanRoutine()
         {
-            if (musicController == null || !musicController.IsPlaying)
+            if (ActiveMusic == null || !ActiveMusic.IsPlaying)
             {
                 yield return IntroContinuousScanRoutine();
                 yield break;
@@ -1593,13 +1597,13 @@ namespace FracturedChorus.UI
 
             while (_isPlaybackActive)
             {
-                if (musicController.SourceTimeSec >= _introEndAudioTimeSec)
+                if (ActiveMusic.SourceTimeSec >= _introEndAudioTimeSec)
                 {
                     EnterIntroPlanningHold();
                     yield break;
                 }
 
-                _localBeat = Mathf.Max(0f, musicController.TotalMusicalBeat - _roundStartMusicalBeat);
+                _localBeat = Mathf.Max(0f, ActiveMusic.TotalMusicalBeat - _roundStartMusicalBeat);
                 if (_localBeat >= GetSegmentBeatSpan())
                 {
                     EnterIntroPlanningHold();
@@ -1702,7 +1706,7 @@ namespace FracturedChorus.UI
             CapturePlayheadHoldScroll();
             ResetBrowsePanToPlayhead();
             ResetAllScanHighlights();
-            musicController?.EnterPlanningDuck();
+            ActiveMusic?.EnterPlanningDuck();
         }
 
         /// <summary>
@@ -1752,7 +1756,7 @@ namespace FracturedChorus.UI
         {
             _pausedForPlanning = true;
             _isPlaybackActive = false;
-            musicController?.EnterPlanningDuck();
+            ActiveMusic?.EnterPlanningDuck();
             _onPlanningPause?.Invoke();
             ResetAllScanHighlights();
             RefreshLaneMarkers();
@@ -1781,7 +1785,7 @@ namespace FracturedChorus.UI
             }
 
             _pausedForPlanning = false;
-            musicController?.ExitPlanningDuck();
+            ActiveMusic?.ExitPlanningDuck();
             ResumeScanFromFrozenLocalBeat();
         }
 
@@ -1842,12 +1846,12 @@ namespace FracturedChorus.UI
 
         private bool CanUseMusicSync()
         {
-            return useMusicSync && musicController != null;
+            return useMusicSync && ActiveMusic != null;
         }
 
         private IEnumerator MusicDrivenScanRoutine(bool resume, bool continueFromHold = false)
         {
-            if (musicController == null || !musicController.IsPlaying)
+            if (ActiveMusic == null || !ActiveMusic.IsPlaying)
             {
                 yield return ContinuousScanRoutine(resume, continueFromHold);
                 yield break;
@@ -1864,7 +1868,7 @@ namespace FracturedChorus.UI
 
             while (_isPlaybackActive)
             {
-                _localBeat = Mathf.Max(_localBeat, musicController.TotalMusicalBeat - _roundStartMusicalBeat);
+                _localBeat = Mathf.Max(_localBeat, ActiveMusic.TotalMusicalBeat - _roundStartMusicalBeat);
                 if (_localBeat >= GetSegmentBeatSpan())
                 {
                     break;
@@ -1995,7 +1999,7 @@ namespace FracturedChorus.UI
         private void HandleEncounterEnded()
         {
             StopTimelinePlayback();
-            musicController?.StopMusic();
+            ActiveMusic?.StopMusic();
         }
 
         private void StopAutoPlay()
@@ -2010,7 +2014,7 @@ namespace FracturedChorus.UI
 
         private float ComputePixelsPerSecond()
         {
-            var beatMap = musicController != null ? musicController.BeatMap : null;
+            var beatMap = ActiveMusic != null ? ActiveMusic.BeatMap : null;
             var avgSpan = beatMap != null && beatMap.HasData
                 ? beatMap.AverageBeatSpanSec()
                 : autoBeatInterval;
@@ -2330,12 +2334,12 @@ namespace FracturedChorus.UI
         /// </summary>
         private void AnchorTimelineToNextBar()
         {
-            if (musicController == null)
+            if (ActiveMusic == null)
             {
                 return;
             }
 
-            var target = MusicBeatMapSO.SnapUpToBeat(musicController.TotalMusicalBeat + ResumeLeadBeats);
+            var target = MusicBeatMapSO.SnapUpToBeat(ActiveMusic.TotalMusicalBeat + ResumeLeadBeats);
             _roundStartMusicalBeat = target - _localBeat;
         }
 
@@ -2362,7 +2366,7 @@ namespace FracturedChorus.UI
             _localBeat = 0f;
             _lastFiredBeat = _segmentStartBeat - 1;
 
-            if (useMusicSync && musicController != null && musicController.IsPlaying)
+            if (useMusicSync && ActiveMusic != null && ActiveMusic.IsPlaying)
             {
                 AnchorTimelineToNextBar();
             }
@@ -2511,7 +2515,7 @@ namespace FracturedChorus.UI
             if (_tutorialPauseAtBeat >= 0 && beat >= _tutorialPauseAtBeat)
             {
                 _tutorialPauseAtBeat = -1;
-                musicController?.EnterPlanningDuck();
+                ActiveMusic?.EnterPlanningDuck();
                 _pausedForPlanning = true;
                 _isPlaybackActive = false;
                 if (_autoPlayRoutine != null)
@@ -2667,14 +2671,14 @@ namespace FracturedChorus.UI
             _lastCounterSfxBeat = beatIndex;
             var musicalBeat = _roundStartMusicalBeat + (beatIndex - _segmentStartBeat);
             var targetDsp = -1d;
-            if (musicController != null &&
-                musicController.TryGetDspTimeForMusicalBeat(musicalBeat, out var dspTime))
+            if (ActiveMusic != null &&
+                ActiveMusic.TryGetDspTimeForMusicalBeat(musicalBeat, out var dspTime))
             {
                 targetDsp = dspTime;
             }
 
-            if (musicController != null &&
-                musicController.TryGetMusicDeltaMs(musicalBeat, out var deltaMs))
+            if (ActiveMusic != null &&
+                ActiveMusic.TryGetMusicDeltaMs(musicalBeat, out var deltaMs))
             {
                 if (Mathf.Abs(deltaMs) > 50f)
                 {
@@ -5241,7 +5245,7 @@ namespace FracturedChorus.UI
         public void SetScanSpeedMultiplier(float multiplier)
         {
             _scanSpeedMultiplier = Mathf.Max(0.001f, multiplier);
-            musicController?.SetPlaybackSpeedMultiplier(multiplier);
+            ActiveMusic?.SetPlaybackSpeedMultiplier(multiplier);
         }
 
         public void SetSkillPanelOpen(bool open)
