@@ -579,6 +579,7 @@ namespace FracturedChorus.Menu
             {
                 _transitioning = false;
                 menuController?.SetEnabled(true);
+                _bgmController?.RestoreVolume();
             }
 
             yield break;
@@ -599,6 +600,7 @@ namespace FracturedChorus.Menu
             {
                 _transitioning = false;
                 menuController?.SetEnabled(true);
+                _bgmController?.RestoreVolume();
             }
 
             yield break;
