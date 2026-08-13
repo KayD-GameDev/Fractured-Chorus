@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using FracturedChorus.UI.Loading;
 
 namespace FracturedChorus.RunMap
 {
@@ -37,25 +38,20 @@ namespace FracturedChorus.RunMap
                 return false;
             }
 
-            var buildIndex = SceneUtility.GetBuildIndexByScenePath(ResolveScenePath(sceneName));
-            if (buildIndex >= 0)
+            if (LoadingScreenController.IsBusy)
             {
-                Debug.Log($"[Fractured Chorus] Load scene index {buildIndex} ({sceneName}).");
-                SceneManager.LoadScene(buildIndex, mode);
-                return true;
+                return false;
             }
 
-            if (Application.CanStreamedLevelBeLoaded(sceneName))
+            if (!CanLoad(sceneName))
             {
-                Debug.Log($"[Fractured Chorus] Load scene by name: {sceneName}.");
-                SceneManager.LoadScene(sceneName, mode);
-                return true;
+                Debug.LogError(
+                    $"[Fractured Chorus] Không load được scene '{sceneName}'. " +
+                    $"Thêm scene vào File → Build Settings.");
+                return false;
             }
 
-            Debug.LogError(
-                $"[Fractured Chorus] Không load được scene '{sceneName}'. " +
-                $"Thêm scene vào File → Build Settings.");
-            return false;
+            return LoadingScreenController.Ensure().BeginLoad(sceneName, mode);
         }
 
         public static bool LoadCombatPrototype() => LoadByName(RunMapSceneCatalog.CombatPrototype);
