@@ -1,3 +1,4 @@
+using FracturedChorus.UI;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -47,6 +48,16 @@ namespace FracturedChorus.UI.Loading
             percentRect = percentTransform;
             clef = clefTransform;
             notesStars = notesTransform;
+            if (percentLabel != null)
+            {
+                percentLabel.font = UiFontCatalog.Body;
+            }
+
+            if (loadingLabel != null)
+            {
+                loadingLabel.font = UiFontCatalog.Body;
+                loadingLabel.fontStyle = FontStyle.Bold;
+            }
         }
 
         public void BindLayers(Image sky, Image cloudImage, Image skylineImage, Image buildings, Image floorImage)
@@ -70,7 +81,7 @@ namespace FracturedChorus.UI.Loading
             var percentGo = new GameObject("Percent", typeof(RectTransform), typeof(Text));
             percentGo.transform.SetParent(transform, false);
             percentLabel = percentGo.GetComponent<Text>();
-            percentLabel.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            percentLabel.font = UiFontCatalog.Body;
             percentRect = percentGo.GetComponent<RectTransform>();
             SetProgress(0f);
         }
