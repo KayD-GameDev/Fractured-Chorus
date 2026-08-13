@@ -13,6 +13,22 @@ namespace FracturedChorus.RunMap
         private const string CombatTutorialScenePath = "Assets/FracturedChorus/Scenes/CombatTutorial.unity";
         private const string RunMapScenePath = "Assets/FracturedChorus/Scenes/RunMapPrototype.unity";
 
+        public static bool CanLoad(string sceneName)
+        {
+            if (string.IsNullOrWhiteSpace(sceneName))
+            {
+                return false;
+            }
+
+            var buildIndex = SceneUtility.GetBuildIndexByScenePath(ResolveScenePath(sceneName));
+            if (buildIndex >= 0)
+            {
+                return true;
+            }
+
+            return Application.CanStreamedLevelBeLoaded(sceneName);
+        }
+
         public static bool LoadByName(string sceneName, LoadSceneMode mode = LoadSceneMode.Single)
         {
             if (string.IsNullOrWhiteSpace(sceneName))
@@ -48,7 +64,7 @@ namespace FracturedChorus.RunMap
 
         public static bool LoadRunMapPrototype() => LoadByName(RunMapSceneCatalog.RunMapPrototype);
 
-        private static string ResolveScenePath(string sceneName)
+        public static string ResolveScenePath(string sceneName)
         {
             if (sceneName == RunMapSceneCatalog.MainMenuStartGame)
             {
