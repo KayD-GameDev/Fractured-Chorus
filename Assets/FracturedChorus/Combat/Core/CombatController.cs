@@ -1174,7 +1174,11 @@ namespace FracturedChorus.Combat.Core
 
         private void OnResultRetry()
         {
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            var sceneName = SceneManager.GetActiveScene().name;
+            if (!RunMapSceneLoader.LoadByName(sceneName))
+            {
+                Debug.LogError($"[Combat] Retry failed to load '{sceneName}'.");
+            }
         }
 
         public void ExitTutorialToRunMap()
