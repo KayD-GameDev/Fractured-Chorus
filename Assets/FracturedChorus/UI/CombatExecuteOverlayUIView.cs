@@ -235,6 +235,7 @@ namespace FracturedChorus.UI
         private void Awake()
         {
             WireReferences();
+            EnsureHudCanvasSorting();
             if (!string.IsNullOrEmpty(_currentLabel))
             {
                 ApplyVisualForLabel(_currentLabel);
@@ -242,6 +243,29 @@ namespace FracturedChorus.UI
             else
             {
                 ApplyVisualForLabel("Deploy");
+            }
+        }
+
+        private void EnsureHudCanvasSorting()
+        {
+            try
+            {
+                var canvas = GameObject.Find("CombatCanvas")?.GetComponent<Canvas>()
+                             ?? GetComponentInParent<Canvas>();
+                if (canvas == null)
+                {
+                    return;
+                }
+
+                canvas.overrideSorting = true;
+                if (canvas.sortingOrder < UiCanvasLayers.Hud)
+                {
+                    canvas.sortingOrder = UiCanvasLayers.Hud;
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError("[ExecuteOverlay] Failed to raise HUD canvas sorting: " + e);
             }
         }
 

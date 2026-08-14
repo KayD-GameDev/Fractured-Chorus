@@ -212,6 +212,7 @@ namespace FracturedChorus.Combat.Bootstrap
 
             combatController.InitializeWithMusic(_session, _timeline, timelineView, skillPanelView, musicSync,
                 executeOverlay, _boardDrag);
+            EnsureCombatHudCanvasSorting();
 
             counterPresentation?.Configure(combatSfxController, timelineView);
             timelineView?.SetCounterPresentation(counterPresentation);
@@ -219,14 +220,11 @@ namespace FracturedChorus.Combat.Bootstrap
             EnsureEnemyStrikeChoreographer(choreographyEnabled: true);
             EnsureUnitCombatAnimStates();
             EnsurePlayerSkillShotChoreographer();
-            EnsureEncounterDirector();
+            EnsureEncounterDirector(musicSync);
 
             RefreshPartyStatusBar();
             EnsureEnemyStatusBar();
-            if (!(tutorialSceneMode || IsCombatTutorialScene()))
-            {
-                EnsureCoverHud();
-            }
+            CoverHudView.HideAll();
             ApplyPlaytestStartResources();
 
             if (skillPanelView != null && !skillPanelView.gameObject.activeSelf)
@@ -280,6 +278,8 @@ namespace FracturedChorus.Combat.Bootstrap
                     }
 
                     combatCanvas.planeDistance = 100f;
+                    combatCanvas.overrideSorting = true;
+                    combatCanvas.sortingOrder = UiCanvasLayers.Hud;
                 }
 
                 var bgRoot = GameObject.Find("Background canvas");
@@ -525,6 +525,43 @@ namespace FracturedChorus.Combat.Bootstrap
             catch (System.Exception e)
             {
                 Debug.LogError("[Bootstrap] Failed to apply playtest start resources: " + e);
+            }
+        }
+
+        private void EnsureCombatHudCanvasSorting()
+        {
+            try
+            {
+                Canvas canvas = null;
+                var named = GameObject.Find("CombatCanvas");
+                if (named != null)
+                {
+                    canvas = named.GetComponent<Canvas>();
+                }
+
+                if (canvas == null)
+                {
+                    var overlay = FindAnyObjectByType<CombatExecuteOverlayUIView>(FindObjectsInactive.Include);
+                    if (overlay != null)
+                    {
+                        canvas = overlay.GetComponentInParent<Canvas>();
+                    }
+                }
+
+                if (canvas == null)
+                {
+                    return;
+                }
+
+                canvas.overrideSorting = true;
+                if (canvas.sortingOrder < UiCanvasLayers.Hud)
+                {
+                    canvas.sortingOrder = UiCanvasLayers.Hud;
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError("[Bootstrap] Failed to raise CombatCanvas sorting: " + e);
             }
         }
 
@@ -787,7 +824,7 @@ namespace FracturedChorus.Combat.Bootstrap
             playerSkillShotChoreographer.Configure(_session);
         }
 
-        private void EnsureEncounterDirector()
+        private void EnsureEncounterDirector(ICombatMusicSync musicSync)
         {
             if (encounterDirector == null)
             {
@@ -805,14 +842,13 @@ namespace FracturedChorus.Combat.Bootstrap
             }
 
             var dimmer = GetComponent<CombatFocusDimmer>() ?? FindAnyObjectByType<CombatFocusDimmer>();
-            EnsureMusicController();
             var letterbox = EncounterLetterboxOverlay.EnsureCreated();
             encounterDirector.Configure(
                 _session,
                 timelineView,
                 dimmer,
                 playerSkillShotChoreographer,
-                musicController,
+                musicSync,
                 letterbox);
         }
 
@@ -1478,43 +1514,64 @@ namespace FracturedChorus.Combat.Bootstrap
 
                 PartyLoadoutApplicator.ApplyDifficultyToEnemy(unit);
                 var pos = new GridPosition(spawn.side, spawn.row, spawn.column);
-                if (!_grid.TryPlaceUnit(unit, pos))
+                if (!_grid.TryPlaceUnitOrEmptyCell(unit, ref pos))
                 {
                     Debug.LogWarning($"[Bootstrap] Could not place {spawn.preset.displayName} at {pos}");
                     continue;
                 }
 
-                var worldPos = HexBoardLayout.GetWorldPosition(pos, sideGap);
+            var cellWorld = ResolveCellWorld(pos);
+            var unitKey = spawn.preset?.unitId ?? "grunt";
+            var isPoolUnit = CombatPoolUnitVisuals.IsPoolCombatKey(unitKey);
+            UnitView view;
+            if (isPoolUnit)
+            {
+                view = CombatPoolUnitVisuals.InstantiatePoolUnit(
+                    unitKey,
+                    unitsRoot,
+                    cellWorld,
+                    10 + pos.Row);
+                if (view == null)
+                {
+                    continue;
+                }
+            }
+            else
+            {
                 var unitGo = new GameObject($"Unit_{unit.DisplayName}");
                 unitGo.transform.SetParent(unitsRoot, false);
-                unitGo.transform.position = worldPos;
+                unitGo.transform.position = cellWorld;
+                unitGo.transform.localScale = ResolveSpawnScale(spawn.preset);
+                EnsureSpawnSpriteRenderer(unitGo, spawn.preset, pos.Row);
+                view = unitGo.AddComponent<UnitView>();
+            }
 
-                var unitKey = spawn.preset?.unitId ?? "grunt";
-                var isPoolUnit = CombatPoolUnitVisuals.IsPoolCombatKey(unitKey);
-                if (isPoolUnit)
-                {
-                    unitGo.transform.localScale = Vector3.one * CombatPoolUnitVisuals.ResolveWorldScale(spawn.preset, unitKey);
-                    var sr = unitGo.AddComponent<SpriteRenderer>();
-                    sr.sortingOrder = 10 + pos.Row;
-                    unitGo.AddComponent<Animator>();
-                }
-                else
-                {
-                    unitGo.transform.localScale = ResolveSpawnScale(spawn.preset);
-                    EnsureSpawnSpriteRenderer(unitGo, spawn.preset, pos.Row);
-                }
-
-                var view = unitGo.AddComponent<UnitView>();
-                view.ConfigureDemo(unitKey, spawn.side);
-                view.PlaceOnGrid(pos);
-                view.Bind(unit);
-                if (isPoolUnit)
-                {
-                    CombatPoolUnitVisuals.ConfigureSpawnedUnitView(unitGo, spawn.preset, unitKey);
-                }
-
+            view.ConfigureDemo(unitKey, spawn.side);
+            view.PlaceOnGrid(pos);
+            view.Bind(unit);
+            if (isPoolUnit)
+            {
+                CombatPoolUnitVisuals.PlayIdle(view, unitKey);
+                view.FitBodyColliderToSprite();
+                CombatPoolUnitVisuals.SnapSpawnedUnitToCell(view, ResolveCellWorld(pos));
+            }
+            else
+            {
                 view.RefitBodyColliderToSprite();
             }
+            }
+        }
+
+        private Vector3 ResolveCellWorld(GridPosition pos)
+        {
+            if (_cellByPosition != null
+                && _cellByPosition.TryGetValue(pos, out var cell)
+                && cell != null)
+            {
+                return cell.position;
+            }
+
+            return HexBoardLayout.GetWorldPosition(pos, sideGap);
         }
 
         private static Vector3 ResolveSpawnScale(UnitPresetSO preset)

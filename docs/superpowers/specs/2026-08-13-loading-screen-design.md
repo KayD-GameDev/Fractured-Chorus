@@ -1,7 +1,8 @@
 # Loading Screen — Design Spec
 
 > **Ngày:** 2026-08-13  
-> **Trạng thái:** Draft — chờ review  
+> **Trạng thái:** Approved  
+> **Plan:** [`docs/superpowers/plans/2026-08-13-loading-screen.md`](../plans/2026-08-13-loading-screen.md)  
 > **Refs:** tấm 1 look lock `Loading_Screen_Wissh` (1024×576 JPEG); tấm 2 sheet `Loading_Screen_Part` (1024×682 JPEG)  
 > **Canvas:** 1920×1080, Scale With Screen Size (giống menu/combat)
 
@@ -113,22 +114,16 @@ Bar **không** slice từ sheet — uGUI.
 ```
 LoadingScreen (DontDestroyOnLoad)
 └── Canvas (Overlay, 1920×1080, sortingOrder 500)
-    ├── SkyFill
-    ├── Clouds
-    ├── NotesStars
-    ├── Skyline
-    ├── BuildingsSigns
-    ├── Clef          ← scale pulse 0.97–1.03, period ~2.4s
-    ├── Floor
+    ├── SkyFill       ← dim tối, không photo city
     └── UiGroup       ← title-safe ~88% bottom, center
         ├── Label     LOADING...
         └── Bar
-            ├── Track (capsule outline neon pink)
-            ├── Fill  (white→pink, Image Filled Horizontal)
+            ├── Track (capsule interior tím + stroke neon pink)
+            ├── Fill  (trắng, width theo progress, leading edge capsule + glow hồng)
             └── PercentLabel  (neo mép phải fill; ẩn khi fill=0)
 ```
 
-Notes/stars: float Y ±6px, period 3–4s, cosmetic. Input: CanvasGroup `blocksRaycasts=true` khi visible.
+City layers không hiện trên overlay.
 
 ---
 
@@ -136,10 +131,10 @@ Notes/stars: float Y ±6px, period 3–4s, cosmetic. Input: CanvasGroup `blocksR
 
 | Field | Giá trị |
 |-------|---------|
-| Label | `LOADING...` trắng, bold, center, ngay trên bar |
+| Label | `LOADING...` trắng, bold, glow hồng, center, ngay trên bar |
 | Bar size | 720×36 px @ 1080p, capsule |
-| Track | stroke neon pink `#FF4EC8`, glow via Outline/shadow color alpha 0.55 |
-| Fill | trắng → hồng nhạt, Image Type Filled, Horizontal, origin Left |
+| Track | interior tím tối, stroke neon pink `#FF4EC8`, glow Outline |
+| Fill | trắng, width theo progress (capsule), glow hồng ở mép dẫn |
 | Percent | `{0:0}%` trong fill, neo phải phần đầy; ẩn khi progress < 0.02 |
 | Font | `UiFontCatalog.Body` (không nhúng font mới) |
 
@@ -199,5 +194,5 @@ Không fallback load sync. Không queue load thứ hai.
 ## 10. Success criteria
 
 - Không còn `SceneManager.LoadScene` gameplay ngoài `LoadingScreenController`.
-- Look khớp tấm 1 khi so canvas 16:9 (clef center, floor dưới, bar lower-third).
+- Look khớp tấm 1 **phần loading** (LOADING + capsule bar) trên dim; không city BG.
 - `%` thay đổi theo load thật, không bake 75%.

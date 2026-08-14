@@ -8,6 +8,7 @@ namespace FracturedChorus.UI
         public const int Popup = 400;
         public const int PopupDamage = 520;
         public const int PopupChip = 530;
+        public const int PhaseBanner = 540;
         public const int Modal = 1000;
         public const int Tutorial = 1100;
         public const int System = 32000;

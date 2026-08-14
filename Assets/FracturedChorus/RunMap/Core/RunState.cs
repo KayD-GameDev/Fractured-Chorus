@@ -49,11 +49,21 @@ namespace FracturedChorus.RunMap.Core
 
             if (CurrentNodeId < 0)
             {
-                return target.IsStart;
+                return target.IsStart || target.IsFloorEntry;
             }
 
             var current = graph.GetNode(CurrentNodeId);
-            return current != null && current.Outgoing.Contains(target.Id);
+            if (current == null)
+            {
+                return false;
+            }
+
+            if (current.IsStart)
+            {
+                return target.IsFloorEntry && current.Outgoing.Contains(target.Id);
+            }
+
+            return current.Outgoing.Contains(target.Id);
         }
 
         /// <summary>Cho phép chọn lại node boss hiện tại để mở cổng trận.</summary>

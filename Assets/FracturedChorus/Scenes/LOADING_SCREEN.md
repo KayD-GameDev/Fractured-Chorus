@@ -5,16 +5,15 @@ Overlay **DontDestroyOnLoad** — mọi scene change qua `RunMapSceneLoader.Load
 **Prefab:** `Assets/FracturedChorus/Resources/UI/LoadingScreen.prefab`  
 **Resources path:** `Resources/UI/LoadingScreen` (runtime `Resources.Load`)
 
-**Cập nhật:** 2026-08-13 — async load · min hold 0.8s · Play checklist
+**Cập nhật:** 2026-08-14 — random 3 BG `Resources/UI/LoadingBg/loading_bg_01..03`
 
 ---
 
 ## Tạo / rebuild prefab
 
 1. Mở Unity project `Fractured-Chorus1`
-2. **Fractured Chorus → Import Loading Screen Art** — copy sheet tấm 2, key near-black, slice PNG vào `Art/UI/LoadingScreen/`
-3. **Fractured Chorus → Build Loading Screen Prefab** — rebuild prefab Resources (Canvas + layers + bar)
-4. **File → Save Project** — commit prefab + art nếu layout thay đổi
+2. **Fractured Chorus → Build Loading Screen Prefab** — rebuild overlay (BG + bar)
+3. **File → Save Project**
 
 **Lưu ý:** Nếu prefab thiếu, `LoadingScreenController.Ensure()` spawn từ Resources hoặc fallback runtime hierarchy. Prefab là source of truth cho layout.
 
@@ -25,19 +24,13 @@ Overlay **DontDestroyOnLoad** — mọi scene change qua `RunMapSceneLoader.Load
 ```
 LoadingScreen (DontDestroyOnLoad)
 └── Canvas (Overlay 1920×1080 · sortingOrder 500)
-    ├── SkyFill
-    ├── Clouds
-    ├── NotesStars
-    ├── Skyline
-    ├── BuildingsSigns
-    ├── Clef          ← pulse scale 0.97–1.03 · period ~2.4s
-    ├── Floor
+    ├── SkyFill       ← random loading_bg_01 / 02 / 03 mỗi lần load
     └── UiGroup       ← anchor (0.5, 0.12) · lower-third
-        ├── Label     LOADING...
-        └── Bar       Track + Fill + PercentLabel (uGUI live)
+        ├── Label     LOADING... · trắng + glow hồng
+        └── Bar       Track capsule + Fill live + PercentLabel
 ```
 
-Bar **không** slice từ sheet — uGUI capsule neon `#FF4EC8`, fill trắng→hồng, `%` trong fill.
+City slice layers (Clouds / Clef / Floor…) **tắt**. Bar **không** bake 75% — uGUI đè lên vị trí bar trên BG.
 
 ---
 
@@ -56,18 +49,9 @@ Bar **không** slice từ sheet — uGUI capsule neon `#FF4EC8`, fill trắng→
 
 ## Art assets
 
-| Layer | Path |
-|-------|------|
-| Clouds | `Art/UI/LoadingScreen/loading_clouds.png` |
-| Notes/stars | `Art/UI/LoadingScreen/loading_notes_stars.png` |
-| Skyline | `Art/UI/LoadingScreen/loading_skyline.png` |
-| Buildings/signs | `Art/UI/LoadingScreen/loading_buildings_signs.png` |
-| Clef | `Art/UI/LoadingScreen/loading_clef.png` |
-| Floor | `Art/UI/LoadingScreen/loading_floor.png` |
+Runtime BG (random mỗi `BeginLoad`): `Resources/UI/LoadingBg/loading_bg_01.png` … `_03.png` (1024×576, stretch 16:9).
 
-Look lock QA (không import runtime BG): `_source/loading_screen_wish.jpg` (tấm 1). Slice source: `_source/loading_screen_part.jpg` (tấm 2).
-
-Import: Sprite (2D and UI) · Bilinear · Max Size 2048 · Alpha from Transparency.
+City slice PNG trong `Art/UI/LoadingScreen/` **không** gắn overlay (giữ file).
 
 ---
 
@@ -76,7 +60,7 @@ Import: Sprite (2D and UI) · Bilinear · Max Size 2048 · Alpha from Transparen
 | File | Vai trò |
 |------|---------|
 | `UI/Loading/LoadingScreenController.cs` | Ensure DDOL · busy · fade · LoadSceneAsync |
-| `UI/Loading/LoadingScreenView.cs` | Layers · bar fill · % · clef pulse · notes float |
+| `UI/Loading/LoadingScreenView.cs` | Dim · capsule bar · % · chrome neon |
 | `UI/Loading/LoadingProgress.cs` | Timing constants · CanActivate |
 | `RunMap/RunMapSceneLoader.cs` | Validate → delegate `BeginLoad` |
 | `Editor/LoadingScreenArtImportEditor.cs` | Menu Import Art |
@@ -84,19 +68,16 @@ Import: Sprite (2D and UI) · Bilinear · Max Size 2048 · Alpha from Transparen
 
 ---
 
-## Look QA (so tấm 1)
+## Look QA (so tấm 1 — chỉ phần loading)
 
 Mở `_source/loading_screen_wish.jpg` cạnh Game view 16:9 khi overlay visible:
 
 | Element | Expect |
 |---------|--------|
-| **Clef** | Center canvas · không lệch trái/phải |
-| **Floor** | Sát đáy · perspective tiled |
-| **Bar + LOADING...** | Lower-third · ngay trên sàn |
-| **Skyline / buildings** | Fill mid-ground · neon signs đọc được |
-| **Bar live** | `%` chạy theo load thật · không bake 75% |
-
-Nếu lệch: chỉnh Rect/scale trên prefab `Resources/UI/LoadingScreen` — **không** đổi logic controller.
+| **BG** | Random 1/3 Pop City (`loading_bg_01..03`) · không lặp tấm vừa rồi |
+| **LOADING...** | Lower-third · trắng · glow hồng · center trên bar |
+| **Bar** | Capsule · viền neon `#FF4EC8` · interior tím tối · fill trắng từ trái |
+| **%** | Trong fill, neo mép phải phần đầy · không bake 75% |
 
 ---
 
@@ -138,4 +119,5 @@ Chạy tay từ `MainMenuStartGame` (index 0). Ghi pass/fail vào cột **OK**.
 
 | Ngày | Thay đổi |
 |------|----------|
+| 2026-08-14 | Random 3 BG `LoadingBg/loading_bg_01..03` mỗi lần load · bỏ `loading_bg` cũ |
 | 2026-08-13 | Doc Play checklist · Look QA vs tấm 1 · Editor menus Import/Build |

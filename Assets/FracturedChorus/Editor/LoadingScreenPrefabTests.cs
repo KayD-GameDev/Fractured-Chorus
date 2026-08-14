@@ -23,7 +23,12 @@ namespace FracturedChorus.Tests
             Assert.IsNotNull(prefab.GetComponentInChildren<CanvasGroup>(true));
             var fill = Find(prefab.transform, "Fill");
             Assert.IsNotNull(fill);
-            Assert.AreEqual(Image.Type.Filled, fill.GetComponent<Image>().type);
+            Assert.AreEqual(Image.Type.Sliced, fill.GetComponent<Image>().type);
+            Assert.IsTrue(Find(prefab.transform, "SkyFill").gameObject.activeSelf);
+            Assert.IsFalse(Find(prefab.transform, "Clouds").gameObject.activeSelf);
+            Assert.IsFalse(Find(prefab.transform, "Clef").gameObject.activeSelf);
+            Assert.IsFalse(Find(prefab.transform, "Floor").gameObject.activeSelf);
+            Assert.IsTrue(Find(prefab.transform, "UiGroup").gameObject.activeSelf);
         }
 
         private static Transform Find(Transform root, string name)

@@ -37,11 +37,49 @@ namespace FracturedChorus.UI
 
         private void Awake()
         {
+            if (!UiEnabled)
+            {
+                HideVisuals();
+                return;
+            }
+
             EnsureBuilt();
+        }
+
+        public static bool UiEnabled { get; set; }
+
+        public static void HideAll()
+        {
+            UiEnabled = false;
+            var huds = Object.FindObjectsByType<CoverHudView>(FindObjectsInactive.Include);
+            for (var i = 0; i < huds.Length; i++)
+            {
+                huds[i]?.HideVisuals();
+            }
+
+            var gauges = Object.FindObjectsByType<CoverEnergyGaugeView>(FindObjectsInactive.Include);
+            for (var i = 0; i < gauges.Length; i++)
+            {
+                if (gauges[i] != null)
+                {
+                    gauges[i].gameObject.SetActive(false);
+                }
+            }
+        }
+
+        public void HideVisuals()
+        {
+            gameObject.SetActive(false);
         }
 
         public static CoverHudView EnsureOn(RectTransform parent)
         {
+            if (!UiEnabled)
+            {
+                HideAll();
+                return null;
+            }
+
             if (parent == null)
             {
                 return null;
@@ -106,6 +144,12 @@ namespace FracturedChorus.UI
 
         public void EnsureBuilt()
         {
+            if (!UiEnabled)
+            {
+                HideVisuals();
+                return;
+            }
+
             rootRect = transform as RectTransform;
             if (rootRect == null)
             {

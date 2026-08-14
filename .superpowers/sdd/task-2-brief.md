@@ -1,121 +1,176 @@
-﻿### Task 2: Deferred drag in `BoardDragController`
+### Task 2: RunMapSceneLoader.CanLoad
 
 **Files:**
-- Modify: `Assets/FracturedChorus/UI/BoardDragController.cs`
+- Modify: `Assets/FracturedChorus/RunMap/RunMapSceneLoader.cs`
+- Modify: `Assets/FracturedChorus/Editor/LoadingProgressTests.cs` (thêm tests CanLoad)
 
 **Interfaces:**
-- Consumes: `BoardPointerGesture.ShouldCommitDrag`, `BoardPointerGesture.IsClick`
-- Produces: same public API (`CanDragUnit`, `BeginDrag`, `EndDrag`, `CancelActiveDrag`, click handler)
+- Consumes: existing `ResolveScenePath` (đổi thành `public static` hoặc giữ private + `CanLoad` public).
+- Produces: `RunMapSceneLoader.CanLoad(string sceneName)` — `true` nếu build index ≥ 0 hoặc `CanStreamedLevelBeLoaded`. Không load scene. Tên rỗng → `false`.
 
-- [ ] **Step 1: Update class summary + remove eager BeginDrag on pointer down**
+- [ ] **Step 1: Add failing tests**
 
-Replace the class XML summary with:
 ```csharp
-/// <summary>
-/// Planning window: short click opens skill panel; drag past threshold repositions unit.
-/// Uses Physics2D pick â€” reliable with Screen Space Overlay UI + Input System.
-/// </summary>
-```
+using FracturedChorus.RunMap;
+using NUnit.Framework;
 
-Replace `HandlePointerDown` body so it **never** calls `BeginDrag`:
-```csharp
-private void HandlePointerDown(Vector2 screenPos)
+namespace FracturedChorus.Tests
 {
-    _pointerDownUnit = null;
-    _dragPointerActive = false;
-    _draggingUnit = null;
-
-    if (IsScreenPointBlockedByUi(screenPos))
+    public class RunMapSceneLoaderCanLoadTests
     {
-        return;
-    }
+        [Test]
+        public void CanLoad_Empty_IsFalse()
+        {
+            Assert.IsFalse(RunMapSceneLoader.CanLoad(""));
+            Assert.IsFalse(RunMapSceneLoader.CanLoad("   "));
+            Assert.IsFalse(RunMapSceneLoader.CanLoad(null));
+        }
 
-    var view = PickUnitAtScreen(screenPos);
-    if (view == null)
-    {
-        return;
-    }
+        [Test]
+        public void CanLoad_KnownScenes_IsTrue()
+        {
+            Assert.IsTrue(RunMapSceneLoader.CanLoad(RunMapSceneCatalog.MainMenuStartGame));
+            Assert.IsTrue(RunMapSceneLoader.CanLoad(RunMapSceneCatalog.PrologueVN));
+            Assert.IsTrue(RunMapSceneLoader.CanLoad(RunMapSceneCatalog.CombatPrototype));
+        }
 
-    _pointerDownUnit = view;
-    _pointerDownScreen = screenPos;
-    _dragPointerActive = true;
-}
-```
-
-- [ ] **Step 2: Commit drag only after threshold in `Update`**
-
-Replace the held-pointer block in `Update` with:
-```csharp
-if (IsPointerHeld() && _dragPointerActive && _pointerDownUnit != null)
-{
-    if (_draggingUnit == null
-        && CanDragUnit(_pointerDownUnit)
-        && BoardPointerGesture.ShouldCommitDrag(_pointerDownScreen, screenPos, clickDragThresholdPx))
-    {
-        BeginDrag(_pointerDownUnit);
-    }
-
-    if (_draggingUnit != null)
-    {
-        UpdateDragAtScreen(screenPos);
+        [Test]
+        public void CanLoad_Unknown_IsFalse()
+        {
+            Assert.IsFalse(RunMapSceneLoader.CanLoad("DefinitelyMissingScene_XYZ"));
+        }
     }
 }
 ```
 
-- [ ] **Step 3: Fix `HandlePointerUp` for deferred drag**
+Đặt class này trong cùng file `LoadingProgressTests.cs` hoặc file `RunMapSceneLoaderCanLoadTests.cs`. Prefer file mới: `Assets/FracturedChorus/Editor/RunMapSceneLoaderCanLoadTests.cs`.
+
+- [ ] **Step 2: Run — FAIL (`CanLoad` missing)**
+
+- [ ] **Step 3: Implement CanLoad — chưa đổi LoadByName sang async**
+
+Replace `RunMapSceneLoader` body methods:
 
 ```csharp
-private void HandlePointerUp(Vector2 screenPos)
-{
-    if (_draggingUnit != null)
-    {
-        EndDrag(_draggingUnit);
-    }
-    else if (_pointerDownUnit != null
-             && BoardPointerGesture.IsClick(_pointerDownScreen, screenPos, clickDragThresholdPx)
-             && CanOpenSkillPanelFor(_pointerDownUnit))
-    {
-        _onUnitClicked?.Invoke(_pointerDownUnit.Unit, _pointerDownUnit);
-    }
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
-    _pointerDownUnit = null;
-    _dragPointerActive = false;
+namespace FracturedChorus.RunMap
+{
+    public static class RunMapSceneLoader
+    {
+        private const string MainMenuStartGameScenePath = "Assets/FracturedChorus/Scenes/MainMenuStartGame.unity";
+        private const string PrologueVNScenePath = "Assets/FracturedChorus/Scenes/PrologueVN.unity";
+        private const string OpeningInvestigationScenePath = "Assets/FracturedChorus/Scenes/OpeningInvestigation.unity";
+        private const string CampusHubScenePath = "Assets/FracturedChorus/Scenes/CampusHub.unity";
+        private const string CombatScenePath = "Assets/FracturedChorus/Scenes/CombatPrototype.unity";
+        private const string CombatTutorialScenePath = "Assets/FracturedChorus/Scenes/CombatTutorial.unity";
+        private const string RunMapScenePath = "Assets/FracturedChorus/Scenes/RunMapPrototype.unity";
+
+        public static bool CanLoad(string sceneName)
+        {
+            if (string.IsNullOrWhiteSpace(sceneName))
+            {
+                return false;
+            }
+
+            var buildIndex = SceneUtility.GetBuildIndexByScenePath(ResolveScenePath(sceneName));
+            if (buildIndex >= 0)
+            {
+                return true;
+            }
+
+            return Application.CanStreamedLevelBeLoaded(sceneName);
+        }
+
+        public static bool LoadByName(string sceneName, LoadSceneMode mode = LoadSceneMode.Single)
+        {
+            if (string.IsNullOrWhiteSpace(sceneName))
+            {
+                Debug.LogError("[Fractured Chorus] RunMapSceneLoader: scene name rỗng.");
+                return false;
+            }
+
+            var buildIndex = SceneUtility.GetBuildIndexByScenePath(ResolveScenePath(sceneName));
+            if (buildIndex >= 0)
+            {
+                Debug.Log($"[Fractured Chorus] Load scene index {buildIndex} ({sceneName}).");
+                SceneManager.LoadScene(buildIndex, mode);
+                return true;
+            }
+
+            if (Application.CanStreamedLevelBeLoaded(sceneName))
+            {
+                Debug.Log($"[Fractured Chorus] Load scene by name: {sceneName}.");
+                SceneManager.LoadScene(sceneName, mode);
+                return true;
+            }
+
+            Debug.LogError(
+                $"[Fractured Chorus] Không load được scene '{sceneName}'. " +
+                $"Thêm scene vào File → Build Settings.");
+            return false;
+        }
+
+        public static bool LoadCombatPrototype() => LoadByName(RunMapSceneCatalog.CombatPrototype);
+
+        public static bool LoadCombatTutorial() => LoadByName(RunMapSceneCatalog.CombatTutorial);
+
+        public static bool LoadRunMapPrototype() => LoadByName(RunMapSceneCatalog.RunMapPrototype);
+
+        public static string ResolveScenePath(string sceneName)
+        {
+            if (sceneName == RunMapSceneCatalog.MainMenuStartGame)
+            {
+                return MainMenuStartGameScenePath;
+            }
+
+            if (sceneName == RunMapSceneCatalog.PrologueVN)
+            {
+                return PrologueVNScenePath;
+            }
+
+            if (sceneName == RunMapSceneCatalog.OpeningInvestigation)
+            {
+                return OpeningInvestigationScenePath;
+            }
+
+            if (sceneName == RunMapSceneCatalog.CampusHub)
+            {
+                return CampusHubScenePath;
+            }
+
+            if (sceneName == RunMapSceneCatalog.CombatPrototype)
+            {
+                return CombatScenePath;
+            }
+
+            if (sceneName == RunMapSceneCatalog.CombatTutorial)
+            {
+                return CombatTutorialScenePath;
+            }
+
+            if (sceneName == RunMapSceneCatalog.RunMapPrototype)
+            {
+                return RunMapScenePath;
+            }
+
+            return $"Assets/FracturedChorus/Scenes/{sceneName}.unity";
+        }
+    }
 }
 ```
 
-- [ ] **Step 4: Clear pointer state in `CancelActiveDrag`**
+`ResolveScenePath` đổi `public` để test/builder không cần duplicate path. FlowerShopWork vẫn đi nhánh fallback `Scenes/{name}.unity`.
 
-Ensure:
-```csharp
-public void CancelActiveDrag()
-{
-    if (_draggingUnit != null)
-    {
-        CancelDrag(_draggingUnit);
-    }
+- [ ] **Step 4: Tests PASS** (`CanLoad_KnownScenes` phụ thuộc Build Settings — nếu fail, thêm scene vào Build Settings trước, không fake test).
 
-    _dragPointerActive = false;
-    _pointerDownUnit = null;
-    _draggingUnit = null;
-}
+- [ ] **Step 5: Commit**
+
 ```
-
-- [ ] **Step 5: Compile check**
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File Tools/check-compile.ps1
-```
-Expected: `COMPILE OK`
-
-- [ ] **Step 6: Commit**
-
-```powershell
-git add Assets/FracturedChorus/UI/BoardDragController.cs
-git commit -m @"
-Defer unit drag so short clicks open the skill panel.
-
-Fixes Planning-window regression after Deploy merged with skill assign.
-"@
+git add Assets/FracturedChorus/RunMap/RunMapSceneLoader.cs Assets/FracturedChorus/Editor/RunMapSceneLoaderCanLoadTests.cs Assets/FracturedChorus/Editor/RunMapSceneLoaderCanLoadTests.cs.meta
+git commit -m "Expose scene load checks without starting a load."
 ```
 
 ---
+

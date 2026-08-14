@@ -32,7 +32,7 @@ namespace FracturedChorus.Editor
                 CopySource(WishSheetPath, WishCopyPath);
 
                 var bytes = File.ReadAllBytes(ToFullPath(PartCopyPath));
-                var texture = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+                var texture = new Texture2D(2, 2);
                 if (!texture.LoadImage(bytes))
                 {
                     throw new InvalidOperationException("Unable to decode loading screen component sheet.");
@@ -280,7 +280,7 @@ namespace FracturedChorus.Editor
             bounds.xMax = Math.Min(source.width, bounds.xMax + CropPadding);
             bounds.yMax = Math.Min(source.height, bounds.yMax + CropPadding);
 
-            var output = new Texture2D(bounds.width, bounds.height, TextureFormat.RGBA32, false);
+            var output = new Texture2D(Mathf.Max(1, bounds.width), Mathf.Max(1, bounds.height));
             var outputPixels = new Color32[bounds.width * bounds.height];
             var sourcePixels = source.GetPixels32();
             for (var i = 0; i < blobs.Count; i++)
@@ -337,13 +337,13 @@ namespace FracturedChorus.Editor
                 throw new InvalidOperationException("Layer mask produced no pixels for " + fileName);
             }
 
-            var bounds = RectInt.MinMaxRect(
+            var bounds = FromMinMax(
                 Math.Max(0, minX - CropPadding),
                 Math.Max(0, minY - CropPadding),
                 Math.Min(source.width, maxX + CropPadding + 1),
                 Math.Min(source.height, maxY + CropPadding + 1));
 
-            var output = new Texture2D(bounds.width, bounds.height, TextureFormat.RGBA32, false);
+            var output = new Texture2D(Mathf.Max(1, bounds.width), Mathf.Max(1, bounds.height));
             var outputPixels = new Color32[bounds.width * bounds.height];
             var sourcePixels = source.GetPixels32();
             for (var i = 0; i < selected.Count; i++)
@@ -368,13 +368,18 @@ namespace FracturedChorus.Editor
             ConfigureTextureImporter(assetPath);
         }
 
+        private static RectInt FromMinMax(int xMin, int yMin, int xMax, int yMax)
+        {
+            return new RectInt(xMin, yMin, Math.Max(0, xMax - xMin), Math.Max(0, yMax - yMin));
+        }
+
         private static RectInt Union(RectInt a, RectInt b)
         {
             var xMin = Math.Min(a.xMin, b.xMin);
             var yMin = Math.Min(a.yMin, b.yMin);
             var xMax = Math.Max(a.xMax, b.xMax);
             var yMax = Math.Max(a.yMax, b.yMax);
-            return RectInt.MinMaxRect(xMin, yMin, xMax, yMax);
+            return FromMinMax(xMin, yMin, xMax, yMax);
         }
 
         private static string ToFullPath(string assetPath)

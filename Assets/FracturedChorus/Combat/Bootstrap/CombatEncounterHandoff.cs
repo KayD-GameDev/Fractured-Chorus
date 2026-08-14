@@ -13,8 +13,13 @@ namespace FracturedChorus.Combat.Bootstrap
         public static bool PendingReturnToNearestCamp { get; private set; }
         public static bool HasPendingEncounter => !string.IsNullOrEmpty(EncounterId);
         public static string PendingRewardSummary { get; private set; }
+        public static CombatPoolRoll PendingPoolRoll { get; private set; }
 
-        public static void SetPending(string encounterId, string returnScene = null, int sourceNodeId = -1)
+        public static void SetPending(
+            string encounterId,
+            string returnScene = null,
+            int sourceNodeId = -1,
+            CombatPoolRoll poolRoll = null)
         {
             EncounterId = encounterId;
             LastFoughtEncounterId = encounterId;
@@ -22,6 +27,7 @@ namespace FracturedChorus.Combat.Bootstrap
                 ? RunMapSceneCatalog.RunMapPrototype
                 : returnScene;
             SourceNodeId = sourceNodeId;
+            PendingPoolRoll = poolRoll;
             HasResult = false;
             PendingReturnToNearestCamp = false;
             PendingRewardSummary = null;
@@ -47,6 +53,7 @@ namespace FracturedChorus.Combat.Bootstrap
         public static void ConsumePendingEncounter()
         {
             EncounterId = null;
+            PendingPoolRoll = null;
         }
 
         public static void ClearResultFlags()
@@ -66,6 +73,7 @@ namespace FracturedChorus.Combat.Bootstrap
             PendingReturnToNearestCamp = false;
             LastVictory = false;
             PendingRewardSummary = null;
+            PendingPoolRoll = null;
         }
 
     }

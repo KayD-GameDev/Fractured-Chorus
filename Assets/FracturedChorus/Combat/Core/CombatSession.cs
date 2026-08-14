@@ -751,7 +751,7 @@ namespace FracturedChorus.Combat.Core
                 Debug.Log(
                     $"[Counter] Cancelled {telegraph.Unit.DisplayName} @ beat {beatIndex} ({telegraph.NoteTier}, need {telegraph.HitsRequired})");
                 OnEnemyStrikeResolved?.Invoke(
-                    new EnemyStrikeReport(telegraph.Unit, target, wasCountered: true, beatIndex, swordCount));
+                    new EnemyStrikeReport(telegraph.Unit, target, wasCountered: true, beatIndex, swordCount, telegraph.Skill));
                 return;
             }
 
@@ -811,7 +811,7 @@ namespace FracturedChorus.Combat.Core
                 (Mathf.Approximately(positionalMod, 1f) ? string.Empty : $" pos×={positionalMod:F2}"));
 
             OnEnemyStrikeResolved?.Invoke(
-                new EnemyStrikeReport(telegraph.Unit, target, wasCountered: false, beatIndex, swordCount));
+                new EnemyStrikeReport(telegraph.Unit, target, wasCountered: false, beatIndex, swordCount, telegraph.Skill));
         }
 
         private void ApplyColumnSlamIfNeeded(CombatUnit primaryTarget, float splashDamage, bool isCritical)

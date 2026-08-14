@@ -12,10 +12,7 @@ namespace FracturedChorus.UI.Loading
     {
         public const string ResourcesPath = "UI/LoadingScreen";
         private const int SortingOrder = 500;
-        private static readonly Color SkyFillColor = new Color(10f / 255f, 5f / 255f, 24f / 255f, 1f);
-        private static readonly Color TrackColor = new Color(1f, 0.306f, 0.784f, 1f);
-        private static readonly Color TrackOutlineColor = new Color(1f, 0.3f, 0.78f, 0.55f);
-        private static readonly Color FillColor = new Color(1f, 0.92f, 0.96f, 1f);
+        private static readonly Color DimColor = new Color(0.02f, 0.01f, 0.06f, 0.82f);
 
         public static LoadingScreenController Instance { get; private set; }
         public static bool IsBusy => Instance != null && Instance._busy;
@@ -84,33 +81,7 @@ namespace FracturedChorus.UI.Loading
 
             var skyFill = CreateImage(root.transform, "SkyFill");
             StretchFull(skyFill.rectTransform);
-            skyFill.color = SkyFillColor;
-
-            var clouds = CreateImage(root.transform, "Clouds");
-            SetTopStretch(clouds.rectTransform, 280f);
-            clouds.sprite = LoadSpriteAtPath("Assets/FracturedChorus/Art/UI/LoadingScreen/loading_clouds.png");
-
-            var notesStars = CreateImage(root.transform, "NotesStars");
-            SetCenteredRect(notesStars.rectTransform, 900f, 400f, 0f, 0f);
-            notesStars.sprite = LoadSpriteAtPath("Assets/FracturedChorus/Art/UI/LoadingScreen/loading_notes_stars.png");
-
-            var skyline = CreateImage(root.transform, "Skyline");
-            StretchFull(skyline.rectTransform);
-            skyline.rectTransform.offsetMin = new Vector2(0f, 220f);
-            skyline.rectTransform.offsetMax = new Vector2(0f, -80f);
-            skyline.sprite = LoadSpriteAtPath("Assets/FracturedChorus/Art/UI/LoadingScreen/loading_skyline.png");
-
-            var buildingsSigns = CreateImage(root.transform, "BuildingsSigns");
-            StretchFull(buildingsSigns.rectTransform);
-            buildingsSigns.sprite = LoadSpriteAtPath("Assets/FracturedChorus/Art/UI/LoadingScreen/loading_buildings_signs.png");
-
-            var clef = CreateImage(root.transform, "Clef");
-            SetCenteredRect(clef.rectTransform, 520f, 640f, 0f, 40f);
-            clef.sprite = LoadSpriteAtPath("Assets/FracturedChorus/Art/UI/LoadingScreen/loading_clef.png");
-
-            var floor = CreateImage(root.transform, "Floor");
-            SetBottomStretch(floor.rectTransform, 380f);
-            floor.sprite = LoadSpriteAtPath("Assets/FracturedChorus/Art/UI/LoadingScreen/loading_floor.png");
+            skyFill.color = DimColor;
 
             var uiGroup = CreateRect(root.transform, "UiGroup");
             uiGroup.anchorMin = new Vector2(0.5f, 0.12f);
@@ -139,31 +110,17 @@ namespace FracturedChorus.UI.Loading
 
             var track = CreateImage(bar, "Track");
             StretchFull(track.rectTransform);
-            track.color = TrackColor;
-            track.type = Image.Type.Simple;
-            var outline = track.gameObject.AddComponent<Outline>();
-            outline.effectColor = TrackOutlineColor;
-            outline.effectDistance = new Vector2(2f, -2f);
-            outline.useGraphicAlpha = true;
+            track.type = Image.Type.Sliced;
+            track.gameObject.AddComponent<Outline>();
 
             var fill = CreateImage(bar, "Fill");
-            StretchFull(fill.rectTransform);
-            fill.color = FillColor;
             fill.raycastTarget = false;
-            fill.type = Image.Type.Filled;
-            fill.fillMethod = Image.FillMethod.Horizontal;
-            fill.fillOrigin = 0;
-            fill.fillAmount = 0f;
+            fill.type = Image.Type.Sliced;
 
-            var percentLabel = CreateText(bar, "PercentLabel");
-            percentLabel.rectTransform.anchorMin = new Vector2(0f, 0.5f);
-            percentLabel.rectTransform.anchorMax = new Vector2(0f, 0.5f);
-            percentLabel.rectTransform.pivot = new Vector2(0.5f, 0.5f);
-            percentLabel.rectTransform.sizeDelta = new Vector2(96f, 24f);
-            percentLabel.rectTransform.anchoredPosition = new Vector2(24f, 0f);
-            percentLabel.alignment = TextAnchor.MiddleLeft;
-            percentLabel.fontSize = 18;
-            percentLabel.fontStyle = FontStyle.Bold;
+            var percentLabel = CreateText(fill.rectTransform, "PercentLabel");
+            percentLabel.alignment = TextAnchor.MiddleRight;
+            percentLabel.fontSize = 16;
+            percentLabel.fontStyle = FontStyle.Normal;
             percentLabel.text = "0%";
 
             var view = root.AddComponent<LoadingScreenView>();
@@ -174,9 +131,10 @@ namespace FracturedChorus.UI.Loading
                 percentLabel,
                 loadingLabel,
                 percentLabel.rectTransform,
-                clef.rectTransform,
-                notesStars.rectTransform);
-            view.BindLayers(skyFill, clouds, skyline, buildingsSigns, floor);
+                null,
+                null);
+            view.BindLayers(skyFill, null, null, null, null);
+            view.ApplyChrome();
             view.SetProgress(0f);
             view.SetVisible(false, true);
 
@@ -197,6 +155,7 @@ namespace FracturedChorus.UI.Loading
 
             Instance = this;
             EnsureView();
+            view?.ApplyChrome();
             HideImmediate();
         }
 
@@ -245,6 +204,7 @@ namespace FracturedChorus.UI.Loading
         {
             if (view != null)
             {
+                view.PickRandomBackground();
                 view.SetProgress(0f);
                 view.SetVisible(true, false);
             }
@@ -418,42 +378,6 @@ namespace FracturedChorus.UI.Loading
             rect.sizeDelta = Vector2.zero;
             rect.offsetMin = Vector2.zero;
             rect.offsetMax = Vector2.zero;
-        }
-
-        private static void SetCenteredRect(RectTransform rect, float width, float height, float x, float y)
-        {
-            rect.anchorMin = new Vector2(0.5f, 0.5f);
-            rect.anchorMax = new Vector2(0.5f, 0.5f);
-            rect.pivot = new Vector2(0.5f, 0.5f);
-            rect.sizeDelta = new Vector2(width, height);
-            rect.anchoredPosition = new Vector2(x, y);
-        }
-
-        private static void SetTopStretch(RectTransform rect, float height)
-        {
-            rect.anchorMin = new Vector2(0f, 1f);
-            rect.anchorMax = new Vector2(1f, 1f);
-            rect.pivot = new Vector2(0.5f, 1f);
-            rect.anchoredPosition = Vector2.zero;
-            rect.sizeDelta = new Vector2(0f, height);
-        }
-
-        private static void SetBottomStretch(RectTransform rect, float height)
-        {
-            rect.anchorMin = new Vector2(0f, 0f);
-            rect.anchorMax = new Vector2(1f, 0f);
-            rect.pivot = new Vector2(0.5f, 0f);
-            rect.anchoredPosition = Vector2.zero;
-            rect.sizeDelta = new Vector2(0f, height);
-        }
-
-        private static Sprite LoadSpriteAtPath(string assetPath)
-        {
-#if UNITY_EDITOR
-            return UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(assetPath);
-#else
-            return null;
-#endif
         }
     }
 }

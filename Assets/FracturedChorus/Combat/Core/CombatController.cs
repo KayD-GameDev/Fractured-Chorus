@@ -35,6 +35,7 @@ namespace FracturedChorus.Combat.Core
 
         [SerializeField] private CombatExecuteOverlayUIView executeOverlay;
         [SerializeField] private CombatResultOverlayUIView resultOverlay;
+        [SerializeField] private CombatPhaseBannerView phaseBanner;
         [SerializeField] private BlockInputController blockInput;
         [SerializeField] private DeployFormationHintView deployFormationHint;
 
@@ -196,14 +197,8 @@ namespace FracturedChorus.Combat.Core
             if (_usesRunMusic)
             {
                 RunMusicSession.Instance?.SetMode(RunMusicMode.Combat);
-                UpdateExecuteOverlayVisibility(_session?.Phase ?? CombatPhase.Planning);
-                ApplySlotFloorVisibilityForCurrentPhase();
-                RefreshDeployFormationHint();
-                OnCombatIntroComplete();
-                return;
             }
-
-            if (_musicSync != null && !_musicSync.IsPlaying)
+            else if (_musicSync != null && !_musicSync.IsPlaying)
             {
                 _musicSync.PlayBossMusic();
             }
@@ -213,11 +208,10 @@ namespace FracturedChorus.Combat.Core
             RefreshDeployFormationHint();
             _session?.SetTimelineRunning(true);
 
+            var introSec = ResolveIntroDurationSec();
             if (timelineView != null)
             {
-                timelineView.BeginIntroPlayback(
-                    CombatTimelineProfile.CombatIntroDurationSec,
-                    OnCombatIntroComplete);
+                timelineView.BeginIntroPlayback(introSec, OnCombatIntroComplete);
                 return;
             }
 
@@ -229,16 +223,30 @@ namespace FracturedChorus.Combat.Core
             _combatIntroRoutine = StartCoroutine(CombatIntroFallbackRoutine());
         }
 
+        private static float ResolveIntroDurationSec()
+        {
+            return Mathf.Max(0f, CombatTimelineProfile.CombatIntroDurationSec);
+        }
+
+        private float ResolveBeatDurationSec()
+        {
+            if (_musicSync != null && _musicSync.BeatDuration > 0.05f)
+            {
+                return _musicSync.BeatDuration;
+            }
+
+            return 60f / TimelineConstants.BossRemixBpm;
+        }
+
         private IEnumerator CombatIntroFallbackRoutine()
         {
-            var wait = Mathf.Max(0f, CombatTimelineProfile.CombatIntroDurationSec);
+            var wait = ResolveIntroDurationSec();
             if (wait > 0f)
             {
                 yield return new WaitForSeconds(wait);
             }
 
             OnCombatIntroComplete();
-            _combatIntroRoutine = null;
         }
 
         private void OnCombatIntroComplete()
@@ -248,15 +256,39 @@ namespace FracturedChorus.Combat.Core
                 return;
             }
 
-            _session.EndCombatIntro();
             _session.SetTimelineRunning(false);
-            _musicSync?.EnterPlanningDuck();
+            _combatIntroRoutine = StartCoroutine(PlayOpeningBannersThenPlanning());
+        }
+
+        private IEnumerator PlayOpeningBannersThenPlanning()
+        {
+            var beat = ResolveBeatDurationSec();
+            var banner = EnsurePhaseBanner();
+            if (banner != null)
+            {
+                yield return banner.PlayBattleStartRoutine(beat);
+            }
+
             PlayPlanningTransitionSfx();
+            if (banner != null)
+            {
+                yield return banner.PlayPlanningRoutine(beat);
+            }
+
+            if (_session == null || _session.IsEncounterOver)
+            {
+                _combatIntroRoutine = null;
+                yield break;
+            }
+
+            _session.EndCombatIntro();
+            _musicSync?.EnterPlanningDuck();
             timelineView?.RefreshTelegraphsAndSlots();
             UpdateExecuteOverlayVisibility(_session.Phase);
             ApplySlotFloorVisibilityForCurrentPhase();
             RefreshDeployFormationHint();
             TryStartCombatTutorial();
+            _combatIntroRoutine = null;
         }
 
         private void PlayPlanningTransitionSfx()
@@ -279,6 +311,22 @@ namespace FracturedChorus.Combat.Core
             }
 
             return _combatSfx;
+        }
+
+        private CombatPhaseBannerView EnsurePhaseBanner()
+        {
+            if (phaseBanner == null)
+            {
+                phaseBanner = FindAnyObjectByType<CombatPhaseBannerView>(FindObjectsInactive.Include);
+            }
+
+            if (phaseBanner == null)
+            {
+                phaseBanner = CombatPhaseBannerView.EnsureOn(null);
+            }
+
+            phaseBanner?.EnsureOverlayCanvas();
+            return phaseBanner;
         }
 
         private void Start()
@@ -361,7 +409,7 @@ namespace FracturedChorus.Combat.Core
             _boardDrag?.CancelActiveDrag();
             ForceCancelRelocate();
 
-            _boardDrag?.SetSlotFloorsVisible(false);
+            _boardDrag?.SetSlotFloorsVisible(false, GridSide.Player);
 
             skillPanelView?.Hide();
 
@@ -708,6 +756,7 @@ namespace FracturedChorus.Combat.Core
 
             UpdateExecuteOverlayVisibility(_session.Phase);
             PlayPlanningTransitionSfx();
+            EnsurePhaseBanner()?.PlayPlanning();
             RefreshDeployFormationHint();
             _segmentCompleteRoutine = null;
         }
@@ -832,13 +881,14 @@ namespace FracturedChorus.Combat.Core
 
 
         private static void RefreshCoverHud()
-
         {
+            if (!CoverHudView.UiEnabled)
+            {
+                return;
+            }
 
             var hud = UnityEngine.Object.FindAnyObjectByType<CoverHudView>();
-
             hud?.Refresh();
-
         }
 
 
@@ -1149,7 +1199,10 @@ namespace FracturedChorus.Combat.Core
             }
 
             CombatEncounterHandoff.SetResult(victory);
-            if (victory)
+            var foughtId = !string.IsNullOrEmpty(_activeEncounterId)
+                ? _activeEncounterId
+                : CombatEncounterHandoff.LastFoughtEncounterId;
+            if (victory && EncounterCatalog.IsBoss(foughtId))
             {
                 CadenceMapController.MarkBossVictoryPending();
             }
@@ -1204,19 +1257,11 @@ namespace FracturedChorus.Combat.Core
 
 
 
-        /// <summary>
-        /// Player hex floors show through every planning window; enemy floors stay hidden.
-        /// </summary>
         private void ApplySlotFloorVisibilityForCurrentPhase()
-
         {
-
             var showPlayerFloors = _session != null && _session.IsPlanningWindowOpen;
-
             _boardDrag?.SetSlotFloorsVisible(false, GridSide.Enemy);
-
             _boardDrag?.SetSlotFloorsVisible(showPlayerFloors, GridSide.Player);
-
         }
 
 

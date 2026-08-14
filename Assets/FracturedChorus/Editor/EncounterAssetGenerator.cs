@@ -27,13 +27,15 @@ namespace FracturedChorus.Editor
             WriteEncounter(EncounterCatalog.BattleGrunts, new[]
             {
                 Spawn(grunt, GridSide.Enemy, 2, 1),
+                Spawn(grunt, GridSide.Enemy, 2, 2),
                 Spawn(grunt, GridSide.Enemy, 2, 3)
             });
 
+            var elite = LoadPreset("UnitPresets/UnitPreset_Elite_1") ?? grunt;
             WriteEncounter(EncounterCatalog.EliteGrunts, new[]
             {
                 Spawn(grunt, GridSide.Enemy, 2, 1),
-                SpawnRaw(grunt, GridSide.Enemy, 1, 1),
+                SpawnRaw(elite, GridSide.Enemy, 1, 1),
                 Spawn(grunt, GridSide.Enemy, 2, 3)
             });
 

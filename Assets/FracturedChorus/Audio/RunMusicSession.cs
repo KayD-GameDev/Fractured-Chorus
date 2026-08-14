@@ -259,15 +259,31 @@ namespace FracturedChorus.Audio
         {
             if (_source == null)
             {
-                _source = gameObject.AddComponent<AudioSource>();
+                _source = gameObject.GetComponent<AudioSource>();
+                if (_source == null)
+                {
+                    _source = gameObject.AddComponent<AudioSource>();
+                }
+
                 _source.playOnAwake = false;
                 _source.loop = false;
                 _source.spatialBlend = 0f;
             }
 
-            _lowPass ??= gameObject.GetComponent<AudioLowPassFilter>()
-                         ?? gameObject.AddComponent<AudioLowPassFilter>();
-            _lowPass.cutoffFrequency = 22000f;
+            if (_lowPass == null)
+            {
+                _lowPass = gameObject.GetComponent<AudioLowPassFilter>();
+                if (_lowPass == null)
+                {
+                    _lowPass = gameObject.AddComponent<AudioLowPassFilter>();
+                }
+            }
+
+            if (_lowPass != null)
+            {
+                _lowPass.cutoffFrequency = 22000f;
+                _lowPass.lowpassResonanceQ = 1f;
+            }
         }
 
         private void StartFade(float targetVolume, float targetCutoff, bool immediate)
@@ -284,12 +300,20 @@ namespace FracturedChorus.Audio
         private IEnumerator FadeRoutine(float targetVolume, float targetCutoff, bool immediate)
         {
             EnsureAudio();
-            var startVol = _source.volume;
-            var startCutoff = _lowPass.cutoffFrequency;
+            var startVol = _source != null ? _source.volume : 0f;
+            var startCutoff = _lowPass != null ? _lowPass.cutoffFrequency : 22000f;
             if (immediate)
             {
-                _source.volume = targetVolume;
-                _lowPass.cutoffFrequency = targetCutoff;
+                if (_source != null)
+                {
+                    _source.volume = targetVolume;
+                }
+
+                if (_lowPass != null)
+                {
+                    _lowPass.cutoffFrequency = targetCutoff;
+                }
+
                 _fadeRoutine = null;
                 yield break;
             }
@@ -297,13 +321,29 @@ namespace FracturedChorus.Audio
             for (var t = 0f; t < fadeSec; t += Time.unscaledDeltaTime)
             {
                 var a = Mathf.Clamp01(t / fadeSec);
-                _source.volume = Mathf.Lerp(startVol, targetVolume, a);
-                _lowPass.cutoffFrequency = Mathf.Lerp(startCutoff, targetCutoff, a);
+                if (_source != null)
+                {
+                    _source.volume = Mathf.Lerp(startVol, targetVolume, a);
+                }
+
+                if (_lowPass != null)
+                {
+                    _lowPass.cutoffFrequency = Mathf.Lerp(startCutoff, targetCutoff, a);
+                }
+
                 yield return null;
             }
 
-            _source.volume = targetVolume;
-            _lowPass.cutoffFrequency = targetCutoff;
+            if (_source != null)
+            {
+                _source.volume = targetVolume;
+            }
+
+            if (_lowPass != null)
+            {
+                _lowPass.cutoffFrequency = targetCutoff;
+            }
+
             _fadeRoutine = null;
         }
 

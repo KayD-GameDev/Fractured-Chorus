@@ -7,6 +7,7 @@ namespace FracturedChorus.RunMap.Core
         public int Seed { get; private set; }
         public MapGenerationProfile Profile { get; private set; } = MapGenerationProfile.Default;
         public MapNodeData BossNode { get; private set; }
+        public MapNodeData StartNode { get; private set; }
         public IReadOnlyList<MapNodeData> Nodes => _nodes;
 
         private readonly List<MapNodeData> _nodes = new List<MapNodeData>();
@@ -21,6 +22,7 @@ namespace FracturedChorus.RunMap.Core
             _byId.Clear();
             _byCell.Clear();
             BossNode = null;
+            StartNode = null;
         }
 
         public MapNodeData AddNode(int floor, int column, MapNodeType type, bool isBoss = false)
@@ -37,7 +39,7 @@ namespace FracturedChorus.RunMap.Core
             _nodes.Add(node);
             _byId[node.Id] = node;
 
-            if (!isBoss)
+            if (!isBoss && type != MapNodeType.Start)
             {
                 _byCell[(floor, column)] = node;
             }
@@ -45,6 +47,11 @@ namespace FracturedChorus.RunMap.Core
             if (isBoss)
             {
                 BossNode = node;
+            }
+
+            if (type == MapNodeType.Start)
+            {
+                StartNode = node;
             }
 
             return node;
@@ -118,6 +125,11 @@ namespace FracturedChorus.RunMap.Core
             if (BossNode != null && !keepIds.Contains(BossNode.Id))
             {
                 BossNode = null;
+            }
+
+            if (StartNode != null && !keepIds.Contains(StartNode.Id))
+            {
+                StartNode = null;
             }
         }
     }

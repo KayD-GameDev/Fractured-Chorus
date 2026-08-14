@@ -197,6 +197,15 @@ namespace FracturedChorus.RunMap
 
             var node = Graph.GetNode(CombatEncounterHandoff.SourceNodeId);
             MarkNodeCleared(node);
+            if (node == null)
+            {
+                return;
+            }
+
+            State.EnterNode(node);
+            mapView?.RefreshInteraction(Graph, State);
+            mapView?.ScrollToNode(node, immediate: true);
+            RunMapRunSave.Persist(Graph, State);
         }
 
         private void MarkNodeCleared(MapNodeData node)
@@ -262,7 +271,22 @@ namespace FracturedChorus.RunMap
             mapView.RefreshInteraction(graph, State);
             SyncLegendPanel(graph);
             EnsureNodeInfoPanel()?.Hide();
-            mapView.EnsureScrollShowsStartOnOpen(true);
+            if (State.CurrentNodeId >= 0)
+            {
+                var current = graph.GetNode(State.CurrentNodeId);
+                if (current != null)
+                {
+                    mapView.ScrollToNode(current, immediate: true);
+                }
+                else
+                {
+                    mapView.EnsureScrollShowsStartOnOpen(true);
+                }
+            }
+            else
+            {
+                mapView.EnsureScrollShowsStartOnOpen(true);
+            }
 
             if (graph.StartNode != null && State.CurrentNodeId == graph.StartNode.Id)
             {
@@ -618,6 +642,7 @@ namespace FracturedChorus.RunMap
                 RunMapSceneCatalog.RunMapPrototype,
                 node != null ? node.Id : -1,
                 roll);
+            RunMapRunSave.Persist(Graph, State);
             UpdateLabels(status);
             BeginBossCombatTransition();
         }

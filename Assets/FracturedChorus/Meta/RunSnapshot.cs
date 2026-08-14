@@ -10,6 +10,7 @@ namespace FracturedChorus.Meta
         public int CurrentNodeId = -1;
         public int ActiveSector;
         public bool HasActiveRun;
+        public int[] ClearedNodeIds = Array.Empty<int>();
 
         public void Clear()
         {
@@ -18,6 +19,7 @@ namespace FracturedChorus.Meta
             CurrentNodeId = -1;
             ActiveSector = 0;
             HasActiveRun = false;
+            ClearedNodeIds = Array.Empty<int>();
         }
     }
 }

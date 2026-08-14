@@ -145,7 +145,7 @@ namespace FracturedChorus.UI
         private float _roundStartMusicalBeat;
         private int _roundSegmentIndex;
         private int _segmentStartBeat;
-        private float _introEndAudioTimeSec = -1f;
+        private int _introBeatCount;
         private Action _introCompleteCallback;
 
         [SerializeField] private RectTransform laneAvatarGutter;
@@ -1536,7 +1536,7 @@ namespace FracturedChorus.UI
 
             ResetBrowsePanToPlayhead();
 
-            _introEndAudioTimeSec = -1f;
+            _introBeatCount = 0;
             _introCompleteCallback = null;
             _autoPlayCompleted = false;
             _pausedForPlanning = false;
@@ -1555,16 +1555,25 @@ namespace FracturedChorus.UI
         }
 
         /// <summary>
-        /// Fight-start intro: scan advances with music for durationSec, then holds for Planning.
+        /// Fight-start intro: scan advances with music for intro beats, then holds for Planning.
         /// </summary>
         public void BeginIntroPlayback(float durationSec, Action onComplete)
         {
+            var introBeats = CombatTimelineProfile.CombatIntroBeatCount;
+            if (introBeats <= 0 && durationSec <= 0f)
+            {
+                onComplete?.Invoke();
+                return;
+            }
+
             if (_isPlaybackActive)
             {
                 return;
             }
 
-            _introEndAudioTimeSec = Mathf.Max(0f, durationSec);
+            _introBeatCount = introBeats > 0
+                ? introBeats
+                : Mathf.Max(1, Mathf.RoundToInt(durationSec / Mathf.Max(0.05f, GetBeatWaitDuration())));
             _introCompleteCallback = onComplete;
             _autoPlayCompleted = false;
             _pausedForPlanning = false;
@@ -1591,20 +1600,14 @@ namespace FracturedChorus.UI
 
             _isPlaybackActive = true;
             PrepareSegmentScanStart(useMusicSync: true, continueFromHold: false);
-            _roundStartMusicalBeat = 0f;
+            _roundStartMusicalBeat = ActiveMusic.TotalMusicalBeat;
             _localBeat = 0f;
             EnsureTrackLine();
 
             while (_isPlaybackActive)
             {
-                if (ActiveMusic.SourceTimeSec >= _introEndAudioTimeSec)
-                {
-                    EnterIntroPlanningHold();
-                    yield break;
-                }
-
                 _localBeat = Mathf.Max(0f, ActiveMusic.TotalMusicalBeat - _roundStartMusicalBeat);
-                if (_localBeat >= GetSegmentBeatSpan())
+                if (_localBeat >= _introBeatCount)
                 {
                     EnterIntroPlanningHold();
                     yield break;
@@ -1630,19 +1633,11 @@ namespace FracturedChorus.UI
             PrepareSegmentScanStart(useMusicSync: false, continueFromHold: false);
             _localBeat = 0f;
             EnsureTrackLine();
-            var elapsed = 0f;
 
             while (_isPlaybackActive)
             {
-                elapsed += Time.deltaTime;
-                if (elapsed >= _introEndAudioTimeSec)
-                {
-                    EnterIntroPlanningHold();
-                    yield break;
-                }
-
                 _localBeat += Time.deltaTime / GetBeatWaitDuration();
-                if (_localBeat >= GetSegmentBeatSpan())
+                if (_localBeat >= _introBeatCount)
                 {
                     EnterIntroPlanningHold();
                     yield break;
@@ -1690,7 +1685,7 @@ namespace FracturedChorus.UI
             RefreshLaneMarkers();
             var callback = _introCompleteCallback;
             _introCompleteCallback = null;
-            _introEndAudioTimeSec = -1f;
+            _introBeatCount = 0;
             callback?.Invoke();
         }
 

@@ -130,10 +130,13 @@ namespace FracturedChorus.Combat.Presentation
             }
 
             CombatCounterResolver.CollectCounteredEnemyUnits(timeline, beatIndex, _enemiesScratch);
-            foreach (var unit in _enemiesScratch)
+            if (!deferPerfectToEncounter)
             {
-                var mode = _policy.DecideUnitBody("enemy:" + unit.UnitId, dspNow, useBurst: false);
-                PlayEnemyBody(unit, mode);
+                foreach (var unit in _enemiesScratch)
+                {
+                    var mode = _policy.DecideUnitBody("enemy:" + unit.UnitId, dspNow, useBurst: false);
+                    PlayEnemyBody(unit, mode);
+                }
             }
 
             if (partyCount >= burstCount)

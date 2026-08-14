@@ -148,6 +148,22 @@ namespace FracturedChorus.Combat.Units
             };
         }
 
+        public static UnitStats CreateElitePreset()
+        {
+            return new UnitStats
+            {
+                Element = HarmonyElement.Rhythm,
+                Strength = 42f,
+                Magic = 10f,
+                Endurance = 14f,
+                HeartBeat = 125,
+                BaseLuck = 6f,
+                CritMultiplier = 1.15f,
+                MaxHp = 320,
+                BaseSpeed = 9
+            };
+        }
+
         public UnitStats Clone()
         {
             return (UnitStats)MemberwiseClone();

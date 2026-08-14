@@ -33,3 +33,6 @@
 
 ## Concerns
 - `CombatController.cs` already contained unrelated unstaged edits before this task, so only the `OnResultRetry()` hunk should be staged for the task commit.
+
+## Review follow-up
+- `MainMenuStartGameController.cs`: when `LoadByName` returns false in `BeginNewGameRoutine` and `LoadGameRoutine`, call `_bgmController?.RestoreVolume()` alongside menu re-enable so ducked BGM is not left muted after a failed load handoff.

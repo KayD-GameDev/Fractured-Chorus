@@ -7,12 +7,12 @@ namespace FracturedChorus.Tests
     public class CombatTimelineProfileTests
     {
         [Test]
-        public void ApplyRun_Sets689BeatsAndZeroIntro()
+        public void ApplyRun_Sets689BeatsAndFiveIntroBeats()
         {
             CombatTimelineProfile.ApplyRun();
             Assert.AreEqual(689, CombatTimelineProfile.TotalBeats);
-            Assert.AreEqual(0, CombatTimelineProfile.CombatIntroBeatCount);
-            Assert.AreEqual(0f, CombatTimelineProfile.CombatIntroDurationSec);
+            Assert.AreEqual(5, CombatTimelineProfile.CombatIntroBeatCount);
+            Assert.AreEqual(5f * (60f / 152f), CombatTimelineProfile.CombatIntroDurationSec, 0.001f);
         }
 
         [Test]

@@ -38,6 +38,8 @@ namespace FracturedChorus.UI
         [SerializeField] private string beCounteredStateName;
         [SerializeField] private string idleStateName;
         [SerializeField] private string movingStateName;
+        [SerializeField] private string deathStateName;
+        [SerializeField] private string skillStateName;
         [SerializeField] [Range(0f, 1f)] private float hitRetriggerNormalizedTime = 0.35f;
         [Tooltip("Keep sprite/color/Transform scale authored in the scene.")]
         [SerializeField] private bool preserveSceneVisuals = true;
@@ -83,6 +85,52 @@ namespace FracturedChorus.UI
                     SetAnimStateIfEmpty(ref beCounteredStateName, "Mini 2 - Hurt");
                     SetAnimStateIfEmpty(ref idleStateName, "Mini 2 - Idle");
                     SetAnimStateIfEmpty(ref movingStateName, "Mini 2 - Moving");
+                    break;
+                case CombatEnemyKeys.Enemy1:
+                    SetAnimStateIfEmpty(ref beCounteredStateName, "Enemy 1 - Hurt");
+                    SetAnimStateIfEmpty(ref idleStateName, "Enemy 1 - Idle");
+                    SetAnimStateIfEmpty(ref movingStateName, "Enemy 1 - Moving");
+                    SetAnimStateIfEmpty(ref guardStateName, "Enemy 1 - Guard");
+                    SetAnimStateIfEmpty(ref skillStateName, "Enemy 1 - Guard");
+                    SetAnimStateIfEmpty(ref deathStateName, "Enemy 1 - Death");
+                    break;
+                case CombatEnemyKeys.Enemy2:
+                    SetAnimStateIfEmpty(ref beCounteredStateName, "Enemy 2 - Hurt");
+                    SetAnimStateIfEmpty(ref idleStateName, "Enemy 2 - Idle");
+                    SetAnimStateIfEmpty(ref movingStateName, "Enemy 2 - Moving");
+                    SetAnimStateIfEmpty(ref skillStateName, "Enemy 2 - Skill");
+                    SetAnimStateIfEmpty(ref deathStateName, "Enemy 2 - Dead");
+                    break;
+                case CombatEnemyKeys.Enemy3:
+                    SetAnimStateIfEmpty(ref beCounteredStateName, "Enemy 3 - Hurt");
+                    SetAnimStateIfEmpty(ref idleStateName, "Enemy 3 - Idle");
+                    SetAnimStateIfEmpty(ref movingStateName, "Enemy 3 - Moving");
+                    SetAnimStateIfEmpty(ref skillStateName, "Enemy 3 - Skill 1");
+                    SetAnimStateIfEmpty(ref deathStateName, "Enemy 3 - Dead");
+                    break;
+                case CombatEnemyKeys.Elite1:
+                    SetAnimStateIfEmpty(ref beCounteredStateName, "Elite 1 -Hurt Sprite");
+                    SetAnimStateIfEmpty(ref idleStateName, "Elite 1 -Idle Sprite");
+                    SetAnimStateIfEmpty(ref movingStateName, "Elite 1 -Moving Sprite");
+                    SetAnimStateIfEmpty(ref guardStateName, "Elite 1 -Guard Sprite");
+                    SetAnimStateIfEmpty(ref skillStateName, "Elite 1 - Skill Sprite");
+                    SetAnimStateIfEmpty(ref deathStateName, "Elite 1 - Death Sprite");
+                    break;
+                case CombatEnemyKeys.Elite2:
+                    SetAnimStateIfEmpty(ref beCounteredStateName, "Elite 2 - Hurt Sprite");
+                    SetAnimStateIfEmpty(ref idleStateName, "Elite 2 - Idle Sprite");
+                    SetAnimStateIfEmpty(ref movingStateName, "Elite 2 - Moving Sprite");
+                    SetAnimStateIfEmpty(ref guardStateName, "Elite 2 - Guard Sprite");
+                    SetAnimStateIfEmpty(ref skillStateName, "Elite 2 - Skill Sprite");
+                    SetAnimStateIfEmpty(ref deathStateName, "Elite 2 - Death Sprite");
+                    break;
+                case CombatEnemyKeys.Elite3:
+                    SetAnimStateIfEmpty(ref beCounteredStateName, "Elite 3 - Hurt");
+                    SetAnimStateIfEmpty(ref idleStateName, "Elite 3 - Idle");
+                    SetAnimStateIfEmpty(ref movingStateName, "Elite 3 - Moving");
+                    SetAnimStateIfEmpty(ref guardStateName, "Elite 3 - Guard");
+                    SetAnimStateIfEmpty(ref skillStateName, "Elite 3 - Skill");
+                    SetAnimStateIfEmpty(ref deathStateName, "Elite 3 - Hurt");
                     break;
                 case "boss_despair":
                     SetAnimStateIfEmpty(ref beCounteredStateName, "Boss - Be Countered");
@@ -172,6 +220,11 @@ namespace FracturedChorus.UI
         {
             ResolveAnimatorReference();
             var clip = ResolveBeCounteredClip(out var stateName);
+            if (string.IsNullOrEmpty(stateName) && !string.IsNullOrEmpty(beCounteredStateName))
+            {
+                stateName = beCounteredStateName;
+            }
+
             PlayCombatAnimation(clip, stateName, normalizedTime, scheduleIdle);
         }
 
@@ -181,6 +234,74 @@ namespace FracturedChorus.UI
             var clip = ResolveBeCounteredClip(out var stateName);
             PlayCombatAnimation(clip, stateName, hitRetriggerNormalizedTime, scheduleIdle: true);
         }
+
+        public void PlayDeathAnimation()
+        {
+            ResolveAnimatorReference();
+            var clip = ResolveDeathClip(out var stateName);
+            if (string.IsNullOrEmpty(stateName) && !string.IsNullOrEmpty(deathStateName))
+            {
+                stateName = deathStateName;
+            }
+
+            if (clip == null && string.IsNullOrEmpty(stateName))
+            {
+                clip = ResolveBeCounteredClip(out stateName);
+            }
+
+            if (string.IsNullOrEmpty(stateName))
+            {
+                return;
+            }
+
+            PlayCombatAnimation(clip, stateName, 0f, scheduleIdle: false);
+        }
+
+        public void PlayCastHold(SkillDefinitionSO skill = null)
+        {
+            ResolveAnimatorReference();
+            if (skill != null && skill.IsGuard)
+            {
+                var guard = ResolveGuardClip(out var guardState);
+                if (guard != null)
+                {
+                    PlayCombatAnimation(guard, guardState, 0f, scheduleIdle: false);
+                    return;
+                }
+            }
+
+            var clip = ResolveSkillClip(skill, out var stateName);
+            if (clip == null && !string.IsNullOrEmpty(skillStateName))
+            {
+                clip = ResolveClipByKeyword(skillStateName, skillStateName, out stateName);
+            }
+
+            if (clip == null)
+            {
+                clip = ResolveClipByKeyword(null, "Skill", out stateName);
+            }
+
+            if (clip == null)
+            {
+                clip = ResolveGuardClip(out stateName);
+            }
+
+            if (clip == null && !string.IsNullOrEmpty(skillStateName))
+            {
+                PlayCombatAnimation(null, skillStateName, 0f, scheduleIdle: false);
+                return;
+            }
+
+            if (clip == null)
+            {
+                PlayCounterHold();
+                return;
+            }
+
+            PlayCombatAnimation(clip, stateName, 0f, scheduleIdle: false);
+        }
+
+        private const float MinCombatPoseHoldSec = 0.4f;
 
         private Coroutine _combatAnimRoutine;
         private Coroutine _hpPunchRoutine;
@@ -194,7 +315,7 @@ namespace FracturedChorus.UI
 
         private void PlayCombatAnimation(AnimationClip clip, string stateName, float normalizedTime, bool scheduleIdle)
         {
-            if (animator == null || clip == null || string.IsNullOrEmpty(stateName))
+            if (animator == null || string.IsNullOrEmpty(stateName))
             {
                 return;
             }
@@ -206,13 +327,24 @@ namespace FracturedChorus.UI
             }
 
             var t = Mathf.Clamp01(normalizedTime);
-            animator.Play(stateName, 0, t);
+            var hash = Animator.StringToHash(stateName);
+            if (animator.HasState(0, hash))
+            {
+                animator.Play(hash, 0, t);
+            }
+            else
+            {
+                animator.Play(stateName, 0, t);
+            }
+
+            animator.Update(0.016f);
             if (!scheduleIdle)
             {
                 return;
             }
 
-            var remaining = clip.length * (1f - t);
+            var clipHold = clip != null ? clip.length * (1f - t) : 0f;
+            var remaining = Mathf.Max(MinCombatPoseHoldSec, clipHold);
             _combatAnimRoutine = StartCoroutine(ReturnToIdleAfter(remaining));
         }
 
@@ -221,6 +353,12 @@ namespace FracturedChorus.UI
             if (seconds > 0f)
             {
                 yield return new WaitForSeconds(seconds);
+            }
+
+            if (Unit != null && !Unit.IsAlive)
+            {
+                _combatAnimRoutine = null;
+                yield break;
             }
 
             var idleState = ResolveIdleStateName();
@@ -285,6 +423,17 @@ namespace FracturedChorus.UI
             return ResolveClipByKeyword(null, "Hurt", out stateName);
         }
 
+        private AnimationClip ResolveDeathClip(out string stateName)
+        {
+            var clip = ResolveClipByKeyword(deathStateName, "Death", out stateName);
+            if (clip != null)
+            {
+                return clip;
+            }
+
+            return ResolveClipByKeyword(null, "Dead", out stateName);
+        }
+
         private AnimationClip ResolveMovingClip(out string stateName)
         {
             var clip = ResolveClipByKeyword(movingStateName, "Moving", out stateName);
@@ -300,12 +449,29 @@ namespace FracturedChorus.UI
         public void PlayMovingLoop()
         {
             ResolveAnimatorReference();
+            if (Unit != null && !Unit.IsAlive)
+            {
+                PlayDeathAnimation();
+                return;
+            }
+
             var clip = ResolveMovingClip(out var stateName);
+            if (string.IsNullOrEmpty(stateName) && !string.IsNullOrEmpty(movingStateName))
+            {
+                stateName = movingStateName;
+            }
+
             PlayCombatAnimation(clip, stateName, 0f, scheduleIdle: false);
         }
 
         public void PlayIdleState()
         {
+            if (Unit != null && !Unit.IsAlive)
+            {
+                PlayDeathAnimation();
+                return;
+            }
+
             ResolveAnimatorReference();
             if (_combatAnimRoutine != null)
             {
@@ -415,10 +581,37 @@ namespace FracturedChorus.UI
         private void PlayAttackAnimationInternal(SkillDefinitionSO skill, bool scheduleIdle)
         {
             ResolveAnimatorReference();
+            if (skill != null && skill.IsGuard)
+            {
+                var guard = ResolveGuardClip(out var guardState);
+                PlayCombatAnimation(guard, guardState, 0f, scheduleIdle);
+                return;
+            }
+
             var clip = ResolveSkillClip(skill, out var stateName);
+            if (clip == null && !string.IsNullOrEmpty(skillStateName))
+            {
+                clip = ResolveClipByKeyword(skillStateName, skillStateName, out stateName);
+            }
+
+            if (clip == null)
+            {
+                clip = ResolveClipByKeyword(null, "Skill", out stateName);
+            }
+
             if (clip == null)
             {
                 clip = ResolveClipByKeyword(null, "Attack", out stateName);
+            }
+
+            if (clip == null)
+            {
+                clip = ResolveGuardClip(out stateName);
+            }
+
+            if (clip == null && !string.IsNullOrEmpty(skillStateName))
+            {
+                stateName = skillStateName;
             }
 
             PlayCombatAnimation(clip, stateName, 0f, scheduleIdle);
@@ -445,14 +638,14 @@ namespace FracturedChorus.UI
                 clip = ResolveGuardClip(out _);
             }
 
-            return clip != null ? clip.length : 0.25f;
+            return clip != null ? Mathf.Max(MinCombatPoseHoldSec, clip.length) : MinCombatPoseHoldSec;
         }
 
         public float EstimateBeCounteredClipLength()
         {
             ResolveAnimatorReference();
             var clip = ResolveBeCounteredClip(out _);
-            return clip != null ? clip.length : 0.25f;
+            return clip != null ? Mathf.Max(MinCombatPoseHoldSec, clip.length) : MinCombatPoseHoldSec;
         }
 
         public float EstimateSkillClipLength(SkillDefinitionSO skill)
@@ -464,7 +657,7 @@ namespace FracturedChorus.UI
                 clip = ResolveClipByKeyword(null, "Attack", out _);
             }
 
-            return clip != null ? clip.length : 0.3f;
+            return clip != null ? Mathf.Max(MinCombatPoseHoldSec, clip.length) : MinCombatPoseHoldSec;
         }
 
         private AnimationClip ResolveSkillClip(SkillDefinitionSO skill, out string stateName)
@@ -505,13 +698,19 @@ namespace FracturedChorus.UI
                 }
             }
 
-            if (skill.slotKind == SkillSlotKind.Skill)
+            if (!string.IsNullOrEmpty(skillStateName))
             {
-                var bySkill = ResolveClipByKeyword(null, "Skill", out stateName);
-                if (bySkill != null && !IsSkillClipMismatch(SkillSlotKind.Skill, bySkill.name))
+                var byAuthored = ResolveClipByKeyword(skillStateName, skillStateName, out stateName);
+                if (byAuthored != null)
                 {
-                    return bySkill;
+                    return byAuthored;
                 }
+            }
+
+            var bySkill = ResolveClipByKeyword(null, "Skill", out stateName);
+            if (bySkill != null && !IsSkillClipMismatch(skill.slotKind, bySkill.name))
+            {
+                return bySkill;
             }
 
             return null;
@@ -569,7 +768,11 @@ namespace FracturedChorus.UI
                 return clip;
             }
 
-            stateName = null;
+            if (string.IsNullOrEmpty(preferredName))
+            {
+                stateName = null;
+            }
+
             return null;
         }
 
@@ -761,6 +964,7 @@ namespace FracturedChorus.UI
             bodyCollider.isTrigger = false;
             RemoveDuplicateBodyColliders();
             FitBodyColliderToSprite();
+            RefreshFeetAnchor();
         }
 
         private void EnsureVisuals()
@@ -894,7 +1098,7 @@ namespace FracturedChorus.UI
             }
         }
 
-        private void FitBodyColliderToSprite()
+        public void FitBodyColliderToSprite()
         {
             if (bodyCollider == null || spriteRenderer == null || spriteRenderer.sprite == null)
             {
@@ -915,8 +1119,19 @@ namespace FracturedChorus.UI
             bodyCollider.offset = transform.InverseTransformPoint(bounds.center);
         }
 
+        public void RefreshFeetAnchor()
+        {
+            EnsureFeetAnchor();
+            PositionFeetAnchorAtSpriteBase();
+        }
+
         private void EnsureFeetAnchor()
         {
+            if (feetAnchor == null)
+            {
+                feetAnchor = GetComponentInChildren<UnitFeetAnchor>(true);
+            }
+
             if (feetAnchor == null)
             {
                 var existing = transform.Find(FeetAnchorObjectName);
@@ -948,13 +1163,19 @@ namespace FracturedChorus.UI
                 return;
             }
 
-            var localFeetY = -0.5f;
+            var localFeet = new Vector3(0f, -0.5f, 0f);
             if (spriteRenderer != null && spriteRenderer.sprite != null)
             {
-                localFeetY = spriteRenderer.bounds.min.y - transform.position.y;
+                var worldFeet = new Vector3(
+                    transform.position.x,
+                    spriteRenderer.bounds.min.y,
+                    transform.position.z);
+                localFeet = transform.InverseTransformPoint(worldFeet);
+                localFeet.x = 0f;
+                localFeet.z = 0f;
             }
 
-            feetAnchor.transform.localPosition = new Vector3(0f, localFeetY, 0f);
+            feetAnchor.transform.localPosition = localFeet;
         }
 
         private void EnsureHpLabel()
@@ -1040,12 +1261,20 @@ namespace FracturedChorus.UI
         private void HandleHpChanged(CombatUnit unit)
         {
             RefreshHp();
-            if (!unit.IsAlive && spriteRenderer != null && Unit != null)
+            if (unit == null)
             {
-                _baseSpriteColor = new Color(Unit.PlaceholderColor.r, Unit.PlaceholderColor.g,
-                    Unit.PlaceholderColor.b, 0.35f);
-                _baseColorCaptured = true;
-                ApplySpriteTint();
+                return;
+            }
+
+            if (!unit.IsAlive)
+            {
+                PlayDeathAnimation();
+                return;
+            }
+
+            if (unit.LastHpChange.Kind == HpChangeKind.Damage && unit.LastHpChange.ShouldShowFeedback)
+            {
+                PlayBeCounteredHold();
             }
         }
 
@@ -1059,7 +1288,7 @@ namespace FracturedChorus.UI
             return transform.position + Vector3.up * 0.6f;
         }
 
-        public void PlayHpFeedback(HpChangeInfo change)
+        public void PlayHpFeedback(HpChangeInfo change, bool playHitReaction = true)
         {
             if (!change.ShouldShowFeedback)
             {
@@ -1069,6 +1298,16 @@ namespace FracturedChorus.UI
             var heal = change.Kind == HpChangeKind.Heal;
             DamageNumberPopupView.Spawn(GetDamageNumberAnchor(), change.Amount, heal, change.IsCritical);
             PunchBody(change.IsCritical);
+
+            if (heal || Unit == null)
+            {
+                return;
+            }
+
+            if (!Unit.IsAlive)
+            {
+                PlayDeathAnimation();
+            }
         }
 
         private void PunchBody(bool isCritical)

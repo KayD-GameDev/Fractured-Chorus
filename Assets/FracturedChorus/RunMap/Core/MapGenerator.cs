@@ -34,9 +34,7 @@ namespace FracturedChorus.RunMap.Core
             var pathCount = pathCountOverride ?? profile.PathCount;
             var paths = GeneratePaths(rng, pathCount, profile);
             var graph = BuildGraphFromPaths(seed, paths, profile);
-            NodeTypeAssigner.ApplyFixedFloors(graph, profile);
-            NodeTypeAssigner.AssignRandomTypes(graph, rng, weights, profile);
-            return graph;
+            return FinalizeGeneratedGraph(graph, profile, rng, weights);
         }
 
         public static MapGraph GenerateSector(
@@ -57,6 +55,7 @@ namespace FracturedChorus.RunMap.Core
         {
             var graph = BuildGraphFromPaths(seed, ReferencePaths());
             ApplyReferenceLocations(graph);
+            AttachStartNode(graph);
             return graph;
         }
 
@@ -93,6 +92,40 @@ namespace FracturedChorus.RunMap.Core
             }
 
             PathValidator.PruneToBossReachable(graph);
+            return graph;
+        }
+
+        private static void AttachStartNode(MapGraph graph)
+        {
+            if (graph.StartNode != null)
+            {
+                return;
+            }
+
+            var centerCol = BossColumnFor(graph.Profile);
+            var start = graph.AddNode(0, centerCol, MapNodeType.Start);
+            var linked = 0;
+            foreach (var entry in graph.NodesOnFloor(1))
+            {
+                graph.Connect(start.Id, entry.Id);
+                linked++;
+            }
+
+            if (linked == 0)
+            {
+                UnityEngine.Debug.LogWarning("[Fractured Chorus] Start node has no F1 connections.");
+            }
+        }
+
+        private static MapGraph FinalizeGeneratedGraph(
+            MapGraph graph,
+            MapGenerationProfile profile,
+            System.Random rng,
+            NodeTypeAssigner.WeightEntry[] weights)
+        {
+            NodeTypeAssigner.ApplyFixedFloors(graph, profile);
+            NodeTypeAssigner.AssignRandomTypes(graph, rng, weights, profile);
+            AttachStartNode(graph);
             return graph;
         }
 
@@ -482,6 +515,11 @@ namespace FracturedChorus.RunMap.Core
             var locations = ReferenceLocations();
             foreach (var node in graph.Nodes)
             {
+                if (node.IsStart || node.Type == MapNodeType.Start)
+                {
+                    continue;
+                }
+
                 if (node.IsBoss)
                 {
                     node.Type = MapNodeType.Boss;

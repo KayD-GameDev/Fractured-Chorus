@@ -98,6 +98,30 @@ namespace FracturedChorus.Combat.Grid
             return list.Remove(unit);
         }
 
+        public bool TryPlaceUnitOrEmptyCell(CombatUnit unit, ref GridPosition position)
+        {
+            if (TryPlaceUnit(unit, position))
+            {
+                return true;
+            }
+
+            var side = unit != null ? unit.Side : position.Side;
+            for (var row = 0; row < Rows; row++)
+            {
+                for (var col = 0; col < Columns; col++)
+                {
+                    var candidate = new GridPosition(side, row, col);
+                    if (TryPlaceUnit(unit, candidate))
+                    {
+                        position = candidate;
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
         public bool TrySwapUnits(CombatUnit unit, GridPosition targetPosition)
         {
             if (unit == null || !targetPosition.IsValid() || targetPosition.Side != unit.Side)

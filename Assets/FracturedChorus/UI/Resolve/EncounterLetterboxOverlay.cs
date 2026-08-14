@@ -48,7 +48,7 @@ namespace FracturedChorus.UI
         private RectTransform _topNoteB;
         private RectTransform _bottomNoteA;
         private RectTransform _bottomNoteB;
-        private CombatMusicController _music;
+        private ICombatMusicSync _music;
         private readonly float[] _spectrum = new float[SpectrumSize];
         private bool _visible;
         private bool _built;
@@ -58,7 +58,7 @@ namespace FracturedChorus.UI
 
         public bool IsVisible => _visible;
 
-        public void Show(CombatMusicController music)
+        public void Show(ICombatMusicSync music)
         {
             EnsureBuilt();
             _music = music;
@@ -116,12 +116,15 @@ namespace FracturedChorus.UI
             }
 
             var level = 0f;
-            if (_music != null && _music.TryFillSpectrum(_spectrum, fftWindow))
+            var source = CombatAudioSpectrum.ResolvePlayingSource(_music);
+            if (!CombatAudioSpectrum.TryFill(source, _spectrum, fftWindow))
             {
-                _topWave.SetSamples(_spectrum);
-                _bottomWave.SetSamples(_spectrum);
-                level = _topWave.GetAverageLevel();
+                CombatAudioSpectrum.FillBeatPulse(_spectrum, _music != null ? _music.TotalMusicalBeat : Time.unscaledTime);
             }
+
+            _topWave.SetSamples(_spectrum);
+            _bottomWave.SetSamples(_spectrum);
+            level = _topWave.GetAverageLevel();
 
             var speed = noteScrollBaseSpeed + level * noteScrollBeatBoost;
             _scrollX += speed * Time.unscaledDeltaTime;

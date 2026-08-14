@@ -30,6 +30,27 @@ namespace FracturedChorus.UI
         public int Column => column;
         public GridPosition Position => new GridPosition(side, row, column);
 
+        public static Vector3 ResolveWorld(GridPosition position, float sideGap = HexBoardLayout.DefaultSideGap)
+        {
+            var markers = FindObjectsByType<GridCellMarker>(FindObjectsInactive.Include);
+            for (var i = 0; i < markers.Length; i++)
+            {
+                var marker = markers[i];
+                if (marker == null)
+                {
+                    continue;
+                }
+
+                var slot = marker.Position;
+                if (slot.Side == position.Side && slot.Row == position.Row && slot.Column == position.Column)
+                {
+                    return marker.transform.position;
+                }
+            }
+
+            return HexBoardLayout.GetWorldPosition(position, sideGap);
+        }
+
 #if UNITY_EDITOR
         private void OnEnable()
         {

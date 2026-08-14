@@ -202,7 +202,7 @@ namespace FracturedChorus.RunMap
                 return;
             }
 
-            if (CombatEncounterHandoff.PendingReturnToNearestCamp)
+            if (CombatEncounterHandoff.HasResult || CombatEncounterHandoff.PendingReturnToNearestCamp)
             {
                 var seed = Progress.RunSeed > 0 ? Progress.RunSeed : Random.Range(1, int.MaxValue);
                 EnterInnerSector(Progress.CurrentSector, seed);
@@ -233,6 +233,7 @@ namespace FracturedChorus.RunMap
 
             var seed = bootstrap != null ? bootstrap.ResolveSeed() : Random.Range(1, int.MaxValue);
             Progress.BeginPinkyRun(seed);
+            RunMapBgmController.StopAll();
             var beatMap = Resources.Load<MusicBeatMapSO>("Music/EternalSpark_Candence_BeatMap");
             RunMusicSession.Ensure().Begin(beatMap != null ? beatMap.Clip : null, beatMap);
             EnterInnerSector(Progress.CurrentSector, seed);
@@ -296,13 +297,30 @@ namespace FracturedChorus.RunMap
             }
 
             innerController.Initialize(graph, seed);
+            var hadCombatReturn = CombatEncounterHandoff.HasResult
+                                  || CombatEncounterHandoff.PendingReturnToNearestCamp;
             var defeatReturn = CombatEncounterHandoff.PendingReturnToNearestCamp;
             innerController.ApplyCombatReturnHandoff();
             RunMusicSession.Instance?.SetMode(RunMusicMode.Map);
 
             if (mapView != null)
             {
-                mapView.EnsureScrollShowsStartOnOpen(true);
+                if (hadCombatReturn && innerController.State != null && innerController.Graph != null)
+                {
+                    var current = innerController.Graph.GetNode(innerController.State.CurrentNodeId);
+                    if (current != null)
+                    {
+                        mapView.ScrollToNode(current, immediate: true);
+                    }
+                    else
+                    {
+                        mapView.EnsureScrollShowsStartOnOpen(true);
+                    }
+                }
+                else
+                {
+                    mapView.EnsureScrollShowsStartOnOpen(true);
+                }
             }
 
             var bossLabel = pinkyVaultConfig != null
@@ -314,7 +332,9 @@ namespace FracturedChorus.RunMap
             var mapIndex = SectorMapIndex(sector);
             SetStatus(defeatReturn
                 ? $"Returned to nearest camp — set up. ({sectorTitle})"
-                : $"Pinky — Map {mapIndex}/3 · {sectorTitle} · F1 → {bossLabel}");
+                : hadCombatReturn
+                    ? $"Victory — node cleared. Choose the next path. ({sectorTitle})"
+                    : $"Pinky — Map {mapIndex}/3 · {sectorTitle} · F1 → {bossLabel}");
 
             _innerBootCoroutine = null;
         }

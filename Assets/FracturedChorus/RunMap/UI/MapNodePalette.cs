@@ -25,6 +25,7 @@ namespace FracturedChorus.RunMap.UI
             MapNodeType.Relay => FcColorTokens.RunMap.RelayStroke,
             MapNodeType.Treasure => FcColorTokens.RunMap.TreasureStroke,
             MapNodeType.Boss => FcColorTokens.RunMap.BossStroke,
+            MapNodeType.Start => FcColorTokens.Brand.CyanNeonCore,
             _ => Color.gray
         };
 
@@ -37,6 +38,7 @@ namespace FracturedChorus.RunMap.UI
             MapNodeType.Relay => "$",
             MapNodeType.Treasure => "◆",
             MapNodeType.Boss => "♪",
+            MapNodeType.Start => "⚑",
             _ => "·"
         };
 
@@ -49,6 +51,7 @@ namespace FracturedChorus.RunMap.UI
             MapNodeType.Relay => "Relay",
             MapNodeType.Treasure => "Treasure",
             MapNodeType.Boss => "Oni",
+            MapNodeType.Start => "Start",
             _ => type.ToString()
         };
     }
