@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3a7e91b4d6f4820a5e8c1d297b4f063, type: 3}
+  m_Name: CombatPoolPrefabCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Combat.Bootstrap.CombatPoolPrefabCatalogSO
+  enemy1: {fileID: 2692246239172420728, guid: 7dc156666d45dd54c8beefc2d68bbc91, type: 3}
+  enemy2: {fileID: 2973882062857034930, guid: b5783de8d198911429b6625bdb0e97ca, type: 3}
+  enemy3: {fileID: 5242040724197796100, guid: 3f196c4b59cc6184093d529e085fe0ff, type: 3}
+  elite1: {fileID: 6222700000166228103, guid: 5636be8ee424c9d498f8a3a735127582, type: 3}
+  elite2: {fileID: 4576555274146226630, guid: aba8e235b61a65f4a83bd9ed4ddfa8d5, type: 3}
+  elite3: {fileID: 5675707445518768321, guid: 7e747096b6860aa4cb596b1f81a7ac44, type: 3}

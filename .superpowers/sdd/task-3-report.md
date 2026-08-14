@@ -1,92 +1,77 @@
-# Task 3 Report — TimelineLayoutLock + ScanBar / TrackLine
+# Task 3 Report — LoadingScreenView (bar live)
 
-**Status:** DONE
-**Branch:** branch2
-**Commit:** `c29083f` — Lock TrackLine and ScanBar sizes to CombatTutorial constants.
+## Status
 
-## Summary
+**DONE_WITH_CONCERNS** — Implementation and tests match the brief; EditMode tests were not executed from CLI (Unity.exe not installed).
 
-Extended `TimelineLayoutLock` with `TrackLineY` (6) and `TrackLineHeight` (2). Wired `BeatTimelineUIView.ApplyTrackLineLayout`, `GetScanLineX`, and verified `AlignScanBar` already uses `ScanBarWidth` / `ScanBarVerticalInset` constants.
+## Deliverables
 
-## Changes
-
-| File | Change |
+| File | Action |
 |------|--------|
-| `TimelineLayoutLock.cs` | New static class: `SlotWidth`, `ScanBar*`, `TrackLineY`, `TrackLineHeight`, `ClampSlotWidth`, `ResolveSlotWidth` |
-| `BeatTimelineUIView.cs` | `ApplyTrackLineLayout` → lock constants; `GetScanLineX` → `ClampSlotWidth(slotWidth) * 0.5f`; `AlignScanBar` → lock constants (prior drift fixed) |
+| `Assets/FracturedChorus/UI/Loading/LoadingScreenView.cs` | Created |
+| `Assets/FracturedChorus/UI/Loading/LoadingScreenView.cs.meta` | Created |
+| `Assets/FracturedChorus/Editor/LoadingScreenViewTests.cs` | Created (preferred over appending `LoadingProgressTests.cs`) |
+| `Assets/FracturedChorus/Editor/LoadingScreenViewTests.cs.meta` | Created |
 
-## Scene Lock Verification
+## Implementation summary
 
-```powershell
-Select-String -Path CombatTutorial.unity,CombatPrototype.unity -Pattern "slotWidth:|m_PreferredWidth: 73|m_SizeDelta: \{x: 73.85"
-```
+`LoadingScreenView` (`FracturedChorus.UI.Loading`):
 
-| Scene | slotWidth | Beat_0 preferredWidth | Beat_0 sizeDelta.x |
-|-------|-----------|----------------------|-------------------|
-| CombatTutorial | 73.85 | 73.85 | 73.85 |
-| CombatPrototype | 73.85 | 73.85 | 73.85 |
+- **Constants:** `BarWidth=720`, `BarHeight=36`, `NeonPink=(1, 0.306, 0.784)`, `FillWhite=(1, 0.92, 0.96)`.
+- **API:** `SetProgress`, `SetVisible(visible, instant)`, `TickMotion`, `Group`, `Bind` / `BindLayers`, `BuildForTests`.
+- **`SetProgress`:** clamps `p`; sets fill; percent text `{RoundToInt(p*100)}%`; hide when `p < LoadingProgress.PercentVisibleMin`; `percentRect.x = Lerp(24, BarWidth-40, p)`.
+- **`SetVisible`:** uses the unambiguous body only — `blocksRaycasts=visible`, `interactable=false`, set alpha only when `instant`.
+- **`BuildForTests`:** CanvasGroup + filled Image + Text; no full canvas hierarchy.
+- **`TickMotion`:** clef scale pulse + notes vertical bob (unchanged from brief).
 
-No YAML rewrite required — scenes already match canonical lock.
+Did **not** change `LoadingProgress` math. Did **not** create Controller. Did **not** slice art.
 
-## Verification
+## Tests (TDD)
 
-```
-== Assembly-CSharp ==
-== Assembly-CSharp-Editor ==
-COMPILE OK
-```
+Written first in `LoadingScreenViewTests`:
 
-- [x] `Tools/check-compile.ps1` — COMPILE OK
-- [x] Scene Select-String — both scenes 73.85
-- [x] Only `TimelineLayoutLock.cs` + `BeatTimelineUIView.cs` committed
-- [ ] Play Mode QA — not run (layout scope A only)
+1. `SetProgress_SetsFillAndPercent` — 0.75 → fill 0.75, `"75%"`, visible
+2. `SetProgress_HidesPercentNearZero` — 0 → percent hidden
 
-## Self-Review
+Manual trace: both cases match `PercentVisibleMin=0.02` and percent formatting.
 
-- **TrackLine:** Magic `6f` / `2f` replaced with `TimelineLayoutLock.TrackLineY` / `TrackLineHeight`.
-- **ScanBar X:** `GetScanLineX` now clamps slot width before half-beat center — consistent with locked beat strip.
-- **AlignScanBar:** Already wired to `ScanBarWidth` (6) and `ScanBarVerticalInset` (-4); no remaining magic numbers in scope A.
-- **Risk:** Low until Play Mode confirms scroll/scan alignment at 73.85 beat width.
+## Test execution
 
-## Not Done
+- Unity.exe not installed (per task instruction: do not search).
+- **EditMode not run** — not executable in this environment.
 
-- Play Mode visual QA for TrackLine / ScanBar alignment during scroll
-- Layout scope B+ (Header, LeftRail, BossTrackFrame runtime wiring beyond serialized defaults)
+**Recommended verification:** Unity → Test Runner → EditMode → `LoadingScreenViewTests`.
 
-## Important/Critical Review Fixes
+## Self-review
 
-**Status:** DONE
+- Ambiguous first `SetVisible` ternary body was **not** used; second body only.
+- Tests in new file (cleaner than stuffing `LoadingProgressTests.cs`).
+- No explanatory comments in source.
+- Commit scoped to four task files only (no `git add -A`).
+- `NeonPink` / `FillWhite` present for later wire-up; unused in current methods (same as brief skeleton).
+- Brief lists `UiFontCatalog.Body` as consumer; `BuildForTests` uses builtin `LegacyRuntime.ttf` per provided snippet (catalog reserved for real UI build later).
 
-### Changes
+## Commit
 
-- `TimelineLayoutLock.ClampSlotWidth` now returns `SlotWidth` for non-positive input and clamps all other values to at least `73.85`.
-- `ResolveSlotWidth` now clamps serialized widths to at least `SlotWidth`.
-- Removed the XML summary block from `TimelineLayoutLock`.
-- Added `TimelineLayoutLock.cs.meta` with GUID `8c4e2a91b7d64f0e9a3f5c1d6e8b2a47`.
-- Committed only `m_PreferredWidth` and `slotWidth` scene lock fields; `m_SizeDelta.x` was already `73.85` in HEAD.
-- Preserved `TrackLineY` and `TrackLineHeight` wiring. Did not touch `BoardDragController` or `BoardPointerGesture`.
+- **SHA:** `c9be144`
+- **Subject:** Add loading bar view with live fill and percent.
+- **Files:** 4 changed, 182 insertions
 
-### Commits
+## Concerns
 
-- `153d34a` — Lock timeline scene widths to canonical spacing.
-- `149ced0` — Prevent timeline slots from shrinking below canonical width.
+1. EditMode unverified (no Unity Editor).
+2. `NeonPink` / `FillWhite` unused until real bar/art bind (may warn CS0414 depending on project warning settings).
+3. `UiFontCatalog.Body` not applied in `BuildForTests` (matches brief code; defer to scene/builder task).
 
-### Verification
+## Not done
 
-```powershell
-Select-String -Path "Assets/FracturedChorus/Scenes/CombatTutorial.unity","Assets/FracturedChorus/Scenes/CombatPrototype.unity" -Pattern "slotWidth: 73.85","m_PreferredWidth: 73.85","m_SizeDelta: \{x: 73.85"
-```
+- Controller (Task 4).
+- Art slice / full canvas hierarchy.
+- Push to remote (excluded).
 
-Result: both scenes contain all three canonical `73.85` values.
+## Review fix (UiFontCatalog.Body)
 
-```powershell
-Tools/check-compile.ps1
-```
-
-Result:
-
-```text
-== Assembly-CSharp ==
-== Assembly-CSharp-Editor ==
-COMPILE OK
-```
+- **Change:** `LoadingScreenView` now assigns `UiFontCatalog.Body` in `BuildForTests()` and `Bind()`; `loadingLabel` also gets `FontStyle.Bold` when present.
+- **Tests:** Unity.exe not installed — EditMode not re-run (per task instruction: do not search).
+- **Commit:** `1e72957` — Use catalog body font on the loading bar labels.
+- **Files:** `Assets/FracturedChorus/UI/Loading/LoadingScreenView.cs` only.

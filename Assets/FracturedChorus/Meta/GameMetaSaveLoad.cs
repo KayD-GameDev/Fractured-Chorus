@@ -342,6 +342,7 @@ namespace FracturedChorus.Meta
         public int runNodeId = -1;
         public int runSector;
         public bool runActive;
+        public int[] runClearedNodeIds = Array.Empty<int>();
 
         public static GameMetaSaveData FromState(GameMetaState state)
         {
@@ -408,7 +409,8 @@ namespace FracturedChorus.Meta
                 runFloor = state.RunSnapshot.CurrentFloor,
                 runNodeId = state.RunSnapshot.CurrentNodeId,
                 runSector = state.RunSnapshot.ActiveSector,
-                runActive = state.RunSnapshot.HasActiveRun
+                runActive = state.RunSnapshot.HasActiveRun,
+                runClearedNodeIds = state.RunSnapshot.ClearedNodeIds ?? Array.Empty<int>()
             };
         }
 
@@ -488,6 +490,7 @@ namespace FracturedChorus.Meta
             state.RunSnapshot.CurrentNodeId = runNodeId;
             state.RunSnapshot.ActiveSector = runSector;
             state.RunSnapshot.HasActiveRun = runActive;
+            state.RunSnapshot.ClearedNodeIds = runClearedNodeIds ?? Array.Empty<int>();
 
             return state;
         }

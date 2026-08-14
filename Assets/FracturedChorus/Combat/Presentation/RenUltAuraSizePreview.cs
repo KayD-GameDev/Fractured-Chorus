@@ -157,7 +157,9 @@ namespace FracturedChorus.Combat.Presentation
             {
                 _bulletA = ResolveChild("BulletA", ref forceRebuild);
                 _bulletB = ResolveChild("BulletB", ref forceRebuild);
-                var head = LoadSprite("ren_bullet_flight_01_v1") ?? LoadSprite("ren_bullet_head_v1");
+                var head = LoadSprite("ren_ult_bullet_flight_v1")
+                           ?? LoadSprite("ren_bullet_flight_01_v1")
+                           ?? LoadSprite("ren_bullet_head_v1");
                 if (_bulletA != null && (_bulletA.sprite == null || forceRebuild))
                 {
                     _bulletA.sprite = head;

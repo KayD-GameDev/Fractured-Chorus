@@ -174,6 +174,7 @@ namespace FracturedChorus.Editor
             SetSerializedField(cadence, "macroView", macroView);
             SetSerializedField(cadence, "macroMapRoot", macroRoot);
             SetSerializedField(cadence, "innerMapRoot", innerRoot);
+            cadence.SetEditorPreview(CadenceMapController.RunMapEditorPreview.MapSelect);
             SetSerializedField(cadence, "mapScrollView", GameObject.Find("MapScrollView"));
             SetSerializedField(cadence, "legendPanel", GameObject.Find("LegendPanel"));
             SetSerializedField(cadence, "innerController", controller);
@@ -466,6 +467,11 @@ namespace FracturedChorus.Editor
             var topBar = CreateTopBar(canvas.transform);
             var scroll = CreateMapScrollView(canvas.transform, out var mapView, out var contentRect);
             var legend = CreateLegendPanel(canvas.transform);
+            var scrollRect = scroll.GetComponent<ScrollRect>();
+            if (scrollRect?.viewport != null)
+            {
+                RunMapNodeInfoPanelBuilder.EnsureSidebar(scrollRect.viewport);
+            }
 
             WireBootstrap(bootstrap, controller);
             WireController(controller, mapView, topBar.status, topBar.seed);
@@ -630,6 +636,16 @@ namespace FracturedChorus.Editor
             contentRect.anchoredPosition = Vector2.zero;
             contentRect.sizeDelta = new Vector2(640f, 1400f);
 
+            var background = CreateUiObject("BackgroundLayer", content.transform);
+            var backgroundRect = background.GetComponent<RectTransform>();
+            backgroundRect.anchorMin = new Vector2(0.5f, 0f);
+            backgroundRect.anchorMax = new Vector2(0.5f, 0f);
+            backgroundRect.pivot = new Vector2(0.5f, 0f);
+            backgroundRect.anchoredPosition = Vector2.zero;
+            backgroundRect.sizeDelta = contentRect.sizeDelta;
+            background.AddComponent<RunMapBackgroundView>();
+            MapNodeIconSetupEditor.WireMapBackgroundVideo();
+
             var connectionsLayer = CreateUiObject("ConnectionsLayer", content.transform);
             ConfigureBottomLayer(connectionsLayer, contentRect.sizeDelta);
 
@@ -649,6 +665,10 @@ namespace FracturedChorus.Editor
             SetSerializedField(mapView, "floorLabelsLayer", floorLabelsLayer.GetComponent<RectTransform>());
             SetSerializedField(mapView, "nodeTemplate", nodeTemplate);
             SetSerializedField(mapView, "connectionTemplate", connectionTemplate);
+            SetSerializedField(mapView, "iconSet", MapNodeIconSetupEditor.EnsureIconSetAsset());
+            MapNodeIconSetupEditor.AssignRenMarkerToMapView(mapView);
+            RunMapPlayerMarkerSetupEditor.WireSceneMarkers();
+            RunMapPlayerMarkerSetupEditor.WireMapLayout();
             SetSerializedField(mapView, "fitToViewport", true);
             var scroll = scrollGo.AddComponent<ScrollRect>();
             scroll.viewport = viewport.GetComponent<RectTransform>();
@@ -689,6 +709,13 @@ namespace FracturedChorus.Editor
             fillImg.sprite = UiCircleSpriteUtil.Circle;
             fillImg.color = Color.white;
 
+            var iconGo = CreateUiObject("Icon", go.transform);
+            StretchRect(iconGo, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            var iconImg = iconGo.AddComponent<Image>();
+            iconImg.preserveAspect = true;
+            iconImg.raycastTarget = false;
+            iconImg.enabled = false;
+
             var label = CreateText("Label", go.transform, "?", MapLayoutConstants.NodeLabelFontSize(MapNodeType.Battle, false), TextAnchor.MiddleCenter);
             label.raycastTarget = false;
             StretchRect(label.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
@@ -698,7 +725,7 @@ namespace FracturedChorus.Editor
 
             var view = Undo.AddComponent<MapNodeView>(go);
             go.AddComponent<MapNodeScrollForwarder>();
-            view.WireImages(fillImg, strokeImg, label, button);
+            view.WireImages(fillImg, strokeImg, label, button, iconImg);
             return view;
         }
 
@@ -768,6 +795,7 @@ namespace FracturedChorus.Editor
 
             var entries = new[]
             {
+                (MapNodeType.Start, "Start — departure / save"),
                 (MapNodeType.Battle, "Battle — standard combat"),
                 (MapNodeType.Event, "Event — random event"),
                 (MapNodeType.Elite, "Elite — hard combat"),

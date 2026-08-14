@@ -22,27 +22,27 @@ namespace FracturedChorus.Combat.Bootstrap
         {
             return encounterId switch
             {
-                EncounterCatalog.BattleGrunts => CreateBattleEncounter(),
-                EncounterCatalog.EliteGrunts => CreateEliteEncounter(),
+                EncounterCatalog.BattleGrunts => CreateBattleEncounter(CombatEncounterHandoff.PendingPoolRoll),
+                EncounterCatalog.EliteGrunts => CreateEliteEncounter(CombatEncounterHandoff.PendingPoolRoll),
                 EncounterCatalog.BossDespair => CreateBossEncounter(),
                 EncounterCatalog.Tutorial => CreateTutorialEncounter(),
                 _ => CreateDemoEncounter()
             };
         }
 
-        public static EncounterDefinitionSO CreateBattleEncounter()
+        public static EncounterDefinitionSO CreateBattleEncounter(CombatPoolRoll roll = null)
         {
             var encounter = ScriptableObject.CreateInstance<EncounterDefinitionSO>();
             encounter.encounterId = EncounterCatalog.BattleGrunts;
-            encounter.units = CreateBattleEnemySpawns();
+            encounter.units = CreatePooledBattleEnemySpawns(roll);
             return encounter;
         }
 
-        public static EncounterDefinitionSO CreateEliteEncounter()
+        public static EncounterDefinitionSO CreateEliteEncounter(CombatPoolRoll roll = null)
         {
             var encounter = ScriptableObject.CreateInstance<EncounterDefinitionSO>();
             encounter.encounterId = EncounterCatalog.EliteGrunts;
-            encounter.units = CreateEliteEnemySpawns();
+            encounter.units = CreatePooledEliteEnemySpawns(roll);
             return encounter;
         }
 
@@ -75,23 +75,76 @@ namespace FracturedChorus.Combat.Bootstrap
             CreateSpawn(GetPresetByKey("mage"), GridSide.Player, 2, 3)
         };
 
-        public static EncounterUnitSpawn[] CreateBattleEnemySpawns() => new[]
+        public static EncounterUnitSpawn[] CreateBattleEnemySpawns() =>
+            CreatePooledBattleEnemySpawns(null);
+
+        public static EncounterUnitSpawn[] CreatePooledBattleEnemySpawns(CombatPoolRoll roll)
         {
-            CreateSpawn(GetPresetByKey("grunt_left"), GridSide.Enemy, 2, 1),
-            CreateSpawn(GetPresetByKey("grunt_right"), GridSide.Enemy, 2, 3)
-        };
+            roll ??= CombatPoolService.RollBattle(42, 0);
+            var keys = roll.EnemyKeys;
+            if (keys == null || keys.Length < 3)
+            {
+                keys = new[]
+                {
+                    CombatEnemyKeys.Enemy1,
+                    CombatEnemyKeys.Enemy2,
+                    CombatEnemyKeys.Enemy3
+                };
+            }
+
+            var slots = roll?.GridSlots;
+            if (slots == null || slots.Length < 3)
+            {
+                slots = CombatPoolPlacement.RollBattleSlots(42, 0);
+            }
+
+            slots = CombatPoolPlacement.EnsureUniqueSlots(slots, 3);
+
+            return new[]
+            {
+                CreateSpawnAtSlot(GetPresetByKey(keys[0]), slots[0]),
+                CreateSpawnAtSlot(GetPresetByKey(keys[1]), slots[1]),
+                CreateSpawnAtSlot(GetPresetByKey(keys[2]), slots[2])
+            };
+        }
 
         public static EncounterUnitSpawn[] CreateTutorialEnemySpawns() => new[]
         {
             CreateSpawn(GetPresetByKey("kiki_ueda"), GridSide.Enemy, 2, 2)
         };
 
-        public static EncounterUnitSpawn[] CreateEliteEnemySpawns() => new[]
+        public static EncounterUnitSpawn[] CreateEliteEnemySpawns() =>
+            CreatePooledEliteEnemySpawns(null);
+
+        public static EncounterUnitSpawn[] CreatePooledEliteEnemySpawns(CombatPoolRoll roll)
         {
-            CreateSpawn(GetPresetByKey("grunt_left"), GridSide.Enemy, 2, 1),
-            CreateSpawnInternal(GetPresetByKey("grunt"), GridSide.Enemy, 1, 1),
-            CreateSpawn(GetPresetByKey("grunt_right"), GridSide.Enemy, 2, 3)
-        };
+            roll ??= CombatPoolService.RollElite(42, 0);
+            var keys = roll.EnemyKeys;
+            if (keys == null || keys.Length < 3)
+            {
+                keys = new[]
+                {
+                    CombatEnemyKeys.Elite1,
+                    CombatEnemyKeys.Enemy1,
+                    CombatEnemyKeys.Enemy2
+                };
+            }
+
+            var slots = roll?.GridSlots;
+            if (slots == null || slots.Length < 3)
+            {
+                slots = CombatPoolPlacement.RollEliteSlots(42, 0);
+            }
+
+            slots = CombatPoolPlacement.EnsureUniqueSlots(slots, 3);
+
+            return new[]
+            {
+                CreateSpawnAtSlot(GetPresetByKey(keys[1]), slots[1]),
+                CreateSpawnAtSlot(GetPresetByKey(keys[0]), slots[0]),
+                CreateSpawnAtSlot(GetPresetByKey(keys[2]), slots[2])
+            };
+        }
 
         public static EncounterUnitSpawn[] CreateBossEnemySpawns() => new[]
         {
@@ -114,6 +167,12 @@ namespace FracturedChorus.Combat.Bootstrap
             {
                 "grunt" or "grunt_left" => "Grunt",
                 "grunt_right" => "Grunt_Eye",
+                CombatEnemyKeys.Enemy1 => "Enemy_1",
+                CombatEnemyKeys.Enemy2 => "Enemy_2",
+                CombatEnemyKeys.Enemy3 => "Enemy_3",
+                CombatEnemyKeys.Elite1 => "Elite_1",
+                CombatEnemyKeys.Elite2 => "Elite_2",
+                CombatEnemyKeys.Elite3 => "Elite_3",
                 "boss_despair" => "Boss_Despair",
                 "kiki" or "kiki_ueda" => "Kiki_Ueda",
                 "ren" => "Ren",
@@ -135,9 +194,27 @@ namespace FracturedChorus.Combat.Bootstrap
                 "mage" => CreateMagePreset(),
                 "grunt_left" => CreateGruntPreset("grunt_left"),
                 "grunt_right" => CreateGruntPreset("grunt_right"),
+                CombatEnemyKeys.Enemy1 => CreateEnemyPreset(CombatEnemyKeys.Enemy1, "Pink Shoes Enchantee"),
+                CombatEnemyKeys.Enemy2 => CreateEnemyPreset(CombatEnemyKeys.Enemy2, "Inquisitor"),
+                CombatEnemyKeys.Enemy3 => CreateEnemyPreset(CombatEnemyKeys.Enemy3, "Porous Hand Mermaid"),
+                CombatEnemyKeys.Elite1 => CreateElitePreset(CombatEnemyKeys.Elite1, "Shock Centipede"),
+                CombatEnemyKeys.Elite2 => CreateElitePreset(CombatEnemyKeys.Elite2, "Cassetti"),
+                CombatEnemyKeys.Elite3 => CreateElitePreset(CombatEnemyKeys.Elite3, "Don Quixote"),
                 "boss_despair" => CreateBossDespairPreset(),
                 "kiki" or "kiki_ueda" => CreateKikiUedaPreset(),
                 _ => CreateGruntPreset(key ?? "grunt")
+            };
+        }
+
+        private static EncounterUnitSpawn CreateSpawnAtSlot(UnitPresetSO preset, int slot)
+        {
+            var pos = CombatPoolPlacement.SlotToGridPosition(slot);
+            return new EncounterUnitSpawn
+            {
+                preset = preset,
+                side = GridSide.Enemy,
+                row = pos.Row,
+                column = pos.Column
             };
         }
 
@@ -248,6 +325,122 @@ namespace FracturedChorus.Combat.Bootstrap
                 CreateSkill("kiki_smoke_rend", "Smoke Rend", SkillSlotKind.Skill, 2, ActionGlowType.Attack)
             };
             return preset;
+        }
+
+        private static UnitPresetSO CreateEnemyPreset(string id, string displayName)
+        {
+            var preset = ScriptableObject.CreateInstance<UnitPresetSO>();
+            preset.unitId = id;
+            preset.displayName = displayName;
+            preset.role = UnitRole.Grunt;
+            preset.stats = UnitStats.CreateGruntPreset();
+            preset.placeholderColor = id switch
+            {
+                CombatEnemyKeys.Enemy1 => new Color(0.92f, 0.35f, 0.55f),
+                CombatEnemyKeys.Enemy2 => new Color(0.55f, 0.45f, 0.75f),
+                _ => new Color(0.25f, 0.65f, 0.85f)
+            };
+            preset.battleSprite = LoadPoolEnemySprite(id);
+            preset.skills = new[]
+            {
+                CreateGruntStrike($"{id}_strike", "Strike")
+            };
+            return preset;
+        }
+
+        private static UnitPresetSO CreateElitePreset(string id, string displayName)
+        {
+            var preset = ScriptableObject.CreateInstance<UnitPresetSO>();
+            preset.unitId = id;
+            preset.displayName = displayName;
+            preset.role = UnitRole.Elite;
+            preset.stats = UnitStats.CreateElitePreset();
+            preset.placeholderColor = id switch
+            {
+                CombatEnemyKeys.Elite1 => new Color(0.55f, 0.85f, 0.25f),
+                CombatEnemyKeys.Elite2 => new Color(0.85f, 0.55f, 0.2f),
+                _ => new Color(0.65f, 0.25f, 0.35f)
+            };
+            preset.battleSprite = LoadPoolEnemySprite(id);
+            preset.telegraphAttacksPerPhase = 2;
+            preset.skills = new[]
+            {
+                CreateGruntStrike($"{id}_strike", "Strike"),
+                CreateSkill($"{id}_skill", "Heavy Strike", SkillSlotKind.Skill, 2, ActionGlowType.Attack)
+            };
+            return preset;
+        }
+
+        private static Sprite LoadPoolEnemySprite(string key)
+        {
+            var resourcesPath = key switch
+            {
+                CombatEnemyKeys.Enemy1 => "UnitSprites/Enemy_1_Idle",
+                CombatEnemyKeys.Enemy2 => "UnitSprites/Enemy_2_Idle",
+                CombatEnemyKeys.Enemy3 => "UnitSprites/Enemy_3_Idle",
+                CombatEnemyKeys.Elite1 => "UnitSprites/Elite_1_Idle",
+                CombatEnemyKeys.Elite2 => "UnitSprites/Elite_2_Idle",
+                CombatEnemyKeys.Elite3 => "UnitSprites/Elite_3_Idle",
+                _ => null
+            };
+
+            if (!string.IsNullOrEmpty(resourcesPath))
+            {
+                var fromResources = Resources.Load<Sprite>(resourcesPath);
+                if (fromResources != null)
+                {
+                    return fromResources;
+                }
+
+                var sprites = Resources.LoadAll<Sprite>(resourcesPath);
+                if (sprites != null && sprites.Length > 0)
+                {
+                    return sprites[0];
+                }
+            }
+
+#if UNITY_EDITOR
+            var editorPath = key switch
+            {
+                CombatEnemyKeys.Enemy1 =>
+                    "Assets/FracturedChorus/Art/Characters/Enemy 1/Pink_Shoes_Enchantee_Idle_Sprite.png",
+                CombatEnemyKeys.Enemy2 =>
+                    "Assets/FracturedChorus/Art/Characters/Enemy 2/Everything_There_of_an_Inquisitor_Idle_Sprite.png",
+                CombatEnemyKeys.Enemy3 =>
+                    "Assets/FracturedChorus/Art/Characters/Enemy 3/Whale_of_the_Porous_Hand_Mermaid_Idle_Sprite.png",
+                CombatEnemyKeys.Elite1 =>
+                    "Assets/FracturedChorus/Art/Characters/Elite 1/Shock_Centipede_Idle_Sprite.png",
+                CombatEnemyKeys.Elite2 =>
+                    "Assets/FracturedChorus/Art/Characters/Elite 2/Cassetti_Idle_Sprite.png",
+                CombatEnemyKeys.Elite3 =>
+                    "Assets/FracturedChorus/Art/Characters/Elite 3/La_Manchaland's_Don_Quixote_Idle_Sprite.png",
+                _ => null
+            };
+
+            if (!string.IsNullOrEmpty(editorPath))
+            {
+                var sprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(editorPath);
+                if (sprite != null)
+                {
+                    return sprite;
+                }
+
+                foreach (var asset in UnityEditor.AssetDatabase.LoadAllAssetsAtPath(editorPath))
+                {
+                    if (asset is Sprite s)
+                    {
+                        return s;
+                    }
+                }
+
+                var tex = UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2D>(editorPath);
+                if (tex != null)
+                {
+                    return Sprite.Create(tex, new Rect(0f, 0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100f);
+                }
+            }
+#endif
+            return null;
         }
 
         private static UnitPresetSO CreateGruntPreset(string id)

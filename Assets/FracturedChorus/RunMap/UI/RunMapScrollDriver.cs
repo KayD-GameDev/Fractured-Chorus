@@ -14,7 +14,7 @@ namespace FracturedChorus.RunMap.UI
         [Header("Drag / wheel feel")]
         [SerializeField] [Range(0.1f, 1f)] private float scrollSpeedScale = 1f;
         [SerializeField] private float scrollSensitivity = 58f;
-        [SerializeField] private float wheelScrollMultiplier = 0.17f;
+        [SerializeField] private float wheelScrollMultiplier = 0.28f;
         [SerializeField] private float decelerationRate = 0.035f;
         [SerializeField] private float elasticity = 0.04f;
 

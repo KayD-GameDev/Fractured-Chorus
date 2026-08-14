@@ -11,6 +11,11 @@ namespace FracturedChorus.Combat.Bootstrap
         public const string BossDespair = "Encounter_Boss_Despair";
         public const string Tutorial = "Encounter_Tutorial";
 
+        public static bool IsBoss(string encounterId) =>
+            !string.IsNullOrEmpty(encounterId)
+            && (encounterId == BossDespair
+                || encounterId.IndexOf("Boss", System.StringComparison.OrdinalIgnoreCase) >= 0);
+
         public static bool IsTutorial(string encounterId) =>
             !string.IsNullOrEmpty(encounterId)
             && (encounterId == Tutorial

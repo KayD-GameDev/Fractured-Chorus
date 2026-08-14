@@ -17,7 +17,9 @@ namespace FracturedChorus.RunMap.Core
         public readonly List<int> Outgoing = new List<int>();
         public readonly List<int> Incoming = new List<int>();
 
-        public bool IsStart => Floor == 1;
+        public bool IsStart => Type == MapNodeType.Start;
+        public bool IsFloorEntry => Floor == 1 && Type != MapNodeType.Start;
+        public bool IsSavePoint => MapNodeCatalog.IsSavePoint(Type, IsBoss, Cleared);
         public int PreBossFloor { get; set; } = MapLayoutConstants.FloorCount;
 
         public bool IsPreBoss => Floor == PreBossFloor;

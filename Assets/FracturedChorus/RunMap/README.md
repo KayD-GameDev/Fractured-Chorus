@@ -18,6 +18,7 @@ Macro Map → click Pinky (mask highlight)
 | | Path |
 |--|------|
 | Scene | `Assets/FracturedChorus/Scenes/RunMapPrototype.unity` |
+| Edit layers | Select **RunMapRoot** → Inspector → Map Select / Map Nodes |
 | Macro setup | Menu **Fractured Chorus → Run Map → Setup Cadence Macro Layer** |
 | Layout editor | **Fractured Chorus → Run Map → Open Layout Editor** (macro mask) |
 | Inner map editor | **Run Map → Open Pinky Vault Map Editor** (3 Part node graph) |
@@ -50,11 +51,13 @@ Macro Map → click Pinky (mask highlight)
 
 ## Defaults
 
-- F1 **đáy** scroll; boss F16 **58px** giữa map
+- F1 **đáy** scroll; node **~80px+**, boss **~112px+** (fit viewport)
 - Edges trên **`ConnectionsLayer`**; nodes trên **`NodesLayer`**
-- Legend: font 20px, spacing 13.5px, màu khớp `MapNodePalette`
-- Camp icon **+25%** vs node thường
+- Node icons: full set Battle/Elite/Treasure/Event/Camp/Relay/Boss
+- Legend: font 20px, spacing 13.5px; swatch dùng cùng icon set
+- Camp icon **+25%** vs node thường (emoji fallback)
 - Demo map: bật `useReferenceDemoOnPlay` trên `MapTemplate_Default`
+- Wire icons: **Fractured Chorus → Run Map → Wire Node Icons**
 
 **UC:** UC-01 Start Run · UC-02 Select Contract · UC-12 Navigate Map · UC-09 Boss Oni
 

@@ -1,4 +1,5 @@
 using System.Collections;
+using FracturedChorus.Audio;
 using FracturedChorus.Combat.Bootstrap;
 using FracturedChorus.Meta;
 using FracturedChorus.Meta.Economy;
@@ -14,6 +15,7 @@ namespace FracturedChorus.RunMap
     public class RunMapController : MonoBehaviour
     {
         [SerializeField] private RunMapUIView mapView;
+        [SerializeField] private RunMapNodeInfoPanel nodeInfoPanel;
         [SerializeField] private Text statusLabel;
         [SerializeField] private Text seedLabel;
 
@@ -32,6 +34,11 @@ namespace FracturedChorus.RunMap
         {
             mapView ??= GetComponentInChildren<RunMapUIView>(true);
             BindNodeClickHandlers();
+
+            if (nodeInfoPanel == null && mapView != null)
+            {
+                nodeInfoPanel = EnsureNodeInfoPanel();
+            }
         }
 
         private void Start()
@@ -153,6 +160,7 @@ namespace FracturedChorus.RunMap
             {
                 TryClearSourceNodeAfterVictory();
                 CombatEncounterHandoff.ClearResultFlags();
+                RunMusicSession.Instance?.SetMode(RunMusicMode.Map);
                 return;
             }
 
@@ -188,13 +196,28 @@ namespace FracturedChorus.RunMap
             }
 
             var node = Graph.GetNode(CombatEncounterHandoff.SourceNodeId);
+            MarkNodeCleared(node);
             if (node == null)
+            {
+                return;
+            }
+
+            State.EnterNode(node);
+            mapView?.RefreshInteraction(Graph, State);
+            mapView?.ScrollToNode(node, immediate: true);
+            RunMapRunSave.Persist(Graph, State);
+        }
+
+        private void MarkNodeCleared(MapNodeData node)
+        {
+            if (node == null || node.Cleared || node.Type == MapNodeType.Start)
             {
                 return;
             }
 
             node.Cleared = true;
             mapView?.RefreshInteraction(Graph, State);
+            RunMapRunSave.Persist(Graph, State);
         }
 
         private MapNodeData FindNearestCampNode()
@@ -238,10 +261,46 @@ namespace FracturedChorus.RunMap
             Graph = graph;
             State.BeginRun(seed);
             mapView.BuildMap(graph);
+
+            if (!RunMapRunSave.TryRestore(graph, State) && graph.StartNode != null)
+            {
+                State.EnterNode(graph.StartNode);
+                RunMapRunSave.Persist(graph, State);
+            }
+
             mapView.RefreshInteraction(graph, State);
             SyncLegendPanel(graph);
-            var bossFloor = graph.Profile.BossFloor;
-            UpdateLabels($"Select F1 node to start run · Boss F{bossFloor}.");
+            EnsureNodeInfoPanel()?.Hide();
+            if (State.CurrentNodeId >= 0)
+            {
+                var current = graph.GetNode(State.CurrentNodeId);
+                if (current != null)
+                {
+                    mapView.ScrollToNode(current, immediate: true);
+                }
+                else
+                {
+                    mapView.EnsureScrollShowsStartOnOpen(true);
+                }
+            }
+            else
+            {
+                mapView.EnsureScrollShowsStartOnOpen(true);
+            }
+
+            if (graph.StartNode != null && State.CurrentNodeId == graph.StartNode.Id)
+            {
+                UpdateLabels("Departure — chọn node F1. ★ Lưu tại điểm này, Camp, hoặc sau boss.");
+            }
+            else if (State.CurrentNodeId >= 0)
+            {
+                UpdateLabels($"Run restored — F{State.CurrentFloor}. Chọn node kế tiếp.");
+            }
+            else
+            {
+                var bossFloor = graph.Profile.BossFloor;
+                UpdateLabels($"Select F1 node to start run · Boss F{bossFloor}.");
+            }
         }
 
         private static void SyncLegendPanel(MapGraph graph = null)
@@ -281,21 +340,46 @@ namespace FracturedChorus.RunMap
             }
 
             var node = view.BoundNode;
-            if (!State.CanSelectNode(Graph, node))
+            mapView.SetSelectedNode(node.Id);
+
+            var panel = EnsureNodeInfoPanel();
+            if (panel == null)
+            {
+                return;
+            }
+
+            var canTravel = State.CanSelectNode(Graph, node);
+            panel.Show(node, canTravel, ConfirmTravelToNode);
+
+            if (!canTravel)
             {
                 if (node.IsBoss && State.CurrentFloor > 0 && State.CurrentFloor < Graph.Profile.FloorCount)
                 {
                     UpdateLabels($"Select Camp F{Graph.Profile.FloorCount} before entering boss.");
                 }
-                else if (node.Floor > State.CurrentFloor + 1)
+                else if (node.Floor > State.CurrentFloor + 1 && !node.IsStart)
                 {
                     UpdateLabels("Node too far — select next floor only.");
+                }
+                else if (node.Cleared)
+                {
+                    UpdateLabels("Node cleared.");
+                }
+                else if (State.CurrentNodeId == node.Id)
+                {
+                    UpdateLabels($"Standing at {MapNodeCatalog.Title(node.Type)} — chọn node kế.");
                 }
                 else
                 {
                     UpdateLabels("Node not reachable — follow an adjacent path.");
                 }
+            }
+        }
 
+        private void ConfirmTravelToNode(MapNodeData node)
+        {
+            if (Graph == null || node == null || !State.CanSelectNode(Graph, node))
+            {
                 return;
             }
 
@@ -304,9 +388,36 @@ namespace FracturedChorus.RunMap
 
             if (!reopenBoss)
             {
+                var from = Graph.GetNode(State.CurrentNodeId) ?? Graph.StartNode;
+                if (from != null && from.Id != node.Id)
+                {
+                    mapView.AnimateTravelToNode(from, node, () => CompleteTravelToNode(node, reopenBoss));
+                    return;
+                }
+
+                CompleteTravelToNode(node, reopenBoss);
+                return;
+            }
+
+            CompleteTravelToNode(node, reopenBoss);
+        }
+
+        private void CompleteTravelToNode(MapNodeData node, bool reopenBoss)
+        {
+            var isBoss = node.IsBoss || node.Type == MapNodeType.Boss;
+
+            if (!reopenBoss)
+            {
                 State.EnterNode(node);
                 mapView.RefreshInteraction(Graph, State);
                 mapView.ScrollToNode(node);
+            }
+
+            if (node.Type == MapNodeType.Start)
+            {
+                RunMapRunSave.Persist(Graph, State);
+                UpdateLabels("Departure — ★ đã lưu. Chọn node F1.");
+                return;
             }
 
             if (isBoss)
@@ -331,6 +442,7 @@ namespace FracturedChorus.RunMap
                     }
 
                     cadence.OnInnerBossEngaged(sector);
+                    MarkNodeCleared(node);
                     return;
                 }
 
@@ -340,18 +452,29 @@ namespace FracturedChorus.RunMap
 
             if (node.Type == MapNodeType.Battle)
             {
-                BeginCombatForNode(node, EncounterCatalog.BattleGrunts, "Entering battle…");
+                var roll = CombatPoolService.RollBattle(Graph?.Seed ?? 42, node.Id);
+                BeginCombatForNode(
+                    node,
+                    EncounterCatalog.BattleGrunts,
+                    "Entering battle…",
+                    roll);
                 return;
             }
 
             if (node.Type == MapNodeType.Elite)
             {
-                BeginCombatForNode(node, EncounterCatalog.EliteGrunts, "Entering elite battle…");
+                var roll = CombatPoolService.RollElite(Graph?.Seed ?? 42, node.Id);
+                BeginCombatForNode(
+                    node,
+                    EncounterCatalog.EliteGrunts,
+                    "Entering elite battle…",
+                    roll);
                 return;
             }
 
             if (node.Type == MapNodeType.Camp)
             {
+                RunMapRunSave.Persist(Graph, State);
                 ResolveCampNode(node);
                 return;
             }
@@ -370,11 +493,55 @@ namespace FracturedChorus.RunMap
 
             if (node.Type == MapNodeType.Event)
             {
+                MarkNodeCleared(node);
                 UpdateLabels($"{MapNodePalette.DisplayName(node.Type)} — event stub. Select next node.");
                 return;
             }
 
+            MarkNodeCleared(node);
             UpdateLabels($"Entered {MapNodePalette.DisplayName(node.Type)} (F{node.Floor}). Select next node.");
+        }
+
+        private RunMapNodeInfoPanel EnsureNodeInfoPanel()
+        {
+            if (nodeInfoPanel != null)
+            {
+                var scrollRect = mapView != null ? mapView.GetComponentInParent<ScrollRect>() : null;
+                if (scrollRect?.viewport != null && nodeInfoPanel.transform.parent != scrollRect.viewport)
+                {
+                    nodeInfoPanel.transform.SetParent(scrollRect.viewport, false);
+                }
+
+                return nodeInfoPanel;
+            }
+
+            var scroll = mapView != null ? mapView.GetComponentInParent<ScrollRect>() : null;
+            var parent = scroll?.viewport != null
+                ? scroll.viewport
+                : mapView != null ? mapView.GetComponentInParent<Canvas>()?.transform : null;
+
+            if (mapView != null)
+            {
+                var staleOnContent = mapView.GetComponentInChildren<RunMapNodeInfoPanel>(true);
+                if (staleOnContent != null && staleOnContent.transform.IsChildOf(mapView.transform))
+                {
+                    Object.Destroy(staleOnContent.gameObject);
+                }
+            }
+
+            var canvas = Object.FindAnyObjectByType<Canvas>();
+            var staleOnCanvas = canvas != null ? canvas.transform.Find("NodeInfoSidebar") : null;
+            if (staleOnCanvas != null && parent != null && staleOnCanvas.parent != parent)
+            {
+                Object.Destroy(staleOnCanvas.gameObject);
+            }
+
+            if (parent != null)
+            {
+                nodeInfoPanel = RunMapNodeInfoPanelBuilder.EnsureSidebar(parent);
+            }
+
+            return nodeInfoPanel;
         }
 
         private void ResolveCampNode(MapNodeData node)
@@ -382,6 +549,7 @@ namespace FracturedChorus.RunMap
             if (!GameMetaSession.HasSession)
             {
                 PartyRunHpStore.RestoreFullAtCamp();
+                MarkNodeCleared(node);
                 UpdateLabels($"Camp F{node.Floor} — HP restored (no wallet session).");
                 return;
             }
@@ -400,15 +568,18 @@ namespace FracturedChorus.RunMap
             }
 
             PartyRunHpStore.RestoreFullAtCamp();
+            MarkNodeCleared(node);
+            RunMapRunSave.Persist(Graph, State);
             GameMetaSession.Save();
             RefreshNotesHud();
-            UpdateLabels($"Camp F{node.Floor} — rested (−{EconomyTable.CampHealCost} Notes). HP restored.");
+            UpdateLabels($"Camp F{node.Floor} — rested (−{EconomyTable.CampHealCost} Notes). HP restored. ★ Saved.");
         }
 
         private void ResolveTreasureNode(MapNodeData node)
         {
             if (!GameMetaSession.HasSession)
             {
+                MarkNodeCleared(node);
                 UpdateLabels($"Treasure F{node.Floor} — empty (no session).");
                 return;
             }
@@ -417,6 +588,7 @@ namespace FracturedChorus.RunMap
             GameMetaSession.Current.Wallet.Add(amount);
             GameMetaSession.Save();
             RefreshNotesHud();
+            MarkNodeCleared(node);
             UpdateLabels($"Treasure F{node.Floor} — +{amount} Notes.");
         }
 
@@ -424,6 +596,7 @@ namespace FracturedChorus.RunMap
         {
             if (!GameMetaSession.HasSession)
             {
+                MarkNodeCleared(node);
                 UpdateLabels($"Relay F{node.Floor} — shop stub.");
                 return;
             }
@@ -441,6 +614,7 @@ namespace FracturedChorus.RunMap
             }
 
             PartyRunHpStore.RestoreFullAtCamp();
+            MarkNodeCleared(node);
             GameMetaSession.Save();
             RefreshNotesHud();
             UpdateLabels($"Relay F{node.Floor} — bought field kit (−{EconomyTable.RelayCost} Notes). HP restored.");
@@ -455,7 +629,7 @@ namespace FracturedChorus.RunMap
             }
         }
 
-        private void BeginCombatForNode(MapNodeData node, string encounterId, string status)
+        private void BeginCombatForNode(MapNodeData node, string encounterId, string status, CombatPoolRoll roll = null)
         {
             if (string.IsNullOrWhiteSpace(encounterId))
             {
@@ -466,7 +640,9 @@ namespace FracturedChorus.RunMap
             CombatEncounterHandoff.SetPending(
                 encounterId,
                 RunMapSceneCatalog.RunMapPrototype,
-                node != null ? node.Id : -1);
+                node != null ? node.Id : -1,
+                roll);
+            RunMapRunSave.Persist(Graph, State);
             UpdateLabels(status);
             BeginBossCombatTransition();
         }

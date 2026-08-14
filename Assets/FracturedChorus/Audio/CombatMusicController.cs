@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace FracturedChorus.Audio
 {
-    public class CombatMusicController : MonoBehaviour
+    public class CombatMusicController : MonoBehaviour, ICombatMusicSync
     {
         [SerializeField] private AudioSource source;
         [SerializeField] private AudioClip bossTrack;
@@ -37,6 +37,7 @@ namespace FracturedChorus.Audio
         private Coroutine _duckRoutine;
         private Coroutine _loopJumpRoutine;
 
+        public bool UsesRunSession => false;
         public MusicBeatMapSO BeatMap => beatMap;
         public float TotalMusicalBeat => _totalMusicalBeat;
         public float PlaybackSpeedMultiplier => _playbackSpeedMultiplier;

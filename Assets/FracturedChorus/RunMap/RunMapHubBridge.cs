@@ -1,3 +1,4 @@
+using FracturedChorus.Audio;
 using FracturedChorus.Meta;
 using UnityEngine;
 
@@ -9,6 +10,11 @@ namespace FracturedChorus.RunMap
         {
             try
             {
+                if (RunMusicSession.Instance != null)
+                {
+                    RunMusicSession.Instance.Stop();
+                }
+
                 var state = GameMetaSession.Current;
                 if (state.RunSnapshot.HasActiveRun)
                 {

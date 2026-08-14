@@ -1,133 +1,107 @@
-﻿### Task 1: Pure gesture helper + EditMode tests
+### Task 1: LoadingProgress math
 
 **Files:**
-- Create: `Assets/FracturedChorus/UI/BoardPointerGesture.cs`
-- Create: `Assets/FracturedChorus/UI/BoardPointerGesture.cs.meta` (Unity generates on import if missing)
-- Create: `Assets/FracturedChorus/Tests/EditMode/BoardPointerGestureTests.cs`
-- Create: `Assets/FracturedChorus/Tests/EditMode/FracturedChorus.EditModeTests.asmdef` (if no EditMode asmdef exists yet)
+- Create: `Assets/FracturedChorus/UI/Loading/LoadingProgress.cs`
+- Create: `Assets/FracturedChorus/Editor/LoadingProgressTests.cs`
 
 **Interfaces:**
-- Consumes: none
-- Produces:
-  - `BoardPointerGesture.ShouldCommitDrag(Vector2 pointerDownScreen, Vector2 currentScreen, float thresholdPx) -> bool`
-  - `BoardPointerGesture.IsClick(Vector2 pointerDownScreen, Vector2 releaseScreen, float thresholdPx) -> bool` (= `!ShouldCommitDrag`)
+- Produces: `LoadingProgress.MapAsyncProgress(float)`, `LoadingProgress.CanActivate(float displayedFill, float holdElapsedSec)`, constants `UnityActivationCap`, `MinHoldSec`, `ActivateFill`, `FadeInSec`, `FadeOutSec`, `SmoothTime`, `PercentVisibleMin`.
 
-- [ ] **Step 1: Check for existing EditMode asmdef**
+- [ ] **Step 1: Write the failing tests**
 
-Run:
-```powershell
-Get-ChildItem -Recurse Assets -Filter *.asmdef | Select-Object FullName
-```
-
-If none under `Assets/FracturedChorus/Tests`, create:
-
-`Assets/FracturedChorus/Tests/EditMode/FracturedChorus.EditModeTests.asmdef`
-```json
-{
-  "name": "FracturedChorus.EditModeTests",
-  "rootNamespace": "FracturedChorus.Tests",
-  "references": [
-    "UnityEngine.TestRunner",
-    "UnityEditor.TestRunner",
-    "GUID:PLACEHOLDER_ASSEMBLY_CSHARP"
-  ],
-  "includePlatforms": ["Editor"],
-  "excludePlatforms": [],
-  "allowUnsafeCode": false,
-  "overrideReferences": true,
-  "precompiledReferences": ["nunit.framework.dll"],
-  "autoReferenced": false,
-  "defineConstraints": ["UNITY_INCLUDE_TESTS"],
-  "optionalUnityReferences": ["TestAssemblies"]
-}
-```
-
-Resolve `Assembly-CSharp` reference: open `Assets/FracturedChorus` scripts â€” they compile into `Assembly-CSharp` by default (no runtime asmdef). Prefer referencing the assembly by name `"Assembly-CSharp"` in the asmdef `references` array (Unity accepts it for default assemblies). If Unity rejects it, put the test file under `Assets/FracturedChorus/Editor/` as a simple Editor test without a separate asmdef, using `NUnit.Framework` already available to Editor scripts â€” **prefer that fallback** to avoid asmdef fights:
-
-Fallback path if asmdef fails:
-- Create: `Assets/FracturedChorus/Editor/BoardPointerGestureTests.cs` with `[Test]` and menu/Test Runner discovery under EditMode.
-
-- [ ] **Step 2: Write failing tests first**
-
-`Assets/FracturedChorus/Tests/EditMode/BoardPointerGestureTests.cs` (or Editor fallback):
 ```csharp
-using FracturedChorus.UI;
+using FracturedChorus.UI.Loading;
 using NUnit.Framework;
-using UnityEngine;
 
 namespace FracturedChorus.Tests
 {
-    public class BoardPointerGestureTests
+    public class LoadingProgressTests
     {
         [Test]
-        public void ShouldCommitDrag_False_WhenDistanceAtOrBelowThreshold()
+        public void MapAsyncProgress_Zero_IsZero()
         {
-            var down = new Vector2(100f, 100f);
-            Assert.IsFalse(BoardPointerGesture.ShouldCommitDrag(down, down + new Vector2(8f, 0f), 8f));
-            Assert.IsFalse(BoardPointerGesture.ShouldCommitDrag(down, down, 8f));
+            Assert.AreEqual(0f, LoadingProgress.MapAsyncProgress(0f), 0.0001f);
         }
 
         [Test]
-        public void ShouldCommitDrag_True_WhenDistanceAboveThreshold()
+        public void MapAsyncProgress_Cap_IsOne()
         {
-            var down = new Vector2(100f, 100f);
-            Assert.IsTrue(BoardPointerGesture.ShouldCommitDrag(down, down + new Vector2(8.1f, 0f), 8f));
+            Assert.AreEqual(1f, LoadingProgress.MapAsyncProgress(0.9f), 0.0001f);
         }
 
         [Test]
-        public void IsClick_True_OnlyWhenNotCommitted()
+        public void MapAsyncProgress_HalfCap_IsHalf()
         {
-            var down = new Vector2(50f, 50f);
-            Assert.IsTrue(BoardPointerGesture.IsClick(down, down + new Vector2(3f, 4f), 8f));
-            Assert.IsFalse(BoardPointerGesture.IsClick(down, down + new Vector2(10f, 0f), 8f));
+            Assert.AreEqual(0.5f, LoadingProgress.MapAsyncProgress(0.45f), 0.0001f);
+        }
+
+        [Test]
+        public void MapAsyncProgress_AboveCap_ClampsToOne()
+        {
+            Assert.AreEqual(1f, LoadingProgress.MapAsyncProgress(1f), 0.0001f);
+        }
+
+        [Test]
+        public void CanActivate_RequiresFillAndHold()
+        {
+            Assert.IsFalse(LoadingProgress.CanActivate(1f, 0.79f));
+            Assert.IsFalse(LoadingProgress.CanActivate(0.98f, 1f));
+            Assert.IsTrue(LoadingProgress.CanActivate(0.99f, 0.80f));
         }
     }
 }
 ```
 
-- [ ] **Step 3: Run tests â€” expect FAIL (type missing)**
+- [ ] **Step 2: Run tests — expect FAIL (type missing)**
 
-Unity Test Runner â†’ EditMode â†’ run `BoardPointerGestureTests`.  
-Or CLI if available:
-```powershell
-# Only if project has batchmode test script; otherwise use Test Runner window
-```
-Expected: compile error / missing `BoardPointerGesture`.
+Unity: Window → General → Test Runner → EditMode → `LoadingProgressTests`.
 
-- [ ] **Step 4: Implement helper**
+Expected: fail compile / type not found `LoadingProgress`.
 
-`Assets/FracturedChorus/UI/BoardPointerGesture.cs`:
+- [ ] **Step 3: Implement**
+
 ```csharp
 using UnityEngine;
 
-namespace FracturedChorus.UI
+namespace FracturedChorus.UI.Loading
 {
-    public static class BoardPointerGesture
+    public static class LoadingProgress
     {
-        public static bool ShouldCommitDrag(Vector2 pointerDownScreen, Vector2 currentScreen, float thresholdPx)
+        public const float UnityActivationCap = 0.9f;
+        public const float FadeInSec = 0.20f;
+        public const float FadeOutSec = 0.25f;
+        public const float MinHoldSec = 0.80f;
+        public const float SmoothTime = 0.12f;
+        public const float ActivateFill = 0.99f;
+        public const float PercentVisibleMin = 0.02f;
+
+        public static float MapAsyncProgress(float unityProgress)
         {
-            return Vector2.Distance(pointerDownScreen, currentScreen) > thresholdPx;
+            if (unityProgress <= 0f)
+            {
+                return 0f;
+            }
+
+            var mapped = unityProgress / UnityActivationCap;
+            return Mathf.Clamp01(mapped);
         }
 
-        public static bool IsClick(Vector2 pointerDownScreen, Vector2 releaseScreen, float thresholdPx)
+        public static bool CanActivate(float displayedFill, float holdElapsedSec)
         {
-            return !ShouldCommitDrag(pointerDownScreen, releaseScreen, thresholdPx);
+            return displayedFill >= ActivateFill && holdElapsedSec >= MinHoldSec;
         }
     }
 }
 ```
 
-- [ ] **Step 5: Re-run tests â€” expect PASS**
+- [ ] **Step 4: Re-run tests — expect PASS**
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 5: Commit**
 
-```powershell
-git add Assets/FracturedChorus/UI/BoardPointerGesture.cs Assets/FracturedChorus/UI/BoardPointerGesture.cs.meta Assets/FracturedChorus/Tests Assets/FracturedChorus/Editor/BoardPointerGestureTests.cs
-git commit -m @"
-Add click-vs-drag gesture helper with EditMode tests.
-
-Keeps planning click/drag rules testable before BoardDragController wiring.
-"@
+```
+git add Assets/FracturedChorus/UI/Loading/LoadingProgress.cs Assets/FracturedChorus/UI/Loading/LoadingProgress.cs.meta Assets/FracturedChorus/Editor/LoadingProgressTests.cs Assets/FracturedChorus/Editor/LoadingProgressTests.cs.meta
+git commit -m "Add loading progress mapping for async scene activation."
 ```
 
 ---
+

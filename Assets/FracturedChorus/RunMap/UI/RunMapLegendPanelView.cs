@@ -1,4 +1,5 @@
 using System;
+using FracturedChorus.Data;
 using FracturedChorus.RunMap.Core;
 using FracturedChorus.UI;
 using UnityEngine;
@@ -12,6 +13,8 @@ namespace FracturedChorus.RunMap.UI
     {
         private static readonly Vector2 StretchMin = Vector2.zero;
         private static readonly Vector2 StretchMax = Vector2.one;
+
+        [SerializeField] private MapNodeIconSetSO iconSet;
 
 #if UNITY_EDITOR
         private void OnEnable()
@@ -296,7 +299,7 @@ namespace FracturedChorus.RunMap.UI
 
         private void ConfigureSwatch(Transform dot, MapNodeType type)
         {
-            EnsureDotSquare(dot);
+            EnsureDotSquare(dot, type);
 
             var legacyImage = dot.GetComponent<Image>();
             if (legacyImage != null)
@@ -304,8 +307,9 @@ namespace FracturedChorus.RunMap.UI
                 legacyImage.enabled = false;
             }
 
+            var diameter = LegendDotDiameter(type);
             var stroke = EnsureImageChild(dot, "Stroke", StretchMin, StretchMax, Vector2.zero, Vector2.zero);
-            var inset = MapLayoutConstants.LegendDotSize * (3f / MapLayoutConstants.NodeDiameter);
+            var inset = diameter * (3f / MapLayoutConstants.NodeDiameter);
             var fill = EnsureImageChild(
                 dot,
                 "Fill",
@@ -313,6 +317,27 @@ namespace FracturedChorus.RunMap.UI
                 StretchMax,
                 new Vector2(inset, inset),
                 new Vector2(-inset, -inset));
+            var icon = EnsureImageChild(dot, "Icon", StretchMin, StretchMax, Vector2.zero, Vector2.zero);
+
+            var sprite = iconSet != null
+                ? iconSet.Resolve(type, type == MapNodeType.Boss, PinkySectorId.Canticle)
+                : null;
+
+            if (sprite != null)
+            {
+                stroke.enabled = false;
+                fill.enabled = false;
+                icon.enabled = true;
+                icon.sprite = sprite;
+                icon.color = Color.white;
+                icon.preserveAspect = true;
+                icon.raycastTarget = false;
+                return;
+            }
+
+            stroke.enabled = true;
+            fill.enabled = true;
+            icon.enabled = false;
 
             stroke.sprite = UiCircleSpriteUtil.Circle;
             stroke.color = MapNodePalette.StrokeColor(type);
@@ -323,9 +348,14 @@ namespace FracturedChorus.RunMap.UI
             fill.raycastTarget = false;
         }
 
-        private static void EnsureDotSquare(Transform dot)
+        private static float LegendDotDiameter(MapNodeType type) =>
+            type == MapNodeType.Start
+                ? MapLayoutConstants.LegendDotSize * MapLayoutConstants.StartNodeScale
+                : MapLayoutConstants.LegendDotSize;
+
+        private static void EnsureDotSquare(Transform dot, MapNodeType type)
         {
-            var diameter = MapLayoutConstants.LegendDotSize;
+            var diameter = LegendDotDiameter(type);
             var rect = dot as RectTransform ?? dot.GetComponent<RectTransform>();
             if (rect != null)
             {

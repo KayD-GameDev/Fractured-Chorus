@@ -24,19 +24,31 @@ Menu bổ sung: **Fractured Chorus → Run Map → …** (xem bảng dưới).
 ## Hierarchy
 
 ```
-RunMapRoot                    ← RunMapBootstrap (settings) + RunMapController (boot + click)
+RunMapRoot                    ← CadenceMapController + RunMapBootstrap + RunMapController
 └── RunMapCanvas              ← scale (1,1,1); Screen Space Camera
-    ├── TopBar                ← title, seed, status
-    ├── MapScrollView         ← ScrollRect + RunMapScrollDriver (scroll 50%)
-    │   └── Viewport
-    │       └── MapContent    ← RunMapUIView (fitToViewport)
-    │           ├── ConnectionsLayer   ← edge clones (template inactive ở đây)
-    │           ├── NodesLayer         ← NodeTemplate + runtime nodes
-    │           └── FloorLabelsLayer   ← F1…F16 labels
-    └── LegendPanel           ← RunMapLegendPanelView (font/màu/spacing runtime)
+    ├── MacroMapLayer         ← Map Select (vault / CadenceMacroMapView)
+    ├── InnerMapLayer         ← Map Nodes (path graph)
+    │   ├── MapScrollView     ← ScrollRect + RunMapScrollDriver
+    │   │   └── Viewport → MapContent (RunMapUIView)
+    │   │       ├── ConnectionsLayer
+    │   │       ├── NodesLayer         ← NodeTemplate + runtime nodes
+    │   │       └── FloorLabelsLayer
+    │   └── LegendPanel
+    └── TopBar (nếu có)
 EventSystem
 Main Camera
 ```
+
+### Edit Mode Preview (như Main Menu)
+
+Chọn **RunMapRoot** → Inspector `CadenceMapController` → **Edit Mode Preview**:
+
+| Nút | Hiện lớp | Chỉnh gì |
+|-----|----------|----------|
+| **Map Select** | `MacroMapLayer` | vault / macro map select |
+| **Map Nodes** | `InnerMapLayer` + `NodeEditPreview` | strip mọi loại icon + NodeTemplate/Legend |
+
+Play vẫn tự ShowMacroMap → Dive vào inner (ẩn preview strip).
 
 **Quy tắc layout (2026-06-28+):**
 - `MapContent` + mọi layer con: **anchor/pivot đáy** `(0.5, 0)` — Y từ đáy (F1 thấp, F16 cao).

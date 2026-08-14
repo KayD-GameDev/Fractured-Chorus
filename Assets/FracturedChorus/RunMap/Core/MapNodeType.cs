@@ -9,6 +9,7 @@ namespace FracturedChorus.RunMap.Core
         Camp = 3,
         Relay = 4,
         Treasure = 5,
-        Boss = 6
+        Boss = 6,
+        Start = 7
     }
 }

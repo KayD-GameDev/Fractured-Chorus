@@ -35,6 +35,7 @@ namespace FracturedChorus.Combat.Core
 
         [SerializeField] private CombatExecuteOverlayUIView executeOverlay;
         [SerializeField] private CombatResultOverlayUIView resultOverlay;
+        [SerializeField] private CombatPhaseBannerView phaseBanner;
         [SerializeField] private BlockInputController blockInput;
         [SerializeField] private DeployFormationHintView deployFormationHint;
 
@@ -44,7 +45,8 @@ namespace FracturedChorus.Combat.Core
 
         private BeatTimelineEngine _timeline;
 
-        private CombatMusicController _musicController;
+        private ICombatMusicSync _musicSync;
+        private bool _usesRunMusic;
         private CombatSfxController _combatSfx;
 
         private BoardDragController _boardDrag;
@@ -69,11 +71,15 @@ namespace FracturedChorus.Combat.Core
         }
 
         public void Initialize(CombatSession session, BeatTimelineEngine timeline,
-
             BeatTimelineUIView timelineUi, SkillPanelUIView skillPanel, CombatMusicController music = null,
-
             CombatExecuteOverlayUIView executeOverlayView = null, BoardDragController boardDrag = null)
+        {
+            InitializeWithMusic(session, timeline, timelineUi, skillPanel, music, executeOverlayView, boardDrag);
+        }
 
+        public void InitializeWithMusic(CombatSession session, BeatTimelineEngine timeline,
+            BeatTimelineUIView timelineUi, SkillPanelUIView skillPanel, ICombatMusicSync music = null,
+            CombatExecuteOverlayUIView executeOverlayView = null, BoardDragController boardDrag = null)
         {
 
             _session = session;
@@ -84,8 +90,11 @@ namespace FracturedChorus.Combat.Core
 
             skillPanelView = skillPanel;
 
-            _musicController = music;
-            _combatSfx = music != null ? music.GetComponent<CombatSfxController>() : null;
+            _musicSync = music;
+            _usesRunMusic = music != null && music.UsesRunSession;
+            _combatSfx = music is MonoBehaviour behaviour
+                ? behaviour.GetComponent<CombatSfxController>()
+                : null;
             if (_combatSfx == null)
             {
                 _combatSfx = FindAnyObjectByType<CombatSfxController>();
@@ -135,9 +144,9 @@ namespace FracturedChorus.Combat.Core
             {
 
                 CombatSfxController combatSfx = null;
-                if (music != null)
+                if (music is MonoBehaviour musicBehaviour)
                 {
-                    combatSfx = music.GetComponent<CombatSfxController>();
+                    combatSfx = musicBehaviour.GetComponent<CombatSfxController>();
                 }
 
                 var presentation = GetComponent<CounterPresentationDriver>();
@@ -185,9 +194,13 @@ namespace FracturedChorus.Combat.Core
         /// </summary>
         private void StartCombatIntro()
         {
-            if (_musicController != null && !_musicController.IsPlaying)
+            if (_usesRunMusic)
             {
-                _musicController.PlayBossMusic();
+                RunMusicSession.Instance?.SetMode(RunMusicMode.Combat);
+            }
+            else if (_musicSync != null && !_musicSync.IsPlaying)
+            {
+                _musicSync.PlayBossMusic();
             }
 
             UpdateExecuteOverlayVisibility(_session?.Phase ?? CombatPhase.Planning);
@@ -195,11 +208,10 @@ namespace FracturedChorus.Combat.Core
             RefreshDeployFormationHint();
             _session?.SetTimelineRunning(true);
 
+            var introSec = ResolveIntroDurationSec();
             if (timelineView != null)
             {
-                timelineView.BeginIntroPlayback(
-                    TimelineConstants.CombatIntroDurationSec,
-                    OnCombatIntroComplete);
+                timelineView.BeginIntroPlayback(introSec, OnCombatIntroComplete);
                 return;
             }
 
@@ -211,16 +223,30 @@ namespace FracturedChorus.Combat.Core
             _combatIntroRoutine = StartCoroutine(CombatIntroFallbackRoutine());
         }
 
+        private static float ResolveIntroDurationSec()
+        {
+            return Mathf.Max(0f, CombatTimelineProfile.CombatIntroDurationSec);
+        }
+
+        private float ResolveBeatDurationSec()
+        {
+            if (_musicSync != null && _musicSync.BeatDuration > 0.05f)
+            {
+                return _musicSync.BeatDuration;
+            }
+
+            return 60f / TimelineConstants.BossRemixBpm;
+        }
+
         private IEnumerator CombatIntroFallbackRoutine()
         {
-            var wait = Mathf.Max(0f, TimelineConstants.CombatIntroDurationSec);
+            var wait = ResolveIntroDurationSec();
             if (wait > 0f)
             {
                 yield return new WaitForSeconds(wait);
             }
 
             OnCombatIntroComplete();
-            _combatIntroRoutine = null;
         }
 
         private void OnCombatIntroComplete()
@@ -230,15 +256,39 @@ namespace FracturedChorus.Combat.Core
                 return;
             }
 
-            _session.EndCombatIntro();
             _session.SetTimelineRunning(false);
-            _musicController?.EnterPlanningDuck();
+            _combatIntroRoutine = StartCoroutine(PlayOpeningBannersThenPlanning());
+        }
+
+        private IEnumerator PlayOpeningBannersThenPlanning()
+        {
+            var beat = ResolveBeatDurationSec();
+            var banner = EnsurePhaseBanner();
+            if (banner != null)
+            {
+                yield return banner.PlayBattleStartRoutine(beat);
+            }
+
             PlayPlanningTransitionSfx();
+            if (banner != null)
+            {
+                yield return banner.PlayPlanningRoutine(beat);
+            }
+
+            if (_session == null || _session.IsEncounterOver)
+            {
+                _combatIntroRoutine = null;
+                yield break;
+            }
+
+            _session.EndCombatIntro();
+            _musicSync?.EnterPlanningDuck();
             timelineView?.RefreshTelegraphsAndSlots();
             UpdateExecuteOverlayVisibility(_session.Phase);
             ApplySlotFloorVisibilityForCurrentPhase();
             RefreshDeployFormationHint();
             TryStartCombatTutorial();
+            _combatIntroRoutine = null;
         }
 
         private void PlayPlanningTransitionSfx()
@@ -255,12 +305,28 @@ namespace FracturedChorus.Combat.Core
         {
             if (_combatSfx == null)
             {
-                _combatSfx = _musicController != null
-                    ? _musicController.GetComponent<CombatSfxController>()
+                _combatSfx = _musicSync is MonoBehaviour behaviour
+                    ? behaviour.GetComponent<CombatSfxController>()
                     : FindAnyObjectByType<CombatSfxController>();
             }
 
             return _combatSfx;
+        }
+
+        private CombatPhaseBannerView EnsurePhaseBanner()
+        {
+            if (phaseBanner == null)
+            {
+                phaseBanner = FindAnyObjectByType<CombatPhaseBannerView>(FindObjectsInactive.Include);
+            }
+
+            if (phaseBanner == null)
+            {
+                phaseBanner = CombatPhaseBannerView.EnsureOn(null);
+            }
+
+            phaseBanner?.EnsureOverlayCanvas();
+            return phaseBanner;
         }
 
         private void Start()
@@ -343,7 +409,7 @@ namespace FracturedChorus.Combat.Core
             _boardDrag?.CancelActiveDrag();
             ForceCancelRelocate();
 
-            _boardDrag?.SetSlotFloorsVisible(false);
+            _boardDrag?.SetSlotFloorsVisible(false, GridSide.Player);
 
             skillPanelView?.Hide();
 
@@ -353,14 +419,14 @@ namespace FracturedChorus.Combat.Core
 
 
 
-            if (_musicController != null)
+            if (_musicSync != null)
             {
-                if (!_musicController.IsPlaying)
+                if (!_usesRunMusic && !_musicSync.IsPlaying)
                 {
-                    _musicController.PlayBossMusic();
+                    _musicSync.PlayBossMusic();
                 }
 
-                _musicController.ExitPlanningDuck();
+                _musicSync.ExitPlanningDuck();
             }
 
             var encounterHomes = EncounterDirector.ActiveInstance
@@ -400,9 +466,9 @@ namespace FracturedChorus.Combat.Core
             if (timelineView != null && _session != null && blockInput != null)
             {
                 CombatSfxController combatSfx = null;
-                if (_musicController != null)
+                if (_musicSync is MonoBehaviour musicBehaviour)
                 {
-                    combatSfx = _musicController.GetComponent<CombatSfxController>();
+                    combatSfx = musicBehaviour.GetComponent<CombatSfxController>();
                 }
 
                 if (combatSfx == null)
@@ -673,7 +739,7 @@ namespace FracturedChorus.Combat.Core
                             ?? FindAnyObjectByType<EncounterDirector>();
             encounter?.RestorePhaseHomes();
 
-            _musicController?.EnterPlanningDuck();
+            _musicSync?.EnterPlanningDuck();
             _planningPaused = false;
             SetCoverActivateAllowed(true);
             _session.EndRoundSegment();
@@ -681,7 +747,7 @@ namespace FracturedChorus.Combat.Core
             timelineView?.RefreshTelegraphsAndSlots();
             RefreshCoverHud();
 
-            if (TimelineConstants.GetSegmentStartBeat(_session.RoundSegmentIndex) >= TimelineConstants.TotalBeats)
+            if (TimelineConstants.GetSegmentStartBeat(_session.RoundSegmentIndex) >= CombatTimelineProfile.TotalBeats)
             {
                 executeOverlay?.SetVisible(false);
                 _segmentCompleteRoutine = null;
@@ -690,6 +756,7 @@ namespace FracturedChorus.Combat.Core
 
             UpdateExecuteOverlayVisibility(_session.Phase);
             PlayPlanningTransitionSfx();
+            EnsurePhaseBanner()?.PlayPlanning();
             RefreshDeployFormationHint();
             _segmentCompleteRoutine = null;
         }
@@ -814,13 +881,14 @@ namespace FracturedChorus.Combat.Core
 
 
         private static void RefreshCoverHud()
-
         {
+            if (!CoverHudView.UiEnabled)
+            {
+                return;
+            }
 
             var hud = UnityEngine.Object.FindAnyObjectByType<CoverHudView>();
-
             hud?.Refresh();
-
         }
 
 
@@ -984,6 +1052,11 @@ namespace FracturedChorus.Combat.Core
                 return;
             }
 
+            if (EncounterDirector.IsPresenting)
+            {
+                return;
+            }
+
             var view = UnitView.FindForUnit(unit);
             if (view != null)
             {
@@ -1013,7 +1086,14 @@ namespace FracturedChorus.Combat.Core
             skillPanelView?.Hide();
             timelineView?.StopTimelinePlayback();
             executeOverlay?.SetVisible(false);
-            _musicController?.StopMusic();
+            if (_usesRunMusic)
+            {
+                RunMusicSession.Instance?.SetMode(RunMusicMode.Map);
+            }
+            else
+            {
+                _musicSync?.StopMusic();
+            }
             var victory = _session != null && _session.Phase == CombatPhase.Victory;
             if (victory)
             {
@@ -1119,9 +1199,21 @@ namespace FracturedChorus.Combat.Core
             }
 
             CombatEncounterHandoff.SetResult(victory);
-            if (victory)
+            var foughtId = !string.IsNullOrEmpty(_activeEncounterId)
+                ? _activeEncounterId
+                : CombatEncounterHandoff.LastFoughtEncounterId;
+            if (victory && EncounterCatalog.IsBoss(foughtId))
             {
                 CadenceMapController.MarkBossVictoryPending();
+            }
+
+            if (_usesRunMusic)
+            {
+                RunMusicSession.Instance?.SetMode(RunMusicMode.Map);
+            }
+            else if (RunMusicSession.Instance != null && RunMusicSession.Instance.IsActive)
+            {
+                RunMusicSession.Instance.ResumeFromBoss();
             }
 
             var sceneName = string.IsNullOrWhiteSpace(CombatEncounterHandoff.ReturnSceneName)
@@ -1135,7 +1227,11 @@ namespace FracturedChorus.Combat.Core
 
         private void OnResultRetry()
         {
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            var sceneName = SceneManager.GetActiveScene().name;
+            if (!RunMapSceneLoader.LoadByName(sceneName))
+            {
+                Debug.LogError($"[Combat] Retry failed to load '{sceneName}'.");
+            }
         }
 
         public void ExitTutorialToRunMap()
@@ -1161,19 +1257,11 @@ namespace FracturedChorus.Combat.Core
 
 
 
-        /// <summary>
-        /// Player hex floors show through every planning window; enemy floors stay hidden.
-        /// </summary>
         private void ApplySlotFloorVisibilityForCurrentPhase()
-
         {
-
             var showPlayerFloors = _session != null && _session.IsPlanningWindowOpen;
-
             _boardDrag?.SetSlotFloorsVisible(false, GridSide.Enemy);
-
             _boardDrag?.SetSlotFloorsVisible(showPlayerFloors, GridSide.Player);
-
         }
 
 

@@ -1,3 +1,4 @@
+using FracturedChorus.Audio;
 using UnityEngine;
 
 namespace FracturedChorus.RunMap
@@ -23,7 +24,21 @@ namespace FracturedChorus.RunMap
 
         private void Start()
         {
+            if (IsCandenceSessionActive())
+            {
+                StopLoop();
+                return;
+            }
+
             StartLoop();
+        }
+
+        private void Update()
+        {
+            if (IsCandenceSessionActive() && IsPlaying)
+            {
+                StopLoop();
+            }
         }
 
         public bool IsPlaying => _source != null && _source.isPlaying;
@@ -41,6 +56,12 @@ namespace FracturedChorus.RunMap
 
         public void StartLoop()
         {
+            if (IsCandenceSessionActive())
+            {
+                StopLoop();
+                return;
+            }
+
             if (worldMapClip == null)
             {
                 Debug.LogWarning("[Fractured Chorus] RunMapBgmController: worldMapClip is not assigned.");
@@ -63,6 +84,15 @@ namespace FracturedChorus.RunMap
             }
         }
 
+        public static void StopAll()
+        {
+            var controllers = Object.FindObjectsByType<RunMapBgmController>(FindObjectsInactive.Include);
+            for (var i = 0; i < controllers.Length; i++)
+            {
+                controllers[i]?.StopLoop();
+            }
+        }
+
         public void SetVolume(float value)
         {
             _normalVolume = Mathf.Clamp01(value);
@@ -71,5 +101,8 @@ namespace FracturedChorus.RunMap
                 _source.volume = _normalVolume;
             }
         }
+
+        private static bool IsCandenceSessionActive() =>
+            RunMusicSession.Instance != null && RunMusicSession.Instance.IsActive;
     }
 }

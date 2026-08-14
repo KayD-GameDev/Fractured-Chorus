@@ -1,57 +1,69 @@
-# Task 2 Report — Deferred drag in BoardDragController
+# Task 2 Report — RunMapSceneLoader.CanLoad
 
-**Status:** DONE  
-**Branch:** branch2  
-**Commit:** `ae9c929` — Defer unit drag so short clicks open the skill panel.
+## Status
 
-## Summary
+**DONE_WITH_CONCERNS** — `CanLoad` and public `ResolveScenePath` implemented per brief; EditMode tests not executed from CLI (no Unity Editor).
 
-Wired `BoardDragController` to consume `BoardPointerGesture` from Task 1. Pointer-down records pick state only; drag commits after 8px threshold in `Update`; pointer-up ends drag or fires `_onUnitClicked` on short click.
-
-## Changes (`BoardDragController.cs`)
-
-| Area | Before | After |
-|------|--------|-------|
-| Class summary | Press-and-hold drag; click after Execute | Planning window: click → skill panel; drag → reposition |
-| `HandlePointerDown` | Eager `BeginDrag` when `CanDragUnit` | Store `_pointerDownUnit` / screen; set `_dragPointerActive`; reset `_draggingUnit` |
-| `Update` (held) | `UpdateDragAtScreen` only if already dragging | `ShouldCommitDrag` → `BeginDrag`; then `UpdateDragAtScreen` |
-| `HandlePointerUp` | Manual distance check + `_dragPointerActive &&` drag guard | `EndDrag` if dragging; else `IsClick` + `CanOpenSkillPanelFor` → click handler |
-| `CancelActiveDrag` | Early return when no drag | Always clear pointer state; cancel snap if dragging |
-
-## Gates (unchanged)
-
-- **Drag:** `CanDragUnit` → `IsPlanningWindowOpen` + alive player unit
-- **Skill click:** `CanOpenSkillPanelFor` → same session gate + optional `_canOpenSkillPanel` predicate
-- **CombatSession / SkillPanelUIView:** not modified
-
-## Verification
-
-```
-== Assembly-CSharp ==
-== Assembly-CSharp-Editor ==
-COMPILE OK
-```
-
-- [x] `Tools/check-compile.ps1` — COMPILE OK
-- [ ] Play Mode QA — not run (Task 3+ scope)
-- [x] Only `BoardDragController.cs` committed
-
-## Self-Review
-
-- **Deferred drag:** No `BeginDrag` on pointer-down; threshold uses shared helper with strict `>` (8.1px commits, 8px does not).
-- **Click path:** `IsClick` delegates to `ShouldCommitDrag` negation — consistent with Task 1 tests.
-- **Pointer-down reset:** `_draggingUnit = null` on new press clears stale drag state before pick; safe for single-pointer input.
-- **`CancelActiveDrag`:** Now clears held-pointer state even when not mid-drag (e.g. pointer-down without threshold crossed) — avoids stuck `_dragPointerActive`.
-- **Behavior change:** Skill panel opens on short click during **Planning window** (was documented as post-Execute only); matches design spec for this task.
-- **Risk:** Low-medium until Play Mode confirms no double-fire with skill panel UI; compile-only verification here.
-
-## Files Modified
+## Deliverables
 
 | File | Action |
 |------|--------|
-| `Assets/FracturedChorus/UI/BoardDragController.cs` | Modified |
+| `Assets/FracturedChorus/RunMap/RunMapSceneLoader.cs` | Modified — added `CanLoad`, `ResolveScenePath` → public |
+| `Assets/FracturedChorus/Editor/RunMapSceneLoaderCanLoadTests.cs` | Created |
+| `Assets/FracturedChorus/Editor/RunMapSceneLoaderCanLoadTests.cs.meta` | Created |
 
-## Not Done
+## Implementation summary
 
-- Play Mode / EditMode integration tests for full click-vs-drag flow on board
-- Tasks 3+ (timeline lock, CombatSession gates if any)
+`RunMapSceneLoader.CanLoad(string sceneName)`:
+
+- Returns `false` for null/whitespace.
+- Resolves path via `ResolveScenePath`, checks `SceneUtility.GetBuildIndexByScenePath` — returns `true` if build index ≥ 0.
+- Otherwise falls back to `Application.CanStreamedLevelBeLoaded(sceneName)`.
+- Does not call `SceneManager.LoadScene`.
+
+`ResolveScenePath` changed from `private static` to `public static` (same body as before).
+
+`LoadByName` unchanged — still synchronous `SceneManager.LoadScene` (Task 4 scope).
+
+## Tests (TDD)
+
+Written first in `RunMapSceneLoaderCanLoadTests` (`FracturedChorus.Tests`):
+
+1. `CanLoad_Empty_IsFalse` — `""`, `"   "`, `null`
+2. `CanLoad_KnownScenes_IsTrue` — MainMenuStartGame, PrologueVN, CombatPrototype
+3. `CanLoad_Unknown_IsFalse` — `DefinitelyMissingScene_XYZ`
+
+Expected TDD flow: Step 2 FAIL (missing `CanLoad`) → Step 3 implement → Step 4 PASS.
+
+## Test execution
+
+- Unity Hub Editor folder has no installed `Unity.exe` (6000.2.6f1 metadata stub only).
+- **EditMode not run** in this environment.
+
+**Recommended verification:** Unity → Test Runner → EditMode → run `RunMapSceneLoaderCanLoadTests`.
+
+Build Settings (`ProjectSettings/EditorBuildSettings.asset`) already includes MainMenuStartGame, PrologueVN, and CombatPrototype — `CanLoad_KnownScenes_IsTrue` should pass in Editor.
+
+## Self-review
+
+- Only task-scoped files committed; `LoadingProgress` untouched.
+- No new comments in source.
+- `LoadByName` not converted to async.
+- Commit message matches brief (≤72 chars, why-focused).
+
+## Commit
+
+- **SHA:** `3bbf28a`
+- **Subject:** Expose scene load checks without starting a load.
+- **Files:** 3 changed, 58 insertions, 1 deletion
+
+## Concerns
+
+1. EditMode tests unverified in Unity (no Editor install).
+2. `CanLoad_KnownScenes_IsTrue` depends on Build Settings — scenes are present today; regression if scenes removed from build list.
+
+## Not done
+
+- Async `LoadByName` (Task 4).
+- Push to remote (explicitly excluded).
+- Modifications to `LoadingProgressTests.cs` (brief allowed either file; used separate file per preference).

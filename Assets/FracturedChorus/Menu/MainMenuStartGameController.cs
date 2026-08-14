@@ -573,36 +573,16 @@ namespace FracturedChorus.Menu
             menuController?.SetEnabled(false);
             HideSettingsImmediate();
             HideOffBeatArchiveImmediate();
-
             PlayAttractTransitionSfx();
             _bgmController?.Duck(bgmDuckMultiplier);
-
-            EnsureSceneFadeOverlay();
-            if (sceneFadeOverlay != null)
+            if (!RunMapSceneLoader.LoadByName(RunMapSceneCatalog.PrologueVN))
             {
-                sceneFadeOverlay.gameObject.SetActive(true);
-                sceneFadeOverlay.blocksRaycasts = true;
-                sceneFadeOverlay.interactable = false;
+                _transitioning = false;
+                menuController?.SetEnabled(true);
+                _bgmController?.RestoreVolume();
             }
 
-            var sfxDuration = _transitionSfxController != null
-                ? _transitionSfxController.GetChangeMenuDuration()
-                : newGameFadeDuration;
-            var fadeDuration = Mathf.Max(newGameFadeDuration, sfxDuration * menuTransitionFadeScale);
-
-            yield return FadeSceneOverlayTo(1f, fadeDuration);
-
-            if (_transitionSfxController != null)
-            {
-                yield return _transitionSfxController.WaitUntilFinishedRoutine();
-            }
-
-            if (newGameFadeHoldSeconds > 0f)
-            {
-                yield return new WaitForSecondsRealtime(newGameFadeHoldSeconds);
-            }
-
-            RunMapSceneLoader.LoadByName(RunMapSceneCatalog.PrologueVN);
+            yield break;
         }
 
         private IEnumerator LoadGameRoutine(int slot)
@@ -611,39 +591,19 @@ namespace FracturedChorus.Menu
             menuController?.SetEnabled(false);
             HideSettingsImmediate();
             HideOffBeatArchiveImmediate();
-
             PlayAttractTransitionSfx();
             _bgmController?.Duck(bgmDuckMultiplier);
-
-            EnsureSceneFadeOverlay();
-            if (sceneFadeOverlay != null)
-            {
-                sceneFadeOverlay.gameObject.SetActive(true);
-                sceneFadeOverlay.blocksRaycasts = true;
-                sceneFadeOverlay.interactable = false;
-            }
-
-            var sfxDuration = _transitionSfxController != null
-                ? _transitionSfxController.GetChangeMenuDuration()
-                : newGameFadeDuration;
-            var fadeDuration = Mathf.Max(newGameFadeDuration, sfxDuration * menuTransitionFadeScale);
-
-            yield return FadeSceneOverlayTo(1f, fadeDuration);
-
-            if (_transitionSfxController != null)
-            {
-                yield return _transitionSfxController.WaitUntilFinishedRoutine();
-            }
-
-            if (newGameFadeHoldSeconds > 0f)
-            {
-                yield return new WaitForSecondsRealtime(newGameFadeHoldSeconds);
-            }
-
             GameMetaSession.LoadSlot(slot);
             var state = GameMetaSession.Current;
             var sceneName = ResolveLoadScene(state);
-            RunMapSceneLoader.LoadByName(sceneName);
+            if (!RunMapSceneLoader.LoadByName(sceneName))
+            {
+                _transitioning = false;
+                menuController?.SetEnabled(true);
+                _bgmController?.RestoreVolume();
+            }
+
+            yield break;
         }
 
         private static string ResolveLoadScene(GameMetaState state)

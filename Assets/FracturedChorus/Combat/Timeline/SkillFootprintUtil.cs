@@ -103,7 +103,7 @@ namespace FracturedChorus.Combat.Timeline
 
             foreach (var info in EnumerateFootprintBeats(skill, placementBeat, unit))
             {
-                if (info.BeatIndex < 0 || info.BeatIndex >= TimelineConstants.TotalBeats)
+                if (info.BeatIndex < 0 || info.BeatIndex >= CombatTimelineProfile.TotalBeats)
                 {
                     return false;
                 }
@@ -129,7 +129,7 @@ namespace FracturedChorus.Combat.Timeline
 
             foreach (var info in EnumerateFootprintBeats(skill, placementBeat, unit))
             {
-                if (info.BeatIndex >= 0 && info.BeatIndex < TimelineConstants.TotalBeats)
+                if (info.BeatIndex >= 0 && info.BeatIndex < CombatTimelineProfile.TotalBeats)
                 {
                     results.Add(info.BeatIndex);
                 }
@@ -194,7 +194,7 @@ namespace FracturedChorus.Combat.Timeline
                 ScratchEntry.Clear();
                 foreach (var info in EnumerateFootprintBeats(entry.Skill, entry.BeatIndex, entry.Unit, entry))
                 {
-                    if (info.BeatIndex >= 0 && info.BeatIndex < TimelineConstants.TotalBeats)
+                    if (info.BeatIndex >= 0 && info.BeatIndex < CombatTimelineProfile.TotalBeats)
                     {
                         ScratchEntry.Add(info.BeatIndex);
                     }
@@ -211,7 +211,7 @@ namespace FracturedChorus.Combat.Timeline
             int placementBeat,
             int planningHorizonBeat = 0)
         {
-            if (unit == null || skill == null || placementBeat < 0 || placementBeat >= TimelineConstants.TotalBeats)
+            if (unit == null || skill == null || placementBeat < 0 || placementBeat >= CombatTimelineProfile.TotalBeats)
             {
                 return false;
             }

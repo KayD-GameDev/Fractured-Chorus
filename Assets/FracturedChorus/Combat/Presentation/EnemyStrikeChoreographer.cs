@@ -19,6 +19,8 @@ namespace FracturedChorus.Combat.Presentation
         [SerializeField] private float retreatSeconds = 0.22f;
         [SerializeField] private float knockbackSeconds = 0.12f;
         [SerializeField] private float knockbackSpeed = 40f;
+        [SerializeField] private float lungeSpeed = 28f;
+        [SerializeField] private float lungeSeconds = 0.18f;
         [SerializeField] [Range(0.05f, 0.95f)] private float skillImpactNormalizedTime = 0.35f;
 
         [Header("Focus")]
@@ -292,7 +294,7 @@ namespace FracturedChorus.Combat.Presentation
             focusDimmer?.Focus(_focusScratch);
 
             EnsureSwordSprites();
-            attackerView.PlayCounterHold();
+            attackerView.PlayCastHold(report.Skill);
             if (report.WasCountered)
             {
                 CollectCounteringEntries(report.BeatIndex);
@@ -305,6 +307,22 @@ namespace FracturedChorus.Combat.Presentation
             if (castHoldSeconds > 0f)
             {
                 yield return new WaitForSeconds(castHoldSeconds);
+            }
+
+            var lungeFeet = ResolveStrikeAnchor(receiverView, report.Target);
+            if (Vector2.Distance(
+                    new Vector2(attackerView.FeetWorldPosition.x, attackerView.FeetWorldPosition.y),
+                    new Vector2(lungeFeet.x, lungeFeet.y)) > 0.08f)
+            {
+                attackerView.PlayMovingLoop();
+                yield return attackerView.MoveFeetToRoutine(
+                    lungeFeet,
+                    ResolveMoveSeconds(
+                        attackerView.FeetWorldPosition,
+                        lungeFeet,
+                        lungeSpeed,
+                        lungeSeconds));
+                attackerView.PlayCastHold(report.Skill);
             }
 
             var swordCount = Mathf.Clamp(report.SwordCount, 1, 3);
@@ -664,7 +682,7 @@ namespace FracturedChorus.Combat.Presentation
         {
             foreach (var view in _focusScratch)
             {
-                if (view == null || view == keepMoving)
+                if (view == null || view == keepMoving || (view.Unit != null && !view.Unit.IsAlive))
                 {
                     continue;
                 }
@@ -776,6 +794,37 @@ namespace FracturedChorus.Combat.Presentation
             if (useMeleeEngage)
             {
                 yield return PlayMeleeCounterImpact(report, attackerView, bodyView, bodyEntry);
+                yield break;
+            }
+
+            if (bodyView != null
+                && bodyEntry?.Skill != null
+                && playerSkillShotChoreographer != null
+                && playerSkillShotChoreographer.IsMultiBulletSkill(bodyEntry.Skill))
+            {
+                attackerView.PlayBeCounteredHold();
+                var ultMid = ResolveMidStaging(attackerView);
+                var ultKnockback = StartCoroutine(
+                    attackerView.MoveFeetToRoutine(
+                        ultMid,
+                        ResolveMoveSeconds(
+                            attackerView.FeetWorldPosition,
+                            ultMid,
+                            knockbackSpeed,
+                            knockbackSeconds)));
+
+                yield return playerSkillShotChoreographer.PlayMultiBulletOwnedRoutine(
+                    bodyView,
+                    attackerView,
+                    bodyEntry.Skill,
+                    onImpact: () => FlushHpFeedback(report.Attacker));
+
+                if (ultKnockback != null)
+                {
+                    yield return ultKnockback;
+                }
+
+                FlushRemainingHpFeedback();
                 yield break;
             }
 
@@ -901,7 +950,7 @@ namespace FracturedChorus.Combat.Presentation
 
             PendingHpFeedback.Remove(unit);
             var view = UnitView.FindForUnit(unit);
-            view?.PlayHpFeedback(change);
+            view?.PlayHpFeedback(change, playHitReaction: false);
         }
 
         private static void FlushRemainingHpFeedback()

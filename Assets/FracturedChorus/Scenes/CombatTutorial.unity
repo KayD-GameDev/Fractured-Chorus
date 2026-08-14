@@ -242,6 +242,8 @@ MonoBehaviour:
   beCounteredStateName: Kiki-Hurt
   idleStateName: Kiki-Idle
   movingStateName: Kiki-Moving
+  deathStateName: 
+  skillStateName: 
   hitRetriggerNormalizedTime: 0.35
   preserveSceneVisuals: 1
   preserveSceneCollider: 1
@@ -3744,6 +3746,8 @@ MonoBehaviour:
   beCounteredStateName: Ren Hurt
   idleStateName: Ren Idle
   movingStateName: Ren Moving
+  deathStateName: 
+  skillStateName: 
   hitRetriggerNormalizedTime: 0.35
   preserveSceneVisuals: 1
   preserveSceneCollider: 1
@@ -4958,6 +4962,7 @@ MonoBehaviour:
   skillPanelView: {fileID: 463385828}
   executeOverlay: {fileID: 2120607402}
   resultOverlay: {fileID: 1451525620}
+  phaseBanner: {fileID: 0}
   blockInput: {fileID: 0}
   deployFormationHint: {fileID: 0}
 --- !u!114 &707156460
@@ -5047,13 +5052,33 @@ MonoBehaviour:
   retreatSeconds: 0.22
   knockbackSeconds: 0.12
   knockbackSpeed: 40
+  lungeSpeed: 28
+  lungeSeconds: 0.18
   skillImpactNormalizedTime: 0.35
   dimFactor: 0.35
   dimFadeSeconds: 0.12
   strikeStandoffX: 2.4
   midStagingX: 0
+  bossSwordSprite: {fileID: 0}
+  bossSwordImpactSprite: {fileID: 0}
+  gruntMicBoltSprite: {fileID: 0}
+  gruntEyeBoltSprite: {fileID: 0}
+  gruntImpactSprite: {fileID: 0}
+  bossSwordAdditiveMaterial: {fileID: 0}
+  swordTravelSeconds: 0.32
+  swordImpactSeconds: 0.18
+  swordShotGapSeconds: 0.08
+  swordVerticalSpread: 0.22
+  swordWorldLength: 1.9
+  gruntBoltWorldLength: 1.35
+  swordImpactWorldSize: 1.7
+  castHoldSeconds: 0.14
+  loadSwordResourcesFallback: 1
+  swordShotParent: {fileID: 0}
   focusDimmer: {fileID: 0}
   playerSkillShotChoreographer: {fileID: 707156464}
+  charlotteSkillChoreographer: {fileID: 0}
+  codaSkillChoreographer: {fileID: 0}
 --- !u!114 &707156464
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5106,12 +5131,22 @@ MonoBehaviour:
   skill3AnimSampleRate: 24
   skill3ShotFrameA: 6
   skill3ShotFrameB: 10
+  skill3MinChargeSeconds: 0.95
   skill3VerticalSpread: 0.18
   skill3GlassDelaySeconds: 0.08
+  skill3GlassWorldSize: 3.45
+  skill3ImpactHoldSeconds: 0.16
+  skill3AftermathHoldSeconds: 0.35
+  skill3FlightFrames: []
+  skill3BulletWorldSize: 2.85
   ultAuraGlowSprite: {fileID: 0}
+  ultAuraWaveformSprite: {fileID: 0}
   ultAuraNotesSprite: {fileID: 0}
+  ultAuraWaveVariants: []
+  ultAuraNoteVariants: []
   ultAuraWorldSize: 2.8
   ultAuraOrbitRadius: 1.15
+  ultAuraConvergeNormalized: 0.68
   additiveMaterial: {fileID: 0}
   sortingOrder: 40
   loadResourcesFallback: 1
@@ -5130,6 +5165,9 @@ MonoBehaviour:
   timelineView: {fileID: 1236853536}
   focusDimmer: {fileID: 707156462}
   playerSkillShotChoreographer: {fileID: 707156464}
+  charlotteSkillChoreographer: {fileID: 0}
+  codaSkillChoreographer: {fileID: 0}
+  counterPresentation: {fileID: 0}
   focusCamera: {fileID: 272797785}
   hideUiRoot: {fileID: 0}
   letterboxOverlay: {fileID: 0}
@@ -5137,11 +5175,14 @@ MonoBehaviour:
   stageRow: 1
   stageColumn: 0
   sideGap: 3.5
+  stageSpreadExtra: 0.85
   stageMoveSeconds: 0.12
   returnMoveSeconds: 0.12
   duelSeconds: 1.5
   resolveAtNormalizedTime: 0.4
   encounterAnimSpeed: 0.7
+  ultimateEncounterAnimSpeed: 0.42
+  ultimateAftermathHoldSeconds: 0.55
   hideOtherUnits: 1
   hideUiDuringEncounter: 1
   focusDimFactor: 0.12
@@ -5149,6 +5190,7 @@ MonoBehaviour:
   moveCamera: 1
   cameraZoomOrtho: 5.2
   cameraMoveSeconds: 0.16
+  swordCastHoldSeconds: 0.14
 --- !u!1 &715640726
 GameObject:
   m_ObjectHideFlags: 0
@@ -6269,11 +6311,25 @@ MonoBehaviour:
   renSkill1Clip: {fileID: 0}
   renSkill2Clip: {fileID: 0}
   renSkill3Clip: {fileID: 0}
+  mirrorBreakingClip: {fileID: 0}
+  mirrorBreakingVolume: 1
   codaSkill1Clip: {fileID: 0}
   codaSkill23Clip: {fileID: 0}
+  charlotteSkill1Clip: {fileID: 0}
+  charlotteSkill2Clip: {fileID: 0}
+  charlotteSkill3Clip: {fileID: 0}
   renSkillVolume: 1
   renSkillCueNormalizedTime: 0.45
   renSkillCueLeadSec: 0.05
+  planningTransitionSource: {fileID: 0}
+  planningTransitionClip: {fileID: 0}
+  planningTransitionVolume: 0.85
+  uiClickSource: {fileID: 0}
+  uiClickClip: {fileID: 0}
+  uiClickVolume: 0.9
+  skillPlaceSource: {fileID: 0}
+  skillPlaceClip: {fileID: 0}
+  skillPlaceVolume: 0.9
 --- !u!1 &890010001
 GameObject:
   m_ObjectHideFlags: 0
@@ -8030,6 +8086,8 @@ MonoBehaviour:
   beCounteredStateName: Coda - Hurt
   idleStateName: Coda - Idle
   movingStateName: Coda - Moving
+  deathStateName: 
+  skillStateName: 
   hitRetriggerNormalizedTime: 0.35
   preserveSceneVisuals: 1
   preserveSceneCollider: 1
@@ -8396,6 +8454,10 @@ MonoBehaviour:
     BeatFrameImpact: {fileID: 21300000, guid: d592cf4d88af4531bcc15f32aa618b26, type: 3}
     BeatFrameWindup: {fileID: 21300000, guid: 956dd18476a049eabb9412311176f55c, type: 3}
     NoteDisplaySize: 42
+    NoteDisplayWidth: 52.95
+    NoteDisplayHeight: 67.24
+    NoteBeamedWidth: 99.13
+    NoteBeamedHeight: 125.88
     GhostDisplaySize: 42
     CoverDisplaySize: 24
     NoteAlpha: 0.78
@@ -8404,6 +8466,10 @@ MonoBehaviour:
     NoteBlueSizeScale: 1
     NotePurpleSizeScale: 1
   noteBandNormalizedY: 0.72
+  bossNoteRailAnchoredY: 215
+  laneGapBelowRail: 32
+  laneLinesTopInset: 15
+  laneLinesBottomInset: -15
   bossNoteNumberLayout:
     singleScale: 1.5
     beamedHeightScale: 1.5
@@ -8426,14 +8492,17 @@ MonoBehaviour:
     - {x: -1.1044621, y: 10.217514}
     singleHeadNormStemUp: {x: -0.08, y: -0.3}
     singleHeadNormStemDown: {x: 0.06, y: 0.28}
+    singleHeadNormByVariant:
+    - {x: -0.08, y: -0.3}
+    - {x: -0.08, y: -0.3}
+    - {x: -0.08, y: -0.3}
+    - {x: 0.06, y: 0.28}
+    - {x: -0.08, y: -0.3}
     beamedHeadNormLeft: {x: -0.32, y: -0.1}
     beamedHeadNormRight: {x: 0.28, y: -0.1}
   laneBandMinNormalizedY: 0.16
   laneBandMaxNormalizedY: 0.48
-  bossTrackFrameHeight: 56
-  bossTrackFrameFill: {r: 0.22, g: 0.05, b: 0.07, a: 0.88}
   bossTrackFrameBorderTop: {r: 0.45, g: 0.98, b: 1, a: 0.95}
-  bossTrackFrameBorderBottom: {r: 0.85, g: 0.45, b: 1, a: 0.9}
   bossTrackFrameBorderThickness: 2
   timelineStaffBackground: {fileID: 21300000, guid: 8b65a2b67d884d9f8672407b4009c8e8, type: 3}
   timelineStaffBackgroundAlpha: 1
@@ -8462,6 +8531,9 @@ MonoBehaviour:
     avatarColumnBackgroundAlpha: 1
     forceAvatarLayout: 0
   preserveSceneLayout: 1
+  browseLeftButton: {fileID: 0}
+  browseRightButton: {fileID: 0}
+  browsePanSpeedPx: 900
   laneAvatarGutter: {fileID: 890020011}
 --- !u!1 &1279832175
 GameObject:

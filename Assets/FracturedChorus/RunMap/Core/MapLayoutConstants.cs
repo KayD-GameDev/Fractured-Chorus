@@ -12,14 +12,18 @@ namespace FracturedChorus.RunMap.Core
         public const int MaxDriftFromCenter = 2;
         public const int CenterColumnBiasWeight = 10;
 
-        public const float NodeSpacingX = 88f;
-        public const float NodeSpacingY = 72f;
-        public const float NodeDiameter = 36f;
-        public const float BossNodeDiameter = 58f;
-        public const float BossYOffset = 96f;
+        public const float NodeSpacingX = 118f;
+        public const float NodeSpacingY = 96f;
+        public const float NodeDiameter = 80f;
+        public const float BossNodeDiameter = 112f;
+        public const float BossYOffset = 112f;
         public const float ContentPaddingX = 48f;
-        public const float ContentPaddingBottom = 64f;
+        public const float ContentPaddingBottom = 48f;
         public const float ContentPaddingTop = 120f;
+        public const float StartBottomInset = 36f;
+        public const float StartToF1GapScale = 0.65f;
+        public const float StartNodeScale = 1.12f;
+        public const float ViewportBottomGutter = 88f;
 
         /// <summary>Icon glyph scale vs base 14px / boss 22px.</summary>
         public const float NodeIconFontScale = 1.75f;
@@ -52,8 +56,8 @@ namespace FracturedChorus.RunMap.Core
         public const float LegendVerticalSpacing = 13.5f;
         /// <summary>HLG dot↔text — base 16 + 1.5px.</summary>
         public const float LegendRowHorizontalSpacing = 17.5f;
-        public const float LegendDotSize = 34f;
-        public const float LegendRowMinHeight = 34f;
+        public const float LegendDotSize = 56f;
+        public const float LegendRowMinHeight = 56f;
         public const float LegendTitleHeight = 32f;
         public const float LegendHintMinHeight = 72f;
         public const float LegendHintLineSpacing = 0.75f;

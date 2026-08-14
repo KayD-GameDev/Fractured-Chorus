@@ -63,6 +63,8 @@ namespace FracturedChorus.Combat.Presentation
         [SerializeField] private float skill3GlassWorldSize = 3.45f;
         [SerializeField] private float skill3ImpactHoldSeconds = 0.16f;
         [SerializeField] private float skill3AftermathHoldSeconds = 0.35f;
+        [SerializeField] private Sprite[] skill3FlightFrames;
+        [SerializeField] private float skill3BulletWorldSize = 2.85f;
         [SerializeField] private Sprite ultAuraGlowSprite;
         [SerializeField] private Sprite ultAuraWaveformSprite;
         [SerializeField] private Sprite ultAuraNotesSprite;
@@ -83,6 +85,9 @@ namespace FracturedChorus.Combat.Presentation
 
         public bool IsMeleeSkill(SkillDefinitionSO skill) =>
             ResolvePresentation(skill) == RenSkillPresentation.MeleeStock;
+
+        public bool IsMultiBulletSkill(SkillDefinitionSO skill) =>
+            ResolvePresentation(skill) == RenSkillPresentation.MultiBullet;
 
         public void Configure(CombatSession session)
         {
@@ -113,6 +118,7 @@ namespace FracturedChorus.Combat.Presentation
             skill3GlassWorldSize = Mathf.Max(glassWorldSize, skill3GlassWorldSize);
             skill3ImpactHoldSeconds = Mathf.Max(0f, skill3ImpactHoldSeconds);
             skill3AftermathHoldSeconds = Mathf.Max(0f, skill3AftermathHoldSeconds);
+            skill3BulletWorldSize = Mathf.Max(0.5f, skill3BulletWorldSize);
         }
 
         private void OnDestroy()
@@ -173,7 +179,7 @@ namespace FracturedChorus.Combat.Presentation
                     break;
                 case RenSkillPresentation.MultiBullet:
                     yield return PlayMultiBulletRoutine(
-                        sourceView, skill, from, to, parent, onImpact, playAttackAnimation: false);
+                        sourceView, skill, from, to, parent, onImpact, playAttackAnimation: true);
                     break;
             }
         }
@@ -237,6 +243,11 @@ namespace FracturedChorus.Combat.Presentation
                     StartCoroutine(PlaySingleBulletRoutine(report.Skill, from, to, parent, null));
                     break;
                 case RenSkillPresentation.MultiBullet:
+                    if (ShouldDeferMultiBulletToCounterChoreo(report))
+                    {
+                        return;
+                    }
+
                     StartCoroutine(PlayMultiBulletRoutine(
                         sourceView,
                         report.Skill,
@@ -247,6 +258,29 @@ namespace FracturedChorus.Combat.Presentation
                         playAttackAnimation: ShouldOwnOpenFieldAttackAnimation(report.BeatIndex)));
                     break;
             }
+        }
+
+        public IEnumerator PlayMultiBulletOwnedRoutine(
+            UnitView sourceView,
+            UnitView targetView,
+            SkillDefinitionSO skill,
+            Action onImpact = null)
+        {
+            if (sourceView == null || targetView == null || skill == null)
+            {
+                yield break;
+            }
+
+            EnsureDefaults();
+            var parent = shotParent != null ? shotParent : transform;
+            yield return PlayMultiBulletRoutine(
+                sourceView,
+                skill,
+                ResolveAimPoint(sourceView),
+                ResolveAimPoint(targetView),
+                parent,
+                onImpact,
+                playAttackAnimation: true);
         }
 
         public IEnumerator PlaySingleBulletRoutine(
@@ -420,6 +454,17 @@ namespace FracturedChorus.Combat.Presentation
             return Mathf.Clamp(distance / speed, 0.04f, Mathf.Max(0.04f, fallbackSeconds));
         }
 
+        private bool ShouldDeferMultiBulletToCounterChoreo(PlayerSkillResolvedReport report)
+        {
+            if (!EnemyStrikeChoreographer.OwnsCounterPresentation || _session?.Timeline == null)
+            {
+                return false;
+            }
+
+            return CombatCounterResolver.ShouldPresentCounterBodyAtBeat(
+                _session.Timeline, report.BeatIndex);
+        }
+
         private bool ShouldDeferMeleeToCounterChoreo(PlayerSkillResolvedReport report)
         {
             if (!EnemyStrikeChoreographer.OwnsCounterPresentation || _session?.Timeline == null)
@@ -464,12 +509,22 @@ namespace FracturedChorus.Combat.Presentation
 
         private bool ShouldOwnOpenFieldAttackAnimation(int beatIndex)
         {
+            if (EncounterDirector.IsPresenting)
+            {
+                return false;
+            }
+
             if (_session?.Timeline == null)
             {
                 return true;
             }
 
-            return CombatCounterResolver.HasCounterOnBeat(_session.Timeline, beatIndex);
+            if (!CombatCounterResolver.HasCounterOnBeat(_session.Timeline, beatIndex))
+            {
+                return false;
+            }
+
+            return !EnemyStrikeChoreographer.OwnsCounterPresentation;
         }
 
         private IEnumerator PlayMultiBulletRoutine(
@@ -535,6 +590,8 @@ namespace FracturedChorus.Combat.Presentation
 
             settings = BuildPierceBulletSettings(to, withGlassShatter: true);
             settings.GlassShatter = BuildGlassShatterSettings(skill3GlassWorldSize);
+            settings.FlightFrames = ResolveSkill3FlightFrames();
+            settings.HeadWorldSize = Mathf.Max(0.6f, skill3BulletWorldSize);
             var impactFxFired = false;
             settings.OnImpact = world =>
             {
@@ -678,6 +735,9 @@ namespace FracturedChorus.Combat.Presentation
             built.TravelSeconds = source.TravelSeconds;
             built.TravelSpeed = source.TravelSpeed;
             built.ImpactSeconds = source.ImpactSeconds;
+            built.HeadWorldSize = source.HeadWorldSize;
+            built.TrailHeight = source.TrailHeight;
+            built.FlightFrames = source.FlightFrames;
             built.PierceThroughScreen = source.PierceThroughScreen;
             built.ImpactWorld = source.ImpactWorld;
             built.GlassShatter = source.GlassShatter;
@@ -933,6 +993,28 @@ namespace FracturedChorus.Combat.Presentation
                     LoadSprite("ren_bullet_flight_04_v1")
                 };
             }
+
+            if (skill3FlightFrames == null || skill3FlightFrames.Length == 0
+                || AllNull(skill3FlightFrames))
+            {
+                var ultBullet = LoadSprite("ren_ult_bullet_flight_v1");
+                if (ultBullet != null)
+                {
+                    skill3FlightFrames = new[] { ultBullet };
+                }
+            }
+        }
+
+        private Sprite[] ResolveSkill3FlightFrames()
+        {
+            EnsureDefaults();
+            if (skill3FlightFrames != null && skill3FlightFrames.Length > 0
+                && !AllNull(skill3FlightFrames))
+            {
+                return skill3FlightFrames;
+            }
+
+            return bulletFlightFrames;
         }
 
         private static readonly Rect[] EerieWaveRects =

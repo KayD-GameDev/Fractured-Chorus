@@ -30,7 +30,7 @@ namespace FracturedChorus.Combat.Timeline
 
     public class BeatTimelineEngine
     {
-        public const int BeatCount = TimelineConstants.TotalBeats;
+        public static int BeatCount => CombatTimelineProfile.TotalBeats;
 
         private readonly List<AgendaEntry> _agenda = new();
         private readonly List<EnemyTelegraph> _telegraphs = new();

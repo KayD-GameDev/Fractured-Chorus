@@ -59,9 +59,13 @@ namespace FracturedChorus.RunMap.Core
 
             foreach (var node in graph.Nodes)
             {
-                if (node.IsBoss)
+                if (node.IsBoss || node.Type == MapNodeType.Start)
                 {
-                    node.Type = MapNodeType.Boss;
+                    if (node.IsBoss)
+                    {
+                        node.Type = MapNodeType.Boss;
+                    }
+
                     continue;
                 }
 
@@ -143,7 +147,7 @@ namespace FracturedChorus.RunMap.Core
 
             foreach (var node in graph.Nodes)
             {
-                if (node.IsBoss || node.Floor == 1)
+                if (node.IsBoss || node.IsStart || node.Type == MapNodeType.Start || node.Floor == 1)
                 {
                     continue;
                 }
@@ -231,7 +235,7 @@ namespace FracturedChorus.RunMap.Core
 
             foreach (var node in graph.Nodes)
             {
-                if (node.IsBoss || node.Floor == 1)
+                if (node.IsBoss || node.IsStart || node.Type == MapNodeType.Start || node.Floor == 1)
                 {
                     continue;
                 }
@@ -545,7 +549,8 @@ namespace FracturedChorus.RunMap.Core
 
             foreach (var node in graph.Nodes)
             {
-                if (node.IsBoss || node.Floor == 1 || node.Type == MapNodeType.Treasure ||
+                if (node.IsBoss || node.IsStart || node.Type == MapNodeType.Start || node.Floor == 1 ||
+                    node.Type == MapNodeType.Treasure ||
                     node.Type == MapNodeType.Camp)
                 {
                     continue;
