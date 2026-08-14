@@ -160,7 +160,7 @@ namespace FracturedChorus.UI
         private int _roundSegmentIndex;
         private int _segmentStartBeat;
         private int _windowStartBeat;
-        private float _introEndAudioTimeSec = -1f;
+        private int _introBeatCount;
         private Action _introCompleteCallback;
 
         [SerializeField] private RectTransform laneAvatarGutter;

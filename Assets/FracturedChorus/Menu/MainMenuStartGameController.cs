@@ -569,23 +569,16 @@ namespace FracturedChorus.Menu
 
         private IEnumerator BeginNewGameRoutine()
         {
-            _transitioning = true;
-            menuController?.SetEnabled(false);
-            HideSettingsImmediate();
-            HideOffBeatArchiveImmediate();
-            PlayAttractTransitionSfx();
-            _bgmController?.Duck(bgmDuckMultiplier);
-            if (!RunMapSceneLoader.LoadByName(RunMapSceneCatalog.PrologueVN))
-            {
-                _transitioning = false;
-                menuController?.SetEnabled(true);
-                _bgmController?.RestoreVolume();
-            }
-
-            yield break;
+            yield return FadeAndLoadScene(RunMapSceneCatalog.PrologueVN);
         }
 
         private IEnumerator LoadGameRoutine(int slot)
+        {
+            GameMetaSession.LoadSlot(slot);
+            yield return FadeAndLoadScene(ResolveLoadScene(GameMetaSession.Current));
+        }
+
+        private IEnumerator FadeAndLoadScene(string sceneName)
         {
             _transitioning = true;
             menuController?.SetEnabled(false);
@@ -593,17 +586,29 @@ namespace FracturedChorus.Menu
             HideOffBeatArchiveImmediate();
             PlayAttractTransitionSfx();
             _bgmController?.Duck(bgmDuckMultiplier);
-            GameMetaSession.LoadSlot(slot);
-            var state = GameMetaSession.Current;
-            var sceneName = ResolveLoadScene(state);
+
+            if (sceneFadeOverlay != null)
+            {
+                sceneFadeOverlay.blocksRaycasts = true;
+                yield return FadeSceneOverlayTo(1f, newGameFadeDuration);
+                if (newGameFadeHoldSeconds > 0f)
+                {
+                    yield return new WaitForSecondsRealtime(newGameFadeHoldSeconds);
+                }
+            }
+
             if (!RunMapSceneLoader.LoadByName(sceneName))
             {
+                if (sceneFadeOverlay != null)
+                {
+                    sceneFadeOverlay.blocksRaycasts = false;
+                    yield return FadeSceneOverlayTo(0f, Mathf.Max(0.01f, newGameFadeDuration * 0.45f));
+                }
+
                 _transitioning = false;
                 menuController?.SetEnabled(true);
                 _bgmController?.RestoreVolume();
             }
-
-            yield break;
         }
 
         private static string ResolveLoadScene(GameMetaState state)
