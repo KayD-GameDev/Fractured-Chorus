@@ -741,8 +741,8 @@ namespace FracturedChorus.Editor
             layout.childForceExpandWidth = true;
             layout.childForceExpandHeight = true;
 
-            var segments = new BeatSegmentView[BeatTimelineEngine.BeatCount];
-            for (var i = 0; i < BeatTimelineEngine.BeatCount; i++)
+            var segments = new BeatSegmentView[TimelineConstants.UiSlotCount];
+            for (var i = 0; i < TimelineConstants.UiSlotCount; i++)
             {
                 segments[i] = CreateBeatSegment(segmentsGo.transform, i);
             }

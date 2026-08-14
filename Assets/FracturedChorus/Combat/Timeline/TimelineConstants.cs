@@ -11,6 +11,15 @@ namespace FracturedChorus.Combat.Timeline
         public static int PhaseCount =>
             1 + (TotalBeats - Phase1SlotCount + LaterPhaseSlotCount - 1) / LaterPhaseSlotCount;
 
+        /// <summary>
+        /// UI keeps this many timeline phases mounted at once (N, N+1, N+2).
+        /// When phase N finishes, the window slides forward and recycles slots.
+        /// </summary>
+        public const int UiVisiblePhaseCount = 3;
+
+        /// <summary>BeatSegmentView pool size = 3 phases × 22 beats.</summary>
+        public const int UiSlotCount = Phase1SlotCount * UiVisiblePhaseCount;
+
         /// <summary>Fallback when UI has not reported visible slot count yet.</summary>
         public const int DefaultVisibleBeatHint = 20;
 
@@ -25,9 +34,18 @@ namespace FracturedChorus.Combat.Timeline
         /// </summary>
         public static int EnemyNoteFloorBeat { get; set; }
 
-        /// <summary>Beat nhỏ nhất cho impact của quái trong phase — phase start + buffer.</summary>
+        /// <summary>
+        /// Beat nhỏ nhất cho impact của quái trong phase.
+        /// Phase 0: first-attack floor + horizon buffer. Phase 1+: phase-local beat 2 (start+1).
+        /// </summary>
         public static int GetMinEnemyImpactBeat(int phaseStartBeat)
         {
+            var phaseIndex = GetPhaseIndex(phaseStartBeat);
+            if (phaseIndex >= 1)
+            {
+                return System.Math.Max(EnemyNoteFloorBeat, phaseStartBeat + 1);
+            }
+
             var floor = System.Math.Max(EnemyFirstAttackBeat, EnemyNoteFloorBeat);
             return System.Math.Max(floor, phaseStartBeat + EnemySpawnBufferBeatsAfterHorizon);
         }
@@ -35,8 +53,11 @@ namespace FracturedChorus.Combat.Timeline
         /// <summary>Timeline phases executed per round segment before returning to Planning.</summary>
         public const int RoundPhaseCount = 1;
 
-        /// <summary>How many phases of boss notes to keep pre-spawned ahead of the current phase (1 = current phrase only).</summary>
-        public const int TelegraphLookaheadPhases = 1;
+        /// <summary>
+        /// Boss notes pre-spawned for the visible UI window (N..N+2).
+        /// Keep in sync with <see cref="UiVisiblePhaseCount"/>.
+        /// </summary>
+        public const int TelegraphLookaheadPhases = UiVisiblePhaseCount;
 
         /// <summary>Boss Remix first-beat offset — keep in sync with MusicBeatMapSO.</summary>
         public const float BossRemixFirstBeatOffsetSec = 1.161f;
@@ -132,5 +153,27 @@ namespace FracturedChorus.Combat.Timeline
 
             return (beatIndex - Phase1SlotCount) % LaterPhaseSlotCount == 0;
         }
+
+        /// <summary>
+        /// Absolute start beat for the sliding UI window anchored on <paramref name="phaseIndex"/> (N).
+        /// Clamps near song end so the pool still covers the remaining beats.
+        /// </summary>
+        public static int GetUiWindowStartBeat(int phaseIndex)
+        {
+            if (phaseIndex < 0)
+            {
+                phaseIndex = 0;
+            }
+
+            GetPhaseBeatRange(phaseIndex, out var startBeat, out _);
+            var maxStart = System.Math.Max(0, TotalBeats - UiSlotCount);
+            return System.Math.Min(startBeat, maxStart);
+        }
+
+        public static int GetUiWindowEndBeatExclusive(int windowStartBeat) =>
+            System.Math.Min(TotalBeats, windowStartBeat + UiSlotCount);
+
+        public static bool IsAbsoluteBeatInUiWindow(int absoluteBeat, int windowStartBeat) =>
+            absoluteBeat >= windowStartBeat && absoluteBeat < GetUiWindowEndBeatExclusive(windowStartBeat);
     }
 }

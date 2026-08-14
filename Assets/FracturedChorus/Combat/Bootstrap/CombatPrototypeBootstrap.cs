@@ -1623,21 +1623,25 @@ namespace FracturedChorus.Combat.Bootstrap
             if (_session?.Grid != null)
             {
                 partyStatusBarView.BindFromSession(_session);
-                return;
-            }
-
-            var views = unitsRoot != null
-                ? unitsRoot.GetComponentsInChildren<UnitView>(true)
-                : GetComponentsInChildren<UnitView>(true);
-
-            if (partyStatusBarView.BoundUnitCount > 0)
-            {
-                partyStatusBarView.RefreshFormationOrderFromUnitViews(views);
             }
             else
             {
-                partyStatusBarView.BindFromUnitViews(views);
+                var views = unitsRoot != null
+                    ? unitsRoot.GetComponentsInChildren<UnitView>(true)
+                    : GetComponentsInChildren<UnitView>(true);
+
+                if (partyStatusBarView.BoundUnitCount > 0)
+                {
+                    partyStatusBarView.RefreshFormationOrderFromUnitViews(views);
+                }
+                else
+                {
+                    partyStatusBarView.BindFromUnitViews(views);
+                }
             }
+
+            // Lanes must follow party cards in the same frame as formation change.
+            timelineView?.SyncPartyLanesNow();
         }
     }
 }

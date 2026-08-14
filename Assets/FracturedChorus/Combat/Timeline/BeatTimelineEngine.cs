@@ -268,8 +268,9 @@ namespace FracturedChorus.Combat.Timeline
         }
 
         /// <summary>
-        /// Push +delayBeats, then keep sliding forward while landing on a note that is not also moving
-        /// (or already claimed by a later note we already relocated). Never leaves the source phase.
+        /// Push +delayBeats, then cascade forward while the landing slot is occupied by a
+        /// non-moving note. Stays in-phase when possible; if delay would pass the phase end,
+        /// spills to beat 1 of the next phase and cascades there.
         /// </summary>
         private int ResolveCascadeDestination(
             EnemyTelegraph self,
@@ -278,13 +279,31 @@ namespace FracturedChorus.Combat.Timeline
             HashSet<EnemyTelegraph> moving)
         {
             var phaseMaxBeat = GetPhaseMaxBeatInclusive(fromBeat);
-            var dest = Mathf.Min(phaseMaxBeat, fromBeat + delayBeats);
-            while (dest < phaseMaxBeat && IsImpactOccupiedByNonMoving(dest, self, moving))
+            int dest;
+            int cascadeMax;
+
+            if (fromBeat + delayBeats <= phaseMaxBeat)
+            {
+                dest = fromBeat + delayBeats;
+                cascadeMax = phaseMaxBeat;
+            }
+            else
+            {
+                dest = phaseMaxBeat + 1;
+                if (dest >= BeatCount)
+                {
+                    return fromBeat;
+                }
+
+                cascadeMax = GetPhaseMaxBeatInclusive(dest);
+            }
+
+            while (dest < cascadeMax && IsImpactOccupiedByNonMoving(dest, self, moving))
             {
                 dest++;
             }
 
-            if (dest > phaseMaxBeat || IsImpactOccupiedByNonMoving(dest, self, moving))
+            if (dest > cascadeMax || IsImpactOccupiedByNonMoving(dest, self, moving))
             {
                 return fromBeat;
             }

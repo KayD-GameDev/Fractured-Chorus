@@ -196,7 +196,8 @@ namespace FracturedChorus.Combat.Core
 
         /// <summary>
         /// Fill boss notes for the current phase window only
-        /// (phase N ⇒ plan N..N+<see cref="TimelineConstants.TelegraphLookaheadPhases"/>-1; default lookahead=1).
+        /// (phase N ⇒ plan N..N+<see cref="TimelineConstants.TelegraphLookaheadPhases"/>-1;
+        /// matches the visible UI window N / N+1 / N+2).
         /// Already-planned phases are skipped so Delay-pushed notes are not wiped.
         /// </summary>
         private void EnsureTelegraphLookahead(int currentPhaseIndex)
