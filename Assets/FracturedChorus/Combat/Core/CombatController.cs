@@ -322,10 +322,10 @@ namespace FracturedChorus.Combat.Core
 
             if (phaseBanner == null)
             {
-                phaseBanner = CombatPhaseBannerView.EnsureOn(null);
+                Debug.LogWarning(
+                    "[CombatController] BattleInfo canvas missing. Add it via Fractured Chorus → Ensure Battle Info Canvas, then assign sprites on Inspector.");
             }
 
-            phaseBanner?.EnsureOverlayCanvas();
             return phaseBanner;
         }
 

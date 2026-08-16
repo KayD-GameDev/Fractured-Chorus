@@ -7,70 +7,64 @@ namespace FracturedChorus.UI
 {
     public sealed class CombatPhaseBannerView : MonoBehaviour
     {
+        public const string ObjectName = "BattleInfo";
+        public const string BannerChildName = "Banner";
         public const float BattleStartDurationSec = 2f;
         public const float PlanningDurationSec = 1f;
         private const float SlideSec = 0.28f;
-
-        private const string BattleStartResourcePath = "UI/Combat/Banners/combat_banner_battle_start_v1";
-        private const string PlanningResourcePath = "UI/Combat/Banners/combat_banner_planning_phase_v1";
         private const float BannerMaxHeight = 320f;
 
         [SerializeField] private Image bannerImage;
         [SerializeField] private Sprite battleStartSprite;
         [SerializeField] private Sprite planningSprite;
 
+        public enum BannerPreviewKind
+        {
+            Planning = 0,
+            BattleStart = 1
+        }
+
+        public Image BannerImage => bannerImage;
+        public Sprite PlanningSprite => planningSprite;
+        public Sprite BattleStartSprite => battleStartSprite;
+
         private Coroutine _playRoutine;
         private RectTransform _bannerRect;
-
-        public static CombatPhaseBannerView EnsureOn(RectTransform parent)
-        {
-            var existing = FindAnyObjectByType<CombatPhaseBannerView>(FindObjectsInactive.Include);
-            if (existing != null)
-            {
-                existing.EnsureOverlayCanvas();
-                existing.EnsureBuilt();
-                return existing;
-            }
-
-            var go = new GameObject("CombatPhaseBanner", typeof(RectTransform));
-            if (parent != null)
-            {
-                go.transform.SetParent(parent, false);
-            }
-
-            var view = go.AddComponent<CombatPhaseBannerView>();
-            view.EnsureOverlayCanvas();
-            view.EnsureBuilt();
-            return view;
-        }
+        private bool _warnedMissingPlanning;
+        private bool _warnedMissingBattleStart;
 
         public void PlayBattleStart()
         {
-            Play(ResolveSprite(ref battleStartSprite, BattleStartResourcePath), DefaultBeatHoldSec);
+            Play(battleStartSprite, DefaultBeatHoldSec, ref _warnedMissingBattleStart, "Battle Start");
         }
 
         public void PlayPlanning()
         {
-            Play(ResolveSprite(ref planningSprite, PlanningResourcePath), DefaultBeatHoldSec);
+            Play(planningSprite, DefaultBeatHoldSec, ref _warnedMissingPlanning, "Planning Phase");
         }
 
         public IEnumerator PlayBattleStartRoutine(float beatDurationSec)
         {
-            yield return PlayAndWait(ResolveSprite(ref battleStartSprite, BattleStartResourcePath), beatDurationSec);
+            if (!TryResolveSprite(battleStartSprite, ref _warnedMissingBattleStart, "Battle Start"))
+            {
+                yield break;
+            }
+
+            yield return PlayAndWait(battleStartSprite, beatDurationSec);
         }
 
         public IEnumerator PlayPlanningRoutine(float beatDurationSec)
         {
-            yield return PlayAndWait(ResolveSprite(ref planningSprite, PlanningResourcePath), beatDurationSec);
+            if (!TryResolveSprite(planningSprite, ref _warnedMissingPlanning, "Planning Phase"))
+            {
+                yield break;
+            }
+
+            yield return PlayAndWait(planningSprite, beatDurationSec);
         }
 
         public void EnsureOverlayCanvas()
         {
-            if (transform.parent != null)
-            {
-                transform.SetParent(null, false);
-            }
-
             var canvas = GetComponent<Canvas>();
             if (canvas == null)
             {
@@ -105,7 +99,7 @@ namespace FracturedChorus.UI
             transform.SetAsLastSibling();
         }
 
-        private void EnsureBuilt()
+        public void EnsureBuilt()
         {
             EnsureOverlayCanvas();
             var root = transform as RectTransform;
@@ -117,13 +111,13 @@ namespace FracturedChorus.UI
 
             if (bannerImage == null)
             {
-                var child = transform.Find("Banner");
+                var child = transform.Find(BannerChildName);
                 bannerImage = child != null ? child.GetComponent<Image>() : null;
             }
 
             if (bannerImage == null)
             {
-                var imageGo = new GameObject("Banner", typeof(RectTransform), typeof(Image));
+                var imageGo = new GameObject(BannerChildName, typeof(RectTransform), typeof(Image));
                 imageGo.transform.SetParent(transform, false);
                 bannerImage = imageGo.GetComponent<Image>();
             }
@@ -143,9 +137,9 @@ namespace FracturedChorus.UI
 
         private static float DefaultBeatHoldSec => 60f / TimelineConstants.BossRemixBpm;
 
-        private void Play(Sprite sprite, float beatHoldSec)
+        private void Play(Sprite sprite, float beatHoldSec, ref bool warned, string label)
         {
-            if (sprite == null)
+            if (!TryResolveSprite(sprite, ref warned, label))
             {
                 return;
             }
@@ -163,11 +157,6 @@ namespace FracturedChorus.UI
 
         private IEnumerator PlayAndWait(Sprite sprite, float beatHoldSec)
         {
-            if (sprite == null)
-            {
-                yield break;
-            }
-
             EnsureBuilt();
             gameObject.SetActive(true);
             transform.SetAsLastSibling();
@@ -180,10 +169,27 @@ namespace FracturedChorus.UI
             yield return PlayRoutine(sprite, beatHoldSec);
         }
 
+        private static bool TryResolveSprite(Sprite sprite, ref bool warned, string label)
+        {
+            if (sprite != null)
+            {
+                return true;
+            }
+
+            if (!warned)
+            {
+                warned = true;
+                Debug.LogWarning(
+                    $"[BattleInfo] Missing {label} sprite. Assign it on the BattleInfo Inspector.");
+            }
+
+            return false;
+        }
+
         private IEnumerator PlayRoutine(Sprite sprite, float beatHoldSec)
         {
             gameObject.SetActive(true);
-            bannerImage.enabled = true;
+            ShowBannerVisual();
             bannerImage.sprite = sprite;
             bannerImage.SetNativeSize();
             FitBannerSize();
@@ -199,8 +205,65 @@ namespace FracturedChorus.UI
             yield return Slide(_bannerRect, from, mid, SlideSec);
             yield return new WaitForSeconds(hold);
             yield return Slide(_bannerRect, mid, to, SlideSec);
-            gameObject.SetActive(false);
+            HideBannerVisual();
             _playRoutine = null;
+        }
+
+        public void PreviewBanner(BannerPreviewKind kind)
+        {
+            EnsureBuilt();
+            var sprite = kind == BannerPreviewKind.Planning ? planningSprite : battleStartSprite;
+            if (bannerImage == null || sprite == null)
+            {
+                return;
+            }
+
+            ShowBannerVisual();
+            bannerImage.sprite = sprite;
+        }
+
+        public void ApplyBannerNativeSize()
+        {
+            if (bannerImage == null || bannerImage.sprite == null)
+            {
+                return;
+            }
+
+            bannerImage.SetNativeSize();
+            _bannerRect = bannerImage.rectTransform;
+        }
+
+        public void ShowBannerVisual()
+        {
+            if (bannerImage != null)
+            {
+                bannerImage.enabled = true;
+            }
+
+            var group = GetComponent<CanvasGroup>();
+            if (group != null)
+            {
+                group.alpha = 1f;
+            }
+        }
+
+        public void HideBannerVisual()
+        {
+            if (bannerImage != null)
+            {
+                bannerImage.enabled = false;
+            }
+
+            var group = GetComponent<CanvasGroup>();
+            if (group != null)
+            {
+                group.alpha = 0f;
+            }
+
+            if (_bannerRect != null)
+            {
+                _bannerRect.anchoredPosition = Vector2.zero;
+            }
         }
 
         private void FitBannerSize()
@@ -246,28 +309,6 @@ namespace FracturedChorus.UI
             }
 
             rect.anchoredPosition = to;
-        }
-
-        private static Sprite ResolveSprite(ref Sprite cached, string resourcePath)
-        {
-            if (cached != null)
-            {
-                return cached;
-            }
-
-            cached = Resources.Load<Sprite>(resourcePath);
-            if (cached != null)
-            {
-                return cached;
-            }
-
-            var sprites = Resources.LoadAll<Sprite>(resourcePath);
-            if (sprites != null && sprites.Length > 0)
-            {
-                cached = sprites[0];
-            }
-
-            return cached;
         }
     }
 }

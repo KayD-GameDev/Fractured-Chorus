@@ -12,10 +12,9 @@ namespace FracturedChorus.Editor
         {
             serializedObject.Update();
             EditorGUILayout.PropertyField(serializedObject.FindProperty("timeline"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("shapePreview"),
-                new GUIContent("Editing Shape"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("shapeLayouts"),
-                new GUIContent("Saved Layouts (v0–v4)"), true);
+
+            var layoutsProp = serializedObject.FindProperty("shapeLayouts");
+            EditorGUILayout.PropertyField(layoutsProp, new GUIContent("Saved Layouts"), true);
             serializedObject.ApplyModifiedProperties();
 
             var sim = (BossNoteSimulator)target;
@@ -23,7 +22,7 @@ namespace FracturedChorus.Editor
             if (Application.isPlaying)
             {
                 EditorGUILayout.HelpBox(
-                    "Play: mỗi note dùng layout Knob/RailAnchor/NoteNum đã lưu; note đôi = 2 note đơn.",
+                    "Play: mỗi note dùng layout Knob/RailAnchor/NoteNum + sprite đã lưu; note đôi = 2 note đơn.",
                     MessageType.None);
                 return;
             }
@@ -36,17 +35,12 @@ namespace FracturedChorus.Editor
                 "  └ Knob          ← kéo để đặt vùng bụng / không gian số\n" +
                 "     ├ RailAnchor ← căn giữa Knob (pin lên line quái)\n" +
                 "     └ NoteNum    ← căn giữa Knob (số hits)\n\n" +
-                "Mỗi shape V0–V4 lưu riêng Knob + RailAnchor + NoteNum.\n" +
-                "Note đôi khi Play = 2 note đơn (1 beat / 1 note).",
+                "Thêm/bớt shape bằng nút bên dưới. Mỗi shape lưu Knob + RailAnchor + NoteNum + Sprite.",
                 MessageType.Info);
 
-            EditorGUILayout.BeginHorizontal();
-            DrawShapeButton(sim, "V0", BossNoteSimulator.NoteShapePreview.V0);
-            DrawShapeButton(sim, "V1", BossNoteSimulator.NoteShapePreview.V1);
-            DrawShapeButton(sim, "V2", BossNoteSimulator.NoteShapePreview.V2);
-            DrawShapeButton(sim, "V3", BossNoteSimulator.NoteShapePreview.V3);
-            DrawShapeButton(sim, "V4", BossNoteSimulator.NoteShapePreview.V4);
-            EditorGUILayout.EndHorizontal();
+            DrawShapeCountControls(sim);
+            DrawShapeButtons(sim);
+            DrawCurrentShapeSprite(sim);
 
             EditorGUILayout.Space(4f);
             if (GUILayout.Button("Rebuild Hierarchy (Knob → RailAnchor + NoteNum)"))
@@ -77,7 +71,7 @@ namespace FracturedChorus.Editor
             var knob = sim.KnobLocal;
             var pin = sim.PinInNoteSpace;
             EditorGUILayout.HelpBox(
-                $"Editing {sim.ShapePreview}  |  Note size {size.x:0.##}×{size.y:0.##}\n" +
+                $"Editing V{sim.ShapePreview} / {sim.ShapeCount}  |  Note size {size.x:0.##}×{size.y:0.##}\n" +
                 $"Knob ({knob.x:0.##}, {knob.y:0.##}) size {sim.KnobSize.x:0.##}×{sim.KnobSize.y:0.##}\n" +
                 $"RailAnchor@Knob ({sim.RailAnchorLocal.x:0.##}, {sim.RailAnchorLocal.y:0.##})  " +
                 $"NoteNum@Knob ({sim.NoteNumLocal.x:0.##}, {sim.NoteNumLocal.y:0.##})\n" +
@@ -85,10 +79,85 @@ namespace FracturedChorus.Editor
                 MessageType.None);
         }
 
-        private static void DrawShapeButton(
-            BossNoteSimulator sim,
-            string label,
-            BossNoteSimulator.NoteShapePreview preview)
+        private static void DrawShapeCountControls(BossNoteSimulator sim)
+        {
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField($"Shapes: {sim.ShapeCount}", GUILayout.Width(90f));
+            using (new EditorGUI.DisabledScope(sim.ShapeCount >= BossNoteSimulator.MaxShapeCount))
+            {
+                if (GUILayout.Button("+ Add Shape"))
+                {
+                    Undo.RecordObject(sim, "Add NoteSimulator Shape");
+                    sim.AddShape();
+                    EditorUtility.SetDirty(sim);
+                    SceneView.RepaintAll();
+                }
+            }
+
+            using (new EditorGUI.DisabledScope(sim.ShapeCount <= BossNoteSimulator.MinShapeCount))
+            {
+                if (GUILayout.Button("− Remove Shape"))
+                {
+                    Undo.RecordObject(sim, "Remove NoteSimulator Shape");
+                    sim.RemoveShape();
+                    EditorUtility.SetDirty(sim);
+                    SceneView.RepaintAll();
+                }
+            }
+
+            EditorGUILayout.EndHorizontal();
+        }
+
+        private static void DrawShapeButtons(BossNoteSimulator sim)
+        {
+            var count = sim.ShapeCount;
+            EditorGUILayout.BeginHorizontal();
+            for (var i = 0; i < count; i++)
+            {
+                if (i > 0 && i % 8 == 0)
+                {
+                    EditorGUILayout.EndHorizontal();
+                    EditorGUILayout.BeginHorizontal();
+                }
+
+                DrawShapeButton(sim, "V" + i, i);
+            }
+
+            EditorGUILayout.EndHorizontal();
+        }
+
+        private void DrawCurrentShapeSprite(BossNoteSimulator sim)
+        {
+            serializedObject.Update();
+            var layouts = serializedObject.FindProperty("shapeLayouts");
+            var index = sim.ShapePreview;
+            if (layouts == null || index < 0 || index >= layouts.arraySize)
+            {
+                return;
+            }
+
+            var spriteProp = layouts.GetArrayElementAtIndex(index).FindPropertyRelative("sprite");
+            if (spriteProp == null)
+            {
+                return;
+            }
+
+            EditorGUI.BeginChangeCheck();
+            EditorGUILayout.PropertyField(spriteProp, new GUIContent($"Sprite V{index}"));
+            if (EditorGUI.EndChangeCheck())
+            {
+                serializedObject.ApplyModifiedProperties();
+                sim.ApplyPreviewSprite(spriteProp.objectReferenceValue as Sprite);
+                EditorUtility.SetDirty(sim);
+                SceneView.RepaintAll();
+            }
+            else
+            {
+                serializedObject.ApplyModifiedProperties();
+            }
+        }
+
+        private static void DrawShapeButton(BossNoteSimulator sim, string label, int preview)
         {
             var selected = sim.ShapePreview == preview;
             var prev = GUI.backgroundColor;

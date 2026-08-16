@@ -117,7 +117,13 @@ namespace FracturedChorus.UI
 
             _catalog?.EnsureDefaultsLoaded();
             var authored = ResolveAuthoredSpecsForRebuild();
-            var clusters = BossNoteClusterBuilder.Build(timeline, authored);
+            var sim = BossNoteSimulator.FindInLayer(_layer);
+            var shapeCount = sim != null
+                ? sim.ShapeCount
+                : (_simShapeLayouts != null && _simShapeLayouts.Length > 0
+                    ? _simShapeLayouts.Length
+                    : BossNoteClusterBuilder.SingleVariantCount);
+            var clusters = BossNoteClusterBuilder.Build(timeline, authored, shapeCount);
             if (clusters == null || clusters.Count == 0)
             {
                 return;
@@ -287,9 +293,11 @@ namespace FracturedChorus.UI
                 {
                     if (saved.knobSize.x < 0.5f && saved.knobSize.y < 0.5f)
                     {
-                        return BossNoteShapeLayout.FromLegacyNoteSpace(
+                        var migrated = BossNoteShapeLayout.FromLegacyNoteSpace(
                             saved.railAnchorLocal,
                             saved.noteNumLocal);
+                        migrated.sprite = saved.sprite;
+                        return migrated;
                     }
 
                     return saved;
@@ -373,10 +381,10 @@ namespace FracturedChorus.UI
                 return;
             }
 
-            var sprite = _catalog != null
-                ? _catalog.MusicSingle(head.VariantIndex, head.DisplayTier)
-                : null;
-            var shape = ResolveShapeLayout(head.VariantIndex, size, sprite);
+            var shape = ResolveShapeLayout(head.VariantIndex, size, null);
+            var sprite = shape.sprite != null
+                ? shape.sprite
+                : (_catalog != null ? _catalog.MusicSingle(head.VariantIndex, head.DisplayTier) : null);
             var pin = shape.PinInNoteSpace;
 
             // Pin like FeetAnchor: notePos + (Knob + RailAnchor) = (beatX, railY).

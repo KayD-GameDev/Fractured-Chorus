@@ -32,6 +32,11 @@ namespace FracturedChorus.UI
         private bool _warnedMissingButton;
         private string _currentLabel;
 
+        public RectTransform ButtonRect =>
+            buttonRect != null ? buttonRect : executeButton != null ? executeButton.transform as RectTransform : null;
+
+        public Button ExecuteButton => executeButton;
+
         public void WireReferences()
         {
             executeButton = ResolveExecuteButton();
