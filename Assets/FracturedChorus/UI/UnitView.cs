@@ -1,6 +1,7 @@
 using FracturedChorus.Audio;
 using FracturedChorus.Combat.Bootstrap;
 using FracturedChorus.Combat.Grid;
+using FracturedChorus.Combat.Presentation;
 using FracturedChorus.Combat.Units;
 using FracturedChorus.Data;
 using System.Collections;
@@ -298,6 +299,11 @@ namespace FracturedChorus.UI
 
             if (clip == null)
             {
+                clip = ResolveClipByKeyword(null, "Skill 1", out stateName);
+            }
+
+            if (clip == null)
+            {
                 clip = ResolveClipByKeyword(null, "Skill", out stateName);
             }
 
@@ -424,12 +430,36 @@ namespace FracturedChorus.UI
 
         private AnimationClip ResolveCounterClip(out string stateName)
         {
-            return ResolveClipByKeyword(counterStateName, "Counter", out stateName);
+            var clip = ResolveClipByKeyword(counterStateName, "Counter", out stateName);
+            if (clip != null)
+            {
+                return clip;
+            }
+
+            clip = ResolveClipByKeyword(null, "Evade", out stateName);
+            if (clip != null)
+            {
+                return clip;
+            }
+
+            return ResolveGuardClip(out stateName);
         }
 
         private AnimationClip ResolveGuardClip(out string stateName)
         {
-            return ResolveClipByKeyword(guardStateName, "Guard", out stateName);
+            var clip = ResolveClipByKeyword(guardStateName, "Guard", out stateName);
+            if (clip != null)
+            {
+                return clip;
+            }
+
+            clip = ResolveClipByKeyword(null, "Skill 1", out stateName);
+            if (clip != null)
+            {
+                return clip;
+            }
+
+            return ResolveClipByKeyword(null, "Skill", out stateName);
         }
 
         private AnimationClip ResolveBeCounteredClip(out string stateName)
@@ -702,7 +732,7 @@ namespace FracturedChorus.UI
             {
                 SkillSlotKind.BasicAttack => new[] { "NorHit", "NormalHit", "Skill 1", "Attack", "Basic" },
                 SkillSlotKind.Skill => new[] { "Skill 2", "Charlott_Skill", "_Skill" },
-                SkillSlotKind.Ultimate => new[] { "Ultimate", "Skill 3", "Ult" },
+                SkillSlotKind.Ultimate => new[] { "Ultimate", "Skill 3", "Ult", "Skill 2" },
                 _ => null
             };
 
@@ -752,7 +782,7 @@ namespace FracturedChorus.UI
                     lower.Contains("norhit") || lower.Contains("ultimate") || lower.Contains("skill 1") ||
                     lower.Contains("skill 3"),
                 SkillSlotKind.Ultimate =>
-                    lower.Contains("norhit") || lower.Contains("skill 1") || lower.Contains("skill 2"),
+                    lower.Contains("norhit") || lower.Contains("normalhit"),
                 _ => false
             };
         }
@@ -1290,6 +1320,11 @@ namespace FracturedChorus.UI
             if (!unit.IsAlive)
             {
                 PlayDeathAnimation();
+                return;
+            }
+
+            if (EncounterDirector.IsPresenting)
+            {
                 return;
             }
 

@@ -21,7 +21,7 @@ namespace FracturedChorus.Editor
             EditorGUILayout.Space(8f);
             EditorGUILayout.LabelField("Edit Mode Preview", EditorStyles.boldLabel);
             EditorGUILayout.HelpBox(
-                "Chọn một lớp để chỉ hiện đúng màn hình khi chỉnh UI — Map Select (macro vault) hoặc Map Nodes (inner path).",
+                "Chọn một lớp để chỉ hiện đúng màn hình khi chỉnh UI.",
                 MessageType.Info);
 
             EditorGUILayout.BeginHorizontal();
@@ -40,13 +40,36 @@ namespace FracturedChorus.Editor
             }
 
             EditorGUILayout.EndHorizontal();
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button("Treasure"))
+            {
+                Undo.RecordObject(controller, "Preview Treasure");
+                controller.SetEditorPreview(CadenceMapController.RunMapEditorPreview.Treasure);
+                MarkDirty(controller);
+            }
+
+            if (GUILayout.Button("Event"))
+            {
+                Undo.RecordObject(controller, "Preview Event");
+                controller.SetEditorPreview(CadenceMapController.RunMapEditorPreview.Event);
+                MarkDirty(controller);
+            }
+
+            if (GUILayout.Button("Camp"))
+            {
+                Undo.RecordObject(controller, "Preview Camp");
+                controller.SetEditorPreview(CadenceMapController.RunMapEditorPreview.Camp);
+                MarkDirty(controller);
+            }
+
+            EditorGUILayout.EndHorizontal();
             EditorGUILayout.HelpBox(
-                "Map Select → MacroMapLayer (vault / map select)\nMap Nodes → InnerMapLayer + NodeEditPreview strip (mọi loại icon) + NodeInfoSidebar",
+                "Map Select → MacroMapLayer\nMap Nodes → InnerMapLayer + layout preview\nTreasure / Event → overlay + video BG\nCamp → overlay + still BG",
                 MessageType.None);
 
-            if (GUILayout.Button("Rebuild Node Preview Strip"))
+            if (GUILayout.Button("Show Map Nodes Preview"))
             {
-                Undo.RecordObject(controller, "Rebuild Node Preview");
+                Undo.RecordObject(controller, "Show Map Nodes Preview");
                 controller.SetEditorPreview(CadenceMapController.RunMapEditorPreview.MapNodes);
                 MarkDirty(controller);
             }

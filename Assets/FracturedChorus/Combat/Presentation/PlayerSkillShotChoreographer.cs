@@ -509,22 +509,8 @@ namespace FracturedChorus.Combat.Presentation
 
         private bool ShouldOwnOpenFieldAttackAnimation(int beatIndex)
         {
-            if (EncounterDirector.IsPresenting)
-            {
-                return false;
-            }
-
-            if (_session?.Timeline == null)
-            {
-                return true;
-            }
-
-            if (!CombatCounterResolver.HasCounterOnBeat(_session.Timeline, beatIndex))
-            {
-                return false;
-            }
-
-            return !EnemyStrikeChoreographer.OwnsCounterPresentation;
+            _ = beatIndex;
+            return !EncounterDirector.IsPresenting;
         }
 
         private IEnumerator PlayMultiBulletRoutine(
@@ -556,6 +542,7 @@ namespace FracturedChorus.Combat.Presentation
                 onImpact.Invoke();
             };
 
+            yield return EncounterDirector.PresentArmedCaster();
             if (playAttackAnimation && sourceView != null && skill != null)
             {
                 sourceView.PlayAttackAnimationHold(skill);
@@ -595,15 +582,19 @@ namespace FracturedChorus.Combat.Presentation
             var impactFxFired = false;
             settings.OnImpact = world =>
             {
-                fireResolve();
                 if (impactFxFired)
                 {
+                    fireResolve();
                     return;
                 }
 
                 impactFxFired = true;
                 FindAnyObjectByType<CombatSfxController>()?.PlayRenSkillSlotImmediate(SkillSlotKind.Ultimate);
                 CombatImpactFeel.PunchUltimateNow();
+                if (!EncounterDirector.TryQueueArmedVictimHit(() => fireResolve()))
+                {
+                    fireResolve();
+                }
             };
 
             var span = Mathf.Max(0f, timeB - timeA);
@@ -633,6 +624,8 @@ namespace FracturedChorus.Combat.Presentation
             {
                 yield return new WaitForSeconds(wait);
             }
+
+            yield return EncounterDirector.WaitArmedVictimFocus();
 
             if (!resolveFired)
             {

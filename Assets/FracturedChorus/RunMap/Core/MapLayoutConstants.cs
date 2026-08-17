@@ -5,9 +5,10 @@ namespace FracturedChorus.RunMap.Core
         public const int ColumnCount = 7;
         public const int FloorCount = 15;
         public const int BossFloor = 16;
-        public const int DefaultPathCount = 6;
+        public const int DefaultPathCount = 4;
         public const int MinStartNodes = 2;
-        public const int MaxStartNodes = 3;
+        public const int MaxStartNodes = 4;
+        public const int ExclusivePrefixFloors = 3;
         public const int MaxColumnConnectDelta = 1;
         public const int MaxDriftFromCenter = 2;
         public const int CenterColumnBiasWeight = 10;

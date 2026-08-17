@@ -678,7 +678,8 @@ namespace FracturedChorus.Editor
             mapSo.ApplyModifiedPropertiesWithoutUndo();
 
             var iconSet = mapSo.FindProperty("iconSet").objectReferenceValue as MapNodeIconSetSO;
-            preview.Configure(layout, iconSet, markerConfig, mapView);
+            var templates = mapSo.FindProperty("templateSet")?.objectReferenceValue as MapNodeTemplateSetSO;
+            preview.Configure(layout, iconSet, markerConfig, mapView, templates);
             SnapMarkerToStart(mapView, layout, markerConfig);
 
             EditorUtility.SetDirty(mapView);

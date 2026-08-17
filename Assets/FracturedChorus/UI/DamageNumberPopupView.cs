@@ -199,6 +199,7 @@ namespace FracturedChorus.UI
 
         private Vector2 WorldToCanvas(Vector3 worldPosition)
         {
+            _worldCamera = Camera.main;
             if (_worldCamera == null)
             {
                 return Vector2.zero;

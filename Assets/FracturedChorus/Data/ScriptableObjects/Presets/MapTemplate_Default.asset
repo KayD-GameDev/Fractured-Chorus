@@ -15,7 +15,7 @@ MonoBehaviour:
   columnCount: 7
   floorCount: 15
   bossFloor: 16
-  pathCount: 6
+  pathCount: 4
   useReferenceDemoOnPlay: 0
   randomizeSeedOnPlay: 1
   defaultSeed: 42
