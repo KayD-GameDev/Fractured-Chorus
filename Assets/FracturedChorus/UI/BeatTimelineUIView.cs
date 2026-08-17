@@ -2624,6 +2624,7 @@ namespace FracturedChorus.UI
             }
 
             var isCounterBeat = _precomputedCounterBeats.Contains(beatIndex);
+            var shot = FindAnyObjectByType<PlayerSkillShotChoreographer>();
 
             foreach (var entry in _timeline.Agenda)
             {
@@ -2637,12 +2638,26 @@ namespace FracturedChorus.UI
                     continue;
                 }
 
-                if (isCounterBeat)
+                if (isCounterBeat || EncounterDirector.IsPresenting)
                 {
                     continue;
                 }
 
-                UnitView.FindForUnit(entry.Unit)?.PlayAttackAnimation(entry.Skill);
+                if (shot != null
+                    && (shot.IsMeleeSkill(entry.Skill) || shot.IsMultiBulletSkill(entry.Skill)))
+                {
+                    continue;
+                }
+
+                var view = UnitView.FindForUnit(entry.Unit);
+                if (entry.Skill.slotKind is SkillSlotKind.Skill or SkillSlotKind.Ultimate)
+                {
+                    view?.PlayAttackAnimationHold(entry.Skill);
+                }
+                else
+                {
+                    view?.PlayAttackAnimation(entry.Skill);
+                }
             }
         }
 

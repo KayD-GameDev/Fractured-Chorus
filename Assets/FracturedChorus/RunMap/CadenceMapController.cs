@@ -19,7 +19,10 @@ namespace FracturedChorus.RunMap
         public enum RunMapEditorPreview
         {
             MapSelect = 0,
-            MapNodes = 1
+            MapNodes = 1,
+            Treasure = 2,
+            Event = 3,
+            Camp = 4
         }
 
         public static CadenceMapController Instance { get; private set; }
@@ -47,7 +50,6 @@ namespace FracturedChorus.RunMap
 #if UNITY_EDITOR
         [Header("Edit Mode Preview")]
         [SerializeField] private RunMapEditorPreview editorPreview = RunMapEditorPreview.MapSelect;
-        [SerializeField] private MapNodeEditPreview nodeEditPreview;
 #endif
 
         public CadenceRunProgress Progress => CadenceRunProgress.Session;
@@ -353,6 +355,7 @@ namespace FracturedChorus.RunMap
             SetMacroLayerActive(true);
             SetInnerUiActive(false);
             HideEditPreviewRuntime();
+            HideRoomOverlays();
 
             if (macroMapRoot != null)
             {
@@ -378,6 +381,7 @@ namespace FracturedChorus.RunMap
             SetMacroLayerActive(false);
             SetInnerUiActive(true);
             HideEditPreviewRuntime();
+            HideRoomOverlays();
 
             if (innerMapRoot != null)
             {
@@ -397,11 +401,54 @@ namespace FracturedChorus.RunMap
                 return;
             }
 
-            var preview = innerMapRoot.transform.Find("NodeEditPreview");
-            if (preview != null && preview.gameObject.activeSelf)
+            DestroyNodeEditPreview(innerMapRoot.transform);
+        }
+
+        private static void HideRoomOverlays()
+        {
+            foreach (var view in UnityEngine.Object.FindObjectsByType<TreasureRoomOverlayUIView>(
+                         FindObjectsInactive.Include,
+                         FindObjectsSortMode.None))
             {
-                preview.gameObject.SetActive(false);
+                view.Hide();
             }
+
+            foreach (var view in UnityEngine.Object.FindObjectsByType<EventRoomOverlayUIView>(
+                         FindObjectsInactive.Include,
+                         FindObjectsSortMode.None))
+            {
+                view.Hide();
+            }
+
+            foreach (var view in UnityEngine.Object.FindObjectsByType<CampRoomOverlayUIView>(
+                         FindObjectsInactive.Include,
+                         FindObjectsSortMode.None))
+            {
+                view.Hide();
+            }
+        }
+
+        private static void DestroyNodeEditPreview(Transform parent)
+        {
+            if (parent == null)
+            {
+                return;
+            }
+
+            var preview = parent.Find("NodeEditPreview");
+            if (preview == null)
+            {
+                return;
+            }
+
+#if UNITY_EDITOR
+            if (!Application.isPlaying)
+            {
+                DestroyImmediate(preview.gameObject);
+                return;
+            }
+#endif
+            Destroy(preview.gameObject);
         }
 
         private void SetMacroLayerActive(bool active)
@@ -603,13 +650,14 @@ namespace FracturedChorus.RunMap
             try
             {
                 ResolveLayerReferences();
+                HideRoomOverlays();
 
                 switch (editorPreview)
                 {
                     case RunMapEditorPreview.MapSelect:
                         SetMacroLayerActive(true);
                         SetInnerUiActive(false);
-                        HideNodeEditPreview();
+                        DestroyNodeEditPreview(innerMapRoot != null ? innerMapRoot.transform : transform);
                         if (macroMapRoot != null)
                         {
                             macroMapRoot.transform.SetAsLastSibling();
@@ -624,8 +672,9 @@ namespace FracturedChorus.RunMap
                     case RunMapEditorPreview.MapNodes:
                         SetMacroLayerActive(false);
                         SetInnerUiActive(true);
-                        ShowNodeEditPreview();
+                        DestroyNodeEditPreview(innerMapRoot != null ? innerMapRoot.transform : transform);
                         EnsureNodeInfoSidebarForEdit();
+                        ShowLayoutPreview();
                         if (innerMapRoot != null)
                         {
                             innerMapRoot.transform.SetAsLastSibling();
@@ -636,6 +685,39 @@ namespace FracturedChorus.RunMap
                             backToMacroButton.gameObject.SetActive(true);
                         }
 
+                        break;
+                    case RunMapEditorPreview.Treasure:
+                        SetMacroLayerActive(false);
+                        SetInnerUiActive(false);
+                        DestroyNodeEditPreview(innerMapRoot != null ? innerMapRoot.transform : transform);
+                        if (backToMacroButton != null)
+                        {
+                            backToMacroButton.gameObject.SetActive(false);
+                        }
+
+                        ShowTreasureRoomEditPreview();
+                        break;
+                    case RunMapEditorPreview.Event:
+                        SetMacroLayerActive(false);
+                        SetInnerUiActive(false);
+                        DestroyNodeEditPreview(innerMapRoot != null ? innerMapRoot.transform : transform);
+                        if (backToMacroButton != null)
+                        {
+                            backToMacroButton.gameObject.SetActive(false);
+                        }
+
+                        ShowEventRoomEditPreview();
+                        break;
+                    case RunMapEditorPreview.Camp:
+                        SetMacroLayerActive(false);
+                        SetInnerUiActive(false);
+                        DestroyNodeEditPreview(innerMapRoot != null ? innerMapRoot.transform : transform);
+                        if (backToMacroButton != null)
+                        {
+                            backToMacroButton.gameObject.SetActive(false);
+                        }
+
+                        ShowCampRoomEditPreview();
                         break;
                 }
 
@@ -691,60 +773,40 @@ namespace FracturedChorus.RunMap
             }
         }
 
-        private void ShowNodeEditPreview()
+        private void ShowLayoutPreview()
         {
-            EnsureNodeEditPreview();
-            if (nodeEditPreview == null)
-            {
-                return;
-            }
-
-            if (nodeIconSet == null)
-            {
-                nodeIconSet = AssetDatabase.LoadAssetAtPath<MapNodeIconSetSO>(
-                    "Assets/FracturedChorus/Data/ScriptableObjects/Presets/MapNodeIconSet_Default.asset");
-            }
-
-            nodeEditPreview.SetIconSet(nodeIconSet);
-            nodeEditPreview.Show();
-            EditorUtility.SetDirty(nodeEditPreview);
+            var preview = UnityEngine.Object.FindAnyObjectByType<RunMapLayoutScenePreview>(FindObjectsInactive.Include);
+            preview?.AllowScenePreview();
         }
 
-        private void HideNodeEditPreview()
+        private Transform ResolveCanvasRoot()
         {
-            if (nodeEditPreview != null)
+            var named = GameObject.Find("RunMapCanvas");
+            if (named != null)
             {
-                nodeEditPreview.Hide();
+                return named.transform;
             }
+
+            var canvas = GetComponentInChildren<Canvas>(true);
+            return canvas != null ? canvas.transform : null;
         }
 
-        private void EnsureNodeEditPreview()
+        private void ShowTreasureRoomEditPreview()
         {
-            if (nodeEditPreview != null)
-            {
-                return;
-            }
+            var overlay = TreasureRoomOverlayUIView.EnsureOnCanvas(ResolveCanvasRoot());
+            overlay?.ShowEditPreview();
+        }
 
-            ResolveLayerReferences();
-            var parent = innerMapRoot != null ? innerMapRoot.transform : transform;
-            var existing = parent.Find("NodeEditPreview");
-            if (existing != null)
-            {
-                nodeEditPreview = existing.GetComponent<MapNodeEditPreview>()
-                                  ?? existing.gameObject.AddComponent<MapNodeEditPreview>();
-                EditorUtility.SetDirty(this);
-                return;
-            }
+        private void ShowEventRoomEditPreview()
+        {
+            var overlay = EventRoomOverlayUIView.EnsureOnCanvas(ResolveCanvasRoot());
+            overlay?.ShowEditPreview();
+        }
 
-            var go = new GameObject("NodeEditPreview", typeof(RectTransform));
-            go.transform.SetParent(parent, false);
-            var rect = go.GetComponent<RectTransform>();
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.one;
-            rect.offsetMin = Vector2.zero;
-            rect.offsetMax = Vector2.zero;
-            nodeEditPreview = go.AddComponent<MapNodeEditPreview>();
-            EditorUtility.SetDirty(this);
+        private void ShowCampRoomEditPreview()
+        {
+            var overlay = CampRoomOverlayUIView.EnsureOnCanvas(ResolveCanvasRoot());
+            overlay?.ShowEditPreview();
         }
 
         public void WireSceneEditChrome()

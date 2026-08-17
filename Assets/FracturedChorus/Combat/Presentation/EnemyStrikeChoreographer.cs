@@ -1,10 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using FracturedChorus.Audio;
 using FracturedChorus.Combat.Core;
 using FracturedChorus.Combat.Grid;
 using FracturedChorus.Combat.Timeline;
 using FracturedChorus.Combat.Units;
+using FracturedChorus.Data;
 using FracturedChorus.UI;
 using UnityEngine;
 
@@ -89,6 +91,11 @@ namespace FracturedChorus.Combat.Presentation
 
         public static bool TryDeferHpFeedback(CombatUnit unit, HpChangeInfo change)
         {
+            if (EncounterDirector.IsPresenting)
+            {
+                return false;
+            }
+
             if (!_ownsEnemyBodies || !_deferringHpFeedback || unit == null || !change.ShouldShowFeedback)
             {
                 return false;
@@ -294,19 +301,19 @@ namespace FracturedChorus.Combat.Presentation
             focusDimmer?.Focus(_focusScratch);
 
             EnsureSwordSprites();
-            attackerView.PlayCastHold(report.Skill);
             if (report.WasCountered)
             {
                 CollectCounteringEntries(report.BeatIndex);
-                foreach (var (view, _) in _counterEntriesScratch)
+                foreach (var (view, entry) in _counterEntriesScratch)
                 {
+                    if (entry?.Skill != null
+                        && entry.Skill.slotKind is SkillSlotKind.Skill or SkillSlotKind.Ultimate)
+                    {
+                        continue;
+                    }
+
                     view.PlayCounterHold();
                 }
-            }
-
-            if (castHoldSeconds > 0f)
-            {
-                yield return new WaitForSeconds(castHoldSeconds);
             }
 
             var lungeFeet = ResolveStrikeAnchor(receiverView, report.Target);
@@ -322,7 +329,12 @@ namespace FracturedChorus.Combat.Presentation
                         lungeFeet,
                         lungeSpeed,
                         lungeSeconds));
-                attackerView.PlayCastHold(report.Skill);
+            }
+
+            attackerView.PlayCastHold(report.Skill);
+            if (castHoldSeconds > 0f)
+            {
+                yield return new WaitForSeconds(castHoldSeconds);
             }
 
             var swordCount = Mathf.Clamp(report.SwordCount, 1, 3);
@@ -466,6 +478,15 @@ namespace FracturedChorus.Combat.Presentation
             if (settings.Sword == null)
             {
                 yield break;
+            }
+
+            if (mode == BossSwordShotMode.Hit)
+            {
+                var sfx = FindAnyObjectByType<CombatSfxController>();
+                if (sfx != null)
+                {
+                    settings.OnImpact = sfx.PlayDamageHitFallback;
+                }
             }
 
             var from = ResolveAim(attackerView);
@@ -727,7 +748,6 @@ namespace FracturedChorus.Combat.Presentation
                 && charlotteSkillChoreographer != null
                 && charlotteSkillChoreographer.Handles(bodyEntry.Skill, bodyView))
             {
-                attackerView.PlayBeCounteredHold();
                 var charlotteMid = ResolveMidStaging(attackerView);
                 var charlotteKnockback = StartCoroutine(
                     attackerView.MoveFeetToRoutine(
@@ -759,7 +779,6 @@ namespace FracturedChorus.Combat.Presentation
                 && codaSkillChoreographer != null
                 && codaSkillChoreographer.Handles(bodyEntry.Skill, bodyView))
             {
-                attackerView.PlayBeCounteredHold();
                 var codaMid = ResolveMidStaging(attackerView);
                 var codaKnockback = StartCoroutine(
                     attackerView.MoveFeetToRoutine(
@@ -802,7 +821,6 @@ namespace FracturedChorus.Combat.Presentation
                 && playerSkillShotChoreographer != null
                 && playerSkillShotChoreographer.IsMultiBulletSkill(bodyEntry.Skill))
             {
-                attackerView.PlayBeCounteredHold();
                 var ultMid = ResolveMidStaging(attackerView);
                 var ultKnockback = StartCoroutine(
                     attackerView.MoveFeetToRoutine(
@@ -836,7 +854,12 @@ namespace FracturedChorus.Combat.Presentation
                 }
             }
 
-            attackerView.PlayBeCounteredHold();
+            if (bodyEntry?.Skill == null
+                || bodyEntry.Skill.slotKind is not (SkillSlotKind.Skill or SkillSlotKind.Ultimate))
+            {
+                attackerView.PlayBeCounteredHold();
+            }
+
             var mid = ResolveMidStaging(attackerView);
             var knockback = StartCoroutine(
                 attackerView.MoveFeetToRoutine(
@@ -919,6 +942,7 @@ namespace FracturedChorus.Combat.Presentation
                     yield return new WaitForSeconds(impactDelay);
                 }
 
+                FindAnyObjectByType<CombatSfxController>()?.PlaySkillSfxImmediate(bodyEntry.Skill);
                 FlushHpFeedback(report.Attacker);
                 var tail = Mathf.Max(impactHoldSeconds, clipLength * (1f - skillImpactNormalizedTime));
                 if (tail > 0f)

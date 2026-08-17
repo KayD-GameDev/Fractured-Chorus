@@ -213,6 +213,7 @@ namespace FracturedChorus.Combat.Presentation
                 startFeet,
                 ResolveMoveSeconds(fromFeet, startFeet, skill2SlideSpeed, 0.12f));
 
+            FindAnyObjectByType<CombatSfxController>()?.PlayCharlotteSkill2Dash();
             charlotte.PlayAttackAnimationHold(skill);
             var slideSeconds = Mathf.Max(
                 0.12f,
@@ -273,6 +274,7 @@ namespace FracturedChorus.Combat.Presentation
                 strikeFeet,
                 ResolveMoveSeconds(charlotte.FeetWorldPosition, strikeFeet, ultLungeSpeed, ultLungeSeconds));
 
+            yield return EncounterDirector.PresentArmedCaster();
             charlotte.PlayAttackAnimationHold(skill);
             var impactAt = ResolveUltImpactSeconds();
             if (impactAt > 0f)
@@ -282,8 +284,12 @@ namespace FracturedChorus.Combat.Presentation
 
             SpawnUltSmashVfx(charlotte, boss, skill);
             CombatImpactFeel.PunchUltimateNow();
-            boss.PlayBeCounteredHold();
-            onImpact?.Invoke();
+            if (!EncounterDirector.TryQueueArmedVictimHit(() => onImpact?.Invoke()))
+            {
+                onImpact?.Invoke();
+            }
+
+            yield return EncounterDirector.WaitArmedVictimFocus();
 
             if (ultImpactHoldSeconds > 0f)
             {
@@ -376,7 +382,15 @@ namespace FracturedChorus.Combat.Presentation
         private void SpawnHitVfx(UnitView charlotte, UnitView boss, SkillDefinitionSO skill = null)
         {
             EnsureDefaults();
-            FindAnyObjectByType<CombatSfxController>()?.PlaySkillSfxImmediate(skill);
+            var sfx = FindAnyObjectByType<CombatSfxController>();
+            if (skill != null && skill.slotKind == SkillSlotKind.Skill)
+            {
+                sfx?.PlayClashHit();
+            }
+            else
+            {
+                sfx?.PlaySkillSfxImmediate(skill);
+            }
 
             if (hitSprite == null || charlotte == null || boss == null)
             {

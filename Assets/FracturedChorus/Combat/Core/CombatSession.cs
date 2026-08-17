@@ -13,6 +13,7 @@ using FracturedChorus.Combat.Timeline;
 using FracturedChorus.Combat.Units;
 using FracturedChorus.Data;
 using FracturedChorus.Meta;
+using FracturedChorus.RunMap;
 using UnityEngine;
 
 namespace FracturedChorus.Combat.Core
@@ -233,6 +234,9 @@ namespace FracturedChorus.Combat.Core
                 return false;
             }
 
+            var previousReduce = unit.PendingReduceS2;
+            var armedFirstPlace = RunEventCombatMods.TryArmFirstPlaceReduceS2(unit);
+
             if (beatIndex < 0)
             {
                 beatIndex = Timeline.FindFirstAssignableBeat(unit, skill);
@@ -240,12 +244,27 @@ namespace FracturedChorus.Combat.Core
 
             if (beatIndex < 0 || !Timeline.CanAssignAction(unit, skill, beatIndex))
             {
+                if (armedFirstPlace)
+                {
+                    unit.SetPendingReduceS2(previousReduce);
+                }
+
                 return false;
             }
 
             if (!Timeline.TryAssignAction(unit, skill, beatIndex))
             {
+                if (armedFirstPlace)
+                {
+                    unit.SetPendingReduceS2(previousReduce);
+                }
+
                 return false;
+            }
+
+            if (armedFirstPlace)
+            {
+                RunEventCombatMods.ConsumeFirstPlaceReduceS2();
             }
 
             var entry = Timeline.FindPlayerEntry(unit, beatIndex);
@@ -804,7 +823,9 @@ namespace FracturedChorus.Combat.Core
                 OnBlockResolved?.Invoke(beatIndex, timing);
             }
 
-            target.TakeDamage(finalDamage, damageResult.IsCritical);
+            target.TakeDamage(
+                RunEventCombatMods.ModifyIncoming(target.Side, finalDamage),
+                damageResult.IsCritical);
             ApplyColumnSlamIfNeeded(target, finalDamage * 0.45f, damageResult.IsCritical);
             TryFormationDisrupt();
             Debug.Log(
@@ -835,7 +856,7 @@ namespace FracturedChorus.Combat.Core
                     continue;
                 }
 
-                unit.TakeDamage(splashDamage, isCritical);
+                unit.TakeDamage(RunEventCombatMods.ModifyIncoming(unit.Side, splashDamage), isCritical);
             }
         }
 

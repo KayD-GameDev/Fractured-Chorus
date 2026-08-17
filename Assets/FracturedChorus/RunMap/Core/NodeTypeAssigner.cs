@@ -76,7 +76,15 @@ namespace FracturedChorus.RunMap.Core
             }
 
             AssignSingleFloorSpecial(graph, treasureFloor, MapNodeType.Treasure, centerColumn);
-            AssignSingleFloorSpecial(graph, campFloor, MapNodeType.Camp, centerColumn);
+            AssignAllFloorType(graph, campFloor, MapNodeType.Camp);
+        }
+
+        private static void AssignAllFloorType(MapGraph graph, int floor, MapNodeType type)
+        {
+            foreach (var node in graph.NodesOnFloor(floor))
+            {
+                node.Type = type;
+            }
         }
 
         private static void AssignSingleFloorSpecial(
@@ -235,7 +243,8 @@ namespace FracturedChorus.RunMap.Core
 
             foreach (var node in graph.Nodes)
             {
-                if (node.IsBoss || node.IsStart || node.Type == MapNodeType.Start || node.Floor == 1)
+                if (node.IsBoss || node.IsStart || node.Type == MapNodeType.Start || node.Floor == 1 ||
+                    node.Floor == campFloor)
                 {
                     continue;
                 }
@@ -320,7 +329,7 @@ namespace FracturedChorus.RunMap.Core
                 foreach (var toId in node.Outgoing)
                 {
                     var dest = graph.GetNode(toId);
-                    if (dest == null)
+                    if (dest == null || dest.IsBoss || dest.Floor == campFloor)
                     {
                         continue;
                     }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -24,6 +25,7 @@ namespace FracturedChorus.Combat.Presentation
         public float SpriteFacingOffsetDegrees;
         public bool ProjectileAdditive;
         public int SortingOrder = 42;
+        public Action OnImpact;
     }
 
     public class BossSwordShotView : MonoBehaviour
@@ -149,6 +151,11 @@ namespace FracturedChorus.Combat.Presentation
 
         private IEnumerator PlayImpactAt(Vector3 world)
         {
+            if (_mode == BossSwordShotMode.Hit)
+            {
+                _settings?.OnImpact?.Invoke();
+            }
+
             if (_impact == null || _impact.sprite == null)
             {
                 yield break;
@@ -207,7 +214,7 @@ namespace FracturedChorus.Combat.Presentation
                 _sword.enabled = true;
             }
 
-            var side = Random.value < 0.5f ? 1f : -1f;
+            var side = UnityEngine.Random.value < 0.5f ? 1f : -1f;
             var deflectDir = Vector3.Normalize(new Vector3(-inboundDir.y, inboundDir.x, 0f) * side + inboundDir * -0.35f);
             if (deflectDir.sqrMagnitude < 0.0001f)
             {

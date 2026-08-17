@@ -46,7 +46,9 @@ namespace FracturedChorus.Editor
                     RestoreCenterAlignmentAll();
 
                     var probe = AssetDatabase.LoadAssetAtPath<AnimationClip>(
-                        "Assets/FracturedChorus/Art/Characters/Enemy 1/Enemy 1 - Idle.anim");
+                        "Assets/FracturedChorus/Art/Characters/Enemy 3/Enemy 3 - Idle.anim")
+                                ?? AssetDatabase.LoadAssetAtPath<AnimationClip>(
+                                    "Assets/FracturedChorus/Art/Characters/Enemy 1/Enemy 1 - Idle.anim");
                     if (probe == null)
                     {
                         return;
@@ -294,7 +296,8 @@ namespace FracturedChorus.Editor
 
             if (Contains(clipName, "Skill 2") || Contains(clipName, "Skill2"))
             {
-                if (Contains(file, "Skill 2") || Contains(file, "Coil") || Contains(file, "Broken"))
+                if (Contains(file, "Skill 2") || Contains(file, "Coil") || Contains(file, "Broken")
+                    || Contains(file, "Evade"))
                 {
                     return 30;
                 }
@@ -304,9 +307,19 @@ namespace FracturedChorus.Editor
 
             if (Contains(clipName, "Skill 1") || (Contains(clipName, "Skill") && !Contains(clipName, "Skill 2")))
             {
-                if (Contains(file, "Skill") || Contains(file, "Coil") || Contains(file, "Guard") || Contains(file, "Evade"))
+                if (Contains(file, "Guard"))
                 {
-                    return Contains(file, "Skill") || Contains(file, "Coil") ? 30 : 10;
+                    return 25;
+                }
+
+                if (Contains(file, "Skill") || Contains(file, "Coil"))
+                {
+                    return 30;
+                }
+
+                if (Contains(file, "Evade"))
+                {
+                    return 5;
                 }
 
                 return 0;

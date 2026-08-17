@@ -9,7 +9,7 @@ namespace FracturedChorus.Data
         public int columnCount = 7;
         public int floorCount = 15;
         public int bossFloor = 16;
-        public int pathCount = 6;
+        public int pathCount = 4;
 
         [Header("Generation")]
         public bool useReferenceDemoOnPlay = false;

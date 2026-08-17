@@ -3,11 +3,12 @@ using FracturedChorus.Data;
 using FracturedChorus.RunMap.Core;
 using FracturedChorus.UI;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace FracturedChorus.RunMap.UI
 {
-    public class MapNodeView : MonoBehaviour
+    public class MapNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
         private const string RenAvatarPath =
             "Assets/FracturedChorus/Art/UI/Combat/Timeline/LeftRail/Avatars/ren_chibi_avatar_v1.png";
@@ -22,9 +23,17 @@ namespace FracturedChorus.RunMap.UI
         [SerializeField] private MapNodeIconSetSO iconSet;
         [SerializeField] private Sprite playerMarkerSprite;
 
+        private const float HoverScale = 1.12f;
+        private const float ClickPulseScale = 1.24f;
+        private const float ClickPulseSeconds = 0.16f;
+        private const float ScaleLerp = 16f;
+
         private Image _hitImage;
         private PinkySectorId _sector = PinkySectorId.Pulse;
         private static Sprite s_renAvatar;
+        private bool _hovered;
+        private float _clickPulse;
+        private Color _iconBaseColor = Color.white;
 
         public MapNodeData BoundNode { get; private set; }
         public bool SuppressPlayerMarker { get; set; }
@@ -48,9 +57,62 @@ namespace FracturedChorus.RunMap.UI
             if (button != null)
             {
                 button.onClick.RemoveAllListeners();
-                button.onClick.AddListener(() => Clicked?.Invoke(this));
+                button.onClick.AddListener(HandleClick);
             }
         }
+
+        private void OnDisable()
+        {
+            _hovered = false;
+            _clickPulse = 0f;
+            transform.localScale = Vector3.one;
+        }
+
+        private void LateUpdate()
+        {
+            var hover = _hovered && CanHover() ? HoverScale : 1f;
+            var pulse = _clickPulse > 0f
+                ? Mathf.Lerp(1f, ClickPulseScale, Mathf.Clamp01(_clickPulse))
+                : 1f;
+            var target = Mathf.Max(hover, pulse);
+            transform.localScale = Vector3.Lerp(
+                transform.localScale,
+                Vector3.one * target,
+                1f - Mathf.Exp(-ScaleLerp * Time.unscaledDeltaTime));
+
+            if (_clickPulse > 0f)
+            {
+                _clickPulse -= Time.unscaledDeltaTime / ClickPulseSeconds;
+                if (iconImage != null && iconImage.enabled)
+                {
+                    var flash = Mathf.Clamp01(_clickPulse);
+                    iconImage.color = Color.Lerp(_iconBaseColor, FcColorTokens.Brand.CyanNeonCore, flash);
+                }
+            }
+        }
+
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            _hovered = CanHover();
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            _hovered = false;
+        }
+
+        private void HandleClick()
+        {
+            if (CanHover())
+            {
+                _clickPulse = 1f;
+            }
+
+            Clicked?.Invoke(this);
+        }
+
+        private bool CanHover() =>
+            BoundNode != null && !BoundNode.Cleared && (button == null || button.interactable);
 
         public void Configure(MapNodeIconSetSO set, PinkySectorId sector, Sprite renAvatar = null)
         {
@@ -253,11 +315,6 @@ namespace FracturedChorus.RunMap.UI
                 stroke = FcColorTokens.Brand.CyanNeonBody;
                 iconColor = Color.white;
             }
-            else if (!BoundNode.Cleared && selected)
-            {
-                stroke = Color.white;
-                iconColor = Color.white;
-            }
             else if (!BoundNode.Cleared && onPath)
             {
                 stroke = FcColorTokens.WithAlpha(FcColorTokens.Brand.CyanNeonCore, 0.85f);
@@ -328,9 +385,10 @@ namespace FracturedChorus.RunMap.UI
 
             if (selectionFrameImage != null)
             {
-                selectionFrameImage.enabled = selected && !BoundNode.Cleared;
-                selectionFrameImage.color = new Color(1f, 1f, 1f, 0.92f);
+                selectionFrameImage.enabled = false;
             }
+
+            _iconBaseColor = iconColor;
 
             if (playerMarkerImage != null)
             {

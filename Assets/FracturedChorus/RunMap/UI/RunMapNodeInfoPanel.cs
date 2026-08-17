@@ -23,6 +23,7 @@ namespace FracturedChorus.RunMap.UI
 
         private MapNodeData _boundNode;
         private System.Action<MapNodeData> _onConfirm;
+        private System.Action _onCancel;
 
         public void Wire(
             RectTransform panel,
@@ -54,11 +55,15 @@ namespace FracturedChorus.RunMap.UI
             if (closeButton != null)
             {
                 closeButton.onClick.RemoveAllListeners();
-                closeButton.onClick.AddListener(Hide);
+                closeButton.onClick.AddListener(OnCancelClicked);
             }
         }
 
-        public void Show(MapNodeData node, bool canTravel, System.Action<MapNodeData> onConfirm)
+        public void Show(
+            MapNodeData node,
+            bool canTravel,
+            System.Action<MapNodeData> onConfirm,
+            System.Action onCancel = null)
         {
             if (node == null || panelRoot == null)
             {
@@ -67,6 +72,7 @@ namespace FracturedChorus.RunMap.UI
 
             _boundNode = node;
             _onConfirm = onConfirm;
+            _onCancel = onCancel;
             gameObject.SetActive(true);
             panelRoot.gameObject.SetActive(true);
             BindButtons();
@@ -104,6 +110,7 @@ namespace FracturedChorus.RunMap.UI
         {
             _boundNode = null;
             _onConfirm = null;
+            _onCancel = null;
             if (panelRoot != null)
             {
                 panelRoot.gameObject.SetActive(false);
@@ -204,6 +211,13 @@ namespace FracturedChorus.RunMap.UI
             var callback = _onConfirm;
             Hide();
             callback?.Invoke(node);
+        }
+
+        private void OnCancelClicked()
+        {
+            var callback = _onCancel;
+            Hide();
+            callback?.Invoke();
         }
     }
 }

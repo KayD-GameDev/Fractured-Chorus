@@ -226,6 +226,7 @@ namespace FracturedChorus.Combat.Bootstrap
             EnsureEnemyStatusBar();
             CoverHudView.HideAll();
             ApplyPlaytestStartResources();
+            RunEventCombatMods.ApplyStartOfBattle(_session);
 
             if (skillPanelView != null && !skillPanelView.gameObject.activeSelf)
             {
