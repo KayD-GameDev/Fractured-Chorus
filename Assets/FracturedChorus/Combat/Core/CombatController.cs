@@ -1052,11 +1052,6 @@ namespace FracturedChorus.Combat.Core
                 return;
             }
 
-            if (EncounterDirector.IsPresenting)
-            {
-                return;
-            }
-
             var view = UnitView.FindForUnit(unit);
             if (view != null)
             {
@@ -1197,6 +1192,8 @@ namespace FracturedChorus.Combat.Core
             {
                 PartyRunHpStore.RestoreFullAtCamp();
             }
+
+            RunEventCombatMods.ConsumeBattle();
 
             CombatEncounterHandoff.SetResult(victory);
             var foughtId = !string.IsNullOrEmpty(_activeEncounterId)

@@ -656,16 +656,13 @@ namespace FracturedChorus.Editor
             ConfigureBottomLayer(floorLabelsLayer, contentRect.sizeDelta);
             floorLabelsLayer.AddComponent<MapNodeScrollForwarder>();
 
-            var nodeTemplate = CreateNodeTemplate(nodesLayer.transform);
-            var connectionTemplate = CreateConnectionTemplate(connectionsLayer.transform);
-
+            var nodeTemplateSet = MapNodeTemplateSetEditor.EnsureAssets();
             mapView = Undo.AddComponent<RunMapUIView>(content);
             SetSerializedField(mapView, "connectionsLayer", connectionsLayer.GetComponent<RectTransform>());
             SetSerializedField(mapView, "nodesLayer", nodesLayer.GetComponent<RectTransform>());
             SetSerializedField(mapView, "floorLabelsLayer", floorLabelsLayer.GetComponent<RectTransform>());
-            SetSerializedField(mapView, "nodeTemplate", nodeTemplate);
-            SetSerializedField(mapView, "connectionTemplate", connectionTemplate);
-            SetSerializedField(mapView, "iconSet", MapNodeIconSetupEditor.EnsureIconSetAsset());
+            SetSerializedField(mapView, "templateSet", nodeTemplateSet);
+            SetSerializedField(mapView, "iconSet", nodeTemplateSet != null ? nodeTemplateSet.IconSet : MapNodeIconSetupEditor.EnsureIconSetAsset());
             MapNodeIconSetupEditor.AssignRenMarkerToMapView(mapView);
             RunMapPlayerMarkerSetupEditor.WireSceneMarkers();
             RunMapPlayerMarkerSetupEditor.WireMapLayout();
@@ -684,62 +681,6 @@ namespace FracturedChorus.Editor
             SetSerializedField(mapView, "scrollDriver", scrollDriver);
 
             return scroll;
-        }
-
-        private static MapNodeView CreateNodeTemplate(Transform parent)
-        {
-            var go = CreateUiObject("NodeTemplate", parent);
-            var rect = go.GetComponent<RectTransform>();
-            rect.anchorMin = new Vector2(0.5f, 0.5f);
-            rect.anchorMax = new Vector2(0.5f, 0.5f);
-            rect.pivot = new Vector2(0.5f, 0.5f);
-            rect.sizeDelta = new Vector2(36f, 36f);
-            go.SetActive(false);
-
-            var stroke = CreateUiObject("Stroke", go.transform);
-            StretchRect(stroke, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-            var strokeImg = stroke.AddComponent<Image>();
-            strokeImg.sprite = UiCircleSpriteUtil.Circle;
-            strokeImg.color = Color.white;
-            strokeImg.raycastTarget = false;
-
-            var fill = CreateUiObject("Fill", go.transform);
-            StretchRect(fill, Vector2.zero, Vector2.one, new Vector2(3f, 3f), new Vector2(-3f, -3f));
-            var fillImg = fill.AddComponent<Image>();
-            fillImg.sprite = UiCircleSpriteUtil.Circle;
-            fillImg.color = Color.white;
-
-            var iconGo = CreateUiObject("Icon", go.transform);
-            StretchRect(iconGo, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-            var iconImg = iconGo.AddComponent<Image>();
-            iconImg.preserveAspect = true;
-            iconImg.raycastTarget = false;
-            iconImg.enabled = false;
-
-            var label = CreateText("Label", go.transform, "?", MapLayoutConstants.NodeLabelFontSize(MapNodeType.Battle, false), TextAnchor.MiddleCenter);
-            label.raycastTarget = false;
-            StretchRect(label.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-
-            var button = go.AddComponent<Button>();
-            button.targetGraphic = fillImg;
-
-            var view = Undo.AddComponent<MapNodeView>(go);
-            go.AddComponent<MapNodeScrollForwarder>();
-            view.WireImages(fillImg, strokeImg, label, button, iconImg);
-            return view;
-        }
-
-        private static MapConnectionLineView CreateConnectionTemplate(Transform parent)
-        {
-            var go = CreateUiObject("ConnectionTemplate", parent);
-            go.SetActive(false);
-            var image = go.AddComponent<Image>();
-            image.sprite = UiCircleSpriteUtil.White;
-            image.raycastTarget = false;
-            image.color = new Color(0.2f, 0.2f, 0.2f, 0.85f);
-            var line = Undo.AddComponent<MapConnectionLineView>(go);
-            line.WireImage(image);
-            return line;
         }
 
         private static GameObject CreateLegendPanel(Transform canvas)

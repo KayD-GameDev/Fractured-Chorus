@@ -69,8 +69,11 @@ namespace FracturedChorus.Editor
             }
 
             AssignToOpenScene(iconSet);
+            TreasureRoomOverlaySetupEditor.SetupTreasureRoomOverlay();
+            EventRoomOverlaySetupEditor.SetupEventRoomOverlay();
+            CampRoomOverlaySetupEditor.SetupCampRoomOverlay();
             EditorSceneManager.MarkAllScenesDirty();
-            Debug.Log("[Fractured Chorus] Wired scene edit chrome — NodeInfoSidebar + NodeEditPreview strip visible in Map Nodes preview.");
+            Debug.Log("[Fractured Chorus] Wired scene edit chrome — NodeInfoSidebar visible in Map Nodes preview.");
         }
 
         [MenuItem("Fractured Chorus/Run Map/Upgrade Map Chrome", false, 36)]
@@ -197,7 +200,7 @@ namespace FracturedChorus.Editor
             var iconSet = EnsureIconSetAsset();
             AssignToOpenScene(iconSet);
             AssignRenMarkerToMapView(Object.FindAnyObjectByType<RunMapUIView>());
-            UpgradeNodeTemplateInScene();
+            MapNodeTemplateSetEditor.EnsureAssets();
             EditorSceneManager.MarkAllScenesDirty();
             AssetDatabase.SaveAssets();
             Debug.Log($"[Fractured Chorus] Wired MapNodeIconSet → {IconSetPath}");
@@ -288,57 +291,6 @@ namespace FracturedChorus.Editor
 
                 EditorSceneManager.SaveScene(scene);
             }
-        }
-
-        private static void UpgradeNodeTemplateInScene()
-        {
-            var template = GameObject.Find("NodeTemplate");
-            if (template == null)
-            {
-                return;
-            }
-
-            var view = template.GetComponent<MapNodeView>();
-            if (view == null)
-            {
-                return;
-            }
-
-            var iconTransform = template.transform.Find("Icon");
-            Image iconImage;
-            if (iconTransform == null)
-            {
-                var go = new GameObject("Icon", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-                go.transform.SetParent(template.transform, false);
-                var label = template.transform.Find("Label");
-                if (label != null)
-                {
-                    go.transform.SetSiblingIndex(label.GetSiblingIndex());
-                }
-
-                var rect = go.GetComponent<RectTransform>();
-                rect.anchorMin = Vector2.zero;
-                rect.anchorMax = Vector2.one;
-                rect.offsetMin = Vector2.zero;
-                rect.offsetMax = Vector2.zero;
-                iconImage = go.GetComponent<Image>();
-            }
-            else
-            {
-                iconImage = iconTransform.GetComponent<Image>();
-            }
-
-            iconImage.preserveAspect = true;
-            iconImage.raycastTarget = false;
-            iconImage.enabled = false;
-
-            var fill = template.transform.Find("Fill")?.GetComponent<Image>();
-            var stroke = template.transform.Find("Stroke")?.GetComponent<Image>();
-            var labelText = template.transform.Find("Label")?.GetComponent<Text>();
-            var button = template.GetComponent<Button>();
-            view.WireImages(fill, stroke, labelText, button, iconImage);
-            EditorUtility.SetDirty(view);
-            EditorUtility.SetDirty(template);
         }
 
         private static void EnsureSpriteImports()

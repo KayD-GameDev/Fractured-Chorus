@@ -388,6 +388,7 @@ namespace FracturedChorus.Combat.Presentation
                 }
             }
 
+            yield return EncounterDirector.PresentArmedCaster();
             coda.PlayAttackAnimationHold(skill);
 
             var from = ResolveAimFromFeet(coda, skill3AimHeight);
@@ -402,8 +403,10 @@ namespace FracturedChorus.Combat.Presentation
 
                 impactFired = true;
                 FindAnyObjectByType<CombatSfxController>()?.PlaySkillSfxImmediate(skill);
-                boss.PlayBeCounteredHold();
-                onImpact?.Invoke();
+                if (!EncounterDirector.TryQueueArmedVictimHit(() => onImpact?.Invoke()))
+                {
+                    onImpact?.Invoke();
+                }
             };
 
             var impactSprite = arcImpactSprite
@@ -467,6 +470,8 @@ namespace FracturedChorus.Combat.Presentation
             {
                 fireImpact();
             }
+
+            yield return EncounterDirector.WaitArmedVictimFocus();
 
             if (!returnHome)
             {

@@ -3,6 +3,7 @@ using FracturedChorus.Combat.Damage;
 using FracturedChorus.Combat.Grid;
 using FracturedChorus.Combat.Timeline;
 using FracturedChorus.Data;
+using FracturedChorus.RunMap;
 using UnityEngine;
 
 namespace FracturedChorus.Combat.Actions
@@ -360,6 +361,9 @@ namespace FracturedChorus.Combat.Actions
             {
                 finalDamage *= ctx.CoverOutgoingMultiplier;
             }
+
+            finalDamage = RunEventCombatMods.ModifyOutgoing(ctx.Source.Side, finalDamage);
+            finalDamage = RunEventCombatMods.ModifyIncoming(target.Side, finalDamage);
 
             target.TakeDamage(finalDamage, result.IsCritical);
             var atkStat = damageType == DamageType.Magical

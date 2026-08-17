@@ -1,6 +1,7 @@
 using System.Collections;
 using FracturedChorus.Audio;
 using FracturedChorus.Combat.Bootstrap;
+using FracturedChorus.Data;
 using FracturedChorus.Meta;
 using FracturedChorus.Meta.Economy;
 using FracturedChorus.RunMap.Core;
@@ -8,6 +9,7 @@ using FracturedChorus.RunMap.UI;
 using FracturedChorus.Tutorial;
 using FracturedChorus.UI;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 namespace FracturedChorus.RunMap
@@ -16,6 +18,11 @@ namespace FracturedChorus.RunMap
     {
         [SerializeField] private RunMapUIView mapView;
         [SerializeField] private RunMapNodeInfoPanel nodeInfoPanel;
+        [SerializeField] private TreasureRoomOverlayUIView treasureOverlay;
+        [SerializeField] private TreasureRewardTableSO treasureRewards;
+        [SerializeField] private EventRoomOverlayUIView eventOverlay;
+        [SerializeField] private EventChoiceTableSO eventChoices;
+        [SerializeField] private CampRoomOverlayUIView campOverlay;
         [SerializeField] private Text statusLabel;
         [SerializeField] private Text seedLabel;
 
@@ -29,6 +36,7 @@ namespace FracturedChorus.RunMap
         private bool _bootStarted;
         private bool _loadingBossScene;
         private Coroutine _bossLoadCoroutine;
+        private int _previewNodeId = -1;
 
         private void Awake()
         {
@@ -260,6 +268,11 @@ namespace FracturedChorus.RunMap
 
             Graph = graph;
             State.BeginRun(seed);
+            TreasureClaimStore.ClearRun();
+            EventClaimStore.ClearRun();
+            RunEventCombatMods.ClearRun();
+            _previewNodeId = -1;
+            mapView.SetMarkerPreviewNodeId(-1);
             mapView.BuildMap(graph);
 
             if (!RunMapRunSave.TryRestore(graph, State) && graph.StartNode != null)
@@ -332,6 +345,20 @@ namespace FracturedChorus.RunMap
             }
         }
 
+        private void Update()
+        {
+            if (!Application.isPlaying || Graph == null)
+            {
+                return;
+            }
+
+            var keyboard = Keyboard.current;
+            if (keyboard != null && keyboard.xKey.wasPressedThisFrame)
+            {
+                CancelNodePreview();
+            }
+        }
+
         private void HandleNodeClicked(MapNodeView view)
         {
             if (Graph == null || view?.BoundNode == null)
@@ -340,19 +367,18 @@ namespace FracturedChorus.RunMap
             }
 
             var node = view.BoundNode;
-            mapView.SetSelectedNode(node.Id);
-
+            var canTravel = State.CanSelectNode(Graph, node);
             var panel = EnsureNodeInfoPanel();
             if (panel == null)
             {
                 return;
             }
 
-            var canTravel = State.CanSelectNode(Graph, node);
-            panel.Show(node, canTravel, ConfirmTravelToNode);
+            panel.Show(node, canTravel, ConfirmTravelToNode, CancelNodePreview);
 
             if (!canTravel)
             {
+                mapView.SetSelectedNode(node.Id);
                 if (node.IsBoss && State.CurrentFloor > 0 && State.CurrentFloor < Graph.Profile.FloorCount)
                 {
                     UpdateLabels($"Select Camp F{Graph.Profile.FloorCount} before entering boss.");
@@ -373,7 +399,47 @@ namespace FracturedChorus.RunMap
                 {
                     UpdateLabels("Node not reachable — follow an adjacent path.");
                 }
+
+                return;
             }
+
+            PreviewHopTo(node);
+        }
+
+        private void PreviewHopTo(MapNodeData node)
+        {
+            var fromId = _previewNodeId >= 0 ? _previewNodeId : State.CurrentNodeId;
+            var from = Graph.GetNode(fromId) ?? Graph.StartNode;
+            _previewNodeId = node.Id;
+            mapView.SetMarkerPreviewNodeId(node.Id);
+            if (from != null && from.Id != node.Id)
+            {
+                mapView.AnimateTravelToNode(from, node, null);
+            }
+
+            mapView.SetSelectedNode(node.Id);
+        }
+
+        private void CancelNodePreview()
+        {
+            var previewId = _previewNodeId;
+            _previewNodeId = -1;
+            mapView?.SetMarkerPreviewNodeId(-1);
+            EnsureNodeInfoPanel()?.Hide();
+
+            if (Graph == null || mapView == null)
+            {
+                return;
+            }
+
+            var from = Graph.GetNode(previewId);
+            var home = Graph.GetNode(State.CurrentNodeId) ?? Graph.StartNode;
+            if (from != null && home != null && from.Id != home.Id)
+            {
+                mapView.AnimateTravelToNode(from, home, null);
+            }
+
+            mapView.SetSelectedNode(-1);
         }
 
         private void ConfirmTravelToNode(MapNodeData node)
@@ -383,22 +449,11 @@ namespace FracturedChorus.RunMap
                 return;
             }
 
+            _previewNodeId = -1;
+            mapView.SetMarkerPreviewNodeId(-1);
+
             var isBoss = node.IsBoss || node.Type == MapNodeType.Boss;
             var reopenBoss = isBoss && State.CurrentNodeId == node.Id;
-
-            if (!reopenBoss)
-            {
-                var from = Graph.GetNode(State.CurrentNodeId) ?? Graph.StartNode;
-                if (from != null && from.Id != node.Id)
-                {
-                    mapView.AnimateTravelToNode(from, node, () => CompleteTravelToNode(node, reopenBoss));
-                    return;
-                }
-
-                CompleteTravelToNode(node, reopenBoss);
-                return;
-            }
-
             CompleteTravelToNode(node, reopenBoss);
         }
 
@@ -493,8 +548,7 @@ namespace FracturedChorus.RunMap
 
             if (node.Type == MapNodeType.Event)
             {
-                MarkNodeCleared(node);
-                UpdateLabels($"{MapNodePalette.DisplayName(node.Type)} — event stub. Select next node.");
+                ResolveEventNode(node);
                 return;
             }
 
@@ -546,50 +600,186 @@ namespace FracturedChorus.RunMap
 
         private void ResolveCampNode(MapNodeData node)
         {
-            if (!GameMetaSession.HasSession)
+            var overlay = EnsureCampOverlay();
+            if (overlay == null)
             {
-                PartyRunHpStore.RestoreFullAtCamp();
                 MarkNodeCleared(node);
-                UpdateLabels($"Camp F{node.Floor} — HP restored (no wallet session).");
+                UpdateLabels($"Camp F{node.Floor} — overlay missing.");
                 return;
             }
 
-            var wallet = GameMetaSession.Current.Wallet;
-            if (!wallet.CanAfford(EconomyTable.CampHealCost))
+            EnsureNodeInfoPanel()?.Hide();
+            overlay.Show(CampChoiceCatalog.CreateOffers(), choice => OnCampPicked(node, choice));
+            UpdateLabels($"Camp F{node.Floor} — chọn hành động.");
+        }
+
+        private void OnCampPicked(MapNodeData node, CampChoiceOffer choice)
+        {
+            if (!choice.Available)
             {
-                UpdateLabels($"Camp F{node.Floor} — need {EconomyTable.CampHealCost} Notes to rest.");
                 return;
             }
 
-            if (!wallet.Spend(EconomyTable.CampHealCost))
+            switch (choice.Kind)
             {
-                UpdateLabels($"Camp F{node.Floor} — could not spend Notes.");
-                return;
+                case CampChoiceKind.Heal50:
+                    PartyRunHpStore.HealLivingPercent(CampChoiceCatalog.HealPercent);
+                    break;
+                case CampChoiceKind.ReviveOne:
+                    PartyRunHpStore.ReviveOne(CampChoiceCatalog.ReviveHp);
+                    break;
             }
 
-            PartyRunHpStore.RestoreFullAtCamp();
             MarkNodeCleared(node);
             RunMapRunSave.Persist(Graph, State);
-            GameMetaSession.Save();
-            RefreshNotesHud();
-            UpdateLabels($"Camp F{node.Floor} — rested (−{EconomyTable.CampHealCost} Notes). HP restored. ★ Saved.");
+            if (GameMetaSession.HasSession)
+            {
+                GameMetaSession.Save();
+            }
+
+            EnsureCampOverlay()?.Hide();
+            var floor = node != null ? node.Floor : 0;
+            UpdateLabels($"Camp F{floor} — {choice.Title}. ★ Saved.");
+        }
+
+        private CampRoomOverlayUIView EnsureCampOverlay()
+        {
+            if (campOverlay != null)
+            {
+                return campOverlay;
+            }
+
+            var canvasGo = GameObject.Find("RunMapCanvas");
+            var canvas = canvasGo != null
+                ? canvasGo.GetComponent<Canvas>()
+                : Object.FindAnyObjectByType<Canvas>();
+            if (canvas == null)
+            {
+                return null;
+            }
+
+            campOverlay = CampRoomOverlayUIView.EnsureOnCanvas(canvas.transform);
+            return campOverlay;
         }
 
         private void ResolveTreasureNode(MapNodeData node)
         {
-            if (!GameMetaSession.HasSession)
+            var overlay = EnsureTreasureOverlay();
+            if (overlay == null)
             {
                 MarkNodeCleared(node);
-                UpdateLabels($"Treasure F{node.Floor} — empty (no session).");
+                UpdateLabels($"Treasure F{node.Floor} — overlay missing.");
                 return;
             }
 
-            var amount = EconomyTable.TreasureReward(node.Id + node.Floor);
-            GameMetaSession.Current.Wallet.Add(amount);
-            GameMetaSession.Save();
-            RefreshNotesHud();
+            EnsureNodeInfoPanel()?.Hide();
+            var table = treasureRewards != null ? treasureRewards : TreasureRewardTableSO.LoadOrCreateDefault();
+            var seed = (Graph != null ? Graph.Seed : 0) ^ (node.Id * 397) ^ node.Floor;
+            overlay.Show(table.PickOffers(seed), reward => OnTreasurePicked(node, reward));
+            UpdateLabels($"Treasure F{node.Floor} — chọn phần thưởng.");
+        }
+
+        private void OnTreasurePicked(MapNodeData node, TreasureRewardSO reward)
+        {
+            TreasureClaimStore.Record(reward, node != null ? node.Id : -1, node != null ? node.Floor : 0);
             MarkNodeCleared(node);
-            UpdateLabels($"Treasure F{node.Floor} — +{amount} Notes.");
+            EnsureTreasureOverlay()?.Hide();
+            var title = reward != null ? reward.Title : "reward";
+            var floor = node != null ? node.Floor : 0;
+            UpdateLabels($"Treasure F{floor} — {title} (pending apply).");
+        }
+
+        private TreasureRoomOverlayUIView EnsureTreasureOverlay()
+        {
+            if (treasureOverlay != null)
+            {
+                return treasureOverlay;
+            }
+
+            var canvasGo = GameObject.Find("RunMapCanvas");
+            var canvas = canvasGo != null
+                ? canvasGo.GetComponent<Canvas>()
+                : Object.FindAnyObjectByType<Canvas>();
+            if (canvas == null)
+            {
+                return null;
+            }
+
+            treasureOverlay = TreasureRoomOverlayUIView.EnsureOnCanvas(canvas.transform);
+            if (treasureOverlay != null && treasureRewards == null)
+            {
+                treasureRewards = TreasureRewardTableSO.LoadOrCreateDefault();
+                treasureOverlay.SetRewardTable(treasureRewards);
+            }
+
+            return treasureOverlay;
+        }
+
+        private void ResolveEventNode(MapNodeData node)
+        {
+            var overlay = EnsureEventOverlay();
+            if (overlay == null)
+            {
+                MarkNodeCleared(node);
+                UpdateLabels($"Event F{node.Floor} — overlay missing.");
+                return;
+            }
+
+            EnsureNodeInfoPanel()?.Hide();
+            var table = eventChoices != null ? eventChoices : EventChoiceTableSO.LoadOrCreateDefault();
+            var seed = (Graph != null ? Graph.Seed : 0) ^ (node.Id * 911) ^ (node.Floor * 17);
+            overlay.Show(table.PickOffers(seed), choice => OnEventPicked(node, choice));
+            UpdateLabels($"Event F{node.Floor} — chọn sự kiện.");
+        }
+
+        private void OnEventPicked(MapNodeData node, EventChoiceSO choice)
+        {
+            EventClaimStore.Record(choice, node != null ? node.Id : -1, node != null ? node.Floor : 0);
+            if (choice != null && choice.Kind == EventChoiceKind.Notes)
+            {
+                if (GameMetaSession.HasSession)
+                {
+                    GameMetaSession.Current.Wallet.Add(Mathf.RoundToInt(choice.Magnitude));
+                    GameMetaSession.Save();
+                    RefreshNotesHud();
+                }
+            }
+            else
+            {
+                RunEventCombatMods.ApplyChoice(choice);
+            }
+
+            MarkNodeCleared(node);
+            EnsureEventOverlay()?.Hide();
+            var title = choice != null ? choice.Title : "event";
+            var floor = node != null ? node.Floor : 0;
+            UpdateLabels($"Event F{floor} — {title}.");
+        }
+
+        private EventRoomOverlayUIView EnsureEventOverlay()
+        {
+            if (eventOverlay != null)
+            {
+                return eventOverlay;
+            }
+
+            var canvasGo = GameObject.Find("RunMapCanvas");
+            var canvas = canvasGo != null
+                ? canvasGo.GetComponent<Canvas>()
+                : Object.FindAnyObjectByType<Canvas>();
+            if (canvas == null)
+            {
+                return null;
+            }
+
+            eventOverlay = EventRoomOverlayUIView.EnsureOnCanvas(canvas.transform);
+            if (eventOverlay != null && eventChoices == null)
+            {
+                eventChoices = EventChoiceTableSO.LoadOrCreateDefault();
+                eventOverlay.SetChoiceTable(eventChoices);
+            }
+
+            return eventOverlay;
         }
 
         private void ResolveRelayNode(MapNodeData node)

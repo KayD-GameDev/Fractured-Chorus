@@ -82,6 +82,31 @@ namespace FracturedChorus.RunMap.Core
             }
 
             WirePathEdges(graph, paths);
+            foreach (var node in graph.Nodes)
+            {
+                if (node.IsBoss || node.Type == MapNodeType.Start)
+                {
+                    continue;
+                }
+
+                if (node.Floor < 1 || node.Floor > MapLayoutConstants.ExclusivePrefixFloors)
+                {
+                    continue;
+                }
+
+                if (node.Outgoing.Count <= 1)
+                {
+                    continue;
+                }
+
+                for (var i = node.Outgoing.Count - 1; i >= 1; i--)
+                {
+                    var toId = node.Outgoing[i];
+                    node.Outgoing.RemoveAt(i);
+                    graph.GetNode(toId)?.Incoming.Remove(node.Id);
+                }
+            }
+
             PathValidator.RemoveDanglingNodes(graph);
 
             var bossColumn = BossColumnFor(profile);
@@ -136,30 +161,30 @@ namespace FracturedChorus.RunMap.Core
         {
             var paths = new List<int[]>(pathCount);
             var signatures = new HashSet<string>();
+            var reservedPrefix = new HashSet<(int floor, int column)>();
             var startColumns = BuildStartColumns(rng, pathCount, profile);
 
             for (var i = 0; i < startColumns.Count && paths.Count < pathCount; i++)
             {
-                TryAddPath(paths, signatures, GenerateSinglePath(rng, startColumns[i], profile));
+                TryAddExclusivePath(
+                    paths,
+                    signatures,
+                    reservedPrefix,
+                    GenerateSinglePath(rng, startColumns[i], profile, reservedPrefix));
             }
 
             var attempts = 0;
             while (paths.Count < pathCount && attempts < MaxGenerationAttempts)
             {
                 attempts++;
-                var center = BossColumnFor(profile);
-                var startCol = center + (rng.Next(3) - 1);
-                TryAddPath(paths, signatures, GenerateSinglePath(rng, startCol, profile));
+                TryAddExclusivePath(
+                    paths,
+                    signatures,
+                    reservedPrefix,
+                    GenerateSinglePath(rng, rng.Next(profile.ColumnCount), profile, reservedPrefix));
             }
 
-            attempts = 0;
-            while (paths.Count < pathCount && paths.Count > 0 && attempts < MaxGenerationAttempts)
-            {
-                attempts++;
-                TryAddPath(paths, signatures, MutatePath(rng, paths[rng.Next(paths.Count)], profile));
-            }
-
-            EnsureSymmetricPaths(paths, signatures, pathCount, profile.ColumnCount);
+            EnsureSymmetricPaths(paths, signatures, reservedPrefix, pathCount, profile.ColumnCount);
             return paths;
         }
 
@@ -168,33 +193,47 @@ namespace FracturedChorus.RunMap.Core
 
         private static List<int> BuildStartColumns(Random rng, int pathCount, MapGenerationProfile profile)
         {
-            var center = BossColumnFor(profile);
-            var startPool = new List<int> { center };
-            if (center - 1 >= 1)
+            var columnCount = Math.Max(1, profile.ColumnCount);
+            var count = Math.Clamp(pathCount, MapLayoutConstants.MinStartNodes, MapLayoutConstants.MaxStartNodes);
+            count = Math.Min(count, columnCount);
+
+            var pool = new List<int>(columnCount);
+            for (var column = 0; column < columnCount; column++)
             {
-                startPool.Add(center - 1);
+                pool.Add(column);
             }
 
-            if (center + 1 < profile.ColumnCount - 1)
+            Shuffle(rng, pool);
+            var assigned = new List<int>(count);
+            foreach (var column in pool)
             {
-                startPool.Add(center + 1);
+                if (assigned.Count >= count)
+                {
+                    break;
+                }
+
+                if (assigned.Exists(existing => Math.Abs(existing - column) <= 1))
+                {
+                    continue;
+                }
+
+                assigned.Add(column);
             }
 
-            Shuffle(rng, startPool);
-            var assigned = new List<int>(pathCount);
-
-            for (var i = 0; i < pathCount; i++)
+            foreach (var column in pool)
             {
-                assigned.Add(startPool[i % startPool.Count]);
+                if (assigned.Count >= count)
+                {
+                    break;
+                }
+
+                if (!assigned.Contains(column))
+                {
+                    assigned.Add(column);
+                }
             }
 
             return assigned;
-        }
-
-        private static int PickSymmetricStart(Random rng, List<int> startPool, int center, int columnCount)
-        {
-            var pick = startPool[rng.Next(startPool.Count)];
-            return rng.NextDouble() < 0.5 ? pick : MirrorColumn(pick, columnCount);
         }
 
         private static List<int> BuildStartColumns(Random rng, int pathCount) =>
@@ -217,13 +256,82 @@ namespace FracturedChorus.RunMap.Core
             return true;
         }
 
-        private static int[] GenerateSinglePath(Random rng, int startCol, MapGenerationProfile profile)
+        private static bool TryAddExclusivePath(
+            List<int[]> paths,
+            HashSet<string> signatures,
+            HashSet<(int floor, int column)> reservedPrefix,
+            int[] path)
         {
-            var center = BossColumnFor(profile);
-            startCol = ClampColumn(startCol, profile.ColumnCount);
-            if (Math.Abs(startCol - center) > MapLayoutConstants.MaxDriftFromCenter)
+            if (PrefixConflicts(path, reservedPrefix))
             {
-                startCol = center;
+                return false;
+            }
+
+            if (!TryAddPath(paths, signatures, path))
+            {
+                return false;
+            }
+
+            ReservePrefix(path, reservedPrefix);
+            return true;
+        }
+
+        private static bool PrefixConflicts(int[] path, HashSet<(int floor, int column)> reservedPrefix)
+        {
+            if (path == null || reservedPrefix == null)
+            {
+                return path == null;
+            }
+
+            foreach (var floor in ExclusiveFloors(path.Length))
+            {
+                if (reservedPrefix.Contains((floor, path[floor])))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static void ReservePrefix(int[] path, HashSet<(int floor, int column)> reservedPrefix)
+        {
+            if (path == null || reservedPrefix == null)
+            {
+                return;
+            }
+
+            foreach (var floor in ExclusiveFloors(path.Length))
+            {
+                reservedPrefix.Add((floor, path[floor]));
+            }
+        }
+
+        private static IEnumerable<int> ExclusiveFloors(int pathLength)
+        {
+            var prefix = Math.Min(MapLayoutConstants.ExclusivePrefixFloors, pathLength);
+            for (var floor = 0; floor < prefix; floor++)
+            {
+                yield return floor;
+            }
+
+            var last = pathLength - 1;
+            if (last >= prefix)
+            {
+                yield return last;
+            }
+        }
+
+        private static int[] GenerateSinglePath(
+            Random rng,
+            int startCol,
+            MapGenerationProfile profile,
+            HashSet<(int floor, int column)> reservedPrefix = null)
+        {
+            startCol = ClampColumn(startCol, profile.ColumnCount);
+            if (reservedPrefix != null && reservedPrefix.Contains((0, startCol)))
+            {
+                return null;
             }
 
             var path = new int[profile.FloorCount];
@@ -231,166 +339,53 @@ namespace FracturedChorus.RunMap.Core
 
             for (var floor = 1; floor < profile.FloorCount; floor++)
             {
-                var options = GetNeighborColumns(path[floor - 1], profile.ColumnCount, center);
+                var options = GetNeighborColumns(path[floor - 1], profile.ColumnCount);
+                if (reservedPrefix != null && IsReservedFloor(floor, profile.FloorCount))
+                {
+                    options.RemoveAll(column => reservedPrefix.Contains((floor, column)));
+                }
+
                 if (options.Count == 0)
                 {
                     return null;
                 }
 
-                var converge = floor >= (int)(profile.FloorCount * 0.55f);
-                path[floor] = floor >= profile.FloorCount - 2 || converge
-                    ? PickColumnTowardCenter(rng, options, center)
-                    : PickNextColumn(rng, path[floor - 1], options, center);
+                path[floor] = PickNextColumn(rng, path[floor - 1], options);
             }
 
             return path;
         }
 
-        private static int PickNextColumn(Random rng, int previousColumn, List<int> options, int centerColumn)
+        private static int PickNextColumn(Random rng, int previousColumn, List<int> options)
         {
-            var candidates = new List<int>();
-            var bestScore = float.MinValue;
-
-            foreach (var option in options)
+            if (options == null || options.Count == 0)
             {
-                var lateral = Math.Abs(option - previousColumn);
-                if (lateral > MapLayoutConstants.MaxColumnConnectDelta)
-                {
-                    continue;
-                }
-
-                var centerDistance = Math.Abs(option - centerColumn);
-                if (centerDistance > MapLayoutConstants.MaxDriftFromCenter)
-                {
-                    continue;
-                }
-
-                var score = lateral == 0 ? MapLayoutConstants.CenterColumnBiasWeight : 1.5f;
-                score /= 1f + centerDistance * 0.25f;
-
-                if (Math.Abs(option - centerColumn) > Math.Abs(previousColumn - centerColumn))
-                {
-                    score *= 0.35f;
-                }
-
-                if (score > bestScore + 0.01f)
-                {
-                    bestScore = score;
-                    candidates.Clear();
-                    candidates.Add(option);
-                }
-                else if (Math.Abs(score - bestScore) <= 0.01f)
-                {
-                    candidates.Add(option);
-                }
+                return previousColumn;
             }
 
-            if (candidates.Count == 0)
-            {
-                return PickColumnTowardCenter(rng, options, centerColumn);
-            }
-
-            return candidates[rng.Next(candidates.Count)];
-        }
-
-        private static int[] GenerateSinglePath(Random rng, int startCol) =>
-            GenerateSinglePath(rng, startCol, MapGenerationProfile.Default);
-
-        private static int[] MutatePath(Random rng, int[] source, MapGenerationProfile profile)
-        {
-            if (source == null || source.Length == 0)
-            {
-                return null;
-            }
-
-            var path = (int[])source.Clone();
-            var mutationCount = rng.Next(1, 2);
-
-            for (var m = 0; m < mutationCount; m++)
-            {
-                var floor = rng.Next(1, path.Length);
-                var options = GetNeighborColumns(path[floor - 1], profile.ColumnCount, BossColumnFor(profile));
-                if (options.Count == 0)
-                {
-                    continue;
-                }
-
-                options.RemoveAll(col => col == path[floor]);
-                if (options.Count == 0)
-                {
-                    continue;
-                }
-
-                path[floor] = PickNextColumn(rng, path[floor - 1], options, BossColumnFor(profile));
-
-                for (var f = floor + 1; f < path.Length; f++)
-                {
-                    var nextOptions = GetNeighborColumns(path[f - 1], profile.ColumnCount, BossColumnFor(profile));
-                    if (nextOptions.Count == 0)
-                    {
-                        return null;
-                    }
-
-                    if (!nextOptions.Contains(path[f]))
-                    {
-                        var center = BossColumnFor(profile);
-                        var converge = f >= (int)(profile.FloorCount * 0.55f);
-                        path[f] = f >= profile.FloorCount - 2 || converge
-                            ? PickColumnTowardCenter(rng, nextOptions, center)
-                            : PickNextColumn(rng, path[f - 1], nextOptions, center);
-                    }
-                }
-            }
-
-            return path;
-        }
-
-        private static int[] MutatePath(Random rng, int[] source) =>
-            MutatePath(rng, source, MapGenerationProfile.Default);
-
-        private static List<int> GetNeighborColumns(int column, int columnCount, int centerColumn)
-        {
-            var options = GetNeighborColumns(column, columnCount);
-            var filtered = options
-                .Where(col => Math.Abs(col - centerColumn) <= MapLayoutConstants.MaxDriftFromCenter)
-                .ToList();
-            return filtered.Count > 0 ? filtered : options;
-        }
-
-        private static List<int> GetNeighborColumns(int column, int columnCount)
-        {
-            var options = new List<int>(3);
-            for (var delta = -1; delta <= 1; delta++)
-            {
-                var col = column + delta;
-                if (col >= 0 && col < columnCount)
-                {
-                    options.Add(col);
-                }
-            }
-
-            return options;
-        }
-
-        private static List<int> GetNeighborColumns(int column) =>
-            GetNeighborColumns(column, MapLayoutConstants.ColumnCount);
-
-        private static int PickColumnTowardCenter(Random rng, List<int> options, int centerColumn)
-        {
             if (options.Count == 1)
             {
                 return options[0];
             }
 
-            options.Sort();
             var total = 0f;
             var weights = new float[options.Count];
-
             for (var i = 0; i < options.Count; i++)
             {
-                var weight = 1f / (1f + Math.Abs(options[i] - centerColumn));
-                weights[i] = weight;
-                total += weight;
+                var lateral = Math.Abs(options[i] - previousColumn);
+                if (lateral > MapLayoutConstants.MaxColumnConnectDelta)
+                {
+                    weights[i] = 0f;
+                    continue;
+                }
+
+                weights[i] = lateral == 0 ? 1f : 2f;
+                total += weights[i];
+            }
+
+            if (total <= 0f)
+            {
+                return options[rng.Next(options.Count)];
             }
 
             var roll = (float)rng.NextDouble() * total;
@@ -407,11 +402,29 @@ namespace FracturedChorus.RunMap.Core
             return options[options.Count - 1];
         }
 
+        private static bool IsReservedFloor(int pathIndex, int floorCount) =>
+            pathIndex < MapLayoutConstants.ExclusivePrefixFloors || pathIndex == floorCount - 1;
+
+        private static int[] GenerateSinglePath(Random rng, int startCol) =>
+            GenerateSinglePath(rng, startCol, MapGenerationProfile.Default);
+
+        private static List<int> GetNeighborColumns(int column, int columnCount)
+        {
+            var options = new List<int>(3);
+            for (var delta = -1; delta <= 1; delta++)
+            {
+                var col = column + delta;
+                if (col >= 0 && col < columnCount)
+                {
+                    options.Add(col);
+                }
+            }
+
+            return options;
+        }
+
         private static int ClampColumn(int column, int columnCount) =>
             Math.Max(0, Math.Min(columnCount - 1, column));
-
-        private static int ClampColumn(int column) =>
-            ClampColumn(column, MapLayoutConstants.ColumnCount);
 
         private static string PathSignature(int[] path)
         {
@@ -462,13 +475,14 @@ namespace FracturedChorus.RunMap.Core
         private static void EnsureSymmetricPaths(
             List<int[]> paths,
             HashSet<string> signatures,
+            HashSet<(int floor, int column)> reservedPrefix,
             int pathCount,
             int columnCount)
         {
             var index = 0;
             while (paths.Count < pathCount && index < paths.Count)
             {
-                TryAddPath(paths, signatures, MirrorPath(paths[index], columnCount));
+                TryAddExclusivePath(paths, signatures, reservedPrefix, MirrorPath(paths[index], columnCount));
                 index++;
             }
         }

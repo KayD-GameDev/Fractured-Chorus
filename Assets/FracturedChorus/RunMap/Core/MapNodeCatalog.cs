@@ -24,13 +24,13 @@ namespace FracturedChorus.RunMap.Core
             MapNodeType.Elite =>
                 "Trận elite khó hơn. Phần thưởng cao hơn — không lưu khi vào.",
             MapNodeType.Event =>
-                "Sự kiện ngẫu nhiên. Không lưu khi vào.",
+                "Sự kiện ngẫu nhiên — chọn 1 trong 3. Không lưu khi vào.",
             MapNodeType.Camp =>
-                "Nghỉ, hồi HP và lưu tiến trình run.",
+                "Nghỉ — heal 50%, hồi sinh 1, hoặc đi tiếp. Có lưu.",
             MapNodeType.Relay =>
                 "Cửa hàng tiện lợi — mua vật phẩm. Không lưu khi vào.",
             MapNodeType.Treasure =>
-                "Rương thưởng Notes. Không lưu khi vào.",
+                "Rương — chọn 1 phần thưởng. Không lưu khi vào.",
             MapNodeType.Boss =>
                 "Trận boss cuối sector. Hoàn thành sẽ lưu và mở map kế.",
             _ => string.Empty

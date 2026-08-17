@@ -26,8 +26,7 @@ namespace FracturedChorus.RunMap.UI
         [SerializeField] private RectTransform connectionsLayer;
         [SerializeField] private RectTransform nodesLayer;
         [SerializeField] private RectTransform floorLabelsLayer;
-        [SerializeField] private MapNodeView nodeTemplate;
-        [SerializeField] private MapConnectionLineView connectionTemplate;
+        [SerializeField] private MapNodeTemplateSetSO templateSet;
 
         [Header("Icons")]
         [SerializeField] private MapNodeIconSetSO iconSet;
@@ -68,6 +67,7 @@ namespace FracturedChorus.RunMap.UI
         private MapGraph _boundGraph;
         private RunState _lastRunState;
         private int _selectedNodeId = -1;
+        private int _markerPreviewNodeId = -1;
         private bool _scrollMarkerHooked;
 
         public int SelectedNodeId => _selectedNodeId;
@@ -86,6 +86,13 @@ namespace FracturedChorus.RunMap.UI
         public void ClearSelection()
         {
             SetSelectedNode(-1);
+        }
+
+        public bool IsMarkerTraveling => playerMarker != null && playerMarker.IsTraveling;
+
+        public void SetMarkerPreviewNodeId(int nodeId)
+        {
+            _markerPreviewNodeId = nodeId;
         }
 
         public bool TryGetNodeView(int nodeId, out MapNodeView view) => _nodeViews.TryGetValue(nodeId, out view);
@@ -139,6 +146,7 @@ namespace FracturedChorus.RunMap.UI
         private void OnEnable()
         {
             EnsureScrollMarkerSync();
+            StripLegacySceneTemplates();
 #if UNITY_EDITOR
             if (!Application.isPlaying)
             {
@@ -224,11 +232,7 @@ namespace FracturedChorus.RunMap.UI
         public void BuildMap(MapGraph graph)
         {
             _boundGraph = graph;
-            if (nodeTemplate != null)
-            {
-                nodeTemplate.gameObject.SetActive(false);
-            }
-
+            StripLegacySceneTemplates();
             ClearDynamicContent();
 
             EnsureScrollRect();
@@ -339,7 +343,7 @@ namespace FracturedChorus.RunMap.UI
                 return;
             }
 
-            var currentId = runState.CurrentNodeId;
+            var currentId = _markerPreviewNodeId >= 0 ? _markerPreviewNodeId : runState.CurrentNodeId;
             if (currentId < 0 || !_nodeViews.ContainsKey(currentId))
             {
                 playerMarker.SetVisible(false);
@@ -879,7 +883,7 @@ namespace FracturedChorus.RunMap.UI
             {
                 var child = layer.GetChild(i);
                 var view = child.GetComponent<MapNodeView>();
-                if (view == null || view == nodeTemplate)
+                if (view == null)
                 {
                     continue;
                 }
@@ -963,32 +967,24 @@ namespace FracturedChorus.RunMap.UI
 
         private void CreateNodes(MapGraph graph)
         {
-            if (nodeTemplate == null)
-            {
-                Debug.LogError("[Fractured Chorus] RunMapUIView: NodeTemplate chưa gán — chạy Run Map → Setup Scene Hierarchy.");
-                return;
-            }
-
             if (graph == null || graph.Nodes.Count == 0)
             {
                 Debug.LogError("[Fractured Chorus] RunMapUIView: MapGraph rỗng — kiểm tra MapTemplate / MapGenerator.");
-                nodeTemplate.gameObject.SetActive(false);
                 return;
             }
 
             var parent = nodesLayer != null ? nodesLayer : transform;
+            var icons = ResolveIconSet();
 
             foreach (var node in graph.Nodes)
             {
-                var clone = InstantiateNodeFromTemplate(parent);
-                if (clone == null)
+                var view = InstantiateNode(node.Type, parent);
+                if (view == null)
                 {
                     continue;
                 }
 
-                var view = clone.GetComponent<MapNodeView>();
                 var rect = view.GetComponent<RectTransform>();
-
                 rect.anchorMin = BottomAnchor;
                 rect.anchorMax = BottomAnchor;
                 rect.pivot = new Vector2(0.5f, 0.5f);
@@ -996,25 +992,78 @@ namespace FracturedChorus.RunMap.UI
                 var diameter = _layout.NodeVisualDiameter(node);
                 rect.sizeDelta = new Vector2(diameter, diameter);
 
-                view.Configure(iconSet, graph.Profile.Sector, playerMarkerSprite);
+                view.Configure(icons, graph.Profile.Sector, playerMarkerSprite);
                 view.Bind(node);
                 view.Clicked -= OnNodeClicked;
                 view.Clicked += OnNodeClicked;
                 _nodeViews[node.Id] = view;
             }
-
-            nodeTemplate.gameObject.SetActive(false);
         }
 
-        private GameObject InstantiateNodeFromTemplate(Transform parent)
+        private MapNodeView InstantiateNode(MapNodeType type, Transform parent)
         {
-            var clone = Instantiate(nodeTemplate.gameObject, parent);
-            if (!clone.activeSelf)
+            var prefab = ResolveNodePrefab(type);
+            if (prefab == null)
             {
-                clone.SetActive(true);
+                Debug.LogError("[Fractured Chorus] RunMapUIView: MapNode prefab chưa gán — gán MapNodeTemplateSet.");
+                return null;
             }
 
+            var clone = Instantiate(prefab, parent);
+            clone.gameObject.SetActive(true);
             return clone;
+        }
+
+        private MapNodeView ResolveNodePrefab(MapNodeType type)
+        {
+            EnsureTemplateSet();
+            return templateSet != null ? templateSet.ResolveNodePrefab(type) : null;
+        }
+
+        private MapNodeIconSetSO ResolveIconSet()
+        {
+            if (iconSet != null)
+            {
+                return iconSet;
+            }
+
+            EnsureTemplateSet();
+            return templateSet != null ? templateSet.IconSet : null;
+        }
+
+        private void EnsureTemplateSet()
+        {
+            if (templateSet != null)
+            {
+                return;
+            }
+
+#if UNITY_EDITOR
+            templateSet = AssetDatabase.LoadAssetAtPath<MapNodeTemplateSetSO>(MapNodeTemplateSetSO.DefaultAssetPath);
+#endif
+        }
+
+        private void StripLegacySceneTemplates()
+        {
+            ResolveLayers();
+            DestroyNamedChild(nodesLayer, "NodeTemplate");
+            DestroyNamedChild(connectionsLayer, "ConnectionTemplate");
+        }
+
+        private static void DestroyNamedChild(Transform parent, string childName)
+        {
+            if (parent == null)
+            {
+                return;
+            }
+
+            var child = parent.Find(childName);
+            if (child == null)
+            {
+                return;
+            }
+
+            DestroyObject(child.gameObject);
         }
 
         private void CreateConnections(MapGraph graph)
@@ -1034,13 +1083,16 @@ namespace FracturedChorus.RunMap.UI
                     }
 
                     var line = SpawnConnectionLine(parent);
+                    if (line == null)
+                    {
+                        continue;
+                    }
+
                     line.BindEdge(node.Id, toId);
                     line.SetEndpoints(fromPos, _layout.NodePosition(to), DefaultEdgeColor, baseLineThickness);
                     _connectionViews.Add(line);
                 }
             }
-
-            connectionTemplate?.gameObject.SetActive(false);
         }
 
         private void ResolveLayers()
@@ -1122,7 +1174,7 @@ namespace FracturedChorus.RunMap.UI
             {
                 var child = layer.GetChild(i);
                 var line = child.GetComponent<MapConnectionLineView>();
-                if (line != null && line != connectionTemplate)
+                if (line != null)
                 {
                     DestroyObject(child.gameObject);
                 }
@@ -1131,25 +1183,16 @@ namespace FracturedChorus.RunMap.UI
 
         private MapConnectionLineView SpawnConnectionLine(Transform parent)
         {
-            if (connectionTemplate != null)
+            var prefab = templateSet != null ? templateSet.ConnectionPrefab : null;
+            if (prefab == null)
             {
-                var clone = Instantiate(connectionTemplate.gameObject, parent);
-                if (!clone.activeSelf)
-                {
-                    clone.SetActive(true);
-                }
-
-                return clone.GetComponent<MapConnectionLineView>();
+                Debug.LogError("[Fractured Chorus] RunMapUIView: MapConnection prefab chưa gán — gán MapNodeTemplateSet.");
+                return null;
             }
 
-            var go = new GameObject("Connection", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(MapConnectionLineView));
-            go.transform.SetParent(parent, false);
-            var image = go.GetComponent<Image>();
-            image.sprite = UiCircleSpriteUtil.White;
-            image.raycastTarget = false;
-            var line = go.GetComponent<MapConnectionLineView>();
-            line.WireImage(image);
-            return line;
+            var clone = Instantiate(prefab, parent);
+            clone.gameObject.SetActive(true);
+            return clone;
         }
 
         private void RefreshConnectionHighlights(RunState runState)
