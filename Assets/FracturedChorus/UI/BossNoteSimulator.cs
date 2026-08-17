@@ -1,3 +1,4 @@
+using System;
 using FracturedChorus.Combat.Presentation;
 using FracturedChorus.Combat.Timeline;
 using UnityEngine;
@@ -22,25 +23,22 @@ namespace FracturedChorus.UI
         public const string LegacyKnobName = "Square";
         public const string RailAnchorName = "RailAnchor";
         public const string NoteNumName = "NoteNum";
-        public const int ShapeCount = BossNoteClusterBuilder.SingleVariantCount;
-
-        public enum NoteShapePreview
-        {
-            V0 = 0,
-            V1 = 1,
-            V2 = 2,
-            V3 = 3,
-            V4 = 4
-        }
+        public const int MinShapeCount = 1;
+        public const int MaxShapeCount = 16;
+        public const int DefaultShapeCount = 5;
 
         [SerializeField] private BeatTimelineUIView timeline;
-        [SerializeField] private NoteShapePreview shapePreview = NoteShapePreview.V0;
-        [SerializeField] private BossNoteShapeLayout[] shapeLayouts = new BossNoteShapeLayout[ShapeCount];
+        [SerializeField] private int shapePreview;
+        [SerializeField] private BossNoteShapeLayout[] shapeLayouts = new BossNoteShapeLayout[DefaultShapeCount];
 
         private bool _syncing;
         private int _loadedShape = -1;
 
-        public NoteShapePreview ShapePreview => shapePreview;
+        public int ShapePreview => shapePreview;
+        public int ShapeCount =>
+            shapeLayouts != null && shapeLayouts.Length > 0
+                ? shapeLayouts.Length
+                : DefaultShapeCount;
         public RectTransform Rect => transform as RectTransform;
         public BossNoteShapeLayout[] ShapeLayouts => shapeLayouts;
 
@@ -120,7 +118,7 @@ namespace FracturedChorus.UI
         public BossNoteShapeLayout GetLayoutForVariant(int variantIndex)
         {
             EnsureShapeLayouts();
-            var i = Mathf.Clamp(variantIndex, 0, ShapeCount - 1);
+            var i = ClampPreviewIndex(variantIndex);
             var layout = shapeLayouts[i];
             if (!layout.HasData)
             {
@@ -130,26 +128,90 @@ namespace FracturedChorus.UI
             // Migrate legacy entries that only had rail/num in note space (knobSize default 0).
             if (layout.knobSize.x < 0.5f && layout.knobSize.y < 0.5f)
             {
-                return BossNoteShapeLayout.FromLegacyNoteSpace(layout.railAnchorLocal, layout.noteNumLocal);
+                var migrated = BossNoteShapeLayout.FromLegacyNoteSpace(layout.railAnchorLocal, layout.noteNumLocal);
+                migrated.sprite = layout.sprite;
+                return migrated;
             }
 
             return layout;
         }
 
-        public void SetShapePreview(NoteShapePreview preview)
+        public void SetShapePreview(int preview)
         {
             if (_syncing)
             {
                 return;
             }
 
-            if (_loadedShape >= 0 && (int)shapePreview == _loadedShape)
+            EnsureShapeLayouts();
+            preview = ClampPreviewIndex(preview);
+            if (_loadedShape >= 0 && shapePreview == _loadedShape)
             {
                 SaveCurrentShapeLayout();
             }
 
             shapePreview = preview;
             ApplyShapePreview(loadSavedHandles: true);
+        }
+
+        public void AddShape()
+        {
+            EnsureShapeLayouts();
+            if (shapeLayouts.Length >= MaxShapeCount)
+            {
+                return;
+            }
+
+            SaveCurrentShapeLayout();
+            var next = new BossNoteShapeLayout[shapeLayouts.Length + 1];
+            Array.Copy(shapeLayouts, next, shapeLayouts.Length);
+            var copy = CaptureHandlesToLayout();
+            copy.sprite = null;
+            next[next.Length - 1] = copy;
+            shapeLayouts = next;
+            SetShapePreview(next.Length - 1);
+        }
+
+        public void RemoveShape()
+        {
+            EnsureShapeLayouts();
+            if (shapeLayouts.Length <= MinShapeCount)
+            {
+                return;
+            }
+
+            SaveCurrentShapeLayout();
+            var remove = ClampPreviewIndex(shapePreview);
+            var next = new BossNoteShapeLayout[shapeLayouts.Length - 1];
+            for (int i = 0, j = 0; i < shapeLayouts.Length; i++)
+            {
+                if (i == remove)
+                {
+                    continue;
+                }
+
+                next[j++] = shapeLayouts[i];
+            }
+
+            shapeLayouts = next;
+            _loadedShape = -1;
+            SetShapePreview(Mathf.Min(remove, next.Length - 1));
+        }
+
+        public void SetShapeSprite(Sprite sprite)
+        {
+            EnsureShapeLayouts();
+            var i = ClampPreviewIndex(shapePreview);
+            var layout = shapeLayouts[i];
+            layout.sprite = sprite;
+            shapeLayouts[i] = layout;
+            ApplySprite(sprite);
+#if UNITY_EDITOR
+            if (!Application.isPlaying)
+            {
+                EditorUtility.SetDirty(this);
+            }
+#endif
         }
 
         public void ApplyShapePreview(bool loadSavedHandles)
@@ -162,20 +224,30 @@ namespace FracturedChorus.UI
             _syncing = true;
             try
             {
-                var catalog = ResolveCatalog();
-                if (catalog != null)
+                EnsureShapeLayouts();
+                shapePreview = ClampPreviewIndex(shapePreview);
+                var layout = shapeLayouts[shapePreview];
+                if (layout.sprite != null)
                 {
-                    catalog.EnsureDefaultsLoaded();
-                    ApplySprite(catalog.MusicSingle((int)shapePreview, BossNoteTier.Red));
+                    ApplySprite(layout.sprite);
+                }
+                else
+                {
+                    var catalog = ResolveCatalog();
+                    if (catalog != null)
+                    {
+                        catalog.EnsureDefaultsLoaded();
+                        ApplySprite(catalog.MusicSingle(shapePreview, BossNoteTier.Red));
+                    }
                 }
 
                 EnsureKnobHierarchy();
                 if (loadSavedHandles)
                 {
-                    LoadShapeLayoutToHandles((int)shapePreview);
+                    LoadShapeLayoutToHandles(shapePreview);
                 }
 
-                _loadedShape = (int)shapePreview;
+                _loadedShape = shapePreview;
             }
             finally
             {
@@ -187,7 +259,7 @@ namespace FracturedChorus.UI
         {
             EnsureKnobHierarchy();
             EnsureShapeLayouts();
-            var i = Mathf.Clamp((int)shapePreview, 0, ShapeCount - 1);
+            var i = ClampPreviewIndex(shapePreview);
             var next = CaptureHandlesToLayout();
 #if UNITY_EDITOR
             if (!Application.isPlaying)
@@ -473,8 +545,8 @@ namespace FracturedChorus.UI
             }
 
             EnsureKnobHierarchy();
-            ApplyShapePreview(loadSavedHandles: _loadedShape != (int)shapePreview);
-            var i = Mathf.Clamp((int)shapePreview, 0, ShapeCount - 1);
+            ApplyShapePreview(loadSavedHandles: _loadedShape != shapePreview);
+            var i = ClampPreviewIndex(shapePreview);
             if (!shapeLayouts[i].HasData)
             {
                 SaveCurrentShapeLayout();
@@ -482,8 +554,16 @@ namespace FracturedChorus.UI
         }
 #endif
 
-        private BossNoteShapeLayout CaptureHandlesToLayout() =>
-            BossNoteShapeLayout.FromKnob(KnobLocal, KnobSize, RailAnchorLocal, NoteNumLocal);
+        private BossNoteShapeLayout CaptureHandlesToLayout()
+        {
+            Sprite sprite = null;
+            if (shapeLayouts != null && shapeLayouts.Length > 0)
+            {
+                sprite = shapeLayouts[ClampPreviewIndex(shapePreview)].sprite;
+            }
+
+            return BossNoteShapeLayout.FromKnob(KnobLocal, KnobSize, RailAnchorLocal, NoteNumLocal, sprite);
+        }
 
         private void LoadShapeLayoutToHandles(int variantIndex)
         {
@@ -613,21 +693,32 @@ namespace FracturedChorus.UI
 
         private void EnsureShapeLayouts()
         {
-            if (shapeLayouts != null && shapeLayouts.Length == ShapeCount)
+            if (shapeLayouts == null || shapeLayouts.Length == 0)
             {
+                shapeLayouts = new BossNoteShapeLayout[DefaultShapeCount];
+                shapePreview = 0;
                 return;
             }
 
-            var next = new BossNoteShapeLayout[ShapeCount];
-            if (shapeLayouts != null)
+            if (shapeLayouts.Length > MaxShapeCount)
             {
-                for (var i = 0; i < Mathf.Min(shapeLayouts.Length, ShapeCount); i++)
-                {
-                    next[i] = shapeLayouts[i];
-                }
+                var next = new BossNoteShapeLayout[MaxShapeCount];
+                Array.Copy(shapeLayouts, next, MaxShapeCount);
+                shapeLayouts = next;
             }
 
-            shapeLayouts = next;
+            shapePreview = ClampPreviewIndex(shapePreview);
+        }
+
+        private int ClampPreviewIndex(int index)
+        {
+            var n = ShapeCount;
+            if (n <= 0)
+            {
+                return 0;
+            }
+
+            return Mathf.Clamp(index, 0, n - 1);
         }
 
         private RectTransform FindKnob()
@@ -722,6 +813,13 @@ namespace FracturedChorus.UI
             }
 
             return timeline;
+        }
+
+        public BeatTimelineUIView Timeline => ResolveTimeline();
+
+        public void ApplyPreviewSprite(Sprite sprite)
+        {
+            ApplySprite(sprite);
         }
 
         private void ApplySprite(Sprite sprite)

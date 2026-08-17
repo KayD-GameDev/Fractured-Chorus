@@ -22,11 +22,15 @@ namespace FracturedChorus.UI
         [Tooltip("NoteNum local pos from Knob center (usually 0,0 = centered).")]
         public Vector2 noteNumLocal;
 
+        [Tooltip("Sprite for this shape. Empty = use timeline catalog fallback.")]
+        public Sprite sprite;
+
         /// <summary>Pin point in NoteSimulator space (onto BorderTop).</summary>
         public Vector2 PinInNoteSpace => knobLocal + railAnchorLocal;
 
         public bool HasData =>
-            knobSize.x > 0.5f
+            sprite != null
+            || knobSize.x > 0.5f
             || knobSize.y > 0.5f
             || !Mathf.Approximately(knobLocal.sqrMagnitude, 0f)
             || !Mathf.Approximately(railAnchorLocal.sqrMagnitude, 0f)
@@ -36,13 +40,15 @@ namespace FracturedChorus.UI
             Vector2 knobLocal,
             Vector2 knobSize,
             Vector2 railLocal,
-            Vector2 numLocal) =>
+            Vector2 numLocal,
+            Sprite sprite = null) =>
             new()
             {
                 knobLocal = knobLocal,
                 knobSize = knobSize.x > 0.5f ? knobSize : new Vector2(24f, 24f),
                 railAnchorLocal = railLocal,
-                noteNumLocal = numLocal
+                noteNumLocal = numLocal,
+                sprite = sprite
             };
 
         /// <summary>Legacy migration: old layouts stored pin/num in note space.</summary>

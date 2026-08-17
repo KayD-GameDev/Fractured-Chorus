@@ -106,6 +106,11 @@ namespace FracturedChorus.UI
             RestoreBase();
         }
 
+        public void SetHovered(bool hovered)
+        {
+            ApplyVisual(hovered);
+        }
+
         public static UiButtonHoverFeedback Ensure(GameObject host)
         {
             if (host == null)

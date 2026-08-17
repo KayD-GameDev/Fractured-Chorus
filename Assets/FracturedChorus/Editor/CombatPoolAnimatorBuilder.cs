@@ -4,6 +4,7 @@ using System.Linq;
 using FracturedChorus.Combat.Bootstrap;
 using UnityEditor;
 using UnityEditor.Animations;
+using UnityEditor.U2D.Sprites;
 using UnityEngine;
 
 namespace FracturedChorus.Editor
@@ -152,6 +153,8 @@ namespace FracturedChorus.Editor
         private static void NormalizeSpritesInFolder(string artFolder)
         {
             var textureGuids = AssetDatabase.FindAssets("t:Texture2D", new[] { artFolder });
+            var factories = new SpriteDataProviderFactories();
+            factories.Init();
             foreach (var guid in textureGuids)
             {
                 var path = AssetDatabase.GUIDToAssetPath(guid);
@@ -173,29 +176,35 @@ namespace FracturedChorus.Editor
                     dirty = true;
                 }
 
-                var sheet = importer.spritesheet;
-                if (sheet != null)
+                var dataProvider = factories.GetSpriteEditorDataProviderFromObject(importer);
+                if (dataProvider != null)
                 {
-                    var sheetDirty = false;
-                    for (var i = 0; i < sheet.Length; i++)
+                    dataProvider.InitSpriteEditorDataProvider();
+                    var rects = dataProvider.GetSpriteRects();
+                    if (rects != null)
                     {
-                        var slice = sheet[i];
-                        if (slice.alignment == (int)SpriteAlignment.Center
-                            && slice.pivot == new Vector2(0.5f, 0.5f))
+                        var sheetDirty = false;
+                        for (var i = 0; i < rects.Length; i++)
                         {
-                            continue;
+                            var slice = rects[i];
+                            if (slice.alignment == SpriteAlignment.Center
+                                && slice.pivot == new Vector2(0.5f, 0.5f))
+                            {
+                                continue;
+                            }
+
+                            slice.alignment = SpriteAlignment.Center;
+                            slice.pivot = new Vector2(0.5f, 0.5f);
+                            rects[i] = slice;
+                            sheetDirty = true;
                         }
 
-                        slice.alignment = (int)SpriteAlignment.Center;
-                        slice.pivot = new Vector2(0.5f, 0.5f);
-                        sheet[i] = slice;
-                        sheetDirty = true;
-                    }
-
-                    if (sheetDirty)
-                    {
-                        importer.spritesheet = sheet;
-                        dirty = true;
+                        if (sheetDirty)
+                        {
+                            dataProvider.SetSpriteRects(rects);
+                            dataProvider.Apply();
+                            dirty = true;
+                        }
                     }
                 }
 

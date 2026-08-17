@@ -70,12 +70,14 @@ namespace FracturedChorus.Combat.Presentation
 
         public static List<BossNoteCluster> Build(
             BeatTimelineEngine timeline,
-            IReadOnlyList<AuthoredBossNoteSpec> authoredFallback = null)
+            IReadOnlyList<AuthoredBossNoteSpec> authoredFallback = null,
+            int shapeCount = -1)
         {
+            var variants = ResolveShapeCount(shapeCount);
             var result = new List<BossNoteCluster>();
             if (timeline == null)
             {
-                AppendAuthoredSingles(result, authoredFallback, covered: null);
+                AppendAuthoredSingles(result, authoredFallback, covered: null, variants);
                 return result;
             }
 
@@ -108,8 +110,8 @@ namespace FracturedChorus.Combat.Presentation
                         {
                             result.Add(new BossNoteCluster(
                                 BossNoteGlyphKind.Beamed,
-                                MakeHead(beatA, teleA, remA),
-                                MakeHead(beatB, teleB, remB)));
+                                MakeHead(beatA, teleA, remA, variants),
+                                MakeHead(beatB, teleB, remB, variants)));
                             covered.Add(beatA);
                             covered.Add(beatB);
                             i += 2;
@@ -120,19 +122,20 @@ namespace FracturedChorus.Combat.Presentation
 
                 result.Add(new BossNoteCluster(
                     BossNoteGlyphKind.Single,
-                    MakeHead(beatA, teleA, remA)));
+                    MakeHead(beatA, teleA, remA, variants)));
                 covered.Add(beatA);
                 i++;
             }
 
-            AppendAuthoredSingles(result, authoredFallback, covered);
+            AppendAuthoredSingles(result, authoredFallback, covered, variants);
             return result;
         }
 
         private static void AppendAuthoredSingles(
             List<BossNoteCluster> result,
             IReadOnlyList<AuthoredBossNoteSpec> authoredFallback,
-            HashSet<int> covered)
+            HashSet<int> covered,
+            int shapeCount)
         {
             if (authoredFallback == null || authoredFallback.Count == 0)
             {
@@ -165,12 +168,12 @@ namespace FracturedChorus.Combat.Presentation
                         telegraph: null,
                         spec.RemainingHits,
                         tier,
-                        VariantForBeat(spec.BeatIndex))));
+                        VariantForBeat(spec.BeatIndex, shapeCount))));
                 covered?.Add(spec.BeatIndex);
             }
         }
 
-        private static BossNoteHead MakeHead(int beat, EnemyTelegraph tele, int remaining)
+        private static BossNoteHead MakeHead(int beat, EnemyTelegraph tele, int remaining, int shapeCount)
         {
             CombatCounterResolver.TryGetDisplayTier(remaining, out var tier);
             if (remaining <= 0)
@@ -178,7 +181,7 @@ namespace FracturedChorus.Combat.Presentation
                 tier = BossNoteTier.Red;
             }
 
-            return new BossNoteHead(beat, tele, remaining, tier, VariantForBeat(beat));
+            return new BossNoteHead(beat, tele, remaining, tier, VariantForBeat(beat, shapeCount));
         }
 
         private static bool IsSpawnOneHit(EnemyTelegraph tele) =>
@@ -228,7 +231,13 @@ namespace FracturedChorus.Combat.Presentation
             return best;
         }
 
-        public static int VariantForBeat(int beatIndex) =>
-            ((beatIndex % SingleVariantCount) + SingleVariantCount) % SingleVariantCount;
+        public static int VariantForBeat(int beatIndex, int shapeCount = -1)
+        {
+            var n = ResolveShapeCount(shapeCount);
+            return ((beatIndex % n) + n) % n;
+        }
+
+        private static int ResolveShapeCount(int shapeCount) =>
+            shapeCount > 0 ? shapeCount : SingleVariantCount;
     }
 }

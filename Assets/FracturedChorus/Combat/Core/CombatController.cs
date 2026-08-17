@@ -322,10 +322,10 @@ namespace FracturedChorus.Combat.Core
 
             if (phaseBanner == null)
             {
-                phaseBanner = CombatPhaseBannerView.EnsureOn(null);
+                Debug.LogWarning(
+                    "[CombatController] BattleInfo canvas missing. Add it via Fractured Chorus → Ensure Battle Info Canvas, then assign sprites on Inspector.");
             }
 
-            phaseBanner?.EnsureOverlayCanvas();
             return phaseBanner;
         }
 
@@ -1052,6 +1052,11 @@ namespace FracturedChorus.Combat.Core
                 return;
             }
 
+            if (EncounterDirector.IsPresenting)
+            {
+                return;
+            }
+
             var view = UnitView.FindForUnit(unit);
             if (view != null)
             {
@@ -1192,8 +1197,6 @@ namespace FracturedChorus.Combat.Core
             {
                 PartyRunHpStore.RestoreFullAtCamp();
             }
-
-            RunEventCombatMods.ConsumeBattle();
 
             CombatEncounterHandoff.SetResult(victory);
             var foughtId = !string.IsNullOrEmpty(_activeEncounterId)

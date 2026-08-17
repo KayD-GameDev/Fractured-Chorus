@@ -5,8 +5,11 @@ namespace FracturedChorus.Combat.Timeline
         public const int Phase1SlotCount = 22;
         public const int LaterPhaseSlotCount = 22;
 
-        /// <summary>Eternal Spark Boss Remix @ 152 BPM, first beat 1.161s, 268.29s clip.</summary>
-        public const int TotalBeats = 677;
+        /// <summary>Eternal Spark Boss Remix length. Runtime song length is <see cref="CombatTimelineProfile.TotalBeats"/>.</summary>
+        public const int BossRemixTotalBeats = 677;
+
+        /// <summary>Active song length (boss 677 / run 689).</summary>
+        public static int TotalBeats => CombatTimelineProfile.TotalBeats;
 
         public static int PhaseCount =>
             1 + (TotalBeats - Phase1SlotCount + LaterPhaseSlotCount - 1) / LaterPhaseSlotCount;

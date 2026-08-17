@@ -820,8 +820,10 @@ namespace FracturedChorus.Editor
             btnRect.sizeDelta = new Vector2(360f, 140f);
             var btnImage = btnGo.AddComponent<Image>();
             btnImage.color = Color.white;
+            btnImage.type = Image.Type.Simple;
             btnImage.preserveAspect = true;
             var button = btnGo.AddComponent<Button>();
+            btnGo.AddComponent<UiButtonHoverFeedback>();
 
             var labelGo = CreateUiObject("Label", btnGo.transform);
             StretchFull(labelGo.GetComponent<RectTransform>());
@@ -1559,7 +1561,7 @@ namespace FracturedChorus.Editor
                 timelineProp.objectReferenceValue = layer.GetComponentInParent<BeatTimelineUIView>();
             }
 
-            soTpl.FindProperty("shapePreview").enumValueIndex = (int)BossNoteSimulator.NoteShapePreview.V0;
+            soTpl.FindProperty("shapePreview").intValue = 0;
             soTpl.ApplyModifiedPropertiesWithoutUndo();
             sim.EnsureKnobHierarchy();
             sim.SaveCurrentShapeLayout();
