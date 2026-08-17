@@ -132,6 +132,7 @@ GameObject:
   - component: {fileID: 7695632}
   - component: {fileID: 7695633}
   - component: {fileID: 7695634}
+  - component: {fileID: 7695635}
   m_Layer: 0
   m_Name: Unit_Kiki_Ueda
   m_TagString: Untagged
@@ -248,6 +249,23 @@ MonoBehaviour:
   preserveSceneVisuals: 1
   preserveSceneCollider: 1
   showWorldHpLabel: 0
+--- !u!114 &7695635
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7695628}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57801d1152c33644e8e44afe45bba9f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitSpriteSimulator
+  spritePreview: 0
+  spriteLayouts:
+  - sprite: {fileID: 0}
+    localScale: {x: 0, y: 0, z: 0}
+    feetAnchorLocal: {x: 0, y: 0, z: 0}
 --- !u!61 &7695633
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -3636,6 +3654,7 @@ GameObject:
   - component: {fileID: 487667175}
   - component: {fileID: 487667176}
   - component: {fileID: 487667177}
+  - component: {fileID: 487667178}
   m_Layer: 0
   m_Name: Unit_Ren
   m_TagString: Untagged
@@ -3752,6 +3771,23 @@ MonoBehaviour:
   preserveSceneVisuals: 1
   preserveSceneCollider: 1
   showWorldHpLabel: 0
+--- !u!114 &487667178
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 487667171}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57801d1152c33644e8e44afe45bba9f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitSpriteSimulator
+  spritePreview: 0
+  spriteLayouts:
+  - sprite: {fileID: 0}
+    localScale: {x: 0, y: 0, z: 0}
+    feetAnchorLocal: {x: 0, y: 0, z: 0}
 --- !u!61 &487667176
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -7976,6 +8012,7 @@ GameObject:
   - component: {fileID: 1144376353}
   - component: {fileID: 1144376354}
   - component: {fileID: 1144376355}
+  - component: {fileID: 1144376356}
   m_Layer: 0
   m_Name: Unit_Mage
   m_TagString: Untagged
@@ -8092,6 +8129,23 @@ MonoBehaviour:
   preserveSceneVisuals: 1
   preserveSceneCollider: 1
   showWorldHpLabel: 0
+--- !u!114 &1144376356
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1144376349}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57801d1152c33644e8e44afe45bba9f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitSpriteSimulator
+  spritePreview: 0
+  spriteLayouts:
+  - sprite: {fileID: 0}
+    localScale: {x: 0, y: 0, z: 0}
+    feetAnchorLocal: {x: 0, y: 0, z: 0}
 --- !u!61 &1144376354
 BoxCollider2D:
   m_ObjectHideFlags: 0

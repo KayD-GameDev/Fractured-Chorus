@@ -35,11 +35,13 @@ namespace FracturedChorus.Editor
                 "  └ Knob          ← kéo để đặt vùng bụng / không gian số\n" +
                 "     ├ RailAnchor ← căn giữa Knob (pin lên line quái)\n" +
                 "     └ NoteNum    ← căn giữa Knob (số hits)\n\n" +
-                "Thêm/bớt shape bằng nút bên dưới. Mỗi shape lưu Knob + RailAnchor + NoteNum + Sprite.",
+                "Thêm/bớt shape bằng nút bên dưới. Đặt tên từng slot — tab hiện tên đó thay vì V0/V1.\n" +
+                "Mỗi shape lưu Tên + Knob + RailAnchor + NoteNum + Sprite.",
                 MessageType.Info);
 
             DrawShapeCountControls(sim);
             DrawShapeButtons(sim);
+            DrawCurrentShapeName(sim);
             DrawCurrentShapeSprite(sim);
 
             EditorGUILayout.Space(4f);
@@ -71,7 +73,7 @@ namespace FracturedChorus.Editor
             var knob = sim.KnobLocal;
             var pin = sim.PinInNoteSpace;
             EditorGUILayout.HelpBox(
-                $"Editing V{sim.ShapePreview} / {sim.ShapeCount}  |  Note size {size.x:0.##}×{size.y:0.##}\n" +
+                $"Editing {sim.ShapeTabLabel(sim.ShapePreview)}  ({sim.ShapePreview + 1}/{sim.ShapeCount})  |  Note size {size.x:0.##}×{size.y:0.##}\n" +
                 $"Knob ({knob.x:0.##}, {knob.y:0.##}) size {sim.KnobSize.x:0.##}×{sim.KnobSize.y:0.##}\n" +
                 $"RailAnchor@Knob ({sim.RailAnchorLocal.x:0.##}, {sim.RailAnchorLocal.y:0.##})  " +
                 $"NoteNum@Knob ({sim.NoteNumLocal.x:0.##}, {sim.NoteNumLocal.y:0.##})\n" +
@@ -114,16 +116,45 @@ namespace FracturedChorus.Editor
             EditorGUILayout.BeginHorizontal();
             for (var i = 0; i < count; i++)
             {
-                if (i > 0 && i % 8 == 0)
+                if (i > 0 && i % 4 == 0)
                 {
                     EditorGUILayout.EndHorizontal();
                     EditorGUILayout.BeginHorizontal();
                 }
 
-                DrawShapeButton(sim, "V" + i, i);
+                DrawShapeButton(sim, sim.ShapeTabLabel(i), i);
             }
 
             EditorGUILayout.EndHorizontal();
+        }
+
+        private void DrawCurrentShapeName(BossNoteSimulator sim)
+        {
+            serializedObject.Update();
+            var layouts = serializedObject.FindProperty("shapeLayouts");
+            var index = sim.ShapePreview;
+            if (layouts == null || index < 0 || index >= layouts.arraySize)
+            {
+                return;
+            }
+
+            var nameProp = layouts.GetArrayElementAtIndex(index).FindPropertyRelative("displayName");
+            if (nameProp == null)
+            {
+                return;
+            }
+
+            EditorGUI.BeginChangeCheck();
+            EditorGUILayout.PropertyField(nameProp, new GUIContent("Tên note"));
+            if (EditorGUI.EndChangeCheck())
+            {
+                serializedObject.ApplyModifiedProperties();
+                EditorUtility.SetDirty(sim);
+            }
+            else
+            {
+                serializedObject.ApplyModifiedProperties();
+            }
         }
 
         private void DrawCurrentShapeSprite(BossNoteSimulator sim)
@@ -143,7 +174,7 @@ namespace FracturedChorus.Editor
             }
 
             EditorGUI.BeginChangeCheck();
-            EditorGUILayout.PropertyField(spriteProp, new GUIContent($"Sprite V{index}"));
+            EditorGUILayout.PropertyField(spriteProp, new GUIContent("Sprite"));
             if (EditorGUI.EndChangeCheck())
             {
                 serializedObject.ApplyModifiedProperties();
@@ -166,7 +197,7 @@ namespace FracturedChorus.Editor
                 GUI.backgroundColor = new Color(0.45f, 0.85f, 1f, 1f);
             }
 
-            if (GUILayout.Button(label))
+            if (GUILayout.Button(new GUIContent(label, label)))
             {
                 Undo.RecordObject(sim, $"Edit Shape {label}");
                 sim.SetShapePreview(preview);

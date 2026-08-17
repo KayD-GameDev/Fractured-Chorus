@@ -66,6 +66,7 @@ namespace FracturedChorus.Combat.Bootstrap
                 view = unitGo.AddComponent<UnitView>();
             }
 
+            UnitSpriteSimulator.EnsureOn(view);
             return view;
         }
 

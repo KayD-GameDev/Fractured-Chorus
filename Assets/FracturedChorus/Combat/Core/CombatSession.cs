@@ -53,6 +53,8 @@ namespace FracturedChorus.Combat.Core
 
         private bool _combatIntroCompleted;
         private readonly HashSet<int> _plannedTelegraphPhases = new();
+        private CombatUnit _presentationPlayer;
+        private CombatUnit _presentationEnemy;
 
         /// <summary>
         /// The single gate for player agency: repositioning units and assigning skills are both
@@ -66,6 +68,22 @@ namespace FracturedChorus.Combat.Core
 
         /// <summary>Cover button gate — open during any planning window.</summary>
         public bool AllowCoverActivate { get; set; } = true;
+
+        /// <summary>
+        /// Lock incoming/outgoing resolve to the 1v1 pair currently on stage.
+        /// Cleared after <see cref="ResolveBeatAtScan"/>.
+        /// </summary>
+        public void SetPresentationResolvePair(CombatUnit player, CombatUnit enemy)
+        {
+            _presentationPlayer = player;
+            _presentationEnemy = enemy;
+        }
+
+        public void ClearPresentationResolvePair()
+        {
+            _presentationPlayer = null;
+            _presentationEnemy = null;
+        }
 
         public bool IsEncounterOver =>
             Phase == CombatPhase.Victory || Phase == CombatPhase.Defeat;
@@ -741,7 +759,7 @@ namespace FracturedChorus.Combat.Core
                 return;
             }
 
-            var target = CombatTargetPicker.PickEnemyAttackTargetForBeat(Grid, Timeline, beatIndex);
+            var target = ResolvePresentationEnemyAttackTarget(beatIndex);
 
             var swordCount = telegraph.HitsRequired > 0
                 ? telegraph.HitsRequired
@@ -967,6 +985,16 @@ namespace FracturedChorus.Combat.Core
             }
         }
 
+        private CombatUnit ResolvePresentationEnemyAttackTarget(int beatIndex)
+        {
+            if (_presentationPlayer != null && _presentationPlayer.IsAlive)
+            {
+                return _presentationPlayer;
+            }
+
+            return CombatTargetPicker.PickEnemyAttackTargetForBeat(Grid, Timeline, beatIndex);
+        }
+
         private CombatUnit PickTarget(AgendaEntry entry)
         {
             var source = entry.Unit;
@@ -983,6 +1011,11 @@ namespace FracturedChorus.Combat.Core
 
             if (skill.targetType == SkillTargetType.SingleEnemy && source.Side == GridSide.Player)
             {
+                if (_presentationEnemy != null && _presentationEnemy.IsAlive)
+                {
+                    return _presentationEnemy;
+                }
+
                 var counterTarget = CombatCounterResolver.ResolvePlayerCounterTarget(entry, Timeline);
                 if (counterTarget != null)
                 {

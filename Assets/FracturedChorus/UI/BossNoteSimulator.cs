@@ -42,6 +42,17 @@ namespace FracturedChorus.UI
         public RectTransform Rect => transform as RectTransform;
         public BossNoteShapeLayout[] ShapeLayouts => shapeLayouts;
 
+        public string ShapeTabLabel(int index)
+        {
+            EnsureShapeLayouts();
+            if (shapeLayouts == null || index < 0 || index >= shapeLayouts.Length)
+            {
+                return "V" + index;
+            }
+
+            return shapeLayouts[index].TabLabel(index);
+        }
+
         public Vector2 NoteSize
         {
             get
@@ -130,6 +141,7 @@ namespace FracturedChorus.UI
             {
                 var migrated = BossNoteShapeLayout.FromLegacyNoteSpace(layout.railAnchorLocal, layout.noteNumLocal);
                 migrated.sprite = layout.sprite;
+                migrated.displayName = layout.displayName;
                 return migrated;
             }
 
@@ -167,6 +179,7 @@ namespace FracturedChorus.UI
             Array.Copy(shapeLayouts, next, shapeLayouts.Length);
             var copy = CaptureHandlesToLayout();
             copy.sprite = null;
+            copy.displayName = string.Empty;
             next[next.Length - 1] = copy;
             shapeLayouts = next;
             SetShapePreview(next.Length - 1);
@@ -557,12 +570,17 @@ namespace FracturedChorus.UI
         private BossNoteShapeLayout CaptureHandlesToLayout()
         {
             Sprite sprite = null;
+            string displayName = null;
             if (shapeLayouts != null && shapeLayouts.Length > 0)
             {
-                sprite = shapeLayouts[ClampPreviewIndex(shapePreview)].sprite;
+                var current = shapeLayouts[ClampPreviewIndex(shapePreview)];
+                sprite = current.sprite;
+                displayName = current.displayName;
             }
 
-            return BossNoteShapeLayout.FromKnob(KnobLocal, KnobSize, RailAnchorLocal, NoteNumLocal, sprite);
+            var captured = BossNoteShapeLayout.FromKnob(KnobLocal, KnobSize, RailAnchorLocal, NoteNumLocal, sprite);
+            captured.displayName = displayName;
+            return captured;
         }
 
         private void LoadShapeLayoutToHandles(int variantIndex)

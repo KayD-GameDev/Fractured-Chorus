@@ -291,7 +291,7 @@ namespace FracturedChorus.Combat.Presentation
             var enemyView = UnitView.FindForUnit(enemyUnit);
             if (playerView == null || enemyView == null)
             {
-                _session.ResolveBeatAtScan(beatIndex);
+                ResolveBeatWithPresentationPair(beatIndex, playerUnit, enemyUnit);
                 CharlotteDomeRingView.SetEncounterHidden(false);
                 CharlotteMusicOrbitShieldView.SetEncounterHidden(false);
                 FinishEncounter();
@@ -977,10 +977,30 @@ namespace FracturedChorus.Combat.Presentation
 
         private void ResolveAndShowHp(int beatIndex, UnitView playerView, UnitView enemyView, bool playHitReaction = false)
         {
-            _ = playerView;
-            _ = enemyView;
-            _session.ResolveBeatAtScan(beatIndex);
+            _ = playHitReaction;
+            ResolveBeatWithPresentationPair(
+                beatIndex,
+                playerView != null ? playerView.Unit : null,
+                enemyView != null ? enemyView.Unit : null);
             // HP popups: CombatController → UnitView.FindForUnit (includes inactive duel extras).
+        }
+
+        private void ResolveBeatWithPresentationPair(int beatIndex, CombatUnit player, CombatUnit enemy)
+        {
+            if (_session == null)
+            {
+                return;
+            }
+
+            _session.SetPresentationResolvePair(player, enemy);
+            try
+            {
+                _session.ResolveBeatAtScan(beatIndex);
+            }
+            finally
+            {
+                _session.ClearPresentationResolvePair();
+            }
         }
 
         private int ResolveSwordCount(int beatIndex)

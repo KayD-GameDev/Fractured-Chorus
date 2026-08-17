@@ -51,6 +51,14 @@ namespace FracturedChorus.UI
         public UnitPresetSO Preset => preset;
         public string DemoUnitKey => demoUnitKey;
         public UnitFeetAnchor FeetAnchor => feetAnchor;
+        public SpriteRenderer BodySpriteRenderer
+        {
+            get
+            {
+                ResolveSpriteRendererReference();
+                return spriteRenderer;
+            }
+        }
 
         public void EnsureDefaultCombatAnimStates()
         {
@@ -62,12 +70,14 @@ namespace FracturedChorus.UI
                     SetAnimStateIfEmpty(ref beCounteredStateName, "Ren Hurt");
                     SetAnimStateIfEmpty(ref idleStateName, "Ren Idle");
                     SetAnimStateIfEmpty(ref movingStateName, "Ren Moving");
+                    SetAnimStateIfEmpty(ref deathStateName, "Ren Death");
                     break;
                 case "mage":
                     SetAnimStateIfEmpty(ref counterStateName, "Coda - Counter");
                     SetAnimStateIfEmpty(ref beCounteredStateName, "Coda - Hurt");
                     SetAnimStateIfEmpty(ref idleStateName, "Coda - Idle");
                     SetAnimStateIfEmpty(ref movingStateName, "Coda - Moving");
+                    SetAnimStateIfEmpty(ref deathStateName, "Coda - Death");
                     break;
                 case "Charlott":
                 case "charlotte":
@@ -76,6 +86,7 @@ namespace FracturedChorus.UI
                     SetAnimStateIfEmpty(ref guardStateName, "Charlott_Guard");
                     SetAnimStateIfEmpty(ref beCounteredStateName, "Charlott_Hurt");
                     SetAnimStateIfEmpty(ref idleStateName, "Charlott_Idle");
+                    SetAnimStateIfEmpty(ref deathStateName, "Charlott_Death");
                     break;
                 case "grunt_left":
                     SetAnimStateIfEmpty(ref beCounteredStateName, "Mini 1 - Hurt");
@@ -256,6 +267,14 @@ namespace FracturedChorus.UI
             }
 
             PlayCombatAnimation(clip, stateName, 0f, scheduleIdle: false);
+            SnapDeathSpriteToCell();
+        }
+
+        private void SnapDeathSpriteToCell()
+        {
+            var feet = FeetWorldPosition;
+            PositionFeetAnchorAtSpriteBase();
+            PlaceFeetAt(feet);
         }
 
         public void PlayCastHold(SkillDefinitionSO skill = null)
@@ -940,6 +959,7 @@ namespace FracturedChorus.UI
             ApplyVisuals();
             unit.OnHpChanged += HandleHpChanged;
             RefreshHp();
+            UnitSpriteSimulator.EnsureOn(this);
         }
 
         /// <summary>Body/feet colliders — không đụng sprite. Giữ size/offset scene khi preserveSceneCollider.</summary>
@@ -1412,6 +1432,12 @@ namespace FracturedChorus.UI
             {
                 bodyCollider = GetComponent<BoxCollider2D>();
             }
+        }
+
+        [ContextMenu("Add Unit Sprite Simulator")]
+        private void AddUnitSpriteSimulator()
+        {
+            UnitSpriteSimulator.EnsureOn(this);
         }
 #endif
     }
