@@ -6871,6 +6871,9 @@ MonoBehaviour:
   moveCamera: 1
   cameraZoomOrtho: 5.2
   cameraMoveSeconds: 0.16
+  ultimateCasterZoomOrtho: 3.15
+  ultimateVictimZoomOrtho: 3.25
+  ultimateFocusSeconds: 0.18
   swordCastHoldSeconds: 0.14
 --- !u!114 &707156466
 MonoBehaviour:
@@ -8219,6 +8222,7 @@ MonoBehaviour:
   codaSkill23Clip: {fileID: 0}
   charlotteSkill1Clip: {fileID: 0}
   charlotteSkill2Clip: {fileID: 0}
+  charlotteSkill2DashClip: {fileID: 0}
   charlotteSkill3Clip: {fileID: 0}
   renSkillVolume: 1
   renSkillCueNormalizedTime: 0.45
