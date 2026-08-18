@@ -142,12 +142,12 @@ TextureImporter:
       name: LCB_Sinner_Yi_Sang_Dead_Sprite_0
       rect:
         serializedVersion: 2
-        x: 131
-        y: 38
-        width: 248
-        height: 181
+        x: 0
+        y: 9
+        width: 269
+        height: 171
       alignment: 9
-      pivot: {x: 0.5, y: 0.08}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -164,7 +164,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 4f83d32d8d97dcf429af9e69df8d720e
     internalID: 0
     vertices: []
     indices: 

@@ -22,6 +22,8 @@ namespace FracturedChorus.UI
         [SerializeField] private RectTransform viewport;
         [SerializeField] private RectTransform slotsRow;
         [SerializeField] private BeatSegmentView segmentTemplate;
+        [Tooltip("Sibling of Beat_0 under ScrollContent — placed after beat 22 of each phase.")]
+        [SerializeField] private RectTransform phaseDividerTemplate;
         [SerializeField] private RectTransform scanBar;
         [SerializeField] private RectTransform trackLine;
         [SerializeField] private Button confirmButton;
@@ -120,6 +122,7 @@ namespace FracturedChorus.UI
         private BeatTimelineEngine _timeline;
         private CombatSession _session;
         private BeatSegmentView[] _slots;
+        private RectTransform[] _phaseDividers;
         private float[] _slotWidths;
         private float[] _slotOffsetPx;
         private float _contentWidthPx;
@@ -213,6 +216,7 @@ namespace FracturedChorus.UI
 
         // Intro-pause sau Deploy: snap cuối beat 0 vào ScanBar (anchor-based, không dùng localBeat threshold).
         private const float PhaseDividerVisualOffsetPx = 2f;
+        private const float PhaseDividerWidthPx = 3f;
         private const float AnchorScrollEpsilonPx = 0.01f;
         private const float BrowsePanEpsilonPx = 0.5f;
 
@@ -290,6 +294,11 @@ namespace FracturedChorus.UI
                 {
                     segmentTemplate = beat0.GetComponent<BeatSegmentView>();
                 }
+            }
+
+            if (phaseDividerTemplate == null && slotsRow != null)
+            {
+                phaseDividerTemplate = slotsRow.Find("PhaseDivider") as RectTransform;
             }
 
             if (scanBar == null)
@@ -2118,6 +2127,8 @@ namespace FracturedChorus.UI
 
                 ApplySlotRect(_slots[i], _slotWidths[absBeat], _slotOffsetPx[absBeat]);
             }
+
+            LayoutPhaseDividers();
         }
 
         private int GetSegmentBeatSpan() => TimelineConstants.GetSegmentBeatCountForSegment(_roundSegmentIndex);
@@ -2130,12 +2141,17 @@ namespace FracturedChorus.UI
 
         private float GetBeatEndContentPx(int beatIndex)
         {
-            if (_slotOffsetPx == null || beatIndex < 0 || beatIndex + 1 >= _slotOffsetPx.Length)
+            if (beatIndex < 0)
             {
                 return 0f;
             }
 
-            return _slotOffsetPx[beatIndex + 1];
+            if (_slotOffsetPx != null && beatIndex + 1 < _slotOffsetPx.Length)
+            {
+                return _slotOffsetPx[beatIndex + 1];
+            }
+
+            return (beatIndex + 1) * TimelineLayoutLock.ClampSlotWidth(slotWidth);
         }
 
         private float GetPhaseDividerContentPx(int beatIndex) =>
@@ -5101,6 +5117,7 @@ namespace FracturedChorus.UI
 
             slotsRow.sizeDelta = new Vector2(cumulative, 0f);
             RebindWindowSlotRects();
+            EnsurePhaseDividers();
 
             _lastViewportWidth = viewport.rect.width;
 
@@ -5143,6 +5160,136 @@ namespace FracturedChorus.UI
             rt.pivot = new Vector2(0f, 0.5f);
             rt.anchoredPosition = new Vector2(xOffset, 0f);
             rt.sizeDelta = new Vector2(width, 0f);
+        }
+
+        private void EnsurePhaseDividers()
+        {
+            if (phaseDividerTemplate == null && slotsRow != null)
+            {
+                phaseDividerTemplate = slotsRow.Find("PhaseDivider") as RectTransform;
+            }
+
+            if (phaseDividerTemplate == null || slotsRow == null)
+            {
+                return;
+            }
+
+            if (!Application.isPlaying)
+            {
+                TimelineConstants.GetPhaseBeatRange(0, out _, out var count);
+                var lastBeat = Mathf.Max(0, count - 1);
+                ApplyPhaseDividerRect(phaseDividerTemplate, GetPhaseDividerContentPx(lastBeat));
+                phaseDividerTemplate.gameObject.SetActive(true);
+                return;
+            }
+
+            if (_phaseDividers != null && _phaseDividers.Length == TimelineConstants.UiVisiblePhaseCount)
+            {
+                LayoutPhaseDividers();
+                return;
+            }
+
+            var templateGo = phaseDividerTemplate.gameObject;
+            var wasActive = templateGo.activeSelf;
+            templateGo.SetActive(true);
+
+            _phaseDividers = new RectTransform[TimelineConstants.UiVisiblePhaseCount];
+            for (var i = 0; i < _phaseDividers.Length; i++)
+            {
+                var cloneGo = Instantiate(templateGo, slotsRow);
+                cloneGo.name = $"PhaseDivider_{i}";
+                cloneGo.SetActive(true);
+                MarkRuntimeClone(cloneGo);
+                _phaseDividers[i] = cloneGo.transform as RectTransform;
+            }
+
+            if (Application.isPlaying)
+            {
+                templateGo.SetActive(false);
+            }
+            else
+            {
+                templateGo.SetActive(wasActive);
+            }
+
+            LayoutPhaseDividers();
+        }
+
+        private void LayoutPhaseDividers()
+        {
+            if (_phaseDividers == null || _phaseDividers.Length == 0)
+            {
+                return;
+            }
+
+            var shown = 0;
+            var windowEnd = _windowStartBeat + UiSlotCount;
+            var phaseCount = TimelineConstants.PhaseCount;
+            for (var phase = 0; phase < phaseCount && shown < _phaseDividers.Length; phase++)
+            {
+                TimelineConstants.GetPhaseBeatRange(phase, out var startBeat, out var count);
+                if (count <= 0)
+                {
+                    continue;
+                }
+
+                var lastBeat = startBeat + count - 1;
+                if (!TimelineConstants.IsPhaseDividerAfter(lastBeat)
+                    || lastBeat < _windowStartBeat
+                    || lastBeat >= windowEnd)
+                {
+                    continue;
+                }
+
+                var rt = _phaseDividers[shown];
+                if (rt != null)
+                {
+                    ApplyPhaseDividerRect(rt, GetPhaseDividerContentPx(lastBeat));
+                    rt.gameObject.SetActive(true);
+                }
+
+                shown++;
+            }
+
+            for (var i = shown; i < _phaseDividers.Length; i++)
+            {
+                if (_phaseDividers[i] != null)
+                {
+                    _phaseDividers[i].gameObject.SetActive(false);
+                }
+            }
+        }
+
+        private void ApplyPhaseDividerRect(RectTransform rt, float x)
+        {
+            if (rt == null)
+            {
+                return;
+            }
+
+            rt.localScale = Vector3.one;
+            rt.anchorMin = new Vector2(0f, 0f);
+            rt.anchorMax = new Vector2(0f, 1f);
+            rt.pivot = new Vector2(0f, 0.5f);
+            rt.sizeDelta = new Vector2(PhaseDividerWidthPx, 0f);
+            rt.anchoredPosition = new Vector2(x, 0f);
+
+            var layoutElement = rt.GetComponent<LayoutElement>();
+            if (layoutElement == null)
+            {
+                layoutElement = rt.gameObject.AddComponent<LayoutElement>();
+            }
+
+            layoutElement.ignoreLayout = true;
+            layoutElement.minWidth = -1f;
+            layoutElement.preferredWidth = PhaseDividerWidthPx;
+            layoutElement.flexibleWidth = -1f;
+
+            var image = rt.GetComponent<Image>();
+            if (image != null)
+            {
+                image.raycastTarget = false;
+            }
         }
 
         private void DisableSlotsRowLayoutGroup()
@@ -5211,6 +5358,7 @@ namespace FracturedChorus.UI
             }
 
             HideAuthoredBeatTemplates();
+            EnsurePhaseDividers();
             _slotsBuilt = true;
         }
 
@@ -5232,6 +5380,11 @@ namespace FracturedChorus.UI
             if (beat1 != null)
             {
                 beat1.gameObject.SetActive(false);
+            }
+
+            if (phaseDividerTemplate != null)
+            {
+                phaseDividerTemplate.gameObject.SetActive(false);
             }
         }
 
@@ -5339,16 +5492,19 @@ namespace FracturedChorus.UI
             for (var i = slotsRow.childCount - 1; i >= 0; i--)
             {
                 var child = slotsRow.GetChild(i);
-                if (child.name == "Beat_0" || child.name == "Beat_1")
+                if (child.name == "Beat_0" || child.name == "Beat_1" || child.name == "PhaseDivider")
                 {
                     continue;
                 }
 
-                if (child.name.StartsWith("Beat_") || child.name.StartsWith("BeatSlot_"))
+                if (child.name.StartsWith("Beat_") || child.name.StartsWith("BeatSlot_")
+                    || child.name.StartsWith("PhaseDivider_"))
                 {
                     DestroyBeatClone(child.gameObject);
                 }
             }
+
+            _phaseDividers = null;
         }
 
         private void HandleScanBeat(int beatIndex)

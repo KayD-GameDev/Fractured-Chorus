@@ -152,11 +152,12 @@ namespace FracturedChorus.Combat.Presentation
             }
 
             var strikeFeet = ResolveStandoffFeet(charlotte, boss, norHitStandoffX);
-            charlotte.PlayMovingLoop();
+            charlotte.BeginCombatTravel();
             yield return charlotte.MoveFeetToRoutine(
                 strikeFeet,
                 ResolveMoveSeconds(charlotte.FeetWorldPosition, strikeFeet, norHitLungeSpeed, norHitLungeSeconds));
 
+            charlotte.ArriveAtCombatCell();
             charlotte.PlayAttackAnimationHold(skill);
             var clip = Mathf.Max(0.2f, charlotte.EstimateSkillClipLength(skill));
             var impactAt = clip * norHitImpactNormalized;
@@ -208,11 +209,12 @@ namespace FracturedChorus.Combat.Presentation
             var startFeet = new Vector3(bossFeet.x - dir * 1.35f, bossFeet.y, fromFeet.z);
             var endFeet = new Vector3(bossFeet.x + dir * skill2PiercePastX, bossFeet.y, fromFeet.z);
 
-            charlotte.PlayMovingLoop();
+            charlotte.BeginCombatTravel();
             yield return charlotte.MoveFeetToRoutine(
                 startFeet,
                 ResolveMoveSeconds(fromFeet, startFeet, skill2SlideSpeed, 0.12f));
 
+            charlotte.ArriveAtCombatCell();
             FindAnyObjectByType<CombatSfxController>()?.PlayCharlotteSkill2Dash();
             charlotte.PlayAttackAnimationHold(skill);
             var slideSeconds = Mathf.Max(
@@ -269,11 +271,12 @@ namespace FracturedChorus.Combat.Presentation
             }
 
             var strikeFeet = ResolveStandoffFeet(charlotte, boss, ultStandoffX);
-            charlotte.PlayMovingLoop();
+            charlotte.BeginCombatTravel();
             yield return charlotte.MoveFeetToRoutine(
                 strikeFeet,
                 ResolveMoveSeconds(charlotte.FeetWorldPosition, strikeFeet, ultLungeSpeed, ultLungeSeconds));
 
+            charlotte.ArriveAtCombatCell();
             yield return EncounterDirector.PresentArmedCaster();
             charlotte.PlayAttackAnimationHold(skill);
             var impactAt = ResolveUltImpactSeconds();
@@ -337,7 +340,7 @@ namespace FracturedChorus.Combat.Presentation
             yield return boss.MoveFeetToRoutine(
                 bossHome,
                 ResolveMoveSeconds(boss.FeetWorldPosition, bossHome, 10f, 0.42f));
-            boss.PlayIdleState();
+            boss.FinishCombatPhaseIdle();
         }
 
         private float ResolveUltImpactSeconds()
@@ -595,7 +598,7 @@ namespace FracturedChorus.Combat.Presentation
             yield return charlotte.MoveToRoutine(home, seconds);
             charlotte.transform.position = new Vector3(home.x, home.y, charlotte.transform.position.z);
             charlotte.CaptureAnchor();
-            charlotte.PlayIdleState();
+            charlotte.FinishCombatPhaseIdle();
         }
 
         private static float ResolveMoveSeconds(Vector3 from, Vector3 to, float speed, float fallback)

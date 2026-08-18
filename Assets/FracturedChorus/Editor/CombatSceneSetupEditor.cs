@@ -623,7 +623,6 @@ namespace FracturedChorus.Editor
                 Undo.RegisterCreatedObjectUndo(unitGo, "Create Unit");
                 unitGo.transform.SetParent(units.transform, false);
                 unitGo.transform.position = worldPos;
-                unitGo.transform.localScale = Vector3.one * 0.9f;
 
                 var sr = unitGo.AddComponent<SpriteRenderer>();
                 sr.sprite = CreatePlaceholderSprite();
@@ -634,6 +633,7 @@ namespace FracturedChorus.Editor
                 view.ConfigureDemo(GetDemoKey(spawn.preset), spawn.side);
                 view.PlaceOnGrid(pos);
                 view.EnsureInteractionColliders();
+                AuthorIdleLayoutFromTransform(view);
                 unitViews.Add(view);
             }
 
@@ -648,6 +648,12 @@ namespace FracturedChorus.Editor
             }
 
             return preset.unitId;
+        }
+
+        private static void AuthorIdleLayoutFromTransform(UnitView view)
+        {
+            var sim = UnitSpriteSimulator.EnsureOn(view);
+            sim?.AuthorCurrentAsState(UnitCombatVisualState.Idle);
         }
 
         private static BeatTimelineUIView CreateTimelineUi(Canvas canvas)
@@ -1035,7 +1041,6 @@ namespace FracturedChorus.Editor
             Undo.RegisterCreatedObjectUndo(unitGo, "Add Knight of Despair");
             unitGo.transform.SetParent(unitsRoot, false);
             unitGo.transform.position = new Vector3(worldPos.x, worldPos.y, -0.05f);
-            unitGo.transform.localScale = Vector3.one * 0.2f;
 
             var sr = unitGo.AddComponent<SpriteRenderer>();
             sr.sprite = preset.battleSprite;
@@ -1049,6 +1054,7 @@ namespace FracturedChorus.Editor
             view.PlaceOnGrid(pos);
             view.EnsureInteractionColliders();
             view.RefitBodyColliderToSprite();
+            AuthorIdleLayoutFromTransform(view);
             EditorUtility.SetDirty(view);
 
             RegisterBossWithBootstrap(view);

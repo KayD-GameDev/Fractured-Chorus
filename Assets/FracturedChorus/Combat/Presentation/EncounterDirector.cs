@@ -51,8 +51,12 @@ namespace FracturedChorus.Combat.Presentation
         [SerializeField] private float sideGap = HexBoardLayout.DefaultSideGap;
         [Tooltip("Đẩy player/enemy ra xa thêm trên trục X khi vào stage encounter.")]
         [SerializeField] private float stageSpreadExtra = 0.85f;
-        [SerializeField] private float stageMoveSeconds = 0.42f;
-        [SerializeField] private float returnMoveSeconds = 0.42f;
+        [SerializeField] private float stageMoveSeconds = 0.38f;
+        [SerializeField] private float returnMoveSeconds = 0.38f;
+        [Tooltip("Moving sprite hiện tối thiểu bấy nhiêu giây trước khi đổi sang idle tĩnh.")]
+        [SerializeField] private float movingPoseSeconds = 0.38f;
+        [Tooltip("Pause idle đứng trên ô combat trước khi đánh.")]
+        [SerializeField] private float stageArriveIdleSeconds = 1.25f;
         [SerializeField] private float duelSeconds = 1.5f;
         [SerializeField] [Range(0.05f, 0.95f)] private float resolveAtNormalizedTime = 0.4f;
         [Tooltip("Animator speed during encounter duel (1 = normal, 0.7 ≈ chậm nhẹ).")]
@@ -131,7 +135,7 @@ namespace FracturedChorus.Combat.Presentation
                 SnapViewToHome(view);
                 if (view.gameObject.activeInHierarchy)
                 {
-                    view.PlayIdleState();
+                    view.FinishCombatPhaseIdle();
                 }
             }
         }
@@ -327,7 +331,9 @@ namespace FracturedChorus.Combat.Presentation
 
             PlayApproachLocomotion(playerView);
             PlayApproachLocomotion(enemyView);
-            yield return MoveParticipantsTogether(playerView, playerStage, enemyView, enemyStage, stageMoveSeconds);
+            yield return MoveParticipantsTogether(
+                playerView, playerStage, enemyView, enemyStage, ResolveLocomotionSeconds(stageMoveSeconds));
+            yield return HoldArriveIdle(playerView, enemyView);
 
             if (IsUltimateSkill(playerSkill))
             {
@@ -354,8 +360,8 @@ namespace FracturedChorus.Combat.Presentation
             yield return ReturnParticipantsHome(playerView, enemyView);
             RestorePhaseHomes();
 
-            playerView.PlayIdleState();
-            enemyView.PlayIdleState();
+            playerView.FinishCombatPhaseIdle();
+            enemyView.FinishCombatPhaseIdle();
 
             focusDimmer?.Release();
             ApplyUiHide(false);
@@ -473,12 +479,12 @@ namespace FracturedChorus.Combat.Presentation
 
         private IEnumerator ReturnParticipantsHome(UnitView playerView, UnitView enemyView)
         {
-            PlayApproachLocomotion(playerView);
-            PlayApproachLocomotion(enemyView);
+            PlayReturnLocomotion(playerView);
+            PlayReturnLocomotion(enemyView);
 
             var playerFeet = GetHomeFeet(playerView);
             var enemyFeet = GetHomeFeet(enemyView);
-            var seconds = Mathf.Max(0.04f, returnMoveSeconds);
+            var seconds = ResolveLocomotionSeconds(returnMoveSeconds);
 
             yield return MoveParticipantsTogether(playerView, playerFeet, enemyView, enemyFeet, seconds);
 
@@ -487,6 +493,53 @@ namespace FracturedChorus.Combat.Presentation
         }
 
         private static void PlayApproachLocomotion(UnitView view)
+        {
+            if (view == null)
+            {
+                return;
+            }
+
+            if (view.Unit != null && !view.Unit.IsAlive)
+            {
+                view.PlayDeathAnimation();
+                return;
+            }
+
+            view.BeginCombatTravel();
+        }
+
+        private float ResolveLocomotionSeconds(float authored)
+        {
+            return Mathf.Max(0.04f, authored, movingPoseSeconds);
+        }
+
+        private IEnumerator HoldArriveIdle(UnitView playerView, UnitView enemyView)
+        {
+            ArriveAtCombatCell(playerView);
+            ArriveAtCombatCell(enemyView);
+            if (stageArriveIdleSeconds > 0f)
+            {
+                yield return new WaitForSeconds(stageArriveIdleSeconds);
+            }
+        }
+
+        private static void ArriveAtCombatCell(UnitView view)
+        {
+            if (view == null)
+            {
+                return;
+            }
+
+            if (view.Unit != null && !view.Unit.IsAlive)
+            {
+                view.PlayDeathAnimation();
+                return;
+            }
+
+            view.ArriveAtCombatCell();
+        }
+
+        private static void PlayReturnLocomotion(UnitView view)
         {
             if (view == null)
             {

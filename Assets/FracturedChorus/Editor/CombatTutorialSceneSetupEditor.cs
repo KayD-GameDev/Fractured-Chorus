@@ -541,7 +541,6 @@ namespace FracturedChorus.Editor
             so.ApplyModifiedPropertiesWithoutUndo();
             view.gameObject.name = "Unit_Kiki_Ueda";
             view.gameObject.SetActive(true);
-            view.transform.localScale = Vector3.one * 0.2f;
 
             var sr = view.GetComponent<SpriteRenderer>();
             if (sr != null && sprite != null)
@@ -558,6 +557,9 @@ namespace FracturedChorus.Editor
                 animator.runtimeAnimatorController = controller;
                 EditorUtility.SetDirty(animator);
             }
+
+            var sim = UnitSpriteSimulator.EnsureOn(view);
+            sim?.AuthorCurrentAsState(UnitCombatVisualState.Idle);
 
             EditorUtility.SetDirty(view);
             EditorUtility.SetDirty(view.gameObject);

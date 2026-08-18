@@ -321,7 +321,7 @@ namespace FracturedChorus.Combat.Presentation
                     new Vector2(attackerView.FeetWorldPosition.x, attackerView.FeetWorldPosition.y),
                     new Vector2(lungeFeet.x, lungeFeet.y)) > 0.08f)
             {
-                attackerView.PlayMovingLoop();
+                attackerView.BeginCombatTravel();
                 yield return attackerView.MoveFeetToRoutine(
                     lungeFeet,
                     ResolveMoveSeconds(
@@ -331,6 +331,7 @@ namespace FracturedChorus.Combat.Presentation
                         lungeSeconds));
             }
 
+            attackerView.ArriveAtCombatCell();
             attackerView.PlayCastHold(report.Skill);
             if (castHoldSeconds > 0f)
             {
@@ -688,14 +689,14 @@ namespace FracturedChorus.Combat.Presentation
                 yield return attackerView.MoveFeetToRoutine(
                     ResolveMidStaging(attackerView),
                     retreatSeconds);
-                attackerView.PlayIdleState();
+                attackerView.PlayIdleStill();
                 yield break;
             }
 
             attackerView.PlayMovingLoop();
             yield return attackerView.MoveToRoutine(home, retreatSeconds);
             SnapUnitToHome(attackerView, home);
-            attackerView.PlayIdleState();
+            attackerView.FinishCombatPhaseIdle();
             _homePositions.Remove(report.Attacker);
         }
 
@@ -708,7 +709,7 @@ namespace FracturedChorus.Combat.Presentation
                     continue;
                 }
 
-                view.PlayIdleState();
+                view.PlayIdleStill();
             }
         }
 

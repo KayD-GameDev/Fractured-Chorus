@@ -23,16 +23,16 @@ namespace FracturedChorus.Editor
                 "Hierarchy:\n" +
                 "  Unit (SpriteRenderer)  ← đổi sprite / scale trên root\n" +
                 "  └ FeetAnchor           ← kéo để neo chân xuống honeycomb\n\n" +
-                "Thêm/bớt sprite bằng nút bên dưới. Đặt tên từng slot — tab hiện tên đó thay vì V0/V1.\n" +
-                "Mỗi slot lưu Tên + Sprite + Scale + FeetAnchor.\n" +
-                "Play: chọn tab để xem ngay trên sân (tạm dừng Animator). Resume Animator khi xong.",
+                "Mỗi slot = 1 state UnitView (Idle, Moving, Skill, Guard, Counter, Hurt, Death).\n" +
+                "Idle: gán cả Animation Clip (Play / hết phase) và Sprite tĩnh (đi vào ô chiến đấu).\n" +
+                "Moving tĩnh dùng khi unit bước vào/ra ô đánh. Combat lấy scale + chân từ slot.",
                 MessageType.Info);
 
             DrawSpriteCountControls(sim);
             DrawSpriteButtons(sim);
-            DrawCurrentSpriteName(sim);
-            DrawCurrentSpriteField(sim);
+            DrawCurrentSlotFields(sim);
             DrawScaleField(sim);
+            DrawDuplicateStateWarning(sim);
 
             EditorGUILayout.Space(4f);
             if (GUILayout.Button("Ensure FeetAnchor"))
@@ -134,7 +134,7 @@ namespace FracturedChorus.Editor
             EditorGUILayout.EndHorizontal();
         }
 
-        private void DrawCurrentSpriteName(UnitSpriteSimulator sim)
+        private void DrawCurrentSlotFields(UnitSpriteSimulator sim)
         {
             serializedObject.Update();
             var layouts = serializedObject.FindProperty("spriteLayouts");
@@ -144,14 +144,106 @@ namespace FracturedChorus.Editor
                 return;
             }
 
-            var nameProp = layouts.GetArrayElementAtIndex(index).FindPropertyRelative("displayName");
-            if (nameProp == null)
+            var slot = layouts.GetArrayElementAtIndex(index);
+            DrawSlotProperty(sim, slot, "displayName", "Tên sprite");
+            DrawSlotProperty(sim, slot, "linkedState", "Linked State");
+
+            var linkedProp = slot.FindPropertyRelative("linkedState");
+            var isIdle = linkedProp != null && linkedProp.enumValueIndex == (int)UnitCombatVisualState.Idle;
+            if (isIdle)
+            {
+                DrawIdleBothFields(sim, slot);
+                return;
+            }
+
+            DrawSlotProperty(sim, slot, "kind", "Kind");
+
+            var kindProp = slot.FindPropertyRelative("kind");
+            var isClip = kindProp != null && kindProp.enumValueIndex == (int)UnitSpriteKind.AnimationClip;
+            if (isClip)
+            {
+                EditorGUI.BeginChangeCheck();
+                var clipProp = slot.FindPropertyRelative("animationClip");
+                EditorGUILayout.PropertyField(clipProp, new GUIContent("Animation Clip"));
+                if (EditorGUI.EndChangeCheck())
+                {
+                    serializedObject.ApplyModifiedProperties();
+                    sim.ApplyPreviewClip(clipProp.objectReferenceValue as AnimationClip);
+                    EditorUtility.SetDirty(sim);
+                    SceneView.RepaintAll();
+                }
+                else
+                {
+                    serializedObject.ApplyModifiedProperties();
+                }
+            }
+            else
+            {
+                EditorGUI.BeginChangeCheck();
+                var spriteProp = slot.FindPropertyRelative("sprite");
+                EditorGUILayout.PropertyField(spriteProp, new GUIContent("Sprite"));
+                if (EditorGUI.EndChangeCheck())
+                {
+                    serializedObject.ApplyModifiedProperties();
+                    sim.ApplyPreviewSprite(spriteProp.objectReferenceValue as Sprite);
+                    EditorUtility.SetDirty(sim);
+                    SceneView.RepaintAll();
+                }
+                else
+                {
+                    serializedObject.ApplyModifiedProperties();
+                }
+            }
+        }
+
+        private void DrawIdleBothFields(UnitSpriteSimulator sim, SerializedProperty slot)
+        {
+            EditorGUILayout.HelpBox(
+                "Idle clip: chạy khi bấm Play và khi hết phase.\n" +
+                "Idle tĩnh: ngưng clip khi unit bước vào ô đánh, rồi mới sang Moving tĩnh.",
+                MessageType.None);
+
+            EditorGUI.BeginChangeCheck();
+            var clipProp = slot.FindPropertyRelative("animationClip");
+            EditorGUILayout.PropertyField(clipProp, new GUIContent("Idle Animation Clip"));
+            if (EditorGUI.EndChangeCheck())
+            {
+                serializedObject.ApplyModifiedProperties();
+                sim.ApplyPreviewClip(clipProp.objectReferenceValue as AnimationClip);
+                EditorUtility.SetDirty(sim);
+                SceneView.RepaintAll();
+            }
+            else
+            {
+                serializedObject.ApplyModifiedProperties();
+            }
+
+            EditorGUI.BeginChangeCheck();
+            var spriteProp = slot.FindPropertyRelative("sprite");
+            EditorGUILayout.PropertyField(spriteProp, new GUIContent("Idle Still Sprite"));
+            if (EditorGUI.EndChangeCheck())
+            {
+                serializedObject.ApplyModifiedProperties();
+                sim.ApplyPreviewSprite(spriteProp.objectReferenceValue as Sprite);
+                EditorUtility.SetDirty(sim);
+                SceneView.RepaintAll();
+            }
+            else
+            {
+                serializedObject.ApplyModifiedProperties();
+            }
+        }
+
+        private void DrawSlotProperty(UnitSpriteSimulator sim, SerializedProperty slot, string field, string label)
+        {
+            var prop = slot.FindPropertyRelative(field);
+            if (prop == null)
             {
                 return;
             }
 
             EditorGUI.BeginChangeCheck();
-            EditorGUILayout.PropertyField(nameProp, new GUIContent("Tên sprite"));
+            EditorGUILayout.PropertyField(prop, new GUIContent(label));
             if (EditorGUI.EndChangeCheck())
             {
                 serializedObject.ApplyModifiedProperties();
@@ -163,34 +255,24 @@ namespace FracturedChorus.Editor
             }
         }
 
-        private void DrawCurrentSpriteField(UnitSpriteSimulator sim)
+        private static void DrawDuplicateStateWarning(UnitSpriteSimulator sim)
         {
-            serializedObject.Update();
-            var layouts = serializedObject.FindProperty("spriteLayouts");
-            var index = sim.SpritePreview;
-            if (layouts == null || index < 0 || index >= layouts.arraySize)
+            var layouts = sim.SpriteLayouts;
+            if (layouts == null)
             {
                 return;
             }
 
-            var spriteProp = layouts.GetArrayElementAtIndex(index).FindPropertyRelative("sprite");
-            if (spriteProp == null)
+            foreach (UnitCombatVisualState state in System.Enum.GetValues(typeof(UnitCombatVisualState)))
             {
-                return;
-            }
+                if (state == UnitCombatVisualState.None || !sim.HasDuplicateLinkedState(state))
+                {
+                    continue;
+                }
 
-            EditorGUI.BeginChangeCheck();
-            EditorGUILayout.PropertyField(spriteProp, new GUIContent("Sprite"));
-            if (EditorGUI.EndChangeCheck())
-            {
-                serializedObject.ApplyModifiedProperties();
-                sim.ApplyPreviewSprite(spriteProp.objectReferenceValue as Sprite);
-                EditorUtility.SetDirty(sim);
-                SceneView.RepaintAll();
-            }
-            else
-            {
-                serializedObject.ApplyModifiedProperties();
+                EditorGUILayout.HelpBox(
+                    $"Nhiều slot đang gắn {state}. Combat dùng slot đầu tiên.",
+                    MessageType.Warning);
             }
         }
 

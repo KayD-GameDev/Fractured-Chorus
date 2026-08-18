@@ -56,6 +56,7 @@ namespace FracturedChorus.Editor
             SetField(ui, "viewport", viewport);
             SetField(ui, "slotsRow", scrollContent);
             SetField(ui, "segmentTemplate", segmentTemplate);
+            SetField(ui, "phaseDividerTemplate", scrollContent.Find("PhaseDivider") as RectTransform);
             SetField(ui, "scanBar", scanBar);
             SetField(ui, "slotWidth", SlotWidth);
             EnsureBrowseChevrons(ui);
@@ -874,6 +875,7 @@ namespace FracturedChorus.Editor
             layout.childForceExpandHeight = true;
 
             segmentTemplate = CreateBeatSegment(scrollGo.transform, 0);
+            CreatePhaseDividerOnSlotsRow(scrollContent);
 
             var scanGo = CreateUiObject("ScanBar", viewportGo.transform);
             scanBar = scanGo.GetComponent<RectTransform>();
@@ -956,15 +958,6 @@ namespace FracturedChorus.Editor
             label.fontSize = 10;
             label.fontStyle = FontStyle.Italic;
             label.alignment = TextAnchor.LowerCenter;
-
-            if (TimelineConstants.IsPhaseDividerAfter(index))
-            {
-                CreatePhaseDivider(segGo.transform);
-            }
-            else if (index == 0)
-            {
-                CreatePhaseDivider(segGo.transform);
-            }
 
             var segment = segGo.AddComponent<BeatSegmentView>();
             segment.SetDisplayBeatIndex(index);
@@ -1179,6 +1172,12 @@ namespace FracturedChorus.Editor
 
             SeedBossTrackFrame(viewport, railY, bossBorder);
             SeedExampleNotes(timeline, viewport, slotsRow, railY, slotWidth, noteW, noteH, beat1Hits);
+
+            var divider = CreatePhaseDividerOnSlotsRow(slotsRow);
+            if (divider != null)
+            {
+                SetField(timeline, "phaseDividerTemplate", divider);
+            }
 
             EditorUtility.SetDirty(timeline);
             EditorSceneManager.MarkSceneDirty(timeline.gameObject.scene);
@@ -1755,16 +1754,39 @@ namespace FracturedChorus.Editor
             EditorUtility.SetDirty(segment);
         }
 
-        private static void CreatePhaseDivider(Transform parent)
+        private static RectTransform CreatePhaseDividerOnSlotsRow(RectTransform slotsRow)
         {
-            var divGo = CreateUiObject("PhaseDivider", parent);
-            var divRect = divGo.GetComponent<RectTransform>();
-            divRect.anchorMin = new Vector2(1f, 0f);
-            divRect.anchorMax = new Vector2(1f, 1f);
-            divRect.pivot = new Vector2(0.5f, 0.5f);
-            divRect.sizeDelta = new Vector2(3f, 0f);
-            divRect.anchoredPosition = new Vector2(2f, 0f);
-            divGo.AddComponent<Image>().color = Color.white;
+            if (slotsRow == null)
+            {
+                return null;
+            }
+
+            var existing = slotsRow.Find("PhaseDivider") as RectTransform;
+            if (existing == null)
+            {
+                var divGo = CreateUiObject("PhaseDivider", slotsRow);
+                existing = divGo.GetComponent<RectTransform>();
+                var image = divGo.AddComponent<Image>();
+                image.color = Color.white;
+                image.raycastTarget = false;
+            }
+
+            var x = TimelineConstants.Phase1SlotCount * SlotWidth + 2f;
+            existing.anchorMin = new Vector2(0f, 0f);
+            existing.anchorMax = new Vector2(0f, 1f);
+            existing.pivot = new Vector2(0f, 0.5f);
+            existing.sizeDelta = new Vector2(3f, 0f);
+            existing.anchoredPosition = new Vector2(x, 0f);
+            var layoutElement = existing.GetComponent<LayoutElement>();
+            if (layoutElement == null)
+            {
+                layoutElement = existing.gameObject.AddComponent<LayoutElement>();
+            }
+
+            layoutElement.ignoreLayout = true;
+            layoutElement.preferredWidth = 3f;
+            existing.gameObject.SetActive(true);
+            return existing;
         }
 
         private static void CreateTimelineHeader(Transform parent)

@@ -331,7 +331,10 @@ MonoBehaviour:
   spritePreview: 0
   spriteLayouts:
   - displayName: 
+    kind: 0
     sprite: {fileID: -4680049790024911439, guid: 6e10946eaa8b3c4429b2ff46186d7869, type: 3}
+    animationClip: {fileID: 0}
+    linkedState: 1
     localScale: {x: 0.15, y: 0.15, z: 0}
     feetAnchorLocal: {x: 0.79, y: -1.24, z: 0}
 --- !u!1 &9683624
@@ -2409,13 +2412,14 @@ GameObject:
   - component: {fileID: 272802089}
   - component: {fileID: 272802091}
   - component: {fileID: 272802090}
+  - component: {fileID: 272802092}
   m_Layer: 0
   m_Name: PhaseDivider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &272802089
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2428,13 +2432,13 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1134678197}
+  m_Father: {fileID: 1563817237}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 1, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 1.9999847, y: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 1626.7, y: 0}
   m_SizeDelta: {x: 3, y: 0}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_Pivot: {x: 0, y: 0.5}
 --- !u!114 &272802090
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2449,7 +2453,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -2473,6 +2477,26 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 272802088}
   m_CullTransparentMesh: 1
+--- !u!114 &272802092
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 272802088}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 306cc8c2b49d7114eaa3623786fc2126, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.LayoutElement
+  m_IgnoreLayout: 1
+  m_MinWidth: -1
+  m_MinHeight: -1
+  m_PreferredWidth: 3
+  m_PreferredHeight: -1
+  m_FlexibleWidth: -1
+  m_FlexibleHeight: -1
+  m_LayoutPriority: 1
 --- !u!1 &276472336
 GameObject:
   m_ObjectHideFlags: 0
@@ -3425,7 +3449,10 @@ MonoBehaviour:
   spritePreview: 0
   spriteLayouts:
   - displayName: 
+    kind: 0
     sprite: {fileID: -2139821564302413868, guid: cee6046bb641dee43b3ca55c47e8153a, type: 3}
+    animationClip: {fileID: 0}
+    linkedState: 1
     localScale: {x: 0.15, y: 0.15, z: 0}
     feetAnchorLocal: {x: 0, y: -0.45, z: 0}
 --- !u!1 &349389865
@@ -3751,8 +3778,8 @@ Transform:
   m_GameObject: {fileID: 377598853}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.549, y: 0.013, z: -0.05}
-  m_LocalScale: {x: 0.19826, y: 0.212055, z: 0}
+  m_LocalPosition: {x: -1.55, y: 0.02, z: -0.05}
+  m_LocalScale: {x: 0.20759803, y: 0.22204278, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 285992547}
@@ -3807,7 +3834,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 11
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -7428215157034606851, guid: c717b6aad7a95364c80e530ab2dde0db, type: 3}
+  m_Sprite: {fileID: -7270613684948771677, guid: 9caad1461c1fefe49aa0e26202664cf0, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -3887,8 +3914,8 @@ BoxCollider2D:
   m_Offset: {x: -0.31349665, y: 0.0683794}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 7.27, y: 8.5}
+    pivot: {x: 0.5767956, y: 0.85475427}
+    oldSize: {x: 7.31, y: 5.04}
     newSize: {x: 7.27, y: 8.5}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -3904,7 +3931,7 @@ Animator:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 377598853}
-  m_Enabled: 1
+  m_Enabled: 0
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: fffd2289f4da9a541a5a6ae6497aee9f, type: 2}
   m_CullingMode: 0
@@ -3930,26 +3957,41 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 57801d1152c33644e8e44afe45bba9f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitSpriteSimulator
-  spritePreview: 0
+  spritePreview: 1
   spriteLayouts:
   - displayName: Idle
+    kind: 0
     sprite: {fileID: -7428215157034606851, guid: c717b6aad7a95364c80e530ab2dde0db, type: 3}
+    animationClip: {fileID: 0}
+    linkedState: 1
     localScale: {x: 0.19826, y: 0.212055, z: 0}
     feetAnchorLocal: {x: -0.27, y: -1.63, z: 0}
   - displayName: Death
+    kind: 0
     sprite: {fileID: -7270613684948771677, guid: 9caad1461c1fefe49aa0e26202664cf0, type: 3}
-    localScale: {x: 0.19826, y: 0.212055, z: 0}
+    animationClip: {fileID: 0}
+    linkedState: 7
+    localScale: {x: 0.20759803, y: 0.22204278, z: 0}
     feetAnchorLocal: {x: -0.27, y: -1.63, z: 0}
   - displayName: Moving
+    kind: 0
     sprite: {fileID: -8768929131254168515, guid: 47d7d76b5b3146149bfb549f18be11ed, type: 3}
+    animationClip: {fileID: 0}
+    linkedState: 2
     localScale: {x: 0.3853021, y: 0.41211152, z: 0}
     feetAnchorLocal: {x: 0.74, y: -0.43, z: 0}
   - displayName: Hurt
+    kind: 0
     sprite: {fileID: -2581751109061018785, guid: 061bacc281d24c247a085df375dd7e1f, type: 3}
+    animationClip: {fileID: 0}
+    linkedState: 6
     localScale: {x: 0.19826, y: 0.212055, z: 0}
     feetAnchorLocal: {x: -0.27, y: -1.63, z: 0}
   - displayName: Counter
+    kind: 0
     sprite: {fileID: 8886398286473154763, guid: efd81572e16ac5f43825cba0078be835, type: 3}
+    animationClip: {fileID: 0}
+    linkedState: 5
     localScale: {x: 0.19826, y: 0.212055, z: 0}
     feetAnchorLocal: {x: -0.27, y: -1.63, z: 0}
 --- !u!1 &404302628
@@ -4735,7 +4777,7 @@ Transform:
   m_GameObject: {fileID: 487667171}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -4.22, y: 0.42, z: -0.05}
+  m_LocalPosition: {x: -4.17, y: 0.32, z: -0.05}
   m_LocalScale: {x: 0.2, y: 0.2, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -4796,7 +4838,7 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 5.54, y: 12.44}
+  m_Size: {x: 2.69, y: 1.71}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -4868,17 +4910,17 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.93898606, y: -1.699888}
+  m_Offset: {x: 0.41831493, y: -1.8950932}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
     oldSize: {x: 5.54, y: 12.44}
-    newSize: {x: 5.54, y: 12.44}
+    newSize: {x: 2.69, y: 1.71}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 3.2960343, y: 9.027084}
+  m_Size: {x: 6.5871305, y: 8.957853}
   m_EdgeRadius: 0
 --- !u!95 &487667177
 Animator:
@@ -4888,7 +4930,7 @@ Animator:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 487667171}
-  m_Enabled: 1
+  m_Enabled: 0
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: 12c29e7f567c288469c95d9981469042, type: 2}
   m_CullingMode: 0
@@ -4914,28 +4956,43 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 57801d1152c33644e8e44afe45bba9f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitSpriteSimulator
-  spritePreview: 3
+  spritePreview: 0
   spriteLayouts:
-  - displayName: Idle
+  - displayName: Idle Sprite
+    kind: 0
     sprite: {fileID: 7369638930748108147, guid: 9a437a3dfde73224686f2d2a81ee930e, type: 3}
+    animationClip: {fileID: 0}
+    linkedState: 1
     localScale: {x: 0.2, y: 0.2, z: 0}
     feetAnchorLocal: {x: 1.07, y: -3.72, z: 0}
   - displayName: Die
-    sprite: {fileID: 7369638930748108147, guid: 9a437a3dfde73224686f2d2a81ee930e, type: 3}
-    localScale: {x: 0.2, y: 0.2, z: 0}
-    feetAnchorLocal: {x: 1.07, y: -3.72, z: 0}
+    kind: 0
+    sprite: {fileID: 1406067571975795107, guid: cd33ebd8e23034341b59b7e26df7933d, type: 3}
+    animationClip: {fileID: 0}
+    linkedState: 7
+    localScale: {x: 0.58718735, y: 0.58718735, z: 0}
+    feetAnchorLocal: {x: 0.01, y: -0.1, z: 0}
   - displayName: Hurt
-    sprite: {fileID: 7369638930748108147, guid: 9a437a3dfde73224686f2d2a81ee930e, type: 3}
-    localScale: {x: 0.2, y: 0.2, z: 0}
-    feetAnchorLocal: {x: 1.07, y: -3.72, z: 0}
+    kind: 0
+    sprite: {fileID: -5185995266274381261, guid: 8221565d12e3e7643a72f2ba1f09cde0, type: 3}
+    animationClip: {fileID: 0}
+    linkedState: 6
+    localScale: {x: 0.18985128, y: 0.18985128, z: 0}
+    feetAnchorLocal: {x: 1.07, y: -3.11, z: 0}
   - displayName: Moving
-    sprite: {fileID: 7369638930748108147, guid: 9a437a3dfde73224686f2d2a81ee930e, type: 3}
+    kind: 0
+    sprite: {fileID: 1383792526090866735, guid: c4fcdf358a0afc44c886d32186950dde, type: 3}
+    animationClip: {fileID: 0}
+    linkedState: 2
     localScale: {x: 0.2, y: 0.2, z: 0}
-    feetAnchorLocal: {x: 1.07, y: -3.72, z: 0}
+    feetAnchorLocal: {x: -0.76, y: -2.03, z: 0}
   - displayName: Counter
-    sprite: {fileID: 7369638930748108147, guid: 9a437a3dfde73224686f2d2a81ee930e, type: 3}
-    localScale: {x: 0.2, y: 0.2, z: 0}
-    feetAnchorLocal: {x: 1.07, y: -3.72, z: 0}
+    kind: 1
+    sprite: {fileID: -1891616687018440405, guid: 113b18a3002543c42987f67910234099, type: 3}
+    animationClip: {fileID: 7400000, guid: d196d390a1b52234ea48ebf6deccfdda, type: 2}
+    linkedState: 5
+    localScale: {x: 0.19486512, y: 0.19486512, z: 0}
+    feetAnchorLocal: {x: 1.21, y: -3.27, z: 0}
 --- !u!1 &504853132
 GameObject:
   m_ObjectHideFlags: 0
@@ -6857,8 +6914,10 @@ MonoBehaviour:
   stageColumn: 0
   sideGap: 3.5
   stageSpreadExtra: 0.85
-  stageMoveSeconds: 0.12
-  returnMoveSeconds: 0.12
+  stageMoveSeconds: 0.38
+  returnMoveSeconds: 0.38
+  movingPoseSeconds: 0.38
+  stageArriveIdleSeconds: 0.8
   duelSeconds: 1.5
   resolveAtNormalizedTime: 0.4
   encounterAnimSpeed: 0.7
@@ -10748,7 +10807,6 @@ RectTransform:
   m_Children:
   - {fileID: 692952804}
   - {fileID: 746791355}
-  - {fileID: 272802089}
   m_Father: {fileID: 1563817237}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -10775,7 +10833,7 @@ MonoBehaviour:
   beatFrame: {fileID: 746791356}
   noteTier: {fileID: 0}
   actionLabel: {fileID: 0}
-  phaseDividerLine: {fileID: 272802090}
+  phaseDividerLine: {fileID: 0}
   scanScaleBoost: 1.14
   scanFadeInDuration: 0.08
   scanFadeOutDuration: 0.35
@@ -11020,7 +11078,7 @@ Animator:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1144376349}
-  m_Enabled: 1
+  m_Enabled: 0
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: 9f3606f88c566af4ba799d178ea6b508, type: 2}
   m_CullingMode: 0
@@ -11046,26 +11104,41 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 57801d1152c33644e8e44afe45bba9f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitSpriteSimulator
-  spritePreview: 4
+  spritePreview: 0
   spriteLayouts:
   - displayName: idle
+    kind: 0
     sprite: {fileID: 814772617763461771, guid: 54a2056b8027f1b4a85eb6beb11ab96f, type: 3}
+    animationClip: {fileID: 0}
+    linkedState: 1
     localScale: {x: 0.21, y: 0.2, z: 0}
     feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
   - displayName: moving
+    kind: 0
     sprite: {fileID: 814772617763461771, guid: 54a2056b8027f1b4a85eb6beb11ab96f, type: 3}
+    animationClip: {fileID: 0}
+    linkedState: 2
     localScale: {x: 0.21, y: 0.2, z: 0}
     feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
   - displayName: die
+    kind: 0
     sprite: {fileID: 814772617763461771, guid: 54a2056b8027f1b4a85eb6beb11ab96f, type: 3}
+    animationClip: {fileID: 0}
+    linkedState: 7
     localScale: {x: 0.21, y: 0.2, z: 0}
     feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
   - displayName: hurt
+    kind: 0
     sprite: {fileID: 814772617763461771, guid: 54a2056b8027f1b4a85eb6beb11ab96f, type: 3}
+    animationClip: {fileID: 0}
+    linkedState: 6
     localScale: {x: 0.21, y: 0.2, z: 0}
     feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
   - displayName: counter
+    kind: 0
     sprite: {fileID: 814772617763461771, guid: 54a2056b8027f1b4a85eb6beb11ab96f, type: 3}
+    animationClip: {fileID: 0}
+    linkedState: 5
     localScale: {x: 0.21, y: 0.2, z: 0}
     feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
 --- !u!1 &1153346078
@@ -11525,7 +11598,10 @@ MonoBehaviour:
   spritePreview: 0
   spriteLayouts:
   - displayName: 
+    kind: 0
     sprite: {fileID: 4943192094725736257, guid: 2a25fb408a665924ea76caefa300424e, type: 3}
+    animationClip: {fileID: 0}
+    linkedState: 1
     localScale: {x: 0.2, y: 0.2, z: 0.2}
     feetAnchorLocal: {x: -0.06, y: -4.69, z: 0}
 --- !u!1 &1173406307
@@ -11866,6 +11942,7 @@ MonoBehaviour:
   viewport: {fileID: 62846716}
   slotsRow: {fileID: 1563817237}
   segmentTemplate: {fileID: 715640728}
+  phaseDividerTemplate: {fileID: 272802089}
   scanBar: {fileID: 309590910}
   trackLine: {fileID: 234142335}
   confirmButton: {fileID: 0}
@@ -13490,6 +13567,7 @@ RectTransform:
   m_Children:
   - {fileID: 715640727}
   - {fileID: 1134678197}
+  - {fileID: 272802089}
   m_Father: {fileID: 62846716}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -15047,7 +15125,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d1a6e4b30c8f5a7e2d9b4c6f1e0a2583, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.BossNoteRailAnchor
-  gizmoSize: {x: 0, y: 0}
 --- !u!1 &1722269007
 GameObject:
   m_ObjectHideFlags: 0

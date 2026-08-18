@@ -9,6 +9,7 @@ namespace FracturedChorus.UI
     /// <summary>
     /// Author combat sprites on a unit: swap art, scale, and FeetAnchor while looking at the real board.
     /// Hierarchy: Unit (SpriteRenderer + scale) / FeetAnchor (drag to pin feet).
+    /// Each slot links to one UnitView combat state (clip or still).
     /// </summary>
     [DisallowMultipleComponent]
     [ExecuteAlways]
@@ -27,6 +28,7 @@ namespace FracturedChorus.UI
         private int _loadedPreview = -1;
         private Sprite _appliedSprite;
         private bool _previewLocked;
+        private bool _combatPoseActive;
         private float _heldAnimatorSpeed = 1f;
         private bool _animatorHeld;
 
@@ -111,6 +113,7 @@ namespace FracturedChorus.UI
         private void OnEnable()
         {
             _appliedSprite = null;
+            InferLinkedStates();
         }
 
         private void OnDisable()
@@ -118,14 +121,94 @@ namespace FracturedChorus.UI
             RestoreAnimator();
         }
 
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            InferLinkedStates();
+        }
+#endif
+
         private void LateUpdate()
         {
-            if (_previewLocked || !Application.isPlaying)
+            if (_previewLocked || _combatPoseActive || !Application.isPlaying)
             {
                 return;
             }
 
             TryApplyLayoutForCurrentSprite();
+        }
+
+        public bool TryGetLayout(UnitCombatVisualState state, out UnitSpriteLayout layout)
+        {
+            layout = default;
+            if (state == UnitCombatVisualState.None || spriteLayouts == null)
+            {
+                return false;
+            }
+
+            EnsureLayouts();
+            for (var i = 0; i < spriteLayouts.Length; i++)
+            {
+                if (spriteLayouts[i].linkedState != state)
+                {
+                    continue;
+                }
+
+                layout = spriteLayouts[i];
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool ApplyLayoutForState(
+            UnitCombatVisualState state,
+            bool keepWorldFeet = true,
+            UnitSpriteApplyMode mode = UnitSpriteApplyMode.Auto)
+        {
+            if (!TryGetLayout(state, out var layout))
+            {
+                return false;
+            }
+
+            _combatPoseActive = Application.isPlaying;
+            ApplyLayout(layout, keepWorldFeet, mode);
+            return true;
+        }
+
+        public bool HasDuplicateLinkedState(UnitCombatVisualState state)
+        {
+            if (state == UnitCombatVisualState.None || spriteLayouts == null)
+            {
+                return false;
+            }
+
+            var count = 0;
+            for (var i = 0; i < spriteLayouts.Length; i++)
+            {
+                if (spriteLayouts[i].linkedState == state)
+                {
+                    count++;
+                }
+            }
+
+            return count > 1;
+        }
+
+        public void AuthorCurrentAsState(UnitCombatVisualState state)
+        {
+            EnsureLayouts();
+            SaveCurrentLayout();
+            var i = ClampPreview(spritePreview);
+            var layout = spriteLayouts[i];
+            layout.linkedState = state;
+            if (string.IsNullOrWhiteSpace(layout.displayName) && state != UnitCombatVisualState.None)
+            {
+                layout.displayName = state.ToString();
+            }
+
+            spriteLayouts[i] = layout;
+            MarkDirty();
         }
 
         public void SetSpritePreview(int preview)
@@ -168,7 +251,10 @@ namespace FracturedChorus.UI
             Array.Copy(spriteLayouts, next, spriteLayouts.Length);
             var copy = CaptureHandles();
             copy.sprite = null;
+            copy.animationClip = null;
             copy.displayName = string.Empty;
+            copy.linkedState = UnitCombatVisualState.None;
+            copy.kind = UnitSpriteKind.StillSprite;
             next[next.Length - 1] = copy;
             spriteLayouts = next;
             SetSpritePreview(next.Length - 1);
@@ -206,8 +292,30 @@ namespace FracturedChorus.UI
             var i = ClampPreview(spritePreview);
             var layout = spriteLayouts[i];
             layout.sprite = sprite;
+            if (layout.animationClip == null)
+            {
+                layout.kind = UnitSpriteKind.StillSprite;
+            }
+
             spriteLayouts[i] = layout;
             ApplySprite(sprite);
+            KeepFeetWorld();
+            MarkDirty();
+        }
+
+        public void ApplyPreviewClip(AnimationClip clip)
+        {
+            EnsureLayouts();
+            var i = ClampPreview(spritePreview);
+            var layout = spriteLayouts[i];
+            layout.animationClip = clip;
+            if (layout.sprite == null)
+            {
+                layout.kind = UnitSpriteKind.AnimationClip;
+            }
+
+            spriteLayouts[i] = layout;
+            PlayClipPreview(clip);
             KeepFeetWorld();
             MarkDirty();
         }
@@ -228,11 +336,15 @@ namespace FracturedChorus.UI
                 var layout = spriteLayouts[spritePreview];
                 if (loadSaved && layout.HasData)
                 {
-                    ApplyLayout(layout, keepWorldFeet: false);
+                    ApplyLayout(layout, keepWorldFeet: false, UnitSpriteApplyMode.Auto);
                 }
-                else if (layout.sprite != null)
+                else if (layout.UsesStillArt)
                 {
                     ApplySprite(layout.sprite);
+                }
+                else if (layout.animationClip != null)
+                {
+                    PlayClipPreview(layout.animationClip);
                 }
 
                 _loadedPreview = spritePreview;
@@ -298,7 +410,7 @@ namespace FracturedChorus.UI
                 return;
             }
 
-            ApplyLayout(layout, keepWorldFeet: true);
+            ApplyLayout(layout, keepWorldFeet: true, UnitSpriteApplyMode.Auto);
             _appliedSprite = sprite;
         }
 
@@ -324,13 +436,27 @@ namespace FracturedChorus.UI
             return false;
         }
 
-        private void ApplyLayout(UnitSpriteLayout layout, bool keepWorldFeet)
+        private void ApplyLayout(UnitSpriteLayout layout, bool keepWorldFeet, UnitSpriteApplyMode mode)
         {
             var view = ResolveView();
             var feet = view != null ? view.FeetWorldPosition : transform.position;
-            if (layout.sprite != null)
+            var useStill = layout.ShouldApplyStill(mode);
+            if (useStill)
             {
+                SetAnimatorEnabled(false);
                 ApplySprite(layout.sprite);
+            }
+            else if (mode == UnitSpriteApplyMode.PreferStill)
+            {
+                SetAnimatorEnabled(false);
+            }
+            else
+            {
+                SetAnimatorEnabled(true);
+                if (layout.animationClip != null && (_previewLocked || !Application.isPlaying))
+                {
+                    PlayClipPreview(layout.animationClip);
+                }
             }
 
             if (layout.localScale.sqrMagnitude > 0.0001f)
@@ -348,6 +474,8 @@ namespace FracturedChorus.UI
             {
                 view?.PlaceFeetAt(feet);
             }
+
+            _appliedSprite = CurrentSprite;
         }
 
         private UnitSpriteLayout CaptureHandles()
@@ -358,17 +486,32 @@ namespace FracturedChorus.UI
                 scale = Vector3.one;
             }
 
-            string displayName = null;
+            var displayName = string.Empty;
+            var kind = UnitSpriteKind.StillSprite;
+            Sprite sprite = CurrentSprite;
+            AnimationClip clip = null;
+            var linkedState = UnitCombatVisualState.None;
             if (spriteLayouts != null && spriteLayouts.Length > 0)
             {
                 var i = Mathf.Clamp(spritePreview, 0, spriteLayouts.Length - 1);
-                displayName = spriteLayouts[i].displayName;
+                var current = spriteLayouts[i];
+                displayName = current.displayName;
+                kind = current.kind;
+                clip = current.animationClip;
+                linkedState = current.linkedState;
+                if (kind != UnitSpriteKind.StillSprite)
+                {
+                    sprite = current.sprite;
+                }
             }
 
             return new UnitSpriteLayout
             {
                 displayName = displayName,
-                sprite = CurrentSprite,
+                kind = kind,
+                sprite = sprite,
+                animationClip = clip,
+                linkedState = linkedState,
                 localScale = scale,
                 feetAnchorLocal = FeetAnchorLocal
             };
@@ -383,6 +526,34 @@ namespace FracturedChorus.UI
             }
 
             sr.sprite = sprite;
+        }
+
+        private void PlayClipPreview(AnimationClip clip)
+        {
+            if (clip == null)
+            {
+                return;
+            }
+
+            var animator = GetComponent<Animator>();
+            if (animator == null)
+            {
+                return;
+            }
+
+            animator.enabled = true;
+            var stateName = clip.name;
+            var hash = Animator.StringToHash(stateName);
+            if (animator.runtimeAnimatorController != null && animator.HasState(0, hash))
+            {
+                animator.Play(hash, 0, 0f);
+            }
+            else
+            {
+                animator.Play(stateName, 0, 0f);
+            }
+
+            animator.Update(0f);
         }
 
         private void KeepFeetWorld()
@@ -402,12 +573,56 @@ namespace FracturedChorus.UI
             {
                 spriteLayouts = new[] { CaptureHandles() };
                 spritePreview = 0;
+                InferLinkedStates();
                 return;
             }
 
             if (spriteLayouts.Length == 1 && !spriteLayouts[0].HasData)
             {
                 spriteLayouts[0] = CaptureHandles();
+            }
+
+            InferLinkedStates();
+        }
+
+        private void InferLinkedStates()
+        {
+            if (spriteLayouts == null || spriteLayouts.Length == 0)
+            {
+                return;
+            }
+
+            var changed = false;
+            for (var i = 0; i < spriteLayouts.Length; i++)
+            {
+                var layout = spriteLayouts[i];
+                if (layout.linkedState != UnitCombatVisualState.None)
+                {
+                    continue;
+                }
+
+                var inferred = UnitSpriteLayout.InferLinkedState(layout.displayName);
+                if (inferred == UnitCombatVisualState.None)
+                {
+                    continue;
+                }
+
+                layout.linkedState = inferred;
+                spriteLayouts[i] = layout;
+                changed = true;
+            }
+
+            if (spriteLayouts.Length == 1 && spriteLayouts[0].linkedState == UnitCombatVisualState.None)
+            {
+                var layout = spriteLayouts[0];
+                layout.linkedState = UnitCombatVisualState.Idle;
+                spriteLayouts[0] = layout;
+                changed = true;
+            }
+
+            if (changed && !Application.isPlaying)
+            {
+                MarkDirty();
             }
         }
 
@@ -444,6 +659,34 @@ namespace FracturedChorus.UI
             }
 
             _animatorHeld = false;
+        }
+
+        private void SetAnimatorEnabled(bool enabled)
+        {
+            var animator = GetComponent<Animator>();
+            if (animator == null)
+            {
+                return;
+            }
+
+            if (!enabled)
+            {
+                if (!_animatorHeld)
+                {
+                    _heldAnimatorSpeed = animator.speed;
+                    _animatorHeld = true;
+                }
+
+                animator.enabled = false;
+                return;
+            }
+
+            animator.enabled = true;
+            if (_animatorHeld && !_previewLocked)
+            {
+                animator.speed = _heldAnimatorSpeed > 0.01f ? _heldAnimatorSpeed : 1f;
+                _animatorHeld = false;
+            }
         }
 
         private UnitView ResolveView()
