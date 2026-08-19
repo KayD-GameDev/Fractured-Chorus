@@ -25,7 +25,10 @@ namespace FracturedChorus.UI
         Guard = 4,
         Counter = 5,
         Hurt = 6,
-        Death = 7
+        Death = 7,
+        NormalHit = 8,
+        SkillHit = 9,
+        UltHit = 10
     }
 
     /// <summary>
@@ -43,8 +46,14 @@ namespace FracturedChorus.UI
         public UnitCombatVisualState linkedState;
         public Vector3 localScale;
         public Vector3 feetAnchorLocal;
+        public Vector2 colliderSize;
+        public Vector2 colliderOffset;
 
         public bool UsesStillArt => kind == UnitSpriteKind.StillSprite && sprite != null;
+
+        public bool HasCollider => colliderSize.x > 0.001f && colliderSize.y > 0.001f;
+
+        public bool HasFeetAnchor => !Mathf.Approximately(feetAnchorLocal.sqrMagnitude, 0f);
 
         public bool HasStillSprite => sprite != null;
 
@@ -110,7 +119,7 @@ namespace FracturedChorus.UI
                 return UnitCombatVisualState.None;
             }
 
-            var name = displayName.Trim();
+            var name = NormalizeName(displayName);
             if (ContainsToken(name, "idle"))
             {
                 return UnitCombatVisualState.Idle;
@@ -119,6 +128,30 @@ namespace FracturedChorus.UI
             if (ContainsToken(name, "moving") || name.Equals("move", StringComparison.OrdinalIgnoreCase))
             {
                 return UnitCombatVisualState.Moving;
+            }
+
+            if (ContainsToken(name, "norhit")
+                || ContainsToken(name, "normal hit")
+                || ContainsToken(name, "normalhit")
+                || ContainsSkillIndex(name, 1))
+            {
+                return UnitCombatVisualState.NormalHit;
+            }
+
+            if (ContainsToken(name, "ultimate")
+                || ContainsToken(name, "ult hit")
+                || ContainsToken(name, "ulthit")
+                || ContainsSkillIndex(name, 3))
+            {
+                return UnitCombatVisualState.UltHit;
+            }
+
+            if (ContainsSkillIndex(name, 2)
+                || ContainsToken(name, "charlott skill")
+                || ContainsToken(name, "skill hit")
+                || ContainsToken(name, "skillhit"))
+            {
+                return UnitCombatVisualState.SkillHit;
             }
 
             if (ContainsToken(name, "skill") || ContainsToken(name, "attack") || ContainsToken(name, "cast"))
@@ -147,6 +180,16 @@ namespace FracturedChorus.UI
             }
 
             return UnitCombatVisualState.None;
+        }
+
+        private static string NormalizeName(string name)
+        {
+            return name.Trim().Replace('_', ' ').Replace('-', ' ');
+        }
+
+        private static bool ContainsSkillIndex(string name, int index)
+        {
+            return ContainsToken(name, "skill " + index) || ContainsToken(name, "skill" + index);
         }
 
         private static bool ContainsToken(string name, string token)

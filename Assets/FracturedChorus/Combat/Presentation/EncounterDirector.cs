@@ -329,8 +329,8 @@ namespace FracturedChorus.Combat.Presentation
                 yield return MoveCameraToStage(playerStage, enemyStage);
             }
 
-            PlayApproachLocomotion(playerView);
-            PlayApproachLocomotion(enemyView);
+            PlayApproachLocomotion(playerView, playerStage);
+            PlayApproachLocomotion(enemyView, enemyStage);
             yield return MoveParticipantsTogether(
                 playerView, playerStage, enemyView, enemyStage, ResolveLocomotionSeconds(stageMoveSeconds));
             yield return HoldArriveIdle(playerView, enemyView);
@@ -479,20 +479,20 @@ namespace FracturedChorus.Combat.Presentation
 
         private IEnumerator ReturnParticipantsHome(UnitView playerView, UnitView enemyView)
         {
-            PlayReturnLocomotion(playerView);
-            PlayReturnLocomotion(enemyView);
-
             var playerFeet = GetHomeFeet(playerView);
             var enemyFeet = GetHomeFeet(enemyView);
-            var seconds = ResolveLocomotionSeconds(returnMoveSeconds);
 
+            PlayReturnLocomotion(playerView, playerFeet);
+            PlayReturnLocomotion(enemyView, enemyFeet);
+
+            var seconds = ResolveLocomotionSeconds(returnMoveSeconds);
             yield return MoveParticipantsTogether(playerView, playerFeet, enemyView, enemyFeet, seconds);
 
             SnapViewToHome(playerView);
             SnapViewToHome(enemyView);
         }
 
-        private static void PlayApproachLocomotion(UnitView view)
+        private void PlayApproachLocomotion(UnitView view, Vector3 stageFeet)
         {
             if (view == null)
             {
@@ -502,6 +502,11 @@ namespace FracturedChorus.Combat.Presentation
             if (view.Unit != null && !view.Unit.IsAlive)
             {
                 view.PlayDeathAnimation();
+                return;
+            }
+
+            if (OccupiesCombatStage(view) || view.IsFeetNear(stageFeet, SkipTravelFeet))
+            {
                 return;
             }
 
@@ -539,7 +544,7 @@ namespace FracturedChorus.Combat.Presentation
             view.ArriveAtCombatCell();
         }
 
-        private static void PlayReturnLocomotion(UnitView view)
+        private void PlayReturnLocomotion(UnitView view, Vector3 homeFeet)
         {
             if (view == null)
             {
@@ -552,8 +557,22 @@ namespace FracturedChorus.Combat.Presentation
                 return;
             }
 
-            view.PlayMovingLoop();
+            view.TryBeginCombatReturnTo(homeFeet, SkipTravelFeet);
         }
+
+        private bool OccupiesCombatStage(UnitView view)
+        {
+            if (view == null)
+            {
+                return false;
+            }
+
+            var gp = view.Unit != null ? view.Unit.GridPosition : view.GridPosition;
+            return gp.IsValid() && gp.Row == stageRow && gp.Column == stageColumn;
+        }
+
+        private float SkipTravelFeet =>
+            Mathf.Max(UnitView.CombatFeetArriveEpsilon, stageSpreadExtra * 0.5f + 0.12f);
 
         private IEnumerator MoveParticipantsTogether(
             UnitView playerView,
@@ -614,6 +633,7 @@ namespace FracturedChorus.Combat.Presentation
             }
 
             var feet = GetHomeFeet(view);
+            view.RestoreTravelFacing();
             view.SnapFeetTo(feet, view.transform.position.z);
             view.CaptureAnchor();
         }

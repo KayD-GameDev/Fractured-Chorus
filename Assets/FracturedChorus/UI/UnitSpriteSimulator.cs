@@ -140,6 +140,21 @@ namespace FracturedChorus.UI
 
         public bool TryGetLayout(UnitCombatVisualState state, out UnitSpriteLayout layout)
         {
+            if (TryGetExactLayout(state, out layout))
+            {
+                return true;
+            }
+
+            if (state == UnitCombatVisualState.Guard)
+            {
+                return TryGetExactLayout(UnitCombatVisualState.Counter, out layout);
+            }
+
+            return false;
+        }
+
+        public bool TryGetExactLayout(UnitCombatVisualState state, out UnitSpriteLayout layout)
+        {
             layout = default;
             if (state == UnitCombatVisualState.None || spriteLayouts == null)
             {
@@ -209,6 +224,139 @@ namespace FracturedChorus.UI
 
             spriteLayouts[i] = layout;
             MarkDirty();
+        }
+
+        public void EnsureIdleAnimationClip(AnimationClip clip)
+        {
+            if (clip == null)
+            {
+                return;
+            }
+
+            EnsureLayouts();
+            if (!TryFindLayoutIndex(UnitCombatVisualState.Idle, out var i))
+            {
+                return;
+            }
+
+            var layout = spriteLayouts[i];
+            layout.animationClip = clip;
+            if (string.IsNullOrWhiteSpace(layout.displayName))
+            {
+                layout.displayName = "Idle";
+            }
+
+            spriteLayouts[i] = layout;
+            MarkDirty();
+        }
+
+        public void EnsureCounterStillKind()
+        {
+            EnsureLayouts();
+            if (!TryFindLayoutIndex(UnitCombatVisualState.Counter, out var i))
+            {
+                return;
+            }
+
+            var layout = spriteLayouts[i];
+            if (layout.kind != UnitSpriteKind.AnimationClip)
+            {
+                return;
+            }
+
+            layout.kind = UnitSpriteKind.StillSprite;
+            layout.animationClip = null;
+            spriteLayouts[i] = layout;
+            MarkDirty();
+        }
+
+        public void EnsureClipLinkedState(
+            UnitCombatVisualState state,
+            string displayName,
+            AnimationClip clip)
+        {
+            if (state == UnitCombatVisualState.None || clip == null)
+            {
+                return;
+            }
+
+            EnsureLayouts();
+            TryGetExactLayout(UnitCombatVisualState.Idle, out var idle);
+            if (TryFindLayoutIndex(state, out var i))
+            {
+                var layout = spriteLayouts[i];
+                layout.kind = UnitSpriteKind.AnimationClip;
+                layout.animationClip = clip;
+                layout.linkedState = state;
+                if (!string.IsNullOrWhiteSpace(displayName))
+                {
+                    layout.displayName = displayName;
+                }
+
+                if (layout.localScale.sqrMagnitude < 0.0001f && idle.localScale.sqrMagnitude > 0.0001f)
+                {
+                    layout.localScale = idle.localScale;
+                }
+
+                if (layout.feetAnchorLocal.sqrMagnitude < 0.0001f)
+                {
+                    layout.feetAnchorLocal = idle.feetAnchorLocal;
+                }
+
+                if (!layout.HasCollider && idle.HasCollider)
+                {
+                    layout.colliderSize = idle.colliderSize;
+                    layout.colliderOffset = idle.colliderOffset;
+                }
+
+                spriteLayouts[i] = layout;
+                MarkDirty();
+                return;
+            }
+
+            if (spriteLayouts.Length >= MaxSpriteCount)
+            {
+                return;
+            }
+
+            var next = new UnitSpriteLayout[spriteLayouts.Length + 1];
+            Array.Copy(spriteLayouts, next, spriteLayouts.Length);
+            next[next.Length - 1] = new UnitSpriteLayout
+            {
+                displayName = string.IsNullOrWhiteSpace(displayName) ? state.ToString() : displayName,
+                kind = UnitSpriteKind.AnimationClip,
+                sprite = idle.sprite,
+                animationClip = clip,
+                linkedState = state,
+                localScale = idle.localScale.sqrMagnitude > 0.0001f ? idle.localScale : transform.localScale,
+                feetAnchorLocal = idle.feetAnchorLocal,
+                colliderSize = idle.colliderSize,
+                colliderOffset = idle.colliderOffset
+            };
+            spriteLayouts = next;
+            MarkDirty();
+        }
+
+        private bool TryFindLayoutIndex(UnitCombatVisualState state, out int index)
+        {
+            index = -1;
+            if (state == UnitCombatVisualState.None || spriteLayouts == null)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < spriteLayouts.Length; i++)
+            {
+                if (spriteLayouts[i].linkedState != state)
+                {
+                    continue;
+                }
+
+                index = i;
+                return true;
+            }
+
+            return false;
         }
 
         public void SetSpritePreview(int preview)
@@ -300,6 +448,30 @@ namespace FracturedChorus.UI
             spriteLayouts[i] = layout;
             ApplySprite(sprite);
             KeepFeetWorld();
+            MarkDirty();
+        }
+
+        public void ApplyPreviewCollider()
+        {
+            EnsureLayouts();
+            ApplyCollider(spriteLayouts[ClampPreview(spritePreview)]);
+        }
+
+        public void ApplyPreviewFeet()
+        {
+            EnsureLayouts();
+            EnsureHandles();
+            var layout = spriteLayouts[ClampPreview(spritePreview)];
+            var feetTf = ResolveFeet();
+            if (feetTf == null || !layout.HasFeetAnchor)
+            {
+                return;
+            }
+
+#if UNITY_EDITOR
+            Undo.RecordObject(feetTf, "Set Sprite Feet Anchor");
+#endif
+            feetTf.localPosition = layout.feetAnchorLocal;
             MarkDirty();
         }
 
@@ -465,7 +637,7 @@ namespace FracturedChorus.UI
             }
 
             var feetTf = ResolveFeet();
-            if (feetTf != null && layout.HasData)
+            if (feetTf != null && layout.HasFeetAnchor)
             {
                 feetTf.localPosition = layout.feetAnchorLocal;
             }
@@ -475,7 +647,18 @@ namespace FracturedChorus.UI
                 view?.PlaceFeetAt(feet);
             }
 
+            ApplyCollider(layout);
             _appliedSprite = CurrentSprite;
+        }
+
+        private void ApplyCollider(UnitSpriteLayout layout)
+        {
+            if (!layout.HasCollider)
+            {
+                return;
+            }
+
+            ResolveView()?.ApplyBodyColliderShape(layout.colliderSize, layout.colliderOffset);
         }
 
         private UnitSpriteLayout CaptureHandles()
@@ -491,6 +674,8 @@ namespace FracturedChorus.UI
             Sprite sprite = CurrentSprite;
             AnimationClip clip = null;
             var linkedState = UnitCombatVisualState.None;
+            var colliderSize = Vector2.zero;
+            var colliderOffset = Vector2.zero;
             if (spriteLayouts != null && spriteLayouts.Length > 0)
             {
                 var i = Mathf.Clamp(spritePreview, 0, spriteLayouts.Length - 1);
@@ -499,10 +684,19 @@ namespace FracturedChorus.UI
                 kind = current.kind;
                 clip = current.animationClip;
                 linkedState = current.linkedState;
+                colliderSize = current.colliderSize;
+                colliderOffset = current.colliderOffset;
                 if (kind != UnitSpriteKind.StillSprite)
                 {
                     sprite = current.sprite;
                 }
+            }
+
+            var body = ResolveView()?.BodyCollider;
+            if (body != null)
+            {
+                colliderSize = body.size;
+                colliderOffset = body.offset;
             }
 
             return new UnitSpriteLayout
@@ -513,7 +707,9 @@ namespace FracturedChorus.UI
                 animationClip = clip,
                 linkedState = linkedState,
                 localScale = scale,
-                feetAnchorLocal = FeetAnchorLocal
+                feetAnchorLocal = FeetAnchorLocal,
+                colliderSize = colliderSize,
+                colliderOffset = colliderOffset
             };
         }
 

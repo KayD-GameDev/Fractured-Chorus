@@ -1,5 +1,4 @@
 #if UNITY_EDITOR
-using FracturedChorus.Combat.Presentation;
 using FracturedChorus.UI;
 using UnityEditor;
 using UnityEngine;
@@ -9,10 +8,7 @@ namespace FracturedChorus.Editor
     [CustomEditor(typeof(CombatPhaseBannerView))]
     public sealed class CombatPhaseBannerViewEditor : UnityEditor.Editor
     {
-        private CombatPhaseBannerView.BannerPreviewKind _previewKind =
-            CombatPhaseBannerView.BannerPreviewKind.Planning;
-        private bool _notesFoldout = true;
-        private int _noteIndex;
+        private const string PreviewKindSessionPrefix = "FracturedChorus.BattleInfo.PreviewKind.";
 
         public override void OnInspectorGUI()
         {
@@ -22,30 +18,34 @@ namespace FracturedChorus.Editor
                 new GUIContent("Planning Sprite"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("battleStartSprite"),
                 new GUIContent("Battle Start Sprite"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("battleStartHoldSec"),
+                new GUIContent("Battle Start Hold (sec)"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("planningHoldSec"),
+                new GUIContent("Planning Hold (sec)"));
             serializedObject.ApplyModifiedProperties();
 
             var view = (CombatPhaseBannerView)target;
+            var previewKind = ReadPreviewKind();
 
             EditorGUILayout.Space(8f);
             EditorGUILayout.LabelField("Battle Info", EditorStyles.boldLabel);
             EditorGUILayout.HelpBox(
                 "Hierarchy:\n" +
                 "  BattleInfo\n" +
-                "  └ Banner  ← kéo sprite Planning / Battle Start vào slot trên\n\n" +
-                "Nút Planning | Battle Start preview sprite lên Banner ngay trong Scene.\n" +
-                "Play chỉ dùng sprite Inspector — không Resources.Load.",
+                "  └ Banner  ← size / vị trí / xoay trên scene = lúc xuất hiện\n\n" +
+                "Apply To Banner chỉ đổi sprite, không kéo Banner về vị trí mặc định.",
                 MessageType.Info);
 
             EditorGUILayout.BeginHorizontal();
-            DrawPreviewButton(view, "Planning", CombatPhaseBannerView.BannerPreviewKind.Planning);
-            DrawPreviewButton(view, "Battle Start", CombatPhaseBannerView.BannerPreviewKind.BattleStart);
+            DrawPreviewButton(view, "Planning", CombatPhaseBannerView.BannerPreviewKind.Planning, previewKind);
+            DrawPreviewButton(view, "Battle Start", CombatPhaseBannerView.BannerPreviewKind.BattleStart, previewKind);
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.Space(4f);
             if (GUILayout.Button("Apply To Banner"))
             {
-                Undo.RecordObject(view, "Apply BattleInfo Banner");
-                view.PreviewBanner(_previewKind);
+                RecordBannerUndo(view, "Apply BattleInfo Banner");
+                view.PreviewBanner(previewKind);
                 EditorUtility.SetDirty(view);
                 SceneView.RepaintAll();
             }
@@ -67,16 +67,15 @@ namespace FracturedChorus.Editor
                 view.HideBannerVisual();
                 SceneView.RepaintAll();
             }
-
-            DrawNoteSpritesFoldout();
         }
 
         private void DrawPreviewButton(
             CombatPhaseBannerView view,
             string label,
-            CombatPhaseBannerView.BannerPreviewKind kind)
+            CombatPhaseBannerView.BannerPreviewKind kind,
+            CombatPhaseBannerView.BannerPreviewKind selectedKind)
         {
-            var selected = _previewKind == kind;
+            var selected = selectedKind == kind;
             var prev = GUI.backgroundColor;
             if (selected)
             {
@@ -85,8 +84,8 @@ namespace FracturedChorus.Editor
 
             if (GUILayout.Button(label))
             {
-                _previewKind = kind;
-                Undo.RecordObject(view, $"Preview {label}");
+                WritePreviewKind(kind);
+                RecordBannerUndo(view, $"Preview {label}");
                 view.PreviewBanner(kind);
                 EditorUtility.SetDirty(view);
                 SceneView.RepaintAll();
@@ -95,94 +94,29 @@ namespace FracturedChorus.Editor
             GUI.backgroundColor = prev;
         }
 
-        private void DrawNoteSpritesFoldout()
+        private CombatPhaseBannerView.BannerPreviewKind ReadPreviewKind()
         {
-            _notesFoldout = EditorGUILayout.Foldout(_notesFoldout, "Note sprites (drag & drop)", true);
-            if (!_notesFoldout)
-            {
-                return;
-            }
-
-            var timeline = Object.FindAnyObjectByType<BeatTimelineUIView>(FindObjectsInactive.Include);
-            if (timeline == null)
-            {
-                EditorGUILayout.HelpBox("Không thấy BeatTimelineUI trong scene.", MessageType.Warning);
-                return;
-            }
-
-            var tso = new SerializedObject(timeline);
-            var catalog = tso.FindProperty("noteVisuals");
-            if (catalog == null)
-            {
-                return;
-            }
-
-            EnsureMusicArray(catalog.FindPropertyRelative("MusicSingleRed"));
-            EnsureMusicArray(catalog.FindPropertyRelative("MusicSingleBlue"));
-            EnsureMusicArray(catalog.FindPropertyRelative("MusicSinglePurple"));
-
-            EditorGUILayout.HelpBox(
-                "Kéo sprite nốt vào slot. Catalog chỉ Resources.Load khi slot còn trống — sprite kéo thả thắng.",
-                MessageType.None);
-
-            EditorGUILayout.BeginHorizontal();
-            for (var i = 0; i < BossNoteClusterBuilder.SingleVariantCount; i++)
-            {
-                DrawNoteIndexButton(i);
-            }
-
-            EditorGUILayout.EndHorizontal();
-
-            EditorGUILayout.PropertyField(
-                GetMusicElement(catalog, "MusicSingleRed", _noteIndex),
-                new GUIContent($"V{_noteIndex} Red"));
-            EditorGUILayout.PropertyField(
-                GetMusicElement(catalog, "MusicSingleBlue", _noteIndex),
-                new GUIContent($"V{_noteIndex} Blue"));
-            EditorGUILayout.PropertyField(
-                GetMusicElement(catalog, "MusicSinglePurple", _noteIndex),
-                new GUIContent($"V{_noteIndex} Purple"));
-
-            tso.ApplyModifiedProperties();
+            return (CombatPhaseBannerView.BannerPreviewKind)SessionState.GetInt(
+                PreviewKindSessionKey(),
+                (int)CombatPhaseBannerView.BannerPreviewKind.Planning);
         }
 
-        private void DrawNoteIndexButton(int index)
+        private void WritePreviewKind(CombatPhaseBannerView.BannerPreviewKind kind)
         {
-            var selected = _noteIndex == index;
-            var prev = GUI.backgroundColor;
-            if (selected)
-            {
-                GUI.backgroundColor = new Color(0.45f, 0.85f, 1f, 1f);
-            }
-
-            if (GUILayout.Button($"V{index}"))
-            {
-                _noteIndex = index;
-            }
-
-            GUI.backgroundColor = prev;
+            SessionState.SetInt(PreviewKindSessionKey(), (int)kind);
         }
 
-        private static SerializedProperty GetMusicElement(
-            SerializedProperty catalog,
-            string arrayName,
-            int index)
+        private string PreviewKindSessionKey()
         {
-            var arr = catalog.FindPropertyRelative(arrayName);
-            EnsureMusicArray(arr);
-            return arr.GetArrayElementAtIndex(index);
+            return PreviewKindSessionPrefix + target.GetEntityId();
         }
 
-        private static void EnsureMusicArray(SerializedProperty arr)
+        private static void RecordBannerUndo(CombatPhaseBannerView view, string name)
         {
-            if (arr == null || !arr.isArray)
+            Undo.RecordObject(view, name);
+            if (view.BannerImage != null)
             {
-                return;
-            }
-
-            if (arr.arraySize != BossNoteClusterBuilder.SingleVariantCount)
-            {
-                arr.arraySize = BossNoteClusterBuilder.SingleVariantCount;
+                Undo.RecordObject(view.BannerImage, name);
             }
         }
     }

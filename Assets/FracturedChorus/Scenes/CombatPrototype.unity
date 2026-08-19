@@ -241,9 +241,11 @@ MonoBehaviour:
   guardStateName: 
   beCounteredStateName: Mini 1 - Hurt
   idleStateName: Mini 1 -Idle
-  movingStateName: 
-  deathStateName: 
+  movingStateName: Mini 1 - Moving
+  deathStateName: Mini 1 - Death
+  normalHitStateName: 
   skillStateName: 
+  ultStateName: 
   hitRetriggerNormalizedTime: 0.35
   preserveSceneVisuals: 1
   preserveSceneCollider: 1
@@ -337,6 +339,8 @@ MonoBehaviour:
     linkedState: 1
     localScale: {x: 0.15, y: 0.15, z: 0}
     feetAnchorLocal: {x: 0.79, y: -1.24, z: 0}
+    colliderSize: {x: 0, y: 0}
+    colliderOffset: {x: 0, y: 0}
 --- !u!1 &9683624
 GameObject:
   m_ObjectHideFlags: 0
@@ -3285,8 +3289,10 @@ MonoBehaviour:
   beCounteredStateName: Mini 2 - Hurt
   idleStateName: Mini 2 - Idle
   movingStateName: Mini 2 - Moving
-  deathStateName: 
+  deathStateName: Mini 2 - Death
+  normalHitStateName: 
   skillStateName: 
+  ultStateName: 
   hitRetriggerNormalizedTime: 0.35
   preserveSceneVisuals: 1
   preserveSceneCollider: 1
@@ -3455,6 +3461,8 @@ MonoBehaviour:
     linkedState: 1
     localScale: {x: 0.15, y: 0.15, z: 0}
     feetAnchorLocal: {x: 0, y: -0.45, z: 0}
+    colliderSize: {x: 0, y: 0}
+    colliderOffset: {x: 0, y: 0}
 --- !u!1 &349389865
 GameObject:
   m_ObjectHideFlags: 0
@@ -3779,7 +3787,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -1.55, y: 0.02, z: -0.05}
-  m_LocalScale: {x: 0.20759803, y: 0.22204278, z: 0}
+  m_LocalScale: {x: 0.19826, y: 0.212055, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 285992547}
@@ -3834,7 +3842,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 11
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -7270613684948771677, guid: 9caad1461c1fefe49aa0e26202664cf0, type: 3}
+  m_Sprite: {fileID: 8886398286473154763, guid: efd81572e16ac5f43825cba0078be835, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -3866,13 +3874,15 @@ MonoBehaviour:
   bodyCollider: {fileID: 377598858}
   feetAnchor: {fileID: 285992548}
   animator: {fileID: 377598859}
-  counterStateName: 
-  guardStateName: Charlott_Guard
+  counterStateName: Charlott_Counter
+  guardStateName: 
   beCounteredStateName: Charlott_Hurt
   idleStateName: Charlott_Idle
-  movingStateName: 
-  deathStateName: 
-  skillStateName: 
+  movingStateName: Charlott_Moving
+  deathStateName: Charlott_Death
+  normalHitStateName: Charlott_NorHit
+  skillStateName: Charlott_Skill
+  ultStateName: Charlott_Ultimate
   hitRetriggerNormalizedTime: 0.35
   preserveSceneVisuals: 1
   preserveSceneCollider: 1
@@ -3914,8 +3924,8 @@ BoxCollider2D:
   m_Offset: {x: -0.31349665, y: 0.0683794}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5767956, y: 0.85475427}
-    oldSize: {x: 7.31, y: 5.04}
+    pivot: {x: 0.4293351, y: 0.51796806}
+    oldSize: {x: 7.83, y: 8.34}
     newSize: {x: 7.27, y: 8.5}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -3957,15 +3967,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 57801d1152c33644e8e44afe45bba9f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitSpriteSimulator
-  spritePreview: 1
+  spritePreview: 4
   spriteLayouts:
   - displayName: Idle
     kind: 0
     sprite: {fileID: -7428215157034606851, guid: c717b6aad7a95364c80e530ab2dde0db, type: 3}
-    animationClip: {fileID: 0}
+    animationClip: {fileID: 7400000, guid: 2dc3e2c876cd75449ae3cd97466a85e0, type: 2}
     linkedState: 1
     localScale: {x: 0.19826, y: 0.212055, z: 0}
     feetAnchorLocal: {x: -0.27, y: -1.63, z: 0}
+    colliderSize: {x: 0, y: 0}
+    colliderOffset: {x: 0, y: 0}
   - displayName: Death
     kind: 0
     sprite: {fileID: -7270613684948771677, guid: 9caad1461c1fefe49aa0e26202664cf0, type: 3}
@@ -3973,6 +3985,8 @@ MonoBehaviour:
     linkedState: 7
     localScale: {x: 0.20759803, y: 0.22204278, z: 0}
     feetAnchorLocal: {x: -0.27, y: -1.63, z: 0}
+    colliderSize: {x: 0, y: 0}
+    colliderOffset: {x: 0, y: 0}
   - displayName: Moving
     kind: 0
     sprite: {fileID: -8768929131254168515, guid: 47d7d76b5b3146149bfb549f18be11ed, type: 3}
@@ -3980,6 +3994,8 @@ MonoBehaviour:
     linkedState: 2
     localScale: {x: 0.3853021, y: 0.41211152, z: 0}
     feetAnchorLocal: {x: 0.74, y: -0.43, z: 0}
+    colliderSize: {x: 0, y: 0}
+    colliderOffset: {x: 0, y: 0}
   - displayName: Hurt
     kind: 0
     sprite: {fileID: -2581751109061018785, guid: 061bacc281d24c247a085df375dd7e1f, type: 3}
@@ -3987,6 +4003,8 @@ MonoBehaviour:
     linkedState: 6
     localScale: {x: 0.19826, y: 0.212055, z: 0}
     feetAnchorLocal: {x: -0.27, y: -1.63, z: 0}
+    colliderSize: {x: 0, y: 0}
+    colliderOffset: {x: 0, y: 0}
   - displayName: Counter
     kind: 0
     sprite: {fileID: 8886398286473154763, guid: efd81572e16ac5f43825cba0078be835, type: 3}
@@ -3994,6 +4012,35 @@ MonoBehaviour:
     linkedState: 5
     localScale: {x: 0.19826, y: 0.212055, z: 0}
     feetAnchorLocal: {x: -0.27, y: -1.63, z: 0}
+    colliderSize: {x: 0, y: 0}
+    colliderOffset: {x: 0, y: 0}
+  - displayName: NormalHit
+    kind: 1
+    sprite: {fileID: -7428215157034606851, guid: c717b6aad7a95364c80e530ab2dde0db, type: 3}
+    animationClip: {fileID: 7400000, guid: decdccd9f080c894185800522c4239e8, type: 2}
+    linkedState: 8
+    localScale: {x: 0.19826, y: 0.212055, z: 0}
+    feetAnchorLocal: {x: -0.27, y: -1.63, z: 0}
+    colliderSize: {x: 0, y: 0}
+    colliderOffset: {x: 0, y: 0}
+  - displayName: SkillHit
+    kind: 1
+    sprite: {fileID: -7428215157034606851, guid: c717b6aad7a95364c80e530ab2dde0db, type: 3}
+    animationClip: {fileID: 7400000, guid: 32682c7ba972ef54493f2a32b5fe48c2, type: 2}
+    linkedState: 9
+    localScale: {x: 0.19826, y: 0.212055, z: 0}
+    feetAnchorLocal: {x: -0.27, y: -1.63, z: 0}
+    colliderSize: {x: 0, y: 0}
+    colliderOffset: {x: 0, y: 0}
+  - displayName: UltHit
+    kind: 1
+    sprite: {fileID: -7428215157034606851, guid: c717b6aad7a95364c80e530ab2dde0db, type: 3}
+    animationClip: {fileID: 7400000, guid: b16299def7c0f4947b798deb4bd2e352, type: 2}
+    linkedState: 10
+    localScale: {x: 0.19826, y: 0.212055, z: 0}
+    feetAnchorLocal: {x: -0.27, y: -1.63, z: 0}
+    colliderSize: {x: 0, y: 0}
+    colliderOffset: {x: 0, y: 0}
 --- !u!1 &404302628
 GameObject:
   m_ObjectHideFlags: 0
@@ -4777,8 +4824,8 @@ Transform:
   m_GameObject: {fileID: 487667171}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -4.17, y: 0.32, z: -0.05}
-  m_LocalScale: {x: 0.2, y: 0.2, z: 0}
+  m_LocalPosition: {x: -3.98, y: -0.25, z: -0.05}
+  m_LocalScale: {x: 0.58718735, y: 0.58718735, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1279832176}
@@ -4833,7 +4880,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 10
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 7369638930748108147, guid: 9a437a3dfde73224686f2d2a81ee930e, type: 3}
+  m_Sprite: {fileID: 1406067571975795107, guid: cd33ebd8e23034341b59b7e26df7933d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -4864,14 +4911,16 @@ MonoBehaviour:
   hpLabel: {fileID: 0}
   bodyCollider: {fileID: 487667176}
   feetAnchor: {fileID: 1279832177}
-  animator: {fileID: 0}
+  animator: {fileID: 487667177}
   counterStateName: Ren Counter
   guardStateName: 
   beCounteredStateName: Ren Hurt
   idleStateName: Ren Idle
   movingStateName: Ren Moving
-  deathStateName: 
-  skillStateName: 
+  deathStateName: Ren Death
+  normalHitStateName: Ren Skill 1
+  skillStateName: Ren - Skill 2
+  ultStateName: Ren - Skill 3
   hitRetriggerNormalizedTime: 0.35
   preserveSceneVisuals: 1
   preserveSceneCollider: 1
@@ -4914,7 +4963,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 5.54, y: 12.44}
+    oldSize: {x: 2.69, y: 1.71}
     newSize: {x: 2.69, y: 1.71}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -4956,15 +5005,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 57801d1152c33644e8e44afe45bba9f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitSpriteSimulator
-  spritePreview: 0
+  spritePreview: 1
   spriteLayouts:
   - displayName: Idle Sprite
     kind: 0
     sprite: {fileID: 7369638930748108147, guid: 9a437a3dfde73224686f2d2a81ee930e, type: 3}
-    animationClip: {fileID: 0}
+    animationClip: {fileID: 7400000, guid: d196d390a1b52234ea48ebf6deccfdda, type: 2}
     linkedState: 1
     localScale: {x: 0.2, y: 0.2, z: 0}
     feetAnchorLocal: {x: 1.07, y: -3.72, z: 0}
+    colliderSize: {x: 0, y: 0}
+    colliderOffset: {x: 0, y: 0}
   - displayName: Die
     kind: 0
     sprite: {fileID: 1406067571975795107, guid: cd33ebd8e23034341b59b7e26df7933d, type: 3}
@@ -4972,6 +5023,8 @@ MonoBehaviour:
     linkedState: 7
     localScale: {x: 0.58718735, y: 0.58718735, z: 0}
     feetAnchorLocal: {x: 0.01, y: -0.1, z: 0}
+    colliderSize: {x: 0, y: 0}
+    colliderOffset: {x: 0, y: 0}
   - displayName: Hurt
     kind: 0
     sprite: {fileID: -5185995266274381261, guid: 8221565d12e3e7643a72f2ba1f09cde0, type: 3}
@@ -4979,6 +5032,8 @@ MonoBehaviour:
     linkedState: 6
     localScale: {x: 0.18985128, y: 0.18985128, z: 0}
     feetAnchorLocal: {x: 1.07, y: -3.11, z: 0}
+    colliderSize: {x: 0, y: 0}
+    colliderOffset: {x: 0, y: 0}
   - displayName: Moving
     kind: 0
     sprite: {fileID: 1383792526090866735, guid: c4fcdf358a0afc44c886d32186950dde, type: 3}
@@ -4986,13 +5041,44 @@ MonoBehaviour:
     linkedState: 2
     localScale: {x: 0.2, y: 0.2, z: 0}
     feetAnchorLocal: {x: -0.76, y: -2.03, z: 0}
+    colliderSize: {x: 0, y: 0}
+    colliderOffset: {x: 0, y: 0}
   - displayName: Counter
-    kind: 1
+    kind: 0
     sprite: {fileID: -1891616687018440405, guid: 113b18a3002543c42987f67910234099, type: 3}
-    animationClip: {fileID: 7400000, guid: d196d390a1b52234ea48ebf6deccfdda, type: 2}
+    animationClip: {fileID: 0}
     linkedState: 5
     localScale: {x: 0.19486512, y: 0.19486512, z: 0}
     feetAnchorLocal: {x: 1.21, y: -3.27, z: 0}
+    colliderSize: {x: 0, y: 0}
+    colliderOffset: {x: 0, y: 0}
+  - displayName: NormalHit
+    kind: 1
+    sprite: {fileID: 7369638930748108147, guid: 9a437a3dfde73224686f2d2a81ee930e, type: 3}
+    animationClip: {fileID: 7400000, guid: a33391cad1009b540aa01ba8031868a1, type: 2}
+    linkedState: 8
+    localScale: {x: 0.2, y: 0.2, z: 0}
+    feetAnchorLocal: {x: 1.07, y: -3.72, z: 0}
+    colliderSize: {x: 0, y: 0}
+    colliderOffset: {x: 0, y: 0}
+  - displayName: SkillHit
+    kind: 1
+    sprite: {fileID: 7369638930748108147, guid: 9a437a3dfde73224686f2d2a81ee930e, type: 3}
+    animationClip: {fileID: 7400000, guid: 8a448ee907f49b2468cbc83b73c8b58c, type: 2}
+    linkedState: 9
+    localScale: {x: 0.2, y: 0.2, z: 0}
+    feetAnchorLocal: {x: 1.07, y: -3.72, z: 0}
+    colliderSize: {x: 0, y: 0}
+    colliderOffset: {x: 0, y: 0}
+  - displayName: UltHit
+    kind: 1
+    sprite: {fileID: 7369638930748108147, guid: 9a437a3dfde73224686f2d2a81ee930e, type: 3}
+    animationClip: {fileID: 7400000, guid: 8f0816f5325864a45abf4b37b8969f82, type: 2}
+    linkedState: 10
+    localScale: {x: 0.2, y: 0.2, z: 0}
+    feetAnchorLocal: {x: 1.07, y: -3.72, z: 0}
+    colliderSize: {x: 0, y: 0}
+    colliderOffset: {x: 0, y: 0}
 --- !u!1 &504853132
 GameObject:
   m_ObjectHideFlags: 0
@@ -7111,7 +7197,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 0, y: 1.0849915}
-  m_SizeDelta: {x: 32198.248, y: 0}
+  m_SizeDelta: {x: 6000, y: 0}
   m_Pivot: {x: 0, y: 0.5}
 --- !u!1 &726065663
 GameObject:
@@ -9549,7 +9635,7 @@ Transform:
   m_GameObject: {fileID: 956599414}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.55, y: -3.49, z: 0}
+  m_LocalPosition: {x: -0.04, y: -2.71, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -10925,7 +11011,7 @@ Transform:
   m_GameObject: {fileID: 1144376349}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -6.3, y: 0.26, z: -0.05}
+  m_LocalPosition: {x: -6.36, y: 0.23, z: -0.05}
   m_LocalScale: {x: 0.21, y: 0.2, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -11012,14 +11098,16 @@ MonoBehaviour:
   hpLabel: {fileID: 0}
   bodyCollider: {fileID: 1144376354}
   feetAnchor: {fileID: 956599416}
-  animator: {fileID: 0}
+  animator: {fileID: 1144376355}
   counterStateName: Coda - Counter
   guardStateName: 
   beCounteredStateName: Coda - Hurt
   idleStateName: Coda - Idle
   movingStateName: Coda - Moving
-  deathStateName: 
-  skillStateName: 
+  deathStateName: Coda - Death
+  normalHitStateName: Coda Skill 1
+  skillStateName: Coda Skill 2
+  ultStateName: Coda Skill 3
   hitRetriggerNormalizedTime: 0.35
   preserveSceneVisuals: 1
   preserveSceneCollider: 1
@@ -11078,7 +11166,7 @@ Animator:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1144376349}
-  m_Enabled: 0
+  m_Enabled: 1
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: 9f3606f88c566af4ba799d178ea6b508, type: 2}
   m_CullingMode: 0
@@ -11109,38 +11197,75 @@ MonoBehaviour:
   - displayName: idle
     kind: 0
     sprite: {fileID: 814772617763461771, guid: 54a2056b8027f1b4a85eb6beb11ab96f, type: 3}
-    animationClip: {fileID: 0}
+    animationClip: {fileID: 7400000, guid: 7315c62fdbb9fef4aa488d961bfa9423, type: 2}
     linkedState: 1
     localScale: {x: 0.21, y: 0.2, z: 0}
-    feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
+    feetAnchorLocal: {x: -0.04, y: -2.71, z: 0}
+    colliderSize: {x: 3.52535, y: 8.456403}
+    colliderOffset: {x: -0.26253343, y: -1.4966847}
   - displayName: moving
     kind: 0
-    sprite: {fileID: 814772617763461771, guid: 54a2056b8027f1b4a85eb6beb11ab96f, type: 3}
+    sprite: {fileID: 7815266141663936681, guid: 3b8d35aedda14264faf880bd7b60f298, type: 3}
     animationClip: {fileID: 0}
     linkedState: 2
     localScale: {x: 0.21, y: 0.2, z: 0}
     feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
+    colliderSize: {x: 3.52535, y: 8.456403}
+    colliderOffset: {x: -0.26253343, y: -1.4966847}
   - displayName: die
     kind: 0
-    sprite: {fileID: 814772617763461771, guid: 54a2056b8027f1b4a85eb6beb11ab96f, type: 3}
+    sprite: {fileID: -3118977898244780662, guid: 4888604a12456d641a9b0acd72775a7a, type: 3}
     animationClip: {fileID: 0}
     linkedState: 7
-    localScale: {x: 0.21, y: 0.2, z: 0}
-    feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
+    localScale: {x: 0.5217883, y: 0.49694127, z: 0}
+    feetAnchorLocal: {x: -0.1, y: 0.59, z: 0}
+    colliderSize: {x: 2.680799, y: 2.9410703}
+    colliderOffset: {x: 0.015550852, y: 1.2609812}
   - displayName: hurt
     kind: 0
-    sprite: {fileID: 814772617763461771, guid: 54a2056b8027f1b4a85eb6beb11ab96f, type: 3}
+    sprite: {fileID: 467594992153417426, guid: a4cf850a1777a2b4c9697e58abeef1ba, type: 3}
     animationClip: {fileID: 0}
     linkedState: 6
     localScale: {x: 0.21, y: 0.2, z: 0}
     feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
+    colliderSize: {x: 3.52535, y: 8.456403}
+    colliderOffset: {x: -0.26253343, y: -1.4966847}
   - displayName: counter
     kind: 0
-    sprite: {fileID: 814772617763461771, guid: 54a2056b8027f1b4a85eb6beb11ab96f, type: 3}
+    sprite: {fileID: -6260322492774810837, guid: f4776a6344b81794596e94af138a7ca6, type: 3}
     animationClip: {fileID: 0}
     linkedState: 5
     localScale: {x: 0.21, y: 0.2, z: 0}
     feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
+    colliderSize: {x: 3.52535, y: 8.456403}
+    colliderOffset: {x: -0.26253343, y: -1.4966847}
+  - displayName: NormalHit
+    kind: 1
+    sprite: {fileID: 814772617763461771, guid: 54a2056b8027f1b4a85eb6beb11ab96f, type: 3}
+    animationClip: {fileID: 7400000, guid: 5e4dac420261be740b72eaa46a49730d, type: 2}
+    linkedState: 8
+    localScale: {x: 0.21, y: 0.2, z: 0}
+    feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
+    colliderSize: {x: 3.52535, y: 8.456403}
+    colliderOffset: {x: -0.26253343, y: -1.4966847}
+  - displayName: SkillHit
+    kind: 1
+    sprite: {fileID: 814772617763461771, guid: 54a2056b8027f1b4a85eb6beb11ab96f, type: 3}
+    animationClip: {fileID: 7400000, guid: dc0f753cbb7121f43b3852d67ee7f1b7, type: 2}
+    linkedState: 9
+    localScale: {x: 0.21, y: 0.2, z: 0}
+    feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
+    colliderSize: {x: 3.52535, y: 8.456403}
+    colliderOffset: {x: -0.26253343, y: -1.4966847}
+  - displayName: UltHit
+    kind: 1
+    sprite: {fileID: 814772617763461771, guid: 54a2056b8027f1b4a85eb6beb11ab96f, type: 3}
+    animationClip: {fileID: 7400000, guid: f417e4bb075cfc0449a314d65142c597, type: 2}
+    linkedState: 10
+    localScale: {x: 0.21, y: 0.2, z: 0}
+    feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
+    colliderSize: {x: 3.52535, y: 8.456403}
+    colliderOffset: {x: -0.26253343, y: -1.4966847}
 --- !u!1 &1153346078
 GameObject:
   m_ObjectHideFlags: 0
@@ -11434,8 +11559,10 @@ MonoBehaviour:
   beCounteredStateName: Boss - Be Countered
   idleStateName: Boss Idle
   movingStateName: Boss - Moving
-  deathStateName: 
+  deathStateName: Boss - Death
+  normalHitStateName: 
   skillStateName: 
+  ultStateName: 
   hitRetriggerNormalizedTime: 0.35
   preserveSceneVisuals: 1
   preserveSceneCollider: 1
@@ -11604,6 +11731,8 @@ MonoBehaviour:
     linkedState: 1
     localScale: {x: 0.2, y: 0.2, z: 0.2}
     feetAnchorLocal: {x: -0.06, y: -4.69, z: 0}
+    colliderSize: {x: 0, y: 0}
+    colliderOffset: {x: 0, y: 0}
 --- !u!1 &1173406307
 GameObject:
   m_ObjectHideFlags: 0
@@ -11941,6 +12070,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.BeatTimelineUIView
   viewport: {fileID: 62846716}
   slotsRow: {fileID: 1563817237}
+  laneFootprint: {fileID: 724193210}
+  bossTrackFrame: {fileID: 749800629}
   segmentTemplate: {fileID: 715640728}
   phaseDividerTemplate: {fileID: 272802089}
   scanBar: {fileID: 309590910}
@@ -12196,7 +12327,7 @@ Transform:
   m_GameObject: {fileID: 1279832175}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.07, y: -3.72, z: 0}
+  m_LocalPosition: {x: 0.01, y: -0.1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -13573,7 +13704,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 32198.248, y: 0}
+  m_SizeDelta: {x: 6000, y: 0}
   m_Pivot: {x: 0, y: 0.5}
 --- !u!114 &1563817238
 MonoBehaviour:
@@ -17357,9 +17488,9 @@ RectTransform:
   m_Father: {fileID: 749800629}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: 0.004699707, y: 0.5323}
-  m_SizeDelta: {x: -0.010742, y: 1.0646}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0.0048828125, y: 0.25}
+  m_SizeDelta: {x: -0.009643614, y: 0.5000999}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2068161849
 MonoBehaviour:
@@ -18124,6 +18255,8 @@ MonoBehaviour:
   bannerImage: {fileID: 2140000113}
   battleStartSprite: {fileID: 21300000, guid: b7e4c1a290d84f6e8a1c5d3f2b0e7491, type: 3}
   planningSprite: {fileID: 21300000, guid: c8f5d2b3a1e9507f9b2d6e4a3c1f8502, type: 3}
+  battleStartHoldSec: 2
+  planningHoldSec: 1
 --- !u!1 &2140000110
 GameObject:
   m_ObjectHideFlags: 0
@@ -18158,8 +18291,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: -0.056}
   m_AnchorMin: {x: 0.5, y: 0.55}
   m_AnchorMax: {x: 0.5, y: 0.55}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 548.06, y: 318.17}
+  m_AnchoredPosition: {x: 0, y: 122}
+  m_SizeDelta: {x: 741.25, y: 439.02}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2140000112
 CanvasRenderer:
@@ -18189,7 +18322,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: b7e4c1a290d84f6e8a1c5d3f2b0e7491, type: 3}
+  m_Sprite: {fileID: 21300000, guid: c8f5d2b3a1e9507f9b2d6e4a3c1f8502, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1

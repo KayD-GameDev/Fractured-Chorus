@@ -353,10 +353,12 @@ namespace FracturedChorus.Combat.Presentation
             }
 
             var strikeFeet = ResolveMeleeStrikeFeet(renView, targetView);
-            renView.BeginCombatTravel();
-            yield return renView.MoveFeetToRoutine(
-                strikeFeet,
-                ResolveMoveSeconds(renView.FeetWorldPosition, strikeFeet, meleeLungeSpeed, meleeLungeSeconds));
+            if (renView.TryBeginCombatTravelTo(strikeFeet))
+            {
+                yield return renView.MoveFeetToRoutine(
+                    strikeFeet,
+                    ResolveMoveSeconds(renView.FeetWorldPosition, strikeFeet, meleeLungeSpeed, meleeLungeSeconds));
+            }
 
             renView.ArriveAtCombatCell();
             renView.PlayAttackAnimationHold(skill);
@@ -390,8 +392,13 @@ namespace FracturedChorus.Combat.Presentation
                 yield break;
             }
 
-            renView.PlayMovingLoop();
-            yield return renView.MoveToRoutine(home, meleeRetreatSeconds);
+            if (!renView.IsRootNear(home))
+            {
+                renView.PlayMovingLoop();
+                yield return renView.MoveToRoutine(home, meleeRetreatSeconds);
+            }
+
+            renView.RestoreTravelFacing();
             renView.transform.position = new Vector3(home.x, home.y, renView.transform.position.z);
             renView.CaptureAnchor();
             renView.FinishCombatPhaseIdle();

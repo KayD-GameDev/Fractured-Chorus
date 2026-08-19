@@ -243,7 +243,7 @@ MonoBehaviour:
   beCounteredStateName: Kiki-Hurt
   idleStateName: Kiki-Idle
   movingStateName: Kiki-Moving
-  deathStateName: 
+  deathStateName: Kiki-Death
   skillStateName: 
   hitRetriggerNormalizedTime: 0.35
   preserveSceneVisuals: 1
@@ -3759,14 +3759,16 @@ MonoBehaviour:
   hpLabel: {fileID: 0}
   bodyCollider: {fileID: 487667176}
   feetAnchor: {fileID: 1279832177}
-  animator: {fileID: 0}
+  animator: {fileID: 487667177}
   counterStateName: Ren Counter
   guardStateName: 
   beCounteredStateName: Ren Hurt
   idleStateName: Ren Idle
   movingStateName: Ren Moving
-  deathStateName: 
-  skillStateName: 
+  deathStateName: Ren Death
+  normalHitStateName: Ren Skill 1
+  skillStateName: Ren - Skill 2
+  ultStateName: Ren - Skill 3 
   hitRetriggerNormalizedTime: 0.35
   preserveSceneVisuals: 1
   preserveSceneCollider: 1
@@ -3785,9 +3787,34 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitSpriteSimulator
   spritePreview: 0
   spriteLayouts:
-  - sprite: {fileID: 0}
-    localScale: {x: 0, y: 0, z: 0}
-    feetAnchorLocal: {x: 0, y: 0, z: 0}
+  - displayName: Idle Sprite
+    kind: 0
+    sprite: {fileID: 7369638930748108147, guid: 9a437a3dfde73224686f2d2a81ee930e, type: 3}
+    animationClip: {fileID: 7400000, guid: d196d390a1b52234ea48ebf6deccfdda, type: 2}
+    linkedState: 1
+    localScale: {x: 0.2, y: 0.2, z: 0}
+    feetAnchorLocal: {x: 1.07, y: -3.72, z: 0}
+  - displayName: NormalHit
+    kind: 1
+    sprite: {fileID: 7369638930748108147, guid: 9a437a3dfde73224686f2d2a81ee930e, type: 3}
+    animationClip: {fileID: 7400000, guid: a33391cad1009b540aa01ba8031868a1, type: 2}
+    linkedState: 8
+    localScale: {x: 0.2, y: 0.2, z: 0}
+    feetAnchorLocal: {x: 1.07, y: -3.72, z: 0}
+  - displayName: SkillHit
+    kind: 1
+    sprite: {fileID: 7369638930748108147, guid: 9a437a3dfde73224686f2d2a81ee930e, type: 3}
+    animationClip: {fileID: 7400000, guid: 8a448ee907f49b2468cbc83b73c8b58c, type: 2}
+    linkedState: 9
+    localScale: {x: 0.2, y: 0.2, z: 0}
+    feetAnchorLocal: {x: 1.07, y: -3.72, z: 0}
+  - displayName: UltHit
+    kind: 1
+    sprite: {fileID: 7369638930748108147, guid: 9a437a3dfde73224686f2d2a81ee930e, type: 3}
+    animationClip: {fileID: 7400000, guid: 8f0816f5325864a45abf4b37b8969f82, type: 2}
+    linkedState: 10
+    localScale: {x: 0.2, y: 0.2, z: 0}
+    feetAnchorLocal: {x: 1.07, y: -3.72, z: 0}
 --- !u!61 &487667176
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -8139,14 +8166,16 @@ MonoBehaviour:
   hpLabel: {fileID: 0}
   bodyCollider: {fileID: 1144376354}
   feetAnchor: {fileID: 956599416}
-  animator: {fileID: 0}
+  animator: {fileID: 1144376355}
   counterStateName: Coda - Counter
   guardStateName: 
   beCounteredStateName: Coda - Hurt
   idleStateName: Coda - Idle
   movingStateName: Coda - Moving
-  deathStateName: 
-  skillStateName: 
+  deathStateName: Coda - Death
+  normalHitStateName: Coda Skill 1
+  skillStateName: Coda Skill 2
+  ultStateName: Coda Skill 3 
   hitRetriggerNormalizedTime: 0.35
   preserveSceneVisuals: 1
   preserveSceneCollider: 1
@@ -8165,9 +8194,78 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitSpriteSimulator
   spritePreview: 0
   spriteLayouts:
-  - sprite: {fileID: 0}
-    localScale: {x: 0, y: 0, z: 0}
-    feetAnchorLocal: {x: 0, y: 0, z: 0}
+  - displayName: idle
+    kind: 0
+    sprite: {fileID: 814772617763461771, guid: 54a2056b8027f1b4a85eb6beb11ab96f, type: 3}
+    animationClip: {fileID: 7400000, guid: 7315c62fdbb9fef4aa488d961bfa9423, type: 2}
+    linkedState: 1
+    localScale: {x: 0.21, y: 0.2, z: 0}
+    feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
+    colliderSize: {x: 3.52535, y: 8.456403}
+    colliderOffset: {x: -0.26253343, y: -1.4966847}
+  - displayName: moving
+    kind: 0
+    sprite: {fileID: 7815266141663936681, guid: 3b8d35aedda14264faf880bd7b60f298, type: 3}
+    animationClip: {fileID: 0}
+    linkedState: 2
+    localScale: {x: 0.21, y: 0.2, z: 0}
+    feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
+    colliderSize: {x: 3.52535, y: 8.456403}
+    colliderOffset: {x: -0.26253343, y: -1.4966847}
+  - displayName: die
+    kind: 0
+    sprite: {fileID: -3118977898244780662, guid: 4888604a12456d641a9b0acd72775a7a, type: 3}
+    animationClip: {fileID: 0}
+    linkedState: 7
+    localScale: {x: 0.21, y: 0.2, z: 0}
+    feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
+    colliderSize: {x: 3.52535, y: 8.456403}
+    colliderOffset: {x: -0.26253343, y: -1.4966847}
+  - displayName: hurt
+    kind: 0
+    sprite: {fileID: 467594992153417426, guid: a4cf850a1777a2b4c9697e58abeef1ba, type: 3}
+    animationClip: {fileID: 0}
+    linkedState: 6
+    localScale: {x: 0.21, y: 0.2, z: 0}
+    feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
+    colliderSize: {x: 3.52535, y: 8.456403}
+    colliderOffset: {x: -0.26253343, y: -1.4966847}
+  - displayName: counter
+    kind: 0
+    sprite: {fileID: -6260322492774810837, guid: f4776a6344b81794596e94af138a7ca6, type: 3}
+    animationClip: {fileID: 0}
+    linkedState: 5
+    localScale: {x: 0.21, y: 0.2, z: 0}
+    feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
+    colliderSize: {x: 3.52535, y: 8.456403}
+    colliderOffset: {x: -0.26253343, y: -1.4966847}
+  - displayName: NormalHit
+    kind: 1
+    sprite: {fileID: 814772617763461771, guid: 54a2056b8027f1b4a85eb6beb11ab96f, type: 3}
+    animationClip: {fileID: 7400000, guid: 5e4dac420261be740b72eaa46a49730d, type: 2}
+    linkedState: 8
+    localScale: {x: 0.21, y: 0.2, z: 0}
+    feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
+    colliderSize: {x: 3.52535, y: 8.456403}
+    colliderOffset: {x: -0.26253343, y: -1.4966847}
+  - displayName: SkillHit
+    kind: 1
+    sprite: {fileID: 814772617763461771, guid: 54a2056b8027f1b4a85eb6beb11ab96f, type: 3}
+    animationClip: {fileID: 7400000, guid: dc0f753cbb7121f43b3852d67ee7f1b7, type: 2}
+    linkedState: 9
+    localScale: {x: 0.21, y: 0.2, z: 0}
+    feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
+    colliderSize: {x: 3.52535, y: 8.456403}
+    colliderOffset: {x: -0.26253343, y: -1.4966847}
+  - displayName: UltHit
+    kind: 1
+    sprite: {fileID: 814772617763461771, guid: 54a2056b8027f1b4a85eb6beb11ab96f, type: 3}
+    animationClip: {fileID: 7400000, guid: f417e4bb075cfc0449a314d65142c597, type: 2}
+    linkedState: 10
+    localScale: {x: 0.21, y: 0.2, z: 0}
+    feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
+    colliderSize: {x: 3.52535, y: 8.456403}
+    colliderOffset: {x: -0.26253343, y: -1.4966847}
 --- !u!61 &1144376354
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -8480,6 +8578,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.BeatTimelineUIView
   viewport: {fileID: 62846716}
   slotsRow: {fileID: 1563817237}
+  laneFootprint: {fileID: 724193210}
+  bossTrackFrame: {fileID: 0}
   segmentTemplate: {fileID: 715640728}
   phaseDividerTemplate: {fileID: 702803422}
   scanBar: {fileID: 309590910}
@@ -13838,6 +13938,8 @@ MonoBehaviour:
   bannerImage: {fileID: 2140000113}
   battleStartSprite: {fileID: 21300000, guid: b7e4c1a290d84f6e8a1c5d3f2b0e7491, type: 3}
   planningSprite: {fileID: 21300000, guid: c8f5d2b3a1e9507f9b2d6e4a3c1f8502, type: 3}
+  battleStartHoldSec: 2
+  planningHoldSec: 1
 --- !u!1 &2140000110
 GameObject:
   m_ObjectHideFlags: 0

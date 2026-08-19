@@ -23,14 +23,17 @@ namespace FracturedChorus.Editor
                 "Hierarchy:\n" +
                 "  Unit (SpriteRenderer)  ← đổi sprite / scale trên root\n" +
                 "  └ FeetAnchor           ← kéo để neo chân xuống honeycomb\n\n" +
-                "Mỗi slot = 1 state UnitView (Idle, Moving, Skill, Guard, Counter, Hurt, Death).\n" +
+                "Mỗi slot = 1 state UnitView (Idle, Moving, Skill, Guard=Counter, Hurt, Death, NormalHit, SkillHit, UltHit).\n" +
                 "Idle: gán cả Animation Clip (Play / hết phase) và Sprite tĩnh (đi vào ô chiến đấu).\n" +
-                "Moving tĩnh dùng khi unit bước vào/ra ô đánh. Combat lấy scale + chân từ slot.",
+                "Party hit clips (Normal/Skill/Ult) chạy Animator. Guard dùng sprite Counter.\n" +
+                "Moving tĩnh dùng khi unit bước vào/ra ô đánh. Combat lấy scale + chân + BoxCollider2D từ slot.",
                 MessageType.Info);
 
             DrawSpriteCountControls(sim);
             DrawSpriteButtons(sim);
             DrawCurrentSlotFields(sim);
+            DrawAnchorFields(sim);
+            DrawColliderFields(sim);
             DrawScaleField(sim);
             DrawDuplicateStateWarning(sim);
 
@@ -80,10 +83,15 @@ namespace FracturedChorus.Editor
             var px = sim.SpritePixelSize;
             var scale = sim.CurrentScale;
             var feet = sim.FeetAnchorLocal;
+            var body = sim.GetComponent<BoxCollider2D>();
+            var colText = body != null
+                ? $"Collider size ({body.size.x:0.###}, {body.size.y:0.###})  offset ({body.offset.x:0.###}, {body.offset.y:0.###})"
+                : "Collider: none";
             EditorGUILayout.HelpBox(
                 $"Editing {sim.SpriteTabLabel(sim.SpritePreview)}  ({sim.SpritePreview + 1}/{sim.SpriteCount})  |  Sprite {px.x:0.##}×{px.y:0.##}\n" +
                 $"Scale ({scale.x:0.###}, {scale.y:0.###}, {scale.z:0.###})\n" +
-                $"FeetAnchor ({feet.x:0.##}, {feet.y:0.##}, {feet.z:0.##})",
+                $"FeetAnchor ({feet.x:0.##}, {feet.y:0.##}, {feet.z:0.##})\n" +
+                colText,
                 MessageType.None);
         }
 
@@ -248,6 +256,78 @@ namespace FracturedChorus.Editor
             {
                 serializedObject.ApplyModifiedProperties();
                 EditorUtility.SetDirty(sim);
+            }
+            else
+            {
+                serializedObject.ApplyModifiedProperties();
+            }
+        }
+
+        private void DrawAnchorFields(UnitSpriteSimulator sim)
+        {
+            serializedObject.Update();
+            var layouts = serializedObject.FindProperty("spriteLayouts");
+            var index = sim.SpritePreview;
+            if (layouts == null || index < 0 || index >= layouts.arraySize)
+            {
+                return;
+            }
+
+            var slot = layouts.GetArrayElementAtIndex(index);
+            EditorGUILayout.Space(4f);
+            EditorGUILayout.LabelField("Feet Anchor (slot này)", EditorStyles.boldLabel);
+            EditorGUI.BeginChangeCheck();
+            var feetProp = slot.FindPropertyRelative("feetAnchorLocal");
+            if (feetProp != null)
+            {
+                EditorGUILayout.PropertyField(feetProp, new GUIContent("Anchor Local"));
+            }
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                serializedObject.ApplyModifiedProperties();
+                sim.ApplyPreviewFeet();
+                EditorUtility.SetDirty(sim);
+                SceneView.RepaintAll();
+            }
+            else
+            {
+                serializedObject.ApplyModifiedProperties();
+            }
+        }
+
+        private void DrawColliderFields(UnitSpriteSimulator sim)
+        {
+            serializedObject.Update();
+            var layouts = serializedObject.FindProperty("spriteLayouts");
+            var index = sim.SpritePreview;
+            if (layouts == null || index < 0 || index >= layouts.arraySize)
+            {
+                return;
+            }
+
+            var slot = layouts.GetArrayElementAtIndex(index);
+            EditorGUILayout.Space(4f);
+            EditorGUILayout.LabelField("Box Collider 2D (slot này)", EditorStyles.boldLabel);
+            EditorGUI.BeginChangeCheck();
+            var sizeProp = slot.FindPropertyRelative("colliderSize");
+            var offsetProp = slot.FindPropertyRelative("colliderOffset");
+            if (sizeProp != null)
+            {
+                EditorGUILayout.PropertyField(sizeProp, new GUIContent("Collider Size"));
+            }
+
+            if (offsetProp != null)
+            {
+                EditorGUILayout.PropertyField(offsetProp, new GUIContent("Collider Offset"));
+            }
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                serializedObject.ApplyModifiedProperties();
+                sim.ApplyPreviewCollider();
+                EditorUtility.SetDirty(sim);
+                SceneView.RepaintAll();
             }
             else
             {

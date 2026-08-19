@@ -152,10 +152,12 @@ namespace FracturedChorus.Combat.Presentation
             }
 
             var strikeFeet = ResolveStandoffFeet(charlotte, boss, norHitStandoffX);
-            charlotte.BeginCombatTravel();
-            yield return charlotte.MoveFeetToRoutine(
-                strikeFeet,
-                ResolveMoveSeconds(charlotte.FeetWorldPosition, strikeFeet, norHitLungeSpeed, norHitLungeSeconds));
+            if (charlotte.TryBeginCombatTravelTo(strikeFeet))
+            {
+                yield return charlotte.MoveFeetToRoutine(
+                    strikeFeet,
+                    ResolveMoveSeconds(charlotte.FeetWorldPosition, strikeFeet, norHitLungeSpeed, norHitLungeSeconds));
+            }
 
             charlotte.ArriveAtCombatCell();
             charlotte.PlayAttackAnimationHold(skill);
@@ -209,10 +211,12 @@ namespace FracturedChorus.Combat.Presentation
             var startFeet = new Vector3(bossFeet.x - dir * 1.35f, bossFeet.y, fromFeet.z);
             var endFeet = new Vector3(bossFeet.x + dir * skill2PiercePastX, bossFeet.y, fromFeet.z);
 
-            charlotte.BeginCombatTravel();
-            yield return charlotte.MoveFeetToRoutine(
-                startFeet,
-                ResolveMoveSeconds(fromFeet, startFeet, skill2SlideSpeed, 0.12f));
+            if (charlotte.TryBeginCombatTravelTo(startFeet))
+            {
+                yield return charlotte.MoveFeetToRoutine(
+                    startFeet,
+                    ResolveMoveSeconds(fromFeet, startFeet, skill2SlideSpeed, 0.12f));
+            }
 
             charlotte.ArriveAtCombatCell();
             FindAnyObjectByType<CombatSfxController>()?.PlayCharlotteSkill2Dash();
@@ -271,10 +275,12 @@ namespace FracturedChorus.Combat.Presentation
             }
 
             var strikeFeet = ResolveStandoffFeet(charlotte, boss, ultStandoffX);
-            charlotte.BeginCombatTravel();
-            yield return charlotte.MoveFeetToRoutine(
-                strikeFeet,
-                ResolveMoveSeconds(charlotte.FeetWorldPosition, strikeFeet, ultLungeSpeed, ultLungeSeconds));
+            if (charlotte.TryBeginCombatTravelTo(strikeFeet))
+            {
+                yield return charlotte.MoveFeetToRoutine(
+                    strikeFeet,
+                    ResolveMoveSeconds(charlotte.FeetWorldPosition, strikeFeet, ultLungeSpeed, ultLungeSeconds));
+            }
 
             charlotte.ArriveAtCombatCell();
             yield return EncounterDirector.PresentArmedCaster();
@@ -594,8 +600,13 @@ namespace FracturedChorus.Combat.Presentation
 
         private IEnumerator ReturnHome(UnitView charlotte, Vector3 home, float seconds)
         {
-            charlotte.PlayMovingLoop();
-            yield return charlotte.MoveToRoutine(home, seconds);
+            if (!charlotte.IsRootNear(home))
+            {
+                charlotte.PlayMovingLoop();
+                yield return charlotte.MoveToRoutine(home, seconds);
+            }
+
+            charlotte.RestoreTravelFacing();
             charlotte.transform.position = new Vector3(home.x, home.y, charlotte.transform.position.z);
             charlotte.CaptureAnchor();
             charlotte.FinishCombatPhaseIdle();
