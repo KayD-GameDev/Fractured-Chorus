@@ -239,7 +239,7 @@ namespace FracturedChorus.Combat.Actions
             }
 
             var delay = Mathf.Max(1, ctx.Skill.ResolveEffectValue(ctx.IsEmpowered));
-            var sEnd = ctx.Entry.BeatIndex + SkillFootprintUtil.GetActiveBeats(ctx.Skill) - 1;
+            var sEnd = ctx.Entry.BeatIndex + SkillFootprintUtil.GetActiveBeats(ctx.Skill, ctx.Source, ctx.Entry) - 1;
             var moved = ctx.Timeline.DelayImpactTelegraphsAfterBeat(sEnd, CombatTimelineProfile.TotalBeats, delay);
             if (ctx.Entry != null)
             {
@@ -319,6 +319,32 @@ namespace FracturedChorus.Combat.Actions
                 return;
             }
 
+            if (ctx.Entry != null && ctx.Entry.EffectPayloadApplied)
+            {
+                return;
+            }
+
+            var finalDamage = ComputeOutgoingDamage(ctx, target, out var isCritical);
+            target.TakeDamage(finalDamage, isCritical);
+            var damageType = ctx.Skill != null ? ctx.Skill.damageType : DamageType.Physical;
+            var atkStat = damageType == DamageType.Magical
+                ? ctx.Source.Stats.Magic
+                : ctx.Source.Stats.Strength;
+            var atkLabel = damageType == DamageType.Magical ? "ma" : "str";
+            Debug.Log($"[SkillAction] {ctx.Source.DisplayName} -> {target.DisplayName} | " +
+                      $"final={finalDamage:F1} crit={isCritical}" +
+                      (ctx.IsEmpowered ? " empowered" : string.Empty) +
+                      $" {atkLabel}={atkStat:F0}");
+        }
+
+        public static float ComputeOutgoingDamage(CombatContext ctx, Units.CombatUnit target, out bool isCritical)
+        {
+            isCritical = false;
+            if (ctx?.Source == null || ctx.Skill == null || target == null)
+            {
+                return 0f;
+            }
+
             var coverMod = ctx.Grid != null
                 ? ctx.Grid.GetCoverModifier(ctx.Source.GridPosition, target.GridPosition)
                 : 1f;
@@ -329,8 +355,7 @@ namespace FracturedChorus.Combat.Actions
             }
 
             var harmony = HarmonyElementResolver.GetRelation(attackerElement, target.Stats.Element);
-
-            var damageType = ctx.Skill != null ? ctx.Skill.damageType : DamageType.Physical;
+            var damageType = ctx.Skill.damageType;
             var result = DamageCalculator.Calculate(
                 ctx.Source.Stats,
                 target.Stats,
@@ -340,6 +365,7 @@ namespace FracturedChorus.Combat.Actions
                 harmony,
                 coverMod);
 
+            isCritical = result.IsCritical;
             var finalDamage = result.FinalDamage;
             if (ctx.IsEmpowered &&
                 ctx.Skill.empowerExtraHits > 0 &&
@@ -364,17 +390,7 @@ namespace FracturedChorus.Combat.Actions
 
             finalDamage = RunEventCombatMods.ModifyOutgoing(ctx.Source.Side, finalDamage);
             finalDamage = RunEventCombatMods.ModifyIncoming(target.Side, finalDamage);
-
-            target.TakeDamage(finalDamage, result.IsCritical);
-            var atkStat = damageType == DamageType.Magical
-                ? ctx.Source.Stats.Magic
-                : ctx.Source.Stats.Strength;
-            var atkLabel = damageType == DamageType.Magical ? "ma" : "str";
-            Debug.Log($"[SkillAction] {ctx.Source.DisplayName} -> {target.DisplayName} | " +
-                      $"rand={result.SkillRandomRoll:F2}×{atkLabel}={atkStat:F0} " +
-                      $"raw={result.RawDamage:F1} en×={result.EnduranceFactor:F2} " +
-                      $"pos×={coverMod:F2} final={finalDamage:F1} crit={result.IsCritical} mult={result.CritDamageMultiplier:F2}" +
-                      (ctx.IsEmpowered ? " empowered" : string.Empty));
+            return finalDamage;
         }
     }
 }

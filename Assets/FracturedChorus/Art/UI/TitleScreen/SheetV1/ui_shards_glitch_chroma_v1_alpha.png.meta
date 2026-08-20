@@ -1,0 +1,1014 @@
+fileFormatVersion: 2
+guid: d2eb459dad779c647a98cbf52af24458
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -8867665801980739765
+    second: ui_shards_glitch_chroma_v1_alpha_0
+  - first:
+      213: -1030025728667644489
+    second: ui_shards_glitch_chroma_v1_alpha_1
+  - first:
+      213: 2653680602864744771
+    second: ui_shards_glitch_chroma_v1_alpha_2
+  - first:
+      213: 3330179412382794856
+    second: ui_shards_glitch_chroma_v1_alpha_3
+  - first:
+      213: -7922622505808479944
+    second: ui_shards_glitch_chroma_v1_alpha_4
+  - first:
+      213: -7778462687368470130
+    second: ui_shards_glitch_chroma_v1_alpha_5
+  - first:
+      213: 4798037597238179517
+    second: ui_shards_glitch_chroma_v1_alpha_6
+  - first:
+      213: -5939959866975237902
+    second: ui_shards_glitch_chroma_v1_alpha_7
+  - first:
+      213: -3611643894918623337
+    second: ui_shards_glitch_chroma_v1_alpha_8
+  - first:
+      213: 7455378897897370321
+    second: ui_shards_glitch_chroma_v1_alpha_9
+  - first:
+      213: -4874943641387191323
+    second: ui_shards_glitch_chroma_v1_alpha_10
+  - first:
+      213: 876966082700543150
+    second: ui_shards_glitch_chroma_v1_alpha_11
+  - first:
+      213: -1734593731664244566
+    second: ui_shards_glitch_chroma_v1_alpha_12
+  - first:
+      213: -3195066621582074899
+    second: ui_shards_glitch_chroma_v1_alpha_13
+  - first:
+      213: 8570792462927129468
+    second: ui_shards_glitch_chroma_v1_alpha_14
+  - first:
+      213: 3809755775264782074
+    second: ui_shards_glitch_chroma_v1_alpha_15
+  - first:
+      213: 1115403669409039388
+    second: ui_shards_glitch_chroma_v1_alpha_16
+  - first:
+      213: 7509895406644681907
+    second: ui_shards_glitch_chroma_v1_alpha_17
+  - first:
+      213: 1461701735214092612
+    second: ui_shards_glitch_chroma_v1_alpha_18
+  - first:
+      213: -7039676801425333663
+    second: ui_shards_glitch_chroma_v1_alpha_19
+  - first:
+      213: 3581665517282143994
+    second: ui_shards_glitch_chroma_v1_alpha_20
+  - first:
+      213: 5344711511963507495
+    second: ui_shards_glitch_chroma_v1_alpha_21
+  - first:
+      213: -8116506434563048910
+    second: ui_shards_glitch_chroma_v1_alpha_22
+  - first:
+      213: -5366468159603940690
+    second: ui_shards_glitch_chroma_v1_alpha_23
+  - first:
+      213: 7822343832777100986
+    second: ui_shards_glitch_chroma_v1_alpha_24
+  - first:
+      213: -7494415632305457463
+    second: ui_shards_glitch_chroma_v1_alpha_25
+  - first:
+      213: 6597230807102701467
+    second: ui_shards_glitch_chroma_v1_alpha_26
+  - first:
+      213: 8771511188673255123
+    second: ui_shards_glitch_chroma_v1_alpha_27
+  - first:
+      213: 4632823521242388414
+    second: ui_shards_glitch_chroma_v1_alpha_28
+  - first:
+      213: 1219347426179547687
+    second: ui_shards_glitch_chroma_v1_alpha_29
+  - first:
+      213: 5775467266227436812
+    second: ui_shards_glitch_chroma_v1_alpha_30
+  - first:
+      213: 5934881118558552294
+    second: ui_shards_glitch_chroma_v1_alpha_31
+  - first:
+      213: 1353681087511318568
+    second: ui_shards_glitch_chroma_v1_alpha_32
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WindowsStoreApps
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: ui_shards_glitch_chroma_v1_alpha_0
+      rect:
+        serializedVersion: 2
+        x: 169
+        y: 480
+        width: 160
+        height: 365
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b4ffe0e9fe8bfe480800000000000000
+      internalID: -8867665801980739765
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui_shards_glitch_chroma_v1_alpha_1
+      rect:
+        serializedVersion: 2
+        x: 1126
+        y: 780
+        width: 158
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7bd804d9e0d94b1f0800000000000000
+      internalID: -1030025728667644489
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui_shards_glitch_chroma_v1_alpha_2
+      rect:
+        serializedVersion: 2
+        x: 1092
+        y: 755
+        width: 176
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 349f811d274c3d420800000000000000
+      internalID: 2653680602864744771
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui_shards_glitch_chroma_v1_alpha_3
+      rect:
+        serializedVersion: 2
+        x: 1334
+        y: 767
+        width: 27
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8644561188c273e20800000000000000
+      internalID: 3330179412382794856
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui_shards_glitch_chroma_v1_alpha_4
+      rect:
+        serializedVersion: 2
+        x: 1199
+        y: 745
+        width: 17
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 83935cb8ec03d0290800000000000000
+      internalID: -7922622505808479944
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui_shards_glitch_chroma_v1_alpha_5
+      rect:
+        serializedVersion: 2
+        x: 1055
+        y: 728
+        width: 303
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e81a5ccd5695d0490800000000000000
+      internalID: -7778462687368470130
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui_shards_glitch_chroma_v1_alpha_6
+      rect:
+        serializedVersion: 2
+        x: 987
+        y: 631
+        width: 452
+        height: 89
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: db6b95a06cd069240800000000000000
+      internalID: 4798037597238179517
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui_shards_glitch_chroma_v1_alpha_7
+      rect:
+        serializedVersion: 2
+        x: 1159
+        y: 615
+        width: 42
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2f84dd4e8f5019da0800000000000000
+      internalID: -5939959866975237902
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui_shards_glitch_chroma_v1_alpha_8
+      rect:
+        serializedVersion: 2
+        x: 1202
+        y: 605
+        width: 126
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 79fca2c430dd0edc0800000000000000
+      internalID: -3611643894918623337
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui_shards_glitch_chroma_v1_alpha_9
+      rect:
+        serializedVersion: 2
+        x: 1435
+        y: 615
+        width: 15
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1d2bd1b7b93d67760800000000000000
+      internalID: 7455378897897370321
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui_shards_glitch_chroma_v1_alpha_10
+      rect:
+        serializedVersion: 2
+        x: 1100
+        y: 608
+        width: 71
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5e331133698b85cb0800000000000000
+      internalID: -4874943641387191323
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui_shards_glitch_chroma_v1_alpha_11
+      rect:
+        serializedVersion: 2
+        x: 1174
+        y: 593
+        width: 80
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ea48e6f710c9b2c00800000000000000
+      internalID: 876966082700543150
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui_shards_glitch_chroma_v1_alpha_12
+      rect:
+        serializedVersion: 2
+        x: 1253
+        y: 592
+        width: 36
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: aa0988af03c7de7e0800000000000000
+      internalID: -1734593731664244566
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui_shards_glitch_chroma_v1_alpha_13
+      rect:
+        serializedVersion: 2
+        x: 182
+        y: 234
+        width: 210
+        height: 336
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: deb94eaf5d7d8a3d0800000000000000
+      internalID: -3195066621582074899
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui_shards_glitch_chroma_v1_alpha_14
+      rect:
+        serializedVersion: 2
+        x: 991
+        y: 550
+        width: 85
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c7bed54c55291f670800000000000000
+      internalID: 8570792462927129468
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui_shards_glitch_chroma_v1_alpha_15
+      rect:
+        serializedVersion: 2
+        x: 1110
+        y: 563
+        width: 202
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: af676a151b8fed430800000000000000
+      internalID: 3809755775264782074
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui_shards_glitch_chroma_v1_alpha_16
+      rect:
+        serializedVersion: 2
+        x: 1285
+        y: 495
+        width: 14
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c140b484ab5ba7f00800000000000000
+      internalID: 1115403669409039388
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui_shards_glitch_chroma_v1_alpha_17
+      rect:
+        serializedVersion: 2
+        x: 1075
+        y: 479
+        width: 115
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3bcd46d4512883860800000000000000
+      internalID: 7509895406644681907
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui_shards_glitch_chroma_v1_alpha_18
+      rect:
+        serializedVersion: 2
+        x: 1105
+        y: 442
+        width: 314
+        height: 49
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4411207dbf1094410800000000000000
+      internalID: 1461701735214092612
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui_shards_glitch_chroma_v1_alpha_19
+      rect:
+        serializedVersion: 2
+        x: 1277
+        y: 483
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1622c753f3b0e4e90800000000000000
+      internalID: -7039676801425333663
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui_shards_glitch_chroma_v1_alpha_20
+      rect:
+        serializedVersion: 2
+        x: 1075
+        y: 440
+        width: 67
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: afe2eddbfc1a4b130800000000000000
+      internalID: 3581665517282143994
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui_shards_glitch_chroma_v1_alpha_21
+      rect:
+        serializedVersion: 2
+        x: 951
+        y: 403
+        width: 387
+        height: 36
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 72b96897dca3c2a40800000000000000
+      internalID: 5344711511963507495
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui_shards_glitch_chroma_v1_alpha_22
+      rect:
+        serializedVersion: 2
+        x: 1341
+        y: 410
+        width: 39
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 23a72be96606c5f80800000000000000
+      internalID: -8116506434563048910
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui_shards_glitch_chroma_v1_alpha_23
+      rect:
+        serializedVersion: 2
+        x: 1134
+        y: 402
+        width: 77
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ea2ec5044a97685b0800000000000000
+      internalID: -5366468159603940690
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui_shards_glitch_chroma_v1_alpha_24
+      rect:
+        serializedVersion: 2
+        x: 1213
+        y: 400
+        width: 80
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: abe85a7754c8e8c60800000000000000
+      internalID: 7822343832777100986
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui_shards_glitch_chroma_v1_alpha_25
+      rect:
+        serializedVersion: 2
+        x: 232
+        y: 248
+        width: 193
+        height: 152
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9c67c4580bc7ef790800000000000000
+      internalID: -7494415632305457463
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui_shards_glitch_chroma_v1_alpha_26
+      rect:
+        serializedVersion: 2
+        x: 963
+        y: 255
+        width: 442
+        height: 98
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b9fbe9627721e8b50800000000000000
+      internalID: 6597230807102701467
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui_shards_glitch_chroma_v1_alpha_27
+      rect:
+        serializedVersion: 2
+        x: 1119
+        y: 250
+        width: 24
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3d6db30e3faaab970800000000000000
+      internalID: 8771511188673255123
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui_shards_glitch_chroma_v1_alpha_28
+      rect:
+        serializedVersion: 2
+        x: 1241
+        y: 249
+        width: 75
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eb71ab262781b4040800000000000000
+      internalID: 4632823521242388414
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui_shards_glitch_chroma_v1_alpha_29
+      rect:
+        serializedVersion: 2
+        x: 1031
+        y: 221
+        width: 229
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7220833160efbe010800000000000000
+      internalID: 1219347426179547687
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui_shards_glitch_chroma_v1_alpha_30
+      rect:
+        serializedVersion: 2
+        x: 1070
+        y: 239
+        width: 43
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c0df16ff0e4962050800000000000000
+      internalID: 5775467266227436812
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui_shards_glitch_chroma_v1_alpha_31
+      rect:
+        serializedVersion: 2
+        x: 1163
+        y: 243
+        width: 13
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6e00bd7deeeec5250800000000000000
+      internalID: 5934881118558552294
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui_shards_glitch_chroma_v1_alpha_32
+      rect:
+        serializedVersion: 2
+        x: 173
+        y: 223
+        width: 9
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 820d648e6cd39c210800000000000000
+      internalID: 1353681087511318568
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      ui_shards_glitch_chroma_v1_alpha_0: -8867665801980739765
+      ui_shards_glitch_chroma_v1_alpha_1: -1030025728667644489
+      ui_shards_glitch_chroma_v1_alpha_10: -4874943641387191323
+      ui_shards_glitch_chroma_v1_alpha_11: 876966082700543150
+      ui_shards_glitch_chroma_v1_alpha_12: -1734593731664244566
+      ui_shards_glitch_chroma_v1_alpha_13: -3195066621582074899
+      ui_shards_glitch_chroma_v1_alpha_14: 8570792462927129468
+      ui_shards_glitch_chroma_v1_alpha_15: 3809755775264782074
+      ui_shards_glitch_chroma_v1_alpha_16: 1115403669409039388
+      ui_shards_glitch_chroma_v1_alpha_17: 7509895406644681907
+      ui_shards_glitch_chroma_v1_alpha_18: 1461701735214092612
+      ui_shards_glitch_chroma_v1_alpha_19: -7039676801425333663
+      ui_shards_glitch_chroma_v1_alpha_2: 2653680602864744771
+      ui_shards_glitch_chroma_v1_alpha_20: 3581665517282143994
+      ui_shards_glitch_chroma_v1_alpha_21: 5344711511963507495
+      ui_shards_glitch_chroma_v1_alpha_22: -8116506434563048910
+      ui_shards_glitch_chroma_v1_alpha_23: -5366468159603940690
+      ui_shards_glitch_chroma_v1_alpha_24: 7822343832777100986
+      ui_shards_glitch_chroma_v1_alpha_25: -7494415632305457463
+      ui_shards_glitch_chroma_v1_alpha_26: 6597230807102701467
+      ui_shards_glitch_chroma_v1_alpha_27: 8771511188673255123
+      ui_shards_glitch_chroma_v1_alpha_28: 4632823521242388414
+      ui_shards_glitch_chroma_v1_alpha_29: 1219347426179547687
+      ui_shards_glitch_chroma_v1_alpha_3: 3330179412382794856
+      ui_shards_glitch_chroma_v1_alpha_30: 5775467266227436812
+      ui_shards_glitch_chroma_v1_alpha_31: 5934881118558552294
+      ui_shards_glitch_chroma_v1_alpha_32: 1353681087511318568
+      ui_shards_glitch_chroma_v1_alpha_4: -7922622505808479944
+      ui_shards_glitch_chroma_v1_alpha_5: -7778462687368470130
+      ui_shards_glitch_chroma_v1_alpha_6: 4798037597238179517
+      ui_shards_glitch_chroma_v1_alpha_7: -5939959866975237902
+      ui_shards_glitch_chroma_v1_alpha_8: -3611643894918623337
+      ui_shards_glitch_chroma_v1_alpha_9: 7455378897897370321
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

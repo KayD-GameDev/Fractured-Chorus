@@ -734,21 +734,21 @@ namespace FracturedChorus.Editor
         {
             CreateLegendTitle(panel, "Node types (FC)", MapLayoutConstants.LegendTitleFontSize);
 
-            var entries = new[]
+            var types = new[]
             {
-                (MapNodeType.Start, "Start — departure / save"),
-                (MapNodeType.Battle, "Battle — standard combat"),
-                (MapNodeType.Event, "Event — random event"),
-                (MapNodeType.Elite, "Elite — hard combat"),
-                (MapNodeType.Camp, "Camp — rest / heal"),
-                (MapNodeType.Relay, "Relay — shop"),
-                (MapNodeType.Treasure, "Treasure — chest"),
-                (MapNodeType.Boss, "Boss — Oni F16")
+                MapNodeType.Start,
+                MapNodeType.Battle,
+                MapNodeType.Event,
+                MapNodeType.Elite,
+                MapNodeType.Camp,
+                MapNodeType.Relay,
+                MapNodeType.Treasure,
+                MapNodeType.Boss
             };
 
-            foreach (var (type, desc) in entries)
+            foreach (var type in types)
             {
-                CreateLegendRow(panel, type, desc);
+                CreateLegendRow(panel, type, MapNodeCatalog.Title(type));
             }
 
             CreateLegendFlexibleSpacer(panel);
@@ -756,7 +756,7 @@ namespace FracturedChorus.Editor
             var hint = CreateText(
                 "Hint",
                 panel,
-                "Scroll map · click F1 → follow path\nOrange line = chosen path · StS 7×15 + boss F16",
+                "Bấm tên để xem thông tin.",
                 MapLayoutConstants.LegendHintFontSize,
                 TextAnchor.UpperLeft);
             hint.color = new Color(0.62f, 0.65f, 0.7f);
@@ -805,7 +805,7 @@ namespace FracturedChorus.Editor
             hlg.childForceExpandHeight = false;
             hlg.padding = new RectOffset(6, 6, 4, 4);
 
-            var dot = CreateLegendSwatchDot(row.transform, type, MapLayoutConstants.LegendDotSize);
+            CreateLegendSwatchDot(row.transform, type, MapLayoutConstants.LegendDotSize);
 
             var label = CreateText("Desc", row.transform, desc, MapLayoutConstants.LegendDescFontSize, TextAnchor.MiddleLeft);
             label.color = new Color(0.88f, 0.9f, 0.93f);
@@ -820,7 +820,6 @@ namespace FracturedChorus.Editor
             descFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
         }
 
-        /// <summary>Swatch giống node: viền StrokeColor + lõi FillColor.</summary>
         private static GameObject CreateLegendSwatchDot(Transform parent, MapNodeType type, float diameter)
         {
             var dot = CreateUiObject("Dot", parent);
@@ -854,6 +853,13 @@ namespace FracturedChorus.Editor
             fillImg.sprite = UiCircleSpriteUtil.Circle;
             fillImg.color = MapNodePalette.FillColor(type);
             fillImg.raycastTarget = false;
+
+            var iconGo = CreateUiObject("Icon", dot.transform);
+            StretchRect(iconGo, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            var iconImg = iconGo.AddComponent<Image>();
+            iconImg.preserveAspect = true;
+            iconImg.raycastTarget = false;
+            iconImg.enabled = false;
 
             return dot;
         }

@@ -36,9 +36,9 @@ namespace FracturedChorus.Editor
 
             var renSample = Mathf.Max(1f, F(soRen, "skill3AnimSampleRate", 24f));
             var renCharge = Mathf.Max(
-                F(soRen, "skill3MinChargeSeconds", 0.95f),
-                I(soRen, "skill3ShotFrameA", 14) / renSample);
-            var renSpan = (I(soRen, "skill3ShotFrameB", 22) - I(soRen, "skill3ShotFrameA", 14)) / renSample;
+                F(soRen, "skill3MinChargeSeconds", 0f),
+                I(soRen, "skill3ShotFrameA", 6) / renSample);
+            var renSpan = (I(soRen, "skill3ShotFrameB", 10) - I(soRen, "skill3ShotFrameA", 6)) / renSample;
             var renHold = F(soRen, "skill3ImpactHoldSeconds", 0.16f)
                           + F(soRen, "skill3AftermathHoldSeconds", 0.35f);
             var renBullets = I(soRen, "skill3BulletCount", 3);

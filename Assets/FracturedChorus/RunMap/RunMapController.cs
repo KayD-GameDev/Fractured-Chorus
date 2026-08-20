@@ -3,7 +3,6 @@ using FracturedChorus.Audio;
 using FracturedChorus.Combat.Bootstrap;
 using FracturedChorus.Data;
 using FracturedChorus.Meta;
-using FracturedChorus.Meta.Economy;
 using FracturedChorus.RunMap.Core;
 using FracturedChorus.RunMap.UI;
 using FracturedChorus.Tutorial;
@@ -23,6 +22,7 @@ namespace FracturedChorus.RunMap
         [SerializeField] private EventRoomOverlayUIView eventOverlay;
         [SerializeField] private EventChoiceTableSO eventChoices;
         [SerializeField] private CampRoomOverlayUIView campOverlay;
+        [SerializeField] private ShopRoomOverlayUIView shopOverlay;
         [SerializeField] private Text statusLabel;
         [SerializeField] private Text seedLabel;
 
@@ -282,7 +282,7 @@ namespace FracturedChorus.RunMap
             }
 
             mapView.RefreshInteraction(graph, State);
-            SyncLegendPanel(graph);
+            SyncLegendPanel();
             EnsureNodeInfoPanel()?.Hide();
             if (State.CurrentNodeId >= 0)
             {
@@ -316,7 +316,7 @@ namespace FracturedChorus.RunMap
             }
         }
 
-        private static void SyncLegendPanel(MapGraph graph = null)
+        private static void SyncLegendPanel()
         {
             var panel = GameObject.Find("LegendPanel");
             if (panel == null)
@@ -331,18 +331,6 @@ namespace FracturedChorus.RunMap
             }
 
             legendView.Apply();
-
-            if (graph?.BossNode == null)
-            {
-                return;
-            }
-
-            var bossRow = panel.transform.Find("Legend_Boss");
-            var bossDesc = bossRow?.Find("Desc")?.GetComponent<Text>();
-            if (bossDesc != null)
-            {
-                bossDesc.text = $"Boss — F{graph.Profile.BossFloor}";
-            }
         }
 
         private void Update()
@@ -409,12 +397,28 @@ namespace FracturedChorus.RunMap
         private void PreviewHopTo(MapNodeData node)
         {
             var fromId = _previewNodeId >= 0 ? _previewNodeId : State.CurrentNodeId;
+            if (fromId == node.Id)
+            {
+                fromId = State.CurrentNodeId;
+            }
+
             var from = Graph.GetNode(fromId) ?? Graph.StartNode;
             _previewNodeId = node.Id;
-            mapView.SetMarkerPreviewNodeId(node.Id);
+            mapView.SetMarkerPreviewNodeId(-1);
+
             if (from != null && from.Id != node.Id)
             {
-                mapView.AnimateTravelToNode(from, node, null);
+                var standId = State.CurrentNodeId;
+                mapView.AnimateTravelToNode(from, node, () =>
+                {
+                    if (_previewNodeId != node.Id || mapView == null)
+                    {
+                        return;
+                    }
+
+                    mapView.SetMarkerPreviewNodeId(node.Id);
+                    mapView.RevealTraveledEdge(standId, node.Id, null);
+                });
             }
 
             mapView.SetSelectedNode(node.Id);
@@ -450,7 +454,9 @@ namespace FracturedChorus.RunMap
             }
 
             _previewNodeId = -1;
-            mapView.SetMarkerPreviewNodeId(-1);
+            mapView?.SetMarkerPreviewNodeId(-1);
+            mapView?.SnapMarkerToNode(node);
+            EnsureNodeInfoPanel()?.Hide();
 
             var isBoss = node.IsBoss || node.Type == MapNodeType.Boss;
             var reopenBoss = isBoss && State.CurrentNodeId == node.Id;
@@ -784,30 +790,72 @@ namespace FracturedChorus.RunMap
 
         private void ResolveRelayNode(MapNodeData node)
         {
-            if (!GameMetaSession.HasSession)
+            var overlay = EnsureShopOverlay();
+            if (overlay == null)
             {
                 MarkNodeCleared(node);
-                UpdateLabels($"Relay F{node.Floor} — shop stub.");
+                UpdateLabels($"Relay F{node.Floor} — shop overlay missing.");
                 return;
             }
 
-            var wallet = GameMetaSession.Current.Wallet;
-            if (!wallet.CanAfford(EconomyTable.RelayCost))
+            EnsureNodeInfoPanel()?.Hide();
+            overlay.Show(ShopChoiceCatalog.CreateOffers(), choice => OnShopPicked(node, choice));
+            UpdateLabels($"Relay F{node.Floor} — shop.");
+        }
+
+        private void OnShopPicked(MapNodeData node, ShopChoiceOffer choice)
+        {
+            if (!choice.Available)
             {
-                UpdateLabels($"Relay shop — need {EconomyTable.RelayCost} Notes for field kit.");
                 return;
             }
 
-            if (!wallet.Spend(EconomyTable.RelayCost))
+            if (choice.Kind != ShopChoiceKind.Leave && !ShopChoiceCatalog.TryApply(choice))
             {
+                EnsureShopOverlay()?.Show(ShopChoiceCatalog.CreateOffers(), next => OnShopPicked(node, next));
+                UpdateLabels("Shop — không mua được.");
                 return;
             }
 
-            PartyRunHpStore.RestoreFullAtCamp();
             MarkNodeCleared(node);
-            GameMetaSession.Save();
+            RunMapRunSave.Persist(Graph, State);
+            if (GameMetaSession.HasSession)
+            {
+                GameMetaSession.Save();
+            }
+
+            EnsureShopOverlay()?.Hide();
             RefreshNotesHud();
-            UpdateLabels($"Relay F{node.Floor} — bought field kit (−{EconomyTable.RelayCost} Notes). HP restored.");
+            var floor = node != null ? node.Floor : 0;
+            UpdateLabels(choice.Kind == ShopChoiceKind.Leave
+                ? $"Relay F{floor} — left shop."
+                : $"Relay F{floor} — bought {choice.Title} (−{choice.Cost} Notes).");
+        }
+
+        private ShopRoomOverlayUIView EnsureShopOverlay()
+        {
+            if (shopOverlay != null)
+            {
+                return shopOverlay;
+            }
+
+            var canvas = ResolveRunMapCanvas();
+            if (canvas == null)
+            {
+                return null;
+            }
+
+            shopOverlay = ShopRoomOverlayUIView.EnsureOnCanvas(canvas);
+            return shopOverlay;
+        }
+
+        private Transform ResolveRunMapCanvas()
+        {
+            var canvasGo = GameObject.Find("RunMapCanvas");
+            var canvas = canvasGo != null
+                ? canvasGo.GetComponent<Canvas>()
+                : Object.FindAnyObjectByType<Canvas>();
+            return canvas != null ? canvas.transform : null;
         }
 
         private static void RefreshNotesHud()

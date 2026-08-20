@@ -9,6 +9,9 @@ namespace FracturedChorus.Menu
     public class MainMenuConfigToggleSwitch : MonoBehaviour, IPointerClickHandler
     {
         [SerializeField] private Slider visualSlider;
+        [SerializeField] private Image graphic;
+        [SerializeField] private Sprite spriteOn;
+        [SerializeField] private Sprite spriteOff;
 
         public event Action<bool> ValueChanged;
 
@@ -29,13 +32,17 @@ namespace FracturedChorus.Menu
                 visualSlider.maxValue = 1f;
             }
 
-            var hit = GetComponent<Image>();
-            if (hit != null)
+            if (graphic == null)
             {
-                hit.raycastTarget = true;
-                if (hit.color.a <= 0.001f)
+                graphic = GetComponent<Image>();
+            }
+
+            if (graphic != null)
+            {
+                graphic.raycastTarget = true;
+                if (spriteOn == null && spriteOff == null && graphic.color.a <= 0.001f)
                 {
-                    hit.color = new Color(1f, 1f, 1f, 0.001f);
+                    graphic.color = new Color(1f, 1f, 1f, 0.001f);
                 }
             }
         }
@@ -67,12 +74,22 @@ namespace FracturedChorus.Menu
 
         private void ApplyVisual(bool isOn)
         {
-            if (visualSlider == null)
+            if (visualSlider != null)
+            {
+                visualSlider.SetValueWithoutNotify(isOn ? 1f : 0f);
+            }
+
+            if (graphic == null)
             {
                 return;
             }
 
-            visualSlider.SetValueWithoutNotify(isOn ? 1f : 0f);
+            var sprite = isOn ? spriteOn : spriteOff;
+            if (sprite != null)
+            {
+                graphic.sprite = sprite;
+                graphic.color = Color.white;
+            }
         }
     }
 }

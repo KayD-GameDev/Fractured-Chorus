@@ -283,8 +283,13 @@ namespace FracturedChorus.Editor
                 if (legend != null)
                 {
                     var so = new SerializedObject(legend);
-                    so.FindProperty("iconSet").objectReferenceValue = iconSet;
-                    so.ApplyModifiedPropertiesWithoutUndo();
+                    var prop = so.FindProperty("iconSet");
+                    if (prop != null)
+                    {
+                        prop.objectReferenceValue = iconSet;
+                        so.ApplyModifiedPropertiesWithoutUndo();
+                    }
+
                     EditorUtility.SetDirty(legend);
                     legend.Apply();
                 }

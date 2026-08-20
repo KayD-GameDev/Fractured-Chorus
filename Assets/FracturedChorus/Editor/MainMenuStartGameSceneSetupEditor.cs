@@ -15,14 +15,15 @@ namespace FracturedChorus.Editor
     {
         private const string ScenePath = "Assets/FracturedChorus/Scenes/MainMenuStartGame.unity";
         internal const string ScenePathForAutoUpgrade = ScenePath;
-        private const string AttractSpritePath = "Assets/FracturedChorus/Art/UI/TitleScreen/TitleScreen_Attract_PressAnyButton_v2.png";
-        private const string MainMenuSpritePath = "Assets/FracturedChorus/Art/UI/TitleScreen/TitleScreen_MainMenu_Background_v5.png";
+        private const string AttractSpritePath = "Assets/FracturedChorus/Art/UI/TitleScreen/TitleScreen_Attract_NoUI_v1.png";
+        private const string MainMenuSpritePath = "Assets/FracturedChorus/Art/UI/TitleScreen/TitleScreen_MainMenu_Env_v1.png";
         private const string MenuBgmPath = "Assets/FracturedChorus/Audio/Music/Midnight_BGM_Menu.mp3";
         private const string MenuFemaleVoicePath = "Assets/FracturedChorus/Audio/Voice/MainMenu_Female_Voice.mp3";
         private const string MenuMaleVoicePath = "Assets/FracturedChorus/Audio/Voice/MainMenu_Male_Voice.mp3";
         private const string MenuChangeMenuSfxPath = "Assets/FracturedChorus/Audio/SFX/MainMenu_ChangeMenu_Ting.mp3";
         private const string MenuButtonPressSfxPath = "Assets/FracturedChorus/Audio/SFX/MainMenu_ButtonPress.wav";
-        private const string ConfigBackgroundPath = "Assets/FracturedChorus/Art/UI/ConfigMenu/ConfigMenu_Background_v1.png";
+        private const string ConfigBackgroundPath = "Assets/FracturedChorus/Art/UI/ConfigMenu/config_bg_memory_hall_v1.png";
+        private const string ConfigRenPosePath = "Assets/FracturedChorus/Art/Characters/Ren/School/ren_config_pose_fx_v1.png";
 
         [MenuItem("Fractured Chorus/Create MainMenuStartGame Scene")]
         public static void CreateMainMenuStartGameScene()
@@ -352,13 +353,16 @@ namespace FracturedChorus.Editor
             {
                 StripConfigLayoutGroups();
                 EnsureConfigSkipUnreadRow();
-                WireConfigOverlayReferences(controller);
+                EnsureConfigRenArt();
                 settingsOverlay = GameObject.Find("SettingsOverlay")?.GetComponent<CanvasGroup>();
             }
             else
             {
                 settingsOverlay = CreateSettingsOverlay(canvas, controller);
             }
+
+            WireConfigOverlayReferences(controller);
+            ConfigUiKitApply.Apply(setPreview: true);
 
             if (settingsOverlay != null)
             {
@@ -707,6 +711,7 @@ namespace FracturedChorus.Editor
             menuUiGroup.alpha = 1f;
 
             WireController(controller, attractLayer, mainMenuBackground, menuUiGroup, menuController, settingsOverlay, archiveOverlay, sceneFadeOverlay);
+            TitleScreenChromeApply.Apply(root);
             controller.SetEditorPreview(MainMenuStartGameController.MainMenuEditorPreview.Attract);
             SceneFontSetupEditor.FinalizeSceneCanvas(canvas.gameObject);
 
@@ -1702,6 +1707,55 @@ namespace FracturedChorus.Editor
             so.ApplyModifiedPropertiesWithoutUndo();
         }
 
+        public static bool EnsureConfigRenArt()
+        {
+            var settings = GameObject.Find("SettingsOverlay");
+            if (settings == null)
+            {
+                return false;
+            }
+
+            EnsureConfigRenArt(settings.transform);
+            return true;
+        }
+
+        private static void EnsureConfigRenArt(Transform overlay)
+        {
+            var existing = overlay.Find("ConfigRen");
+            var created = existing == null;
+            var go = created ? CreateUiObject("ConfigRen", overlay) : existing.gameObject;
+            var image = go.GetComponent<Image>();
+            if (image == null)
+            {
+                image = go.AddComponent<Image>();
+            }
+            image.sprite = LoadSprite(ConfigRenPosePath);
+            image.preserveAspect = true;
+            image.raycastTarget = false;
+            image.color = Color.white;
+            image.type = Image.Type.Simple;
+            image.useSpriteMesh = false;
+
+            if (created)
+            {
+                var rect = go.GetComponent<RectTransform>();
+                rect.anchorMin = new Vector2(0.76f, 0.46f);
+                rect.anchorMax = new Vector2(0.76f, 0.46f);
+                rect.pivot = new Vector2(0.52f, 0.42f);
+                rect.sizeDelta = new Vector2(980f, 1470f);
+                rect.anchoredPosition = new Vector2(24f, -8f);
+                rect.localScale = Vector3.one;
+            }
+
+            var bg = overlay.Find("ConfigBackground");
+            if (bg != null)
+            {
+                go.transform.SetSiblingIndex(bg.GetSiblingIndex() + 1);
+            }
+
+            EditorUtility.SetDirty(go);
+        }
+
         private static CanvasGroup CreateSettingsOverlay(Transform canvas, MainMenuStartGameController controller)
         {
             var existing = canvas.Find("SettingsOverlay");
@@ -1728,6 +1782,8 @@ namespace FracturedChorus.Editor
             bgImage.preserveAspect = false;
             bgImage.raycastTarget = false;
             bgImage.color = Color.white;
+
+            EnsureConfigRenArt(overlayGo.transform);
 
             var uiRootGo = CreateUiObject("ConfigUiRoot", overlayGo.transform);
             SetFreeRect(uiRootGo, new Vector2(0.24f, 0.5f), new Vector2(768f, 734f), Vector2.zero);
@@ -2165,7 +2221,7 @@ namespace FracturedChorus.Editor
     [InitializeOnLoad]
     internal static class MainMenuStartGameConfigUiAutoUpgrade
     {
-        private const string SessionKey = "FC_MainMenuStartGame_ConfigUi_v4";
+        private const string SessionKey = "FC_MainMenuStartGame_ConfigUi_v9";
 
         static MainMenuStartGameConfigUiAutoUpgrade()
         {
@@ -2201,6 +2257,75 @@ namespace FracturedChorus.Editor
                 MainMenuStartGameSceneSetupEditor.EnsureConfigSkipUnreadRow();
                 EditorSceneManager.MarkSceneDirty(scene);
             }
+
+            if (settings.transform.Find("ConfigRen") == null)
+            {
+                MainMenuStartGameSceneSetupEditor.EnsureConfigRenArt();
+                EditorSceneManager.MarkSceneDirty(scene);
+            }
+
+            var volumeFill = GameObject.Find("Row_Volume")?.transform.Find("Slider/Fill Area/Fill")?.GetComponent<UnityEngine.UI.Image>();
+            var volumeHandle = GameObject.Find("Row_Volume")?.transform.Find("Slider/Handle Slide Area/Handle")?.GetComponent<UnityEngine.UI.Image>();
+            var volumeTrack = GameObject.Find("Row_Volume")?.transform.Find("Slider/Background")?.GetComponent<UnityEngine.UI.Image>();
+            if (GameObject.Find("ConfigUiRoot")?.transform.Find("Panel") == null ||
+                volumeTrack == null || volumeTrack.sprite == null ||
+                volumeFill == null || volumeFill.sprite == null ||
+                volumeHandle == null || volumeHandle.sprite == null)
+            {
+                ConfigUiKitApply.Apply(setPreview: true);
+                EditorSceneManager.MarkSceneDirty(scene);
+            }
+        }
+    }
+
+    [InitializeOnLoad]
+    internal static class MainMenuStartGameTitleChromeAutoApply
+    {
+        private const string SessionKey = "FC_MainMenuStartGame_TitleChrome_v4";
+
+        static MainMenuStartGameTitleChromeAutoApply()
+        {
+            EditorSceneManager.sceneOpened += OnSceneOpened;
+            EditorApplication.delayCall += TryApplyActiveScene;
+        }
+
+        private static void OnSceneOpened(UnityEngine.SceneManagement.Scene scene, OpenSceneMode mode)
+        {
+            TryApply(scene);
+        }
+
+        private static void TryApplyActiveScene()
+        {
+            TryApply(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
+        }
+
+        private static void TryApply(UnityEngine.SceneManagement.Scene scene)
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+            {
+                return;
+            }
+
+            if (scene.path != MainMenuStartGameSceneSetupEditor.ScenePathForAutoUpgrade)
+            {
+                return;
+            }
+
+            if (SessionState.GetBool(SessionKey, false))
+            {
+                return;
+            }
+
+            var root = GameObject.Find("MainMenuStartGameRoot");
+            if (root == null)
+            {
+                return;
+            }
+
+            TitleScreenChromeApply.Apply(root);
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            SessionState.SetBool(SessionKey, true);
         }
     }
 

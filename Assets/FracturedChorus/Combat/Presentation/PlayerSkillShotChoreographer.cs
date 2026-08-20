@@ -53,11 +53,11 @@ namespace FracturedChorus.Combat.Presentation
         [SerializeField] private float glassShatterSeconds = 0.28f;
 
         [Header("Skill 3 — Multi shot (Ultimate)")]
-        [SerializeField] [Min(1)] private int skill3BulletCount = 3;
+        [SerializeField] [Min(1)] private int skill3BulletCount = 2;
         [SerializeField] private float skill3AnimSampleRate = 24f;
-        [SerializeField] private int skill3ShotFrameA = 14;
-        [SerializeField] private int skill3ShotFrameB = 22;
-        [SerializeField] private float skill3MinChargeSeconds = 0.95f;
+        [SerializeField] private int skill3ShotFrameA = 6;
+        [SerializeField] private int skill3ShotFrameB = 10;
+        [SerializeField] private float skill3MinChargeSeconds;
         [SerializeField] private float skill3VerticalSpread = 0.22f;
         [SerializeField] private float skill3GlassDelaySeconds = 0.08f;
         [SerializeField] private float skill3GlassWorldSize = 3.45f;
@@ -89,6 +89,8 @@ namespace FracturedChorus.Combat.Presentation
         public bool IsMultiBulletSkill(SkillDefinitionSO skill) =>
             ResolvePresentation(skill) == RenSkillPresentation.MultiBullet;
 
+        public int Skill3ShotCount => 2;
+
         public void Configure(CombatSession session)
         {
             Unsubscribe();
@@ -109,7 +111,7 @@ namespace FracturedChorus.Combat.Presentation
             skill3AnimSampleRate = Mathf.Max(1f, skill3AnimSampleRate);
             skill3ShotFrameA = Mathf.Max(0, skill3ShotFrameA);
             skill3ShotFrameB = Mathf.Max(skill3ShotFrameA, skill3ShotFrameB);
-            skill3MinChargeSeconds = Mathf.Max(0.2f, skill3MinChargeSeconds);
+            skill3MinChargeSeconds = Mathf.Max(0f, skill3MinChargeSeconds);
             meleeAnimSampleRate = Mathf.Max(1f, meleeAnimSampleRate);
             meleeImpactFrame = Mathf.Max(0, meleeImpactFrame);
             meleeStandoffX = Mathf.Max(0.35f, meleeStandoffX);
@@ -531,26 +533,17 @@ namespace FracturedChorus.Combat.Presentation
             bool playAttackAnimation)
         {
             EnsureDefaults();
-            var count = Mathf.Max(1, skill3BulletCount);
+            var count = Skill3ShotCount;
             var settings = BuildBulletSettings();
             var sampleRate = Mathf.Max(1f, skill3AnimSampleRate);
             var frameA = Mathf.Max(0, skill3ShotFrameA);
             var frameB = Mathf.Max(frameA, skill3ShotFrameB);
             var timeA = frameA / sampleRate;
             var timeB = frameB / sampleRate;
-            var resolveFired = false;
-            Action fireResolve = () =>
-            {
-                if (resolveFired || onImpact == null)
-                {
-                    return;
-                }
-
-                resolveFired = true;
-                onImpact.Invoke();
-            };
+            var sfx = FindAnyObjectByType<CombatSfxController>();
 
             yield return EncounterDirector.PresentArmedCaster();
+            var animStartedAt = Time.time;
             if (playAttackAnimation && sourceView != null && skill != null)
             {
                 sourceView.PlayAttackAnimationHold(skill);
@@ -572,85 +565,52 @@ namespace FracturedChorus.Combat.Presentation
                 var convergeAt = Mathf.Clamp01(ultAuraConvergeNormalized);
                 var orbitSeconds = charge * convergeAt;
                 var convergeSeconds = charge * (1f - convergeAt);
-                yield return aura.PlayOrbitThenConverge(from, orbitSeconds, convergeSeconds);
+                StartCoroutine(aura.PlayOrbitThenConverge(from, orbitSeconds, convergeSeconds));
             }
-            else
+
+            var waitA = Mathf.Max(0f, timeA - (Time.time - animStartedAt));
+            if (waitA > 0f)
             {
-                var charge = Mathf.Max(Mathf.Max(0f, timeA), skill3MinChargeSeconds);
-                if (charge > 0f)
-                {
-                    yield return new WaitForSeconds(charge);
-                }
+                yield return new WaitForSeconds(waitA);
             }
 
             settings = BuildPierceBulletSettings(to, withGlassShatter: true);
             settings.GlassShatter = BuildGlassShatterSettings(skill3GlassWorldSize);
             settings.FlightFrames = ResolveSkill3FlightFrames();
             settings.HeadWorldSize = Mathf.Max(0.6f, skill3BulletWorldSize);
-            var impactFxFired = false;
-            settings.OnImpact = world =>
-            {
-                if (impactFxFired)
-                {
-                    fireResolve();
-                    return;
-                }
+            settings.OnImpact = null;
 
-                impactFxFired = true;
-                FindAnyObjectByType<CombatSfxController>()?.PlayRenSkillSlotImmediate(SkillSlotKind.Ultimate);
-                CombatImpactFeel.PunchUltimateNow();
-                if (!EncounterDirector.TryQueueArmedVictimHit(() => fireResolve()))
-                {
-                    fireResolve();
-                }
-            };
-
-            var span = Mathf.Max(0f, timeB - timeA);
             for (var i = 0; i < count; i++)
             {
                 if (i > 0)
                 {
-                    var gap = count <= 1 ? 0f : span / (count - 1);
+                    var gap = Mathf.Max(0f, timeB - timeA);
                     if (gap > 0f)
                     {
                         yield return new WaitForSeconds(gap);
                     }
                 }
 
-                FindAnyObjectByType<CombatSfxController>()?.PlayRenSkillSlotImmediate(SkillSlotKind.Skill);
+                sfx?.PlayRenSkillSlotRestarted(SkillSlotKind.Ultimate);
+                EncounterDirector.PulseArmedVictimHit();
+                CombatImpactFeel.PunchUltimateNow();
+                if (i == 0)
+                {
+                    EncounterDirector.TryQueueArmedVictimCamera();
+                }
+
+                onImpact?.Invoke();
                 SpawnSkill3Bullet(from, to, i, count, settings, parent, withGlassShatter: i == 0);
             }
 
             var flightWait = RenBulletShotView.EstimatePresentationSeconds(from, to, settings);
-            var staggerTail = count <= 1 ? 0f : span;
-            var wait = Mathf.Max(
-                flightWait,
-                EstimateSkill3ImpactTravelSeconds(from, to, settings)
-                + RenGlassShatterView.EstimateSeconds(BuildGlassShatterSettings(skill3GlassWorldSize)))
-                       + staggerTail;
-            if (wait > 0f)
+            if (flightWait > 0f)
             {
-                yield return new WaitForSeconds(wait);
+                yield return new WaitForSeconds(flightWait);
             }
 
             yield return EncounterDirector.WaitArmedVictimFocus();
-
-            if (!resolveFired)
-            {
-                fireResolve();
-            }
-
-            if (skill3ImpactHoldSeconds > 0f)
-            {
-                yield return new WaitForSeconds(skill3ImpactHoldSeconds);
-            }
-
             aura?.StopAndDestroy();
-
-            if (skill3AftermathHoldSeconds > 0f)
-            {
-                yield return new WaitForSeconds(skill3AftermathHoldSeconds);
-            }
         }
 
         private float EstimateSkill3ImpactTravelSeconds(

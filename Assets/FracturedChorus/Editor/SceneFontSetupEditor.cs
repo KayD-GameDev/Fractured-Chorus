@@ -13,6 +13,7 @@ namespace FracturedChorus.Editor
         private static readonly string[] ScenePaths =
         {
             "Assets/FracturedChorus/Scenes/MainMenuStartGame.unity",
+            "Assets/FracturedChorus/Scenes/MainMenuLayoutSandbox.unity",
             "Assets/FracturedChorus/Scenes/PrologueVN.unity",
             "Assets/FracturedChorus/Scenes/OpeningInvestigation.unity",
             "Assets/FracturedChorus/Scenes/CampusHub.unity",

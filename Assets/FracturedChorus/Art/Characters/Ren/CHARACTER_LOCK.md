@@ -28,6 +28,19 @@
 - Path: `Art/Characters/Ren/School/ren_hima_uniform_menu_fullbody_v1.png`
 - Must match Face / Outfit lock (grey eyes + SyncPod on ear)
 
+## Title screen pose
+- Path: `Art/UI/TitleScreen/SheetV1/char_ren_title_pose_v1_alpha.png`
+- Same school identity; reach pose (left palm toward camera, right hand in pocket)
+- Fitted **black leather gloves** on both hands (title keyart only)
+- Cool smirk; grey irises
+
+## Config pose
+- Clean: `Art/Characters/Ren/School/ren_config_pose_v1.png`
+- Overlay: `Art/Characters/Ren/School/ren_config_pose_fx_v1.png` (cùng pose; hào quang + viền hologram; **không** pha lê; tóc sót phông nhuộm hồng/holo; mỏm tay trái rè/glitch)
+- Same school identity (grey irises, SyncPod, gold note pin, waveform tie, light-blue collar trim)
+- Floating lean-back; right arm reach with **fingerless glove on right hand only** (config keyart)
+- Left arm tucked behind torso
+
 ## Bust framing
 - Prefer 1024×1536 PNG transparent; clean alpha
 - Default portrait: `Art/UI/Narrative/Portraits/ren_school_bust_neutral_v1.png`

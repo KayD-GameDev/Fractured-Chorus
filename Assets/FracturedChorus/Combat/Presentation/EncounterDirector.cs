@@ -64,6 +64,7 @@ namespace FracturedChorus.Combat.Presentation
         [Tooltip("Animator speed khi Skill 3 / Ultimate — chậm hơn để gồng lực.")]
         [SerializeField] [Range(0.2f, 1f)] private float ultimateEncounterAnimSpeed = 0.42f;
         [SerializeField] private float ultimateAftermathHoldSeconds = 0.55f;
+        [SerializeField] private float ultimateReturnDelaySeconds = 1f;
 
         [Header("Presentation")]
         [SerializeField] private bool hideOtherUnits = true;
@@ -79,6 +80,8 @@ namespace FracturedChorus.Combat.Presentation
         [SerializeField] private float ultimateVictimZoomOrtho = 3.25f;
         [SerializeField] private float ultimateFocusSeconds = 0.18f;
         [SerializeField] private float swordCastHoldSeconds = 0.14f;
+
+        private const float PairFramePadding = 0.45f;
 
         private CombatSession _session;
         private bool _busy;
@@ -326,7 +329,7 @@ namespace FracturedChorus.Combat.Presentation
 
             if (moveCamera)
             {
-                yield return MoveCameraToStage(playerStage, enemyStage);
+                yield return MoveCameraToStage(playerView, enemyView, playerStage, enemyStage);
             }
 
             PlayApproachLocomotion(playerView, playerStage);
@@ -345,19 +348,27 @@ namespace FracturedChorus.Combat.Presentation
             {
                 yield return PlayDuelAndResolve(beatIndex, playerView, enemyView, playerSkill);
                 yield return WaitArmedVictimFocus();
-                yield return HoldDamagePoses(playerView, enemyView);
+                if (IsUltimateSkill(playerSkill))
+                {
+                    RestoreEncounterAnimSpeed();
+                    var returnDelay = Mathf.Max(0f, ultimateReturnDelaySeconds);
+                    if (returnDelay > 0f)
+                    {
+                        yield return new WaitForSeconds(returnDelay);
+                    }
+                }
+                else
+                {
+                    yield return HoldDamagePoses(playerView, enemyView);
+                }
+
+                yield return ReturnParticipantsHome(playerView, enemyView);
             }
             finally
             {
                 UnsubscribeEncounterHits();
             }
 
-            if (IsUltimateSkill(playerSkill) && ultimateAftermathHoldSeconds > 0f)
-            {
-                yield return new WaitForSeconds(ultimateAftermathHoldSeconds);
-            }
-
-            yield return ReturnParticipantsHome(playerView, enemyView);
             RestorePhaseHomes();
 
             playerView.FinishCombatPhaseIdle();
@@ -654,11 +665,7 @@ namespace FracturedChorus.Combat.Presentation
             var countered = IsBeatFullyCountered(beatIndex);
             if (countered)
             {
-                if (!IsSkillOrUltimate(playerSkill))
-                {
-                    playerView.PlayCounterHold();
-                }
-
+                playerView.PlayCounterHold();
                 enemyView.PlayBeCounteredHold();
                 CharlotteCounterShieldView.TrySpawnFor(
                     playerView,
@@ -768,7 +775,7 @@ namespace FracturedChorus.Combat.Presentation
         {
             var countered = IsBeatFullyCountered(beatIndex);
             enemyView.PlayCastHold();
-            if (countered && !IsSkillOrUltimate(playerSkill))
+            if (countered)
             {
                 playerView.PlayCounterHold();
             }
@@ -950,7 +957,11 @@ namespace FracturedChorus.Combat.Presentation
             UnitView enemyView,
             SkillDefinitionSO playerSkill)
         {
-            var resolveFired = false;
+            var shotIndex = 0;
+            var shotCount = playerSkillShotChoreographer != null
+                ? playerSkillShotChoreographer.Skill3ShotCount
+                : 2;
+            var resolved = false;
             yield return playerSkillShotChoreographer.PlayBulletPresentationForCutsceneRoutine(
                 playerSkill,
                 playerView,
@@ -958,16 +969,19 @@ namespace FracturedChorus.Combat.Presentation
                 ResolveAim(enemyView),
                 onImpact: () =>
                 {
-                    if (resolveFired)
+                    var pulse = shotIndex;
+                    shotIndex++;
+                    _session?.ApplyPlayerSkillDamagePulse(beatIndex, pulse, shotCount);
+                    if (pulse < shotCount - 1 || resolved)
                     {
                         return;
                     }
 
-                    resolveFired = true;
+                    resolved = true;
                     ResolveAndShowHp(beatIndex, playerView, enemyView, playHitReaction: true);
                 });
 
-            if (!resolveFired)
+            if (!resolved)
             {
                 ResolveAndShowHp(beatIndex, playerView, enemyView, playHitReaction: true);
             }
@@ -1360,7 +1374,11 @@ namespace FracturedChorus.Combat.Presentation
             enemyStage.x += spread;
         }
 
-        private IEnumerator MoveCameraToStage(Vector3 playerStage, Vector3 enemyStage)
+        private IEnumerator MoveCameraToStage(
+            UnitView playerView,
+            UnitView enemyView,
+            Vector3 playerStage,
+            Vector3 enemyStage)
         {
             if (ResolveFocusCamera() == null)
             {
@@ -1368,10 +1386,13 @@ namespace FracturedChorus.Combat.Presentation
             }
 
             CaptureCameraHome();
-
-            var mid = (playerStage + enemyStage) * 0.5f;
-            var target = new Vector3(mid.x, mid.y, _cameraHomePos.z);
-            yield return LerpCamera(target, cameraZoomOrtho, cameraMoveSeconds);
+            ResolvePairFraming(
+                PredictBoundsAtFeet(playerView, playerStage),
+                PredictBoundsAtFeet(enemyView, enemyStage),
+                cameraZoomOrtho,
+                out var target,
+                out var ortho);
+            yield return LerpCamera(target, ortho, cameraMoveSeconds);
         }
 
         public void ArmUltimateFocus(UnitView caster, UnitView victim)
@@ -1389,8 +1410,7 @@ namespace FracturedChorus.Combat.Presentation
                 yield break;
             }
 
-            yield return director.FocusUnit(
-                director._ultCaster,
+            yield return director.FocusArmedPair(
                 director.ultimateCasterZoomOrtho,
                 director.ultimateFocusSeconds);
         }
@@ -1403,7 +1423,30 @@ namespace FracturedChorus.Combat.Presentation
                 return false;
             }
 
-            director.QueueVictimFocus(director._ultVictim, afterFocus);
+            director.QueueVictimFocus(director._ultVictim, afterFocus, playHit: true);
+            return true;
+        }
+
+        public static void PulseArmedVictimHit()
+        {
+            var director = ActiveInstance;
+            if (director == null || director._ultVictim == null)
+            {
+                return;
+            }
+
+            director.PlayVictimHitPulse(director._ultVictim);
+        }
+
+        public static bool TryQueueArmedVictimCamera()
+        {
+            var director = ActiveInstance;
+            if (director == null || !director._busy || director._ultVictim == null)
+            {
+                return false;
+            }
+
+            director.QueueVictimFocus(director._ultVictim, null, playHit: false);
             return true;
         }
 
@@ -1421,33 +1464,37 @@ namespace FracturedChorus.Combat.Presentation
             }
         }
 
-        private void QueueVictimFocus(UnitView victim, Action afterFocus)
+        private void QueueVictimFocus(UnitView victim, Action afterFocus, bool playHit)
         {
-            if (_ultimateVictimHitPlayed)
+            if (_victimFocusRoutine != null)
             {
+                if (playHit)
+                {
+                    PlayVictimHitPulse(victim);
+                }
+
                 afterFocus?.Invoke();
                 return;
             }
 
-            if (_victimFocusRoutine != null)
-            {
-                return;
-            }
-
-            _victimFocusRoutine = StartCoroutine(VictimFocusRoutine(victim, afterFocus));
+            _victimFocusRoutine = StartCoroutine(VictimFocusRoutine(victim, afterFocus, playHit));
         }
 
-        private IEnumerator VictimFocusRoutine(UnitView victim, Action afterFocus)
+        private IEnumerator VictimFocusRoutine(UnitView victim, Action afterFocus, bool playHit)
         {
-            yield return FocusUnit(victim, ultimateVictimZoomOrtho, ultimateFocusSeconds);
-            PlayVictimHitOnce(victim);
+            yield return FocusArmedPair(ultimateVictimZoomOrtho, ultimateFocusSeconds);
+            if (playHit)
+            {
+                PlayVictimHitPulse(victim);
+            }
+
             afterFocus?.Invoke();
             _victimFocusRoutine = null;
         }
 
-        private void PlayVictimHitOnce(UnitView victim)
+        private void PlayVictimHitPulse(UnitView victim)
         {
-            if (_ultimateVictimHitPlayed || victim == null)
+            if (victim == null)
             {
                 return;
             }
@@ -1462,17 +1509,71 @@ namespace FracturedChorus.Combat.Presentation
             victim.PlayBeCounteredHold();
         }
 
-        private IEnumerator FocusUnit(UnitView view, float ortho, float seconds)
+        private IEnumerator FocusArmedPair(float requestedOrtho, float seconds)
         {
-            if (!moveCamera || view == null || ResolveFocusCamera() == null)
+            if (!moveCamera || ResolveFocusCamera() == null)
             {
                 yield break;
             }
 
             CaptureCameraHome();
-            var world = view.GetDamageNumberAnchor();
-            var target = new Vector3(world.x, world.y, _cameraHomePos.z);
-            yield return LerpCamera(target, ortho, seconds);
+            if (_ultCaster != null && _ultVictim != null)
+            {
+                ResolvePairFraming(
+                    _ultCaster.GetVisualBounds(),
+                    _ultVictim.GetVisualBounds(),
+                    requestedOrtho,
+                    out var pairTarget,
+                    out var pairOrtho);
+                yield return LerpCamera(pairTarget, pairOrtho, seconds);
+                yield break;
+            }
+
+            var view = _ultCaster != null ? _ultCaster : _ultVictim;
+            if (view == null)
+            {
+                yield break;
+            }
+
+            var bounds = view.GetVisualBounds();
+            var mid = bounds.center;
+            yield return LerpCamera(
+                new Vector3(mid.x, mid.y, _cameraHomePos.z),
+                FitOrtho(bounds, requestedOrtho),
+                seconds);
+        }
+
+        private static Bounds PredictBoundsAtFeet(UnitView view, Vector3 stageFeet)
+        {
+            if (view == null)
+            {
+                return new Bounds(stageFeet, Vector3.one);
+            }
+
+            var bounds = view.GetVisualBounds();
+            bounds.center += stageFeet - view.FeetWorldPosition;
+            return bounds;
+        }
+
+        private void ResolvePairFraming(
+            Bounds a,
+            Bounds b,
+            float requestedOrtho,
+            out Vector3 target,
+            out float ortho)
+        {
+            var bounds = a;
+            bounds.Encapsulate(b);
+            var mid = bounds.center;
+            target = new Vector3(mid.x, mid.y, _cameraHomePos.z);
+            ortho = FitOrtho(bounds, requestedOrtho);
+        }
+
+        private float FitOrtho(Bounds bounds, float requested)
+        {
+            var aspect = focusCamera != null ? Mathf.Max(0.01f, focusCamera.aspect) : 16f / 9f;
+            var fit = Mathf.Max(bounds.extents.y + PairFramePadding, (bounds.extents.x + PairFramePadding) / aspect);
+            return Mathf.Max(requested, fit);
         }
 
         private Camera ResolveFocusCamera()
@@ -1546,7 +1647,7 @@ namespace FracturedChorus.Combat.Presentation
             var t = 0f;
             while (t < seconds)
             {
-                t += Time.deltaTime;
+                t += Time.unscaledDeltaTime;
                 var p = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t / seconds));
                 focusCamera.transform.position = Vector3.Lerp(fromPos, targetPos, p);
                 var size = Mathf.Lerp(fromSize, targetOrthoOrFov, p);

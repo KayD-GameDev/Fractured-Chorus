@@ -241,18 +241,17 @@ namespace FracturedChorus.Combat.Presentation
                 yield return slide;
             }
 
-            var clipTail = Mathf.Max(0.05f, charlotte.EstimateSkillClipLength(skill) * 0.25f);
-            if (clipTail > 0f)
+            if (returnHome)
             {
-                yield return new WaitForSeconds(clipTail);
-            }
-
-            if (!returnHome)
-            {
+                SnapToHomeImmediate(charlotte, home);
                 yield break;
             }
 
-            yield return ReturnHome(charlotte, home, norHitRetreatSeconds);
+            var clearFeet = ResolveStandoffFeet(charlotte, boss, norHitStandoffX);
+            yield return charlotte.MoveFeetToRoutine(
+                clearFeet,
+                ResolveMoveSeconds(charlotte.FeetWorldPosition, clearFeet, skill2SlideSpeed, 0.12f));
+            charlotte.PlayIdleState();
         }
 
         private IEnumerator PlayUltimate(
@@ -300,9 +299,14 @@ namespace FracturedChorus.Combat.Presentation
 
             yield return EncounterDirector.WaitArmedVictimFocus();
 
-            if (ultImpactHoldSeconds > 0f)
+            var holdSeconds = Mathf.Max(ResolveShieldHoldSeconds(skill), ultDomeHoldSeconds);
+            if (EncounterDirector.IsPresenting)
             {
-                yield return new WaitForSeconds(ultImpactHoldSeconds);
+                QueuePartyDome(charlotte, holdSeconds);
+            }
+            else
+            {
+                SpawnPartyDome(charlotte, holdSeconds);
             }
 
             var knockDir = Mathf.Sign(boss.FeetWorldPosition.x - charlotte.FeetWorldPosition.x);
@@ -316,33 +320,14 @@ namespace FracturedChorus.Combat.Presentation
                 knockFeet,
                 ResolveMoveSeconds(boss.FeetWorldPosition, knockFeet, 14f, ultBossKnockSeconds));
 
-            var holdSeconds = Mathf.Max(ResolveShieldHoldSeconds(skill), ultDomeHoldSeconds);
-            if (EncounterDirector.IsPresenting)
+            if (!returnHome)
             {
-                QueuePartyDome(charlotte, holdSeconds);
-            }
-            else
-            {
-                SpawnPartyDome(charlotte, holdSeconds);
+                charlotte.PlayIdleState();
+                yield break;
             }
 
-            var clipLen = Mathf.Max(0.2f, charlotte.EstimateSkillClipLength(skill));
-            var clipTail = Mathf.Max(0.2f, clipLen - impactAt);
-            if (clipTail > 0f)
-            {
-                yield return new WaitForSeconds(clipTail);
-            }
-
-            if (ultAftermathHoldSeconds > 0f)
-            {
-                yield return new WaitForSeconds(ultAftermathHoldSeconds);
-            }
-
-            if (returnHome)
-            {
-                yield return ReturnHome(charlotte, home, norHitRetreatSeconds);
-            }
-
+            yield return new WaitForSeconds(1f);
+            yield return ReturnHome(charlotte, home, norHitRetreatSeconds);
             yield return boss.MoveFeetToRoutine(
                 bossHome,
                 ResolveMoveSeconds(boss.FeetWorldPosition, bossHome, 10f, 0.42f));
@@ -610,6 +595,24 @@ namespace FracturedChorus.Combat.Presentation
             charlotte.transform.position = new Vector3(home.x, home.y, charlotte.transform.position.z);
             charlotte.CaptureAnchor();
             charlotte.FinishCombatPhaseIdle();
+        }
+
+        private static void SnapToHomeImmediate(UnitView view, Vector3 home)
+        {
+            if (view == null)
+            {
+                return;
+            }
+
+            view.SnapFeetTo(home, view.transform.position.z);
+            view.CaptureAnchor();
+            if (view.Unit != null && !view.Unit.IsAlive)
+            {
+                view.PlayDeathAnimation();
+                return;
+            }
+
+            view.PlayIdleState();
         }
 
         private static float ResolveMoveSeconds(Vector3 from, Vector3 to, float speed, float fallback)

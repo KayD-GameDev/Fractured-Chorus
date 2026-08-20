@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
@@ -17,6 +18,15 @@ namespace FracturedChorus.Menu
         [SerializeField] private Text difficultyValueText;
         [SerializeField] private Button difficultyPrevButton;
         [SerializeField] private Button difficultyNextButton;
+        [SerializeField] private Button[] difficultyChipButtons;
+        [SerializeField] private Image[] difficultyChipGraphics;
+        [SerializeField] private Sprite chipNormalSprite;
+        [SerializeField] private Sprite chipSelectedSprite;
+        [SerializeField] private Button volumeMinusButton;
+        [SerializeField] private Button volumePlusButton;
+        [SerializeField] private Button brightnessMinusButton;
+        [SerializeField] private Button brightnessPlusButton;
+        [SerializeField] private float sliderStep = 0.05f;
         [SerializeField] private ConfigRow[] rows;
 
         private int _selectedIndex;
@@ -32,16 +42,22 @@ namespace FracturedChorus.Menu
         private void Awake()
         {
             ResolveSkipUnreadToggle();
+            BindRowPointers();
 
             if (volumeSlider != null)
             {
-                volumeSlider.onValueChanged.AddListener(value => MainMenuGameSettings.SetMasterVolume(value));
+                volumeSlider.onValueChanged.AddListener(value =>
+                {
+                    SelectRow(0, fromInput: false);
+                    MainMenuGameSettings.SetMasterVolume(value);
+                });
             }
 
             if (brightnessSlider != null)
             {
                 brightnessSlider.onValueChanged.AddListener(value =>
                 {
+                    SelectRow(1, fromInput: false);
                     MainMenuGameSettings.SetBackgroundBrightness(value);
                     screenController?.ApplyBackgroundBrightness(value);
                 });
@@ -54,13 +70,27 @@ namespace FracturedChorus.Menu
 
             if (difficultyPrevButton != null)
             {
-                difficultyPrevButton.onClick.AddListener(() => ChangeDifficulty(-1));
+                difficultyPrevButton.onClick.AddListener(() =>
+                {
+                    SelectRow(3, fromInput: false);
+                    ChangeDifficulty(-1);
+                });
             }
 
             if (difficultyNextButton != null)
             {
-                difficultyNextButton.onClick.AddListener(() => ChangeDifficulty(1));
+                difficultyNextButton.onClick.AddListener(() =>
+                {
+                    SelectRow(3, fromInput: false);
+                    ChangeDifficulty(1);
+                });
             }
+
+            BindChipButtons();
+            BindStepper(volumeMinusButton, 0, () => NudgeSlider(volumeSlider, -sliderStep));
+            BindStepper(volumePlusButton, 0, () => NudgeSlider(volumeSlider, sliderStep));
+            BindStepper(brightnessMinusButton, 1, () => NudgeSlider(brightnessSlider, -sliderStep));
+            BindStepper(brightnessPlusButton, 1, () => NudgeSlider(brightnessSlider, sliderStep));
 
             RemoveStrayPointerSfx();
         }
@@ -84,7 +114,7 @@ namespace FracturedChorus.Menu
 
             RefreshFromSettings();
             screenController?.ApplyBackgroundBrightness(MainMenuGameSettings.BackgroundBrightness);
-            SelectRow(0, fromInput: false);
+            SelectRow(1, fromInput: false);
         }
 
 #if UNITY_EDITOR
@@ -97,7 +127,8 @@ namespace FracturedChorus.Menu
             }
 
             RefreshFromSettings();
-            _selectedIndex = 0;
+            _selectedIndex = 1;
+            RefreshHighlight();
             RefreshInfoText();
         }
 #endif
@@ -120,6 +151,7 @@ namespace FracturedChorus.Menu
             }
 
             UpdateDifficultyLabel();
+            RefreshDifficultyChips();
         }
 
         public void HandleInput()
@@ -158,6 +190,15 @@ namespace FracturedChorus.Menu
         {
             MainMenuGameSettings.CycleDifficulty(direction);
             UpdateDifficultyLabel();
+            RefreshDifficultyChips();
+            RefreshInfoText();
+        }
+
+        private void SetDifficulty(GameDifficulty value)
+        {
+            MainMenuGameSettings.SetDifficulty(value);
+            UpdateDifficultyLabel();
+            RefreshDifficultyChips();
             RefreshInfoText();
         }
 
@@ -169,6 +210,79 @@ namespace FracturedChorus.Menu
             }
         }
 
+        private void BindChipButtons()
+        {
+            if (difficultyChipButtons == null)
+            {
+                return;
+            }
+
+            for (var i = 0; i < difficultyChipButtons.Length; i++)
+            {
+                var button = difficultyChipButtons[i];
+                if (button == null)
+                {
+                    continue;
+                }
+
+                var difficulty = (GameDifficulty)i;
+                button.onClick.AddListener(() =>
+                {
+                    SelectRow(3, fromInput: false);
+                    SetDifficulty(difficulty);
+                });
+            }
+        }
+
+        private void BindStepper(Button button, int rowIndex, UnityEngine.Events.UnityAction handler)
+        {
+            if (button == null)
+            {
+                return;
+            }
+
+            button.onClick.AddListener(() =>
+            {
+                SelectRow(rowIndex, fromInput: false);
+                handler();
+            });
+        }
+
+        private static void NudgeSlider(Slider slider, float delta)
+        {
+            if (slider == null)
+            {
+                return;
+            }
+
+            slider.value = Mathf.Clamp(slider.value + delta, slider.minValue, slider.maxValue);
+        }
+
+        private void RefreshDifficultyChips()
+        {
+            if (difficultyChipGraphics == null)
+            {
+                return;
+            }
+
+            var selected = (int)MainMenuGameSettings.Difficulty;
+            for (var i = 0; i < difficultyChipGraphics.Length; i++)
+            {
+                var graphic = difficultyChipGraphics[i];
+                if (graphic == null)
+                {
+                    continue;
+                }
+
+                var sprite = i == selected ? chipSelectedSprite : chipNormalSprite;
+                if (sprite != null)
+                {
+                    graphic.sprite = sprite;
+                    graphic.color = Color.white;
+                }
+            }
+        }
+
         private void SelectRow(int index, bool fromInput)
         {
             if (rows == null || rows.Length == 0)
@@ -176,9 +290,14 @@ namespace FracturedChorus.Menu
                 return;
             }
 
-            _selectedIndex = (index % rows.Length + rows.Length) % rows.Length;
+            var next = (index % rows.Length + rows.Length) % rows.Length;
+            var changed = next != _selectedIndex;
+            _selectedIndex = next;
             RefreshHighlight();
-            RefreshInfoText();
+            if (changed)
+            {
+                RefreshInfoText();
+            }
 
             if (!fromInput)
             {
@@ -226,36 +345,81 @@ namespace FracturedChorus.Menu
 
         private void OnSkipUnreadToggleChanged(bool enabled)
         {
+            SelectRow(2, fromInput: false);
             MainMenuGameSettings.SetSkipUnreadText(enabled);
             RefreshInfoText();
         }
 
+        private void BindRowPointers()
+        {
+            if (rows == null)
+            {
+                return;
+            }
+
+            for (var i = 0; i < rows.Length; i++)
+            {
+                var row = rows[i].row;
+                if (row == null)
+                {
+                    continue;
+                }
+
+                var graphic = row.GetComponent<Image>();
+                if (graphic == null)
+                {
+                    graphic = row.gameObject.AddComponent<Image>();
+                    graphic.color = new Color(1f, 1f, 1f, 0.001f);
+                }
+
+                graphic.raycastTarget = true;
+                var index = i;
+                var trigger = row.gameObject.GetComponent<EventTrigger>() ?? row.gameObject.AddComponent<EventTrigger>();
+                var entry = new EventTrigger.Entry { eventID = EventTriggerType.PointerDown };
+                entry.callback.AddListener(_ => SelectRow(index, fromInput: false));
+                trigger.triggers.Add(entry);
+            }
+        }
+
+        private void LateUpdate()
+        {
+            if (!_active || rows == null || EventSystem.current == null)
+            {
+                return;
+            }
+
+            var selected = EventSystem.current.currentSelectedGameObject;
+            if (selected == null)
+            {
+                return;
+            }
+
+            var selectedTransform = selected.transform;
+            for (var i = 0; i < rows.Length; i++)
+            {
+                var row = rows[i].row;
+                if (row == null)
+                {
+                    continue;
+                }
+
+                if (selectedTransform == row || selectedTransform.IsChildOf(row))
+                {
+                    if (i != _selectedIndex)
+                    {
+                        SelectRow(i, fromInput: false);
+                    }
+
+                    return;
+                }
+            }
+        }
+
         private void RefreshHighlight()
         {
-            if (highlightBar == null || rows == null || _selectedIndex < 0 || _selectedIndex >= rows.Length)
+            if (highlightBar != null)
             {
-                return;
-            }
-
-            var row = rows[_selectedIndex].row;
-            if (row == null)
-            {
-                return;
-            }
-
-            if (highlightBar.parent != row)
-            {
-                highlightBar.SetParent(row, false);
-            }
-
-            var barRect = highlightBar;
-            barRect.anchorMin = Vector2.zero;
-            barRect.anchorMax = Vector2.one;
-            barRect.offsetMin = new Vector2(-8f, -3f);
-            barRect.offsetMax = new Vector2(8f, 3f);
-            if (barRect.GetSiblingIndex() != 0)
-            {
-                barRect.SetAsFirstSibling();
+                highlightBar.gameObject.SetActive(false);
             }
         }
 

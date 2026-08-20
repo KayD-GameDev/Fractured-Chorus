@@ -1,0 +1,21 @@
+---
+description: Config menu layout lives in the scene; never bake RectTransform numbers into apply/setup code.
+globs:
+  - Assets/FracturedChorus/Editor/ConfigUiKitApply.cs
+  - Assets/FracturedChorus/Editor/MainMenuStartGameSceneSetupEditor.cs
+  - Assets/FracturedChorus/Scenes/MainMenuStartGame.unity
+  - Assets/FracturedChorus/Menu/MainMenuConfig*.cs
+alwaysApply: false
+---
+
+# Config UI — scene layout is source of truth
+
+Layout Config (pos / size / anchor của `ConfigUiRoot`, `Row_*`, Slider, Icon, Speaker, Chip, Footer, HighlightBar) **chỉ** nằm trên scene `MainMenuStartGame.unity`.
+
+1. **Không hard-code** `anchoredPosition` / `sizeDelta` / offset Fill-Handle vào `ConfigUiKitApply` hay auto-upgrade. Apply kit chỉ bind sprite + wire reference.
+2. Seed Rect chỉ khi **tạo object mới** (`created == true`), không ghi đè object đã có.
+3. User chỉnh trên Hierarchy rồi Save — lần Apply / mở scene sau **giữ nguyên**.
+4. Highlight runtime **copy** Rect từ scene (Awake), không ghi số vào C#.
+5. Chỉ menu **Rebuild Config UI (Resets Layout)** được phép xóa overlay và tạo layout mặc định.
+
+Sibling Config: `ConfigBackground` → `CrystalField` → `ConfigRen` → `ConfigUiRoot` (pha lê trên BG, dưới UI).
