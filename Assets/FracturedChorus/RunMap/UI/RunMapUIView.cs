@@ -241,6 +241,7 @@ namespace FracturedChorus.RunMap.UI
             _layout.FitToViewport(scrollRect, fitToViewport);
             _layout.ComputeContentSize(out _contentWidth, out _contentHeight);
             ApplyContentRect();
+            EnsureTemplateSet();
             ResolveLayers();
             EnsurePlayerMarkerLayer(_contentWidth, _contentHeight);
             ConfigureLayers(_contentWidth, _contentHeight, connectionsLayer, nodesLayer, floorLabelsLayer, playerMarkerLayer);
@@ -1040,6 +1041,10 @@ namespace FracturedChorus.RunMap.UI
 
 #if UNITY_EDITOR
             templateSet = AssetDatabase.LoadAssetAtPath<MapNodeTemplateSetSO>(MapNodeTemplateSetSO.DefaultAssetPath);
+            if (templateSet != null && !Application.isPlaying)
+            {
+                EditorUtility.SetDirty(this);
+            }
 #endif
         }
 
@@ -1183,6 +1188,7 @@ namespace FracturedChorus.RunMap.UI
 
         private MapConnectionLineView SpawnConnectionLine(Transform parent)
         {
+            EnsureTemplateSet();
             var prefab = templateSet != null ? templateSet.ConnectionPrefab : null;
             if (prefab == null)
             {

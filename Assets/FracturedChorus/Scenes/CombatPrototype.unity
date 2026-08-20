@@ -4824,8 +4824,8 @@ Transform:
   m_GameObject: {fileID: 487667171}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3.98, y: -0.25, z: -0.05}
-  m_LocalScale: {x: 0.58718735, y: 0.58718735, z: 0}
+  m_LocalPosition: {x: -4.15, y: 0.42, z: -0.05}
+  m_LocalScale: {x: 0.2, y: 0.2, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1279832176}
@@ -4880,7 +4880,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 10
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 1406067571975795107, guid: cd33ebd8e23034341b59b7e26df7933d, type: 3}
+  m_Sprite: {fileID: 7369638930748108147, guid: 9a437a3dfde73224686f2d2a81ee930e, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -4959,17 +4959,17 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.41831493, y: -1.8950932}
+  m_Offset: {x: 0.6842146, y: -1.6745038}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 2.69, y: 1.71}
+    oldSize: {x: 5.54, y: 12.44}
     newSize: {x: 2.69, y: 1.71}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 6.5871305, y: 8.957853}
+  m_Size: {x: 4.0332365, y: 9.061505}
   m_EdgeRadius: 0
 --- !u!95 &487667177
 Animator:
@@ -4979,7 +4979,7 @@ Animator:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 487667171}
-  m_Enabled: 0
+  m_Enabled: 1
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: 12c29e7f567c288469c95d9981469042, type: 2}
   m_CullingMode: 0
@@ -5005,7 +5005,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 57801d1152c33644e8e44afe45bba9f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitSpriteSimulator
-  spritePreview: 1
+  spritePreview: 0
   spriteLayouts:
   - displayName: Idle Sprite
     kind: 0
@@ -5014,8 +5014,8 @@ MonoBehaviour:
     linkedState: 1
     localScale: {x: 0.2, y: 0.2, z: 0}
     feetAnchorLocal: {x: 1.07, y: -3.72, z: 0}
-    colliderSize: {x: 0, y: 0}
-    colliderOffset: {x: 0, y: 0}
+    colliderSize: {x: 4.0332365, y: 9.061505}
+    colliderOffset: {x: 0.6842146, y: -1.6745038}
   - displayName: Die
     kind: 0
     sprite: {fileID: 1406067571975795107, guid: cd33ebd8e23034341b59b7e26df7933d, type: 3}
@@ -11149,7 +11149,7 @@ BoxCollider2D:
   m_Offset: {x: -0.26253343, y: -1.4966847}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.77916324, y: 0.5689823}
+    pivot: {x: 0.78, y: 0.5}
     oldSize: {x: 7.62, y: 10.04}
     newSize: {x: 7.62, y: 10.04}
     adaptiveTilingThreshold: 0.5
@@ -11166,7 +11166,7 @@ Animator:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1144376349}
-  m_Enabled: 1
+  m_Enabled: 0
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: 9f3606f88c566af4ba799d178ea6b508, type: 2}
   m_CullingMode: 0
@@ -12327,7 +12327,7 @@ Transform:
   m_GameObject: {fileID: 1279832175}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.01, y: -0.1, z: 0}
+  m_LocalPosition: {x: 1.07, y: -3.72, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
