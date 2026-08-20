@@ -160,6 +160,8 @@ GameObject:
   - component: {fileID: 4866315507010390410}
   - component: {fileID: 8896430567507075141}
   - component: {fileID: 5161364537359913172}
+  - component: {fileID: 7111845093726154101}
+  - component: {fileID: 7111845093726154102}
   m_Layer: 0
   m_Name: Enemy 1 - Pink_Shoes
   m_TagString: Untagged
@@ -265,3 +267,57 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &7111845093726154101
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2692246239172420728}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b1a796a85fd7cd4eaf895b06497b892, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitView
+  preset: {fileID: 0}
+  demoUnitKey: enemy_1
+  side: 1
+  row: -1
+  column: -1
+  spriteRenderer: {fileID: 8896430567507075141}
+  hpLabel: {fileID: 7750372130222861753}
+  bodyCollider: {fileID: 0}
+  feetAnchor: {fileID: 3344209939619251131}
+  animator: {fileID: 5161364537359913172}
+  counterStateName: 
+  guardStateName: 
+  beCounteredStateName: 
+  idleStateName: 
+  movingStateName: 
+  deathStateName: 
+  skillStateName: 
+  hitRetriggerNormalizedTime: 0.35
+  preserveSceneVisuals: 1
+  preserveSceneCollider: 1
+  showWorldHpLabel: 0
+--- !u!114 &7111845093726154102
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2692246239172420728}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57801d1152c33644e8e44afe45bba9f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitSpriteSimulator
+  spritePreview: 0
+  spriteLayouts:
+  - displayName: Idle
+    kind: 1
+    sprite: {fileID: -2488570540707343420, guid: 11211cb45dc56b3479096c9879dfb49c, type: 3}
+    animationClip: {fileID: 0}
+    linkedState: 1
+    localScale: {x: 1, y: 1, z: 1}
+    feetAnchorLocal: {x: -0.2079997, y: -0.8960001, z: -0.05}

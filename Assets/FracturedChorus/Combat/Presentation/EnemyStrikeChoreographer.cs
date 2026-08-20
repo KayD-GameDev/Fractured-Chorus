@@ -311,11 +311,8 @@ namespace FracturedChorus.Combat.Presentation
             }
 
             var lungeFeet = ResolveStrikeAnchor(receiverView, report.Target);
-            if (Vector2.Distance(
-                    new Vector2(attackerView.FeetWorldPosition.x, attackerView.FeetWorldPosition.y),
-                    new Vector2(lungeFeet.x, lungeFeet.y)) > 0.08f)
+            if (attackerView.TryBeginCombatTravelTo(lungeFeet))
             {
-                attackerView.PlayMovingLoop();
                 yield return attackerView.MoveFeetToRoutine(
                     lungeFeet,
                     ResolveMoveSeconds(
@@ -325,6 +322,7 @@ namespace FracturedChorus.Combat.Presentation
                         lungeSeconds));
             }
 
+            attackerView.ArriveAtCombatCell();
             attackerView.PlayCastHold(report.Skill);
             if (castHoldSeconds > 0f)
             {
@@ -678,18 +676,27 @@ namespace FracturedChorus.Combat.Presentation
 
             if (hasMoreStrikes)
             {
-                attackerView.PlayMovingLoop();
-                yield return attackerView.MoveFeetToRoutine(
-                    ResolveMidStaging(attackerView),
-                    retreatSeconds);
-                attackerView.PlayIdleState();
+                var staging = ResolveMidStaging(attackerView);
+                if (attackerView.TryBeginCombatTravelTo(staging))
+                {
+                    yield return attackerView.MoveFeetToRoutine(
+                        staging,
+                        retreatSeconds);
+                }
+
+                attackerView.PlayIdleStill();
                 yield break;
             }
 
-            attackerView.PlayMovingLoop();
-            yield return attackerView.MoveToRoutine(home, retreatSeconds);
+            if (!attackerView.IsRootNear(home))
+            {
+                attackerView.BeginCombatReturn();
+                yield return attackerView.MoveToRoutine(home, retreatSeconds);
+            }
+
+            attackerView.RestoreTravelFacing();
             SnapUnitToHome(attackerView, home);
-            attackerView.PlayIdleState();
+            attackerView.FinishCombatPhaseIdle();
             _homePositions.Remove(report.Attacker);
         }
 
@@ -702,7 +709,7 @@ namespace FracturedChorus.Combat.Presentation
                     continue;
                 }
 
-                view.PlayIdleState();
+                view.PlayIdleStill();
             }
         }
 

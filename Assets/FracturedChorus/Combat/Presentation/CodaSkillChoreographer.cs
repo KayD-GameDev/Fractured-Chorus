@@ -139,11 +139,14 @@ namespace FracturedChorus.Combat.Presentation
             }
 
             var strikeFeet = ResolveStandoffFeet(coda, boss, skill1StandoffX);
-            coda.PlayMovingLoop();
-            yield return coda.MoveFeetToRoutine(
-                strikeFeet,
-                ResolveMoveSeconds(coda.FeetWorldPosition, strikeFeet, skill1LungeSpeed, skill1LungeSeconds));
+            if (coda.TryBeginCombatTravelTo(strikeFeet))
+            {
+                yield return coda.MoveFeetToRoutine(
+                    strikeFeet,
+                    ResolveMoveSeconds(coda.FeetWorldPosition, strikeFeet, skill1LungeSpeed, skill1LungeSeconds));
+            }
 
+            coda.ArriveAtCombatCell();
             coda.PlayAttackAnimationHold(skill);
             var clip = Mathf.Max(0.25f, coda.EstimateSkillClipLength(skill));
             var impactAt = clip * skill1ImpactNormalized;
@@ -377,14 +380,12 @@ namespace FracturedChorus.Combat.Presentation
             if (Mathf.Abs(skill3CastBackX) > 0.01f)
             {
                 var castFeet = ResolveCastBackFeet(coda, boss, skill3CastBackX);
-                if (Vector2.Distance(
-                        new Vector2(coda.FeetWorldPosition.x, coda.FeetWorldPosition.y),
-                        new Vector2(castFeet.x, castFeet.y)) > 0.04f)
+                if (coda.TryBeginCombatTravelTo(castFeet))
                 {
-                    coda.PlayMovingLoop();
                     yield return coda.MoveFeetToRoutine(
                         castFeet,
                         Mathf.Max(0.04f, skill3CastStepSeconds));
+                    coda.ArriveAtCombatCell();
                 }
             }
 
@@ -557,11 +558,16 @@ namespace FracturedChorus.Combat.Presentation
 
         private IEnumerator ReturnHome(UnitView coda, Vector3 home, float seconds)
         {
-            coda.PlayMovingLoop();
-            yield return coda.MoveToRoutine(home, seconds);
+            if (!coda.IsRootNear(home))
+            {
+                coda.PlayMovingLoop();
+                yield return coda.MoveToRoutine(home, seconds);
+            }
+
+            coda.RestoreTravelFacing();
             coda.transform.position = new Vector3(home.x, home.y, coda.transform.position.z);
             coda.CaptureAnchor();
-            coda.PlayIdleState();
+            coda.FinishCombatPhaseIdle();
         }
 
         private static Vector3 ResolveAim(UnitView view, float height)

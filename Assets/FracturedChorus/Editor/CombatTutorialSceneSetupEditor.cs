@@ -538,10 +538,10 @@ namespace FracturedChorus.Editor
             so.FindProperty("counterStateName").stringValue = "Kiki-Counter";
             so.FindProperty("beCounteredStateName").stringValue = "Kiki-Hurt";
             so.FindProperty("movingStateName").stringValue = "Kiki-Moving";
+            so.FindProperty("deathStateName").stringValue = "Kiki-Death";
             so.ApplyModifiedPropertiesWithoutUndo();
             view.gameObject.name = "Unit_Kiki_Ueda";
             view.gameObject.SetActive(true);
-            view.transform.localScale = Vector3.one * 0.2f;
 
             var sr = view.GetComponent<SpriteRenderer>();
             if (sr != null && sprite != null)
@@ -559,36 +559,16 @@ namespace FracturedChorus.Editor
                 EditorUtility.SetDirty(animator);
             }
 
+            var sim = UnitSpriteSimulator.EnsureOn(view);
+            sim?.AuthorCurrentAsState(UnitCombatVisualState.Idle);
+
             EditorUtility.SetDirty(view);
             EditorUtility.SetDirty(view.gameObject);
         }
 
         private static void WirePartyAnimatorStates(UnitView view)
         {
-            var key = view.DemoUnitKey?.ToLowerInvariant() ?? string.Empty;
-            var so = new SerializedObject(view);
-
-            if (key.Contains("ren"))
-            {
-                so.FindProperty("idleStateName").stringValue = "Ren Idle";
-                so.FindProperty("counterStateName").stringValue = "Ren Counter";
-                so.FindProperty("beCounteredStateName").stringValue = "Ren Hurt";
-                so.FindProperty("movingStateName").stringValue = "Ren Moving";
-            }
-            else if (key.Contains("mage") || key.Contains("coda"))
-            {
-                so.FindProperty("idleStateName").stringValue = "Coda - Idle";
-                so.FindProperty("counterStateName").stringValue = "Coda - Counter";
-                so.FindProperty("beCounteredStateName").stringValue = "Coda - Hurt";
-                so.FindProperty("movingStateName").stringValue = "Coda - Moving";
-            }
-            else
-            {
-                return;
-            }
-
-            so.ApplyModifiedPropertiesWithoutUndo();
-            EditorUtility.SetDirty(view);
+            PartyCombatVisualSetupEditor.WireParty(view);
         }
 
         private static void ApplyBackgroundSprite()

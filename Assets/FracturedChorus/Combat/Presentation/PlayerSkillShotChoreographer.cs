@@ -355,11 +355,14 @@ namespace FracturedChorus.Combat.Presentation
             }
 
             var strikeFeet = ResolveMeleeStrikeFeet(renView, targetView);
-            renView.PlayMovingLoop();
-            yield return renView.MoveFeetToRoutine(
-                strikeFeet,
-                ResolveMoveSeconds(renView.FeetWorldPosition, strikeFeet, meleeLungeSpeed, meleeLungeSeconds));
+            if (renView.TryBeginCombatTravelTo(strikeFeet))
+            {
+                yield return renView.MoveFeetToRoutine(
+                    strikeFeet,
+                    ResolveMoveSeconds(renView.FeetWorldPosition, strikeFeet, meleeLungeSpeed, meleeLungeSeconds));
+            }
 
+            renView.ArriveAtCombatCell();
             renView.PlayAttackAnimationHold(skill);
 
             var clipLength = Mathf.Max(renView.EstimateSkillClipLength(skill), meleeArcSeconds + meleeImpactSeconds);
@@ -391,11 +394,16 @@ namespace FracturedChorus.Combat.Presentation
                 yield break;
             }
 
-            renView.PlayMovingLoop();
-            yield return renView.MoveToRoutine(home, meleeRetreatSeconds);
+            if (!renView.IsRootNear(home))
+            {
+                renView.PlayMovingLoop();
+                yield return renView.MoveToRoutine(home, meleeRetreatSeconds);
+            }
+
+            renView.RestoreTravelFacing();
             renView.transform.position = new Vector3(home.x, home.y, renView.transform.position.z);
             renView.CaptureAnchor();
-            renView.PlayIdleState();
+            renView.FinishCombatPhaseIdle();
         }
 
         private void SpawnCloseMeleeHit(UnitView renView, UnitView targetView)

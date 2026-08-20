@@ -17,7 +17,6 @@ namespace FracturedChorus.UI
         public const float ScanBarVerticalInset = -4f;
         public const float TrackLineY = 6f;
         public const float TrackLineHeight = 2f;
-        public const float BossTrackFrameHeight = 56f;
 
         public const float TimelineAnchorMinX = 0.02f;
         public const float TimelineAnchorMinY = 0.02f;

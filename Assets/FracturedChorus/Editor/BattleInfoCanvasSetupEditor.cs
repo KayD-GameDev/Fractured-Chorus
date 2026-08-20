@@ -30,6 +30,7 @@ namespace FracturedChorus.Editor
                     typeof(CombatPhaseBannerView));
                 Undo.RegisterCreatedObjectUndo(go, "Create Battle Info Canvas");
                 view = go.GetComponent<CombatPhaseBannerView>();
+                view.ConfigureNewOverlayCanvas();
             }
             else
             {

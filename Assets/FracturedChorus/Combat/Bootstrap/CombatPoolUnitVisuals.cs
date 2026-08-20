@@ -66,6 +66,7 @@ namespace FracturedChorus.Combat.Bootstrap
                 view = unitGo.AddComponent<UnitView>();
             }
 
+            UnitSpriteSimulator.EnsureOn(view);
             return view;
         }
 
@@ -89,17 +90,7 @@ namespace FracturedChorus.Combat.Bootstrap
             }
 
             view.EnsureDefaultCombatAnimStates();
-            var animator = view.GetComponent<Animator>();
-            var idle = ResolveIdleStateName(unitKey);
-            if (animator == null
-                || animator.runtimeAnimatorController == null
-                || string.IsNullOrEmpty(idle))
-            {
-                return;
-            }
-
-            animator.Play(idle, 0, 0f);
-            animator.Update(0f);
+            view.PlayIdleState();
         }
 
         public static GameObject LoadPrefab(string unitKey)
@@ -122,27 +113,6 @@ namespace FracturedChorus.Combat.Bootstrap
             }
 
             return _catalog != null ? _catalog.GetPrefab(unitKey) : null;
-        }
-
-        private static string ResolveIdleStateName(string unitKey)
-        {
-            switch (unitKey)
-            {
-                case CombatEnemyKeys.Enemy1:
-                    return "Enemy 1 - Idle";
-                case CombatEnemyKeys.Enemy2:
-                    return "Enemy 2 - Idle";
-                case CombatEnemyKeys.Enemy3:
-                    return "Enemy 3 - Idle";
-                case CombatEnemyKeys.Elite1:
-                    return "Elite 1 -Idle Sprite";
-                case CombatEnemyKeys.Elite2:
-                    return "Elite 2 - Idle Sprite";
-                case CombatEnemyKeys.Elite3:
-                    return "Elite 3 - Idle";
-                default:
-                    return null;
-            }
         }
 
 #if UNITY_EDITOR

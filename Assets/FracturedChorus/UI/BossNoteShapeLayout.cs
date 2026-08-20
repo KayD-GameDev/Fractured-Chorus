@@ -10,6 +10,9 @@ namespace FracturedChorus.UI
     [Serializable]
     public struct BossNoteShapeLayout
     {
+        [Tooltip("Tab name in Note Simulator. Empty = V0, V1, …")]
+        public string displayName;
+
         [Tooltip("Knob local pos from NoteSimulator center (belly region).")]
         public Vector2 knobLocal;
 
@@ -24,6 +27,16 @@ namespace FracturedChorus.UI
 
         [Tooltip("Sprite for this shape. Empty = use timeline catalog fallback.")]
         public Sprite sprite;
+
+        public string TabLabel(int index)
+        {
+            if (!string.IsNullOrWhiteSpace(displayName))
+            {
+                return displayName.Trim();
+            }
+
+            return "V" + index;
+        }
 
         /// <summary>Pin point in NoteSimulator space (onto BorderTop).</summary>
         public Vector2 PinInNoteSpace => knobLocal + railAnchorLocal;
@@ -41,9 +54,11 @@ namespace FracturedChorus.UI
             Vector2 knobSize,
             Vector2 railLocal,
             Vector2 numLocal,
-            Sprite sprite = null) =>
+            Sprite sprite = null,
+            string displayName = null) =>
             new()
             {
+                displayName = displayName,
                 knobLocal = knobLocal,
                 knobSize = knobSize.x > 0.5f ? knobSize : new Vector2(24f, 24f),
                 railAnchorLocal = railLocal,

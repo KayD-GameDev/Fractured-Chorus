@@ -1542,7 +1542,6 @@ namespace FracturedChorus.Combat.Bootstrap
                 var unitGo = new GameObject($"Unit_{unit.DisplayName}");
                 unitGo.transform.SetParent(unitsRoot, false);
                 unitGo.transform.position = cellWorld;
-                unitGo.transform.localScale = ResolveSpawnScale(spawn.preset);
                 EnsureSpawnSpriteRenderer(unitGo, spawn.preset, pos.Row);
                 view = unitGo.AddComponent<UnitView>();
             }
@@ -1573,16 +1572,6 @@ namespace FracturedChorus.Combat.Bootstrap
             }
 
             return HexBoardLayout.GetWorldPosition(pos, sideGap);
-        }
-
-        private static Vector3 ResolveSpawnScale(UnitPresetSO preset)
-        {
-            if (preset != null && (preset.role == UnitRole.Boss || preset.role == UnitRole.Elite))
-            {
-                return Vector3.one * 0.2f;
-            }
-
-            return Vector3.one * 0.15f;
         }
 
         private static void EnsureSpawnSpriteRenderer(GameObject unitGo, UnitPresetSO preset, int row)

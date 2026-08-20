@@ -34,13 +34,20 @@ namespace FracturedChorus.UI
         [SerializeField] private BoxCollider2D bodyCollider;
         [SerializeField] private UnitFeetAnchor feetAnchor;
         [SerializeField] private Animator animator;
+        [Header("Combat poses — Counter is also Guard")]
         [SerializeField] private string counterStateName;
-        [SerializeField] private string guardStateName;
+        [SerializeField, HideInInspector, FormerlySerializedAs("guardStateName")]
+        private string guardStateName;
         [SerializeField] private string beCounteredStateName;
         [SerializeField] private string idleStateName;
         [SerializeField] private string movingStateName;
         [SerializeField] private string deathStateName;
+        [Header("Attack clips — 1 Normal Hit, 2 Skill, 3 Ult")]
+        [SerializeField] private string normalHitStateName;
+        [FormerlySerializedAs("skillHitStateName")]
         [SerializeField] private string skillStateName;
+        [FormerlySerializedAs("ultHitStateName")]
+        [SerializeField] private string ultStateName;
         [SerializeField] [Range(0f, 1f)] private float hitRetriggerNormalizedTime = 0.35f;
         [Tooltip("Keep sprite/color/Transform scale authored in the scene.")]
         [SerializeField] private bool preserveSceneVisuals = true;
@@ -52,92 +59,163 @@ namespace FracturedChorus.UI
         public UnitPresetSO Preset => preset;
         public string DemoUnitKey => demoUnitKey;
         public UnitFeetAnchor FeetAnchor => feetAnchor;
+        public SpriteRenderer BodySpriteRenderer
+        {
+            get
+            {
+                ResolveSpriteRendererReference();
+                return spriteRenderer;
+            }
+        }
+
+        public BoxCollider2D BodyCollider
+        {
+            get
+            {
+                ResolveBodyColliderReference();
+                return bodyCollider;
+            }
+        }
+
+        public void ApplyBodyColliderShape(Vector2 size, Vector2 offset)
+        {
+            ResolveBodyColliderReference();
+            if (bodyCollider == null || size.x <= 0.001f || size.y <= 0.001f)
+            {
+                return;
+            }
+
+            bodyCollider.size = size;
+            bodyCollider.offset = offset;
+        }
 
         public void EnsureDefaultCombatAnimStates()
         {
+            MergeGuardIntoCounter();
             var key = demoUnitKey ?? string.Empty;
             switch (key)
             {
                 case "ren":
-                    SetAnimStateIfEmpty(ref counterStateName, "Ren Counter");
-                    SetAnimStateIfEmpty(ref beCounteredStateName, "Ren Hurt");
                     SetAnimStateIfEmpty(ref idleStateName, "Ren Idle");
                     SetAnimStateIfEmpty(ref movingStateName, "Ren Moving");
+                    SetAnimStateIfEmpty(ref beCounteredStateName, "Ren Hurt");
+                    SetAnimStateIfEmpty(ref counterStateName, "Ren Counter");
+                    SetAnimStateIfEmpty(ref deathStateName, "Ren Death");
+                    SetAnimStateIfEmpty(ref normalHitStateName, "Ren Skill 1");
+                    SetAnimStateIfEmpty(ref skillStateName, "Ren - Skill 2");
+                    SetAnimStateIfEmpty(ref ultStateName, "Ren - Skill 3");
                     break;
                 case "mage":
+                    SetAnimStateIfEmpty(ref idleStateName, "Coda - Idle");
                     SetAnimStateIfEmpty(ref counterStateName, "Coda - Counter");
                     SetAnimStateIfEmpty(ref beCounteredStateName, "Coda - Hurt");
-                    SetAnimStateIfEmpty(ref idleStateName, "Coda - Idle");
                     SetAnimStateIfEmpty(ref movingStateName, "Coda - Moving");
+                    SetAnimStateIfEmpty(ref deathStateName, "Coda - Death");
+                    SetAnimStateIfEmpty(ref normalHitStateName, "Coda Skill 1");
+                    SetAnimStateIfEmpty(ref skillStateName, "Coda Skill 2");
+                    SetAnimStateIfEmpty(ref ultStateName, "Coda Skill 3");
                     break;
                 case "Charlott":
                 case "charlotte":
                 case "tank":
-                    SetAnimStateIfEmpty(ref counterStateName, "Charlott_Guard");
-                    SetAnimStateIfEmpty(ref guardStateName, "Charlott_Guard");
-                    SetAnimStateIfEmpty(ref beCounteredStateName, "Charlott_Hurt");
                     SetAnimStateIfEmpty(ref idleStateName, "Charlott_Idle");
+                    SetAnimStateIfEmpty(ref counterStateName, "Charlott_Counter");
+                    SetAnimStateIfEmpty(ref beCounteredStateName, "Charlott_Hurt");
+                    SetAnimStateIfEmpty(ref movingStateName, "Charlott_Moving");
+                    SetAnimStateIfEmpty(ref deathStateName, "Charlott_Death");
+                    SetAnimStateIfEmpty(ref normalHitStateName, "Charlott_NorHit");
+                    SetAnimStateIfEmpty(ref skillStateName, "Charlott_Skill");
+                    SetAnimStateIfEmpty(ref ultStateName, "Charlott_Ultimate");
                     break;
                 case "grunt_left":
                     SetAnimStateIfEmpty(ref beCounteredStateName, "Mini 1 - Hurt");
                     SetAnimStateIfEmpty(ref idleStateName, "Mini 1 -Idle");
+                    SetAnimStateIfEmpty(ref movingStateName, "Mini 1 - Moving");
+                    SetAnimStateIfEmpty(ref deathStateName, "Mini 1 - Death");
                     break;
                 case "grunt_right":
                     SetAnimStateIfEmpty(ref beCounteredStateName, "Mini 2 - Hurt");
                     SetAnimStateIfEmpty(ref idleStateName, "Mini 2 - Idle");
                     SetAnimStateIfEmpty(ref movingStateName, "Mini 2 - Moving");
+                    SetAnimStateIfEmpty(ref deathStateName, "Mini 2 - Death");
                     break;
                 case CombatEnemyKeys.Enemy1:
                     SetAnimStateIfEmpty(ref beCounteredStateName, "Enemy 1 - Hurt");
                     SetAnimStateIfEmpty(ref idleStateName, "Enemy 1 - Idle");
                     SetAnimStateIfEmpty(ref movingStateName, "Enemy 1 - Moving");
-                    SetAnimStateIfEmpty(ref guardStateName, "Enemy 1 - Guard");
-                    SetAnimStateIfEmpty(ref skillStateName, "Enemy 1 - Guard");
+                    SetAnimStateIfEmpty(ref counterStateName, "Enemy 1 - Guard");
                     SetAnimStateIfEmpty(ref deathStateName, "Enemy 1 - Death");
+                    SetAnimStateIfEmpty(ref normalHitStateName, "Enemy 1 - Guard");
+                    SetAnimStateIfEmpty(ref skillStateName, "Enemy 1 - Guard");
                     break;
                 case CombatEnemyKeys.Enemy2:
                     SetAnimStateIfEmpty(ref beCounteredStateName, "Enemy 2 - Hurt");
                     SetAnimStateIfEmpty(ref idleStateName, "Enemy 2 - Idle");
                     SetAnimStateIfEmpty(ref movingStateName, "Enemy 2 - Moving");
-                    SetAnimStateIfEmpty(ref skillStateName, "Enemy 2 - Skill");
                     SetAnimStateIfEmpty(ref deathStateName, "Enemy 2 - Dead");
+                    SetAnimStateIfEmpty(ref normalHitStateName, "Enemy 2 - Skill");
+                    SetAnimStateIfEmpty(ref skillStateName, "Enemy 2 - Skill");
                     break;
                 case CombatEnemyKeys.Enemy3:
                     SetAnimStateIfEmpty(ref beCounteredStateName, "Enemy 3 - Hurt");
                     SetAnimStateIfEmpty(ref idleStateName, "Enemy 3 - Idle");
                     SetAnimStateIfEmpty(ref movingStateName, "Enemy 3 - Moving");
-                    SetAnimStateIfEmpty(ref skillStateName, "Enemy 3 - Skill 1");
                     SetAnimStateIfEmpty(ref deathStateName, "Enemy 3 - Dead");
+                    SetAnimStateIfEmpty(ref normalHitStateName, "Enemy 3 - Skill 1");
+                    SetAnimStateIfEmpty(ref skillStateName, "Enemy 3 - Skill 1");
+                    SetAnimStateIfEmpty(ref ultStateName, "Enemy 3 - Skill 2");
                     break;
                 case CombatEnemyKeys.Elite1:
                     SetAnimStateIfEmpty(ref beCounteredStateName, "Elite 1 -Hurt Sprite");
                     SetAnimStateIfEmpty(ref idleStateName, "Elite 1 -Idle Sprite");
                     SetAnimStateIfEmpty(ref movingStateName, "Elite 1 -Moving Sprite");
-                    SetAnimStateIfEmpty(ref guardStateName, "Elite 1 -Guard Sprite");
-                    SetAnimStateIfEmpty(ref skillStateName, "Elite 1 - Skill Sprite");
+                    SetAnimStateIfEmpty(ref counterStateName, "Elite 1 -Guard Sprite");
                     SetAnimStateIfEmpty(ref deathStateName, "Elite 1 - Death Sprite");
+                    SetAnimStateIfEmpty(ref normalHitStateName, "Elite 1 - Skill Sprite");
+                    SetAnimStateIfEmpty(ref skillStateName, "Elite 1 - Skill Sprite");
+                    SetAnimStateIfEmpty(ref ultStateName, "Elite 1 - Skill 2 Sprite");
                     break;
                 case CombatEnemyKeys.Elite2:
                     SetAnimStateIfEmpty(ref beCounteredStateName, "Elite 2 - Hurt Sprite");
                     SetAnimStateIfEmpty(ref idleStateName, "Elite 2 - Idle Sprite");
                     SetAnimStateIfEmpty(ref movingStateName, "Elite 2 - Moving Sprite");
-                    SetAnimStateIfEmpty(ref guardStateName, "Elite 2 - Guard Sprite");
-                    SetAnimStateIfEmpty(ref skillStateName, "Elite 2 - Skill Sprite");
+                    SetAnimStateIfEmpty(ref counterStateName, "Elite 2 - Guard Sprite");
                     SetAnimStateIfEmpty(ref deathStateName, "Elite 2 - Death Sprite");
+                    SetAnimStateIfEmpty(ref normalHitStateName, "Elite 2 - Skill Sprite");
+                    SetAnimStateIfEmpty(ref skillStateName, "Elite 2 - Skill Sprite");
                     break;
                 case CombatEnemyKeys.Elite3:
                     SetAnimStateIfEmpty(ref beCounteredStateName, "Elite 3 - Hurt");
                     SetAnimStateIfEmpty(ref idleStateName, "Elite 3 - Idle");
                     SetAnimStateIfEmpty(ref movingStateName, "Elite 3 - Moving");
-                    SetAnimStateIfEmpty(ref guardStateName, "Elite 3 - Guard");
-                    SetAnimStateIfEmpty(ref skillStateName, "Elite 3 - Skill");
+                    SetAnimStateIfEmpty(ref counterStateName, "Elite 3 - Guard");
                     SetAnimStateIfEmpty(ref deathStateName, "Elite 3 - Hurt");
+                    SetAnimStateIfEmpty(ref normalHitStateName, "Elite 3 - Skill");
+                    SetAnimStateIfEmpty(ref skillStateName, "Elite 3 - Skill");
+                    SetAnimStateIfEmpty(ref ultStateName, "Elite 3 - Skill 2");
                     break;
                 case "boss_despair":
                     SetAnimStateIfEmpty(ref beCounteredStateName, "Boss - Be Countered");
                     SetAnimStateIfEmpty(ref idleStateName, "Boss Idle");
                     SetAnimStateIfEmpty(ref movingStateName, "Boss - Moving");
+                    SetAnimStateIfEmpty(ref deathStateName, "Boss - Death");
                     break;
+                case "kiki_ueda":
+                case "kiki":
+                    SetAnimStateIfEmpty(ref idleStateName, "Kiki-Idle");
+                    SetAnimStateIfEmpty(ref counterStateName, "Kiki-Counter");
+                    SetAnimStateIfEmpty(ref beCounteredStateName, "Kiki-Hurt");
+                    SetAnimStateIfEmpty(ref movingStateName, "Kiki-Moving");
+                    SetAnimStateIfEmpty(ref deathStateName, "Kiki-Death");
+                    break;
+            }
+        }
+
+        private void MergeGuardIntoCounter()
+        {
+            if (string.IsNullOrWhiteSpace(counterStateName) && !string.IsNullOrWhiteSpace(guardStateName))
+            {
+                counterStateName = guardStateName;
             }
         }
 
@@ -182,6 +260,11 @@ namespace FracturedChorus.UI
 
         private void PlayCounterInternal(float normalizedTime, bool scheduleIdle)
         {
+            if (TryPlaySimulatorVisual(UnitCombatVisualState.Counter, normalizedTime, scheduleIdle))
+            {
+                return;
+            }
+
             ResolveAnimatorReference();
             var clip = ResolveCounterClip(out var stateName);
             if (clip == null)
@@ -194,6 +277,11 @@ namespace FracturedChorus.UI
 
         public void PlayCounterHitRetrigger()
         {
+            if (TryPlaySimulatorVisual(UnitCombatVisualState.Counter, hitRetriggerNormalizedTime, scheduleIdle: true))
+            {
+                return;
+            }
+
             ResolveAnimatorReference();
             var clip = ResolveCounterClip(out var stateName);
             if (clip == null)
@@ -220,6 +308,11 @@ namespace FracturedChorus.UI
 
         private void PlayBeCounteredInternal(float normalizedTime, bool scheduleIdle)
         {
+            if (TryPlaySimulatorVisual(UnitCombatVisualState.Hurt, normalizedTime, scheduleIdle))
+            {
+                return;
+            }
+
             ResolveAnimatorReference();
             var clip = ResolveBeCounteredClip(out var stateName);
             if (string.IsNullOrEmpty(stateName) && !string.IsNullOrEmpty(beCounteredStateName))
@@ -232,6 +325,11 @@ namespace FracturedChorus.UI
 
         public void PlayBeCounteredHitRetrigger()
         {
+            if (TryPlaySimulatorVisual(UnitCombatVisualState.Hurt, hitRetriggerNormalizedTime, scheduleIdle: true))
+            {
+                return;
+            }
+
             ResolveAnimatorReference();
             var clip = ResolveBeCounteredClip(out var stateName);
             PlayCombatAnimation(clip, stateName, hitRetriggerNormalizedTime, scheduleIdle: true);
@@ -239,6 +337,12 @@ namespace FracturedChorus.UI
 
         public void PlayDeathAnimation()
         {
+            RestoreTravelFacing();
+            if (TryPlaySimulatorVisual(UnitCombatVisualState.Death, 0f, scheduleIdle: false))
+            {
+                return;
+            }
+
             ResolveAnimatorReference();
             var clip = ResolveDeathClip(out var stateName);
             if (string.IsNullOrEmpty(stateName) && !string.IsNullOrEmpty(deathStateName))
@@ -257,10 +361,23 @@ namespace FracturedChorus.UI
             }
 
             PlayCombatAnimation(clip, stateName, 0f, scheduleIdle: false);
+            SnapDeathSpriteToCell();
+        }
+
+        private void SnapDeathSpriteToCell()
+        {
+            var feet = FeetWorldPosition;
+            PositionFeetAnchorAtSpriteBase();
+            PlaceFeetAt(feet);
         }
 
         public void PlayCastHold(SkillDefinitionSO skill = null)
         {
+            if (TryPlayAttackVisual(skill, scheduleIdle: false))
+            {
+                return;
+            }
+
             ResolveAnimatorReference();
             if (skill != null && skill.IsGuard)
             {
@@ -270,12 +387,15 @@ namespace FracturedChorus.UI
                     PlayCombatAnimation(guard, guardState, 0f, scheduleIdle: false);
                     return;
                 }
+
+                PlayCounterHold();
+                return;
             }
 
             var clip = ResolveSkillClip(skill, out var stateName);
-            if (clip == null && !string.IsNullOrEmpty(skillStateName))
+            if (clip == null && !string.IsNullOrEmpty(normalHitStateName))
             {
-                clip = ResolveClipByKeyword(skillStateName, skillStateName, out stateName);
+                clip = ResolveClipByKeyword(normalHitStateName, normalHitStateName, out stateName);
             }
 
             if (clip == null)
@@ -293,9 +413,9 @@ namespace FracturedChorus.UI
                 clip = ResolveGuardClip(out stateName);
             }
 
-            if (clip == null && !string.IsNullOrEmpty(skillStateName))
+            if (clip == null && !string.IsNullOrEmpty(normalHitStateName))
             {
-                PlayCombatAnimation(null, skillStateName, 0f, scheduleIdle: false);
+                PlayCombatAnimation(null, normalHitStateName, 0f, scheduleIdle: false);
                 return;
             }
 
@@ -319,12 +439,108 @@ namespace FracturedChorus.UI
         private Color _baseSpriteColor = Color.white;
         private bool _baseColorCaptured;
         private float _dimFactor = 1f;
+        private bool _authoredFlipX;
+        private bool _returnFacingActive;
+
+        public const float CombatFeetArriveEpsilon = 0.08f;
 
         private void PlayCombatAnimation(AnimationClip clip, string stateName, float normalizedTime, bool scheduleIdle)
         {
-            if (animator == null || string.IsNullOrEmpty(stateName))
+            if (animator == null || clip == null || string.IsNullOrEmpty(stateName))
             {
                 return;
+            }
+
+            stateName = stateName.Trim();
+            var hash = Animator.StringToHash(stateName);
+            if (!HasPlayableAnimatorState(stateName))
+            {
+                return;
+            }
+
+            animator.enabled = true;
+            if (_combatAnimRoutine != null)
+            {
+                StopCoroutine(_combatAnimRoutine);
+                _combatAnimRoutine = null;
+            }
+
+            animator.Play(hash, 0, Mathf.Clamp01(normalizedTime));
+
+            animator.Update(0.016f);
+            if (!scheduleIdle)
+            {
+                return;
+            }
+
+            var t = Mathf.Clamp01(normalizedTime);
+            var clipHold = clip != null ? clip.length * (1f - t) : 0f;
+            var remaining = Mathf.Max(MinCombatPoseHoldSec, clipHold);
+            _combatAnimRoutine = StartCoroutine(ReturnToIdleAfter(remaining));
+        }
+
+        private bool TryPlayAttackVisual(SkillDefinitionSO skill, bool scheduleIdle)
+        {
+            if (skill != null && skill.IsGuard)
+            {
+                if (TryPlaySimulatorVisual(UnitCombatVisualState.Guard, 0f, scheduleIdle))
+                {
+                    return true;
+                }
+
+                return TryPlaySimulatorVisual(UnitCombatVisualState.Counter, 0f, scheduleIdle);
+            }
+
+            var primary = ResolveAttackVisualState(skill);
+            if (TryPlaySimulatorVisual(primary, 0f, scheduleIdle))
+            {
+                return true;
+            }
+
+            return primary != UnitCombatVisualState.Skill
+                && TryPlaySimulatorVisual(UnitCombatVisualState.Skill, 0f, scheduleIdle);
+        }
+
+        private static UnitCombatVisualState ResolveAttackVisualState(SkillDefinitionSO skill)
+        {
+            if (skill == null)
+            {
+                return UnitCombatVisualState.Skill;
+            }
+
+            return skill.slotKind switch
+            {
+                SkillSlotKind.BasicAttack => UnitCombatVisualState.NormalHit,
+                SkillSlotKind.Skill => UnitCombatVisualState.SkillHit,
+                SkillSlotKind.Ultimate => UnitCombatVisualState.UltHit,
+                SkillSlotKind.Guard => UnitCombatVisualState.Guard,
+                _ => UnitCombatVisualState.Skill
+            };
+        }
+
+        private AnimationClip ResolveAttackSimulatorClip(SkillDefinitionSO skill)
+        {
+            if (skill != null && skill.IsGuard)
+            {
+                return ResolveSimulatorClip(UnitCombatVisualState.Guard)
+                    ?? ResolveSimulatorClip(UnitCombatVisualState.Counter);
+            }
+
+            var primary = ResolveAttackVisualState(skill);
+            return ResolveSimulatorClip(primary) ?? ResolveSimulatorClip(UnitCombatVisualState.Skill);
+        }
+
+        private bool TryPlaySimulatorVisual(
+            UnitCombatVisualState visualState,
+            float normalizedTime,
+            bool scheduleIdle,
+            UnitSpriteApplyMode mode = UnitSpriteApplyMode.Auto)
+        {
+            EnsureDefaultCombatAnimStates();
+            var sim = GetComponent<UnitSpriteSimulator>();
+            if (sim == null || !sim.TryGetLayout(visualState, out var layout))
+            {
+                return false;
             }
 
             if (_combatAnimRoutine != null)
@@ -333,26 +549,141 @@ namespace FracturedChorus.UI
                 _combatAnimRoutine = null;
             }
 
-            var t = Mathf.Clamp01(normalizedTime);
-            var hash = Animator.StringToHash(stateName);
-            if (animator.HasState(0, hash))
+            sim.ApplyLayoutForState(visualState, keepWorldFeet: true, mode);
+            RecaptureHpPunchBase();
+
+            if (layout.ShouldApplyStill(mode))
             {
-                animator.Play(hash, 0, t);
-            }
-            else
-            {
-                animator.Play(stateName, 0, t);
+                if (scheduleIdle && visualState != UnitCombatVisualState.Idle)
+                {
+                    _combatAnimRoutine = StartCoroutine(ReturnToIdleAfter(MinCombatPoseHoldSec));
+                }
+
+                return true;
             }
 
-            animator.Update(0.016f);
-            if (!scheduleIdle)
+            if (mode == UnitSpriteApplyMode.PreferStill)
             {
-                return;
+                return false;
             }
 
-            var clipHold = clip != null ? clip.length * (1f - t) : 0f;
-            var remaining = Mathf.Max(MinCombatPoseHoldSec, clipHold);
-            _combatAnimRoutine = StartCoroutine(ReturnToIdleAfter(remaining));
+            ResolveAnimatorReference();
+            var clip = layout.animationClip;
+            var stateName = layout.ClipStateName;
+            if (string.IsNullOrEmpty(stateName) || !HasAnimatorState(stateName))
+            {
+                clip = ResolveFallbackClip(visualState, out stateName);
+            }
+
+            if (clip != null && HasPlayableAnimatorState(stateName))
+            {
+                PlayCombatAnimation(clip, stateName, normalizedTime, scheduleIdle);
+                return true;
+            }
+
+            if (layout.HasStillSprite)
+            {
+                sim.ApplyLayoutForState(visualState, keepWorldFeet: true, UnitSpriteApplyMode.PreferStill);
+                RecaptureHpPunchBase();
+                if (scheduleIdle && visualState != UnitCombatVisualState.Idle)
+                {
+                    _combatAnimRoutine = StartCoroutine(ReturnToIdleAfter(MinCombatPoseHoldSec));
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool HasAnimatorState(string stateName)
+        {
+            ResolveAnimatorReference();
+            if (animator == null || string.IsNullOrWhiteSpace(stateName))
+            {
+                return false;
+            }
+
+            return animator.HasState(0, Animator.StringToHash(stateName.Trim()));
+        }
+
+        private bool HasPlayableAnimatorState(string stateName)
+        {
+            stateName = string.IsNullOrWhiteSpace(stateName) ? stateName : stateName.Trim();
+            if (!HasAnimatorState(stateName) || animator.runtimeAnimatorController == null)
+            {
+                return false;
+            }
+
+            var clips = animator.runtimeAnimatorController.animationClips;
+            if (clips == null)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < clips.Length; i++)
+            {
+                if (clips[i] != null && clips[i].name == stateName)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private AnimationClip ResolveFallbackClip(UnitCombatVisualState visualState, out string stateName)
+        {
+            switch (visualState)
+            {
+                case UnitCombatVisualState.Idle:
+                    stateName = ResolveIdleStateName();
+                    return ResolveClipByKeyword(stateName, "Idle", out stateName);
+                case UnitCombatVisualState.Moving:
+                    return ResolveMovingClip(out stateName);
+                case UnitCombatVisualState.Skill:
+                    return ResolveClipByKeyword(skillStateName, "Skill", out stateName);
+                case UnitCombatVisualState.NormalHit:
+                    return ResolveClipByKeyword(normalHitStateName, "Skill 1", out stateName);
+                case UnitCombatVisualState.SkillHit:
+                    return ResolveClipByKeyword(skillStateName, "Skill 2", out stateName);
+                case UnitCombatVisualState.UltHit:
+                    return ResolveClipByKeyword(ultStateName, "Ultimate", out stateName);
+                case UnitCombatVisualState.Guard:
+                    return ResolveGuardClip(out stateName);
+                case UnitCombatVisualState.Counter:
+                    return ResolveCounterClip(out stateName);
+                case UnitCombatVisualState.Hurt:
+                    return ResolveBeCounteredClip(out stateName);
+                case UnitCombatVisualState.Death:
+                    return ResolveDeathClip(out stateName);
+                default:
+                    stateName = null;
+                    return null;
+            }
+        }
+
+        private void RecaptureHpPunchBase()
+        {
+            if (_hpPunchRoutine != null)
+            {
+                StopCoroutine(_hpPunchRoutine);
+                _hpPunchRoutine = null;
+            }
+
+            _hpPunchBaseScale = transform.localScale;
+            _hpPunchBaseCaptured = true;
+        }
+
+        private AnimationClip ResolveSimulatorClip(UnitCombatVisualState visualState)
+        {
+            var sim = GetComponent<UnitSpriteSimulator>();
+            if (sim == null || !sim.TryGetLayout(visualState, out var layout))
+            {
+                return null;
+            }
+
+            return layout.animationClip;
         }
 
         private IEnumerator ReturnToIdleAfter(float seconds)
@@ -368,12 +699,7 @@ namespace FracturedChorus.UI
                 yield break;
             }
 
-            var idleState = ResolveIdleStateName();
-            if (animator != null && !string.IsNullOrEmpty(idleState))
-            {
-                animator.Play(idleState, 0, 0f);
-            }
-
+            PlayIdleState();
             _combatAnimRoutine = null;
         }
 
@@ -411,24 +737,20 @@ namespace FracturedChorus.UI
 
         private AnimationClip ResolveCounterClip(out string stateName)
         {
-            var clip = ResolveClipByKeyword(counterStateName, "Counter", out stateName);
+            var authored = !string.IsNullOrWhiteSpace(counterStateName) ? counterStateName : guardStateName;
+            var clip = ResolveClipByKeyword(authored, "Counter", out stateName);
+            if (clip != null)
+            {
+                return clip;
+            }
+
+            clip = ResolveClipByKeyword(authored, "Guard", out stateName);
             if (clip != null)
             {
                 return clip;
             }
 
             clip = ResolveClipByKeyword(null, "Evade", out stateName);
-            if (clip != null)
-            {
-                return clip;
-            }
-
-            return ResolveGuardClip(out stateName);
-        }
-
-        private AnimationClip ResolveGuardClip(out string stateName)
-        {
-            var clip = ResolveClipByKeyword(guardStateName, "Guard", out stateName);
             if (clip != null)
             {
                 return clip;
@@ -441,6 +763,11 @@ namespace FracturedChorus.UI
             }
 
             return ResolveClipByKeyword(null, "Skill", out stateName);
+        }
+
+        private AnimationClip ResolveGuardClip(out string stateName)
+        {
+            return ResolveCounterClip(out stateName);
         }
 
         private AnimationClip ResolveBeCounteredClip(out string stateName)
@@ -462,6 +789,12 @@ namespace FracturedChorus.UI
                 return clip;
             }
 
+            clip = ResolveClipByKeyword(deathStateName, "Die", out stateName);
+            if (clip != null)
+            {
+                return clip;
+            }
+
             return ResolveClipByKeyword(null, "Dead", out stateName);
         }
 
@@ -476,25 +809,41 @@ namespace FracturedChorus.UI
             return ResolveClipByKeyword(null, "Move", out stateName);
         }
 
-        /// <summary>Loop the locomotion clip until another combat animation or idle takes over.</summary>
+        /// <summary>Loop still (or clip) locomotion until another combat pose or idle clip takes over.</summary>
         public void PlayMovingLoop()
         {
-            ResolveAnimatorReference();
             if (Unit != null && !Unit.IsAlive)
             {
                 PlayDeathAnimation();
                 return;
             }
 
-            var clip = ResolveMovingClip(out var stateName);
-            if (string.IsNullOrEmpty(stateName) && !string.IsNullOrEmpty(movingStateName))
+            if (TryPlaySimulatorVisual(
+                    UnitCombatVisualState.Moving,
+                    0f,
+                    scheduleIdle: false,
+                    UnitSpriteApplyMode.PreferStill))
             {
-                stateName = movingStateName;
+                return;
             }
 
-            PlayCombatAnimation(clip, stateName, 0f, scheduleIdle: false);
+            if (TryPlaySimulatorVisual(UnitCombatVisualState.Moving, 0f, scheduleIdle: false))
+            {
+                return;
+            }
+
+            ResolveAnimatorReference();
+            var clip = ResolveMovingClip(out var stateName);
+            if (clip != null && HasPlayableAnimatorState(stateName))
+            {
+                PlayCombatAnimation(clip, stateName, 0f, scheduleIdle: false);
+                return;
+            }
+
+            PlayIdleStill();
         }
 
+        /// <summary>Default rest pose: idle animation clip (Play Mode / hết phase).</summary>
         public void PlayIdleState()
         {
             if (Unit != null && !Unit.IsAlive)
@@ -503,18 +852,217 @@ namespace FracturedChorus.UI
                 return;
             }
 
-            ResolveAnimatorReference();
+            RestoreTravelFacing();
+
             if (_combatAnimRoutine != null)
             {
                 StopCoroutine(_combatAnimRoutine);
                 _combatAnimRoutine = null;
             }
 
-            var idleState = ResolveIdleStateName();
-            if (animator != null && !string.IsNullOrEmpty(idleState))
+            if (TryPlaySimulatorVisual(
+                    UnitCombatVisualState.Idle,
+                    0f,
+                    scheduleIdle: false,
+                    UnitSpriteApplyMode.PreferClip))
             {
-                animator.Play(idleState, 0, 0f);
+                return;
             }
+
+            if (TryPlaySimulatorVisual(UnitCombatVisualState.Idle, 0f, scheduleIdle: false))
+            {
+                return;
+            }
+
+            ResolveAnimatorReference();
+            var idleState = ResolveIdleStateName();
+            if (HasPlayableAnimatorState(idleState))
+            {
+                animator.enabled = true;
+                animator.Play(Animator.StringToHash(idleState), 0, 0f);
+                return;
+            }
+
+            PlayIdleStill();
+        }
+
+        /// <summary>Stop idle clip and freeze the authored idle still — used when stepping into a fight cell.</summary>
+        public void PlayIdleStill()
+        {
+            if (Unit != null && !Unit.IsAlive)
+            {
+                PlayDeathAnimation();
+                return;
+            }
+
+            if (_combatAnimRoutine != null)
+            {
+                StopCoroutine(_combatAnimRoutine);
+                _combatAnimRoutine = null;
+            }
+
+            if (TryPlaySimulatorVisual(
+                    UnitCombatVisualState.Idle,
+                    0f,
+                    scheduleIdle: false,
+                    UnitSpriteApplyMode.PreferStill))
+            {
+                return;
+            }
+
+            ResolveAnimatorReference();
+            if (animator != null)
+            {
+                animator.enabled = false;
+            }
+        }
+
+        /// <summary>Stop idle clip and play moving while walking onto the fight cell.</summary>
+        public void BeginCombatTravel()
+        {
+            if (Unit != null && !Unit.IsAlive)
+            {
+                PlayDeathAnimation();
+                return;
+            }
+
+            RestoreTravelFacing();
+            PlayMovingLoop();
+        }
+
+        /// <summary>
+        /// Play moving toward a fight cell. Returns false when already there so callers skip the walk pose.
+        /// </summary>
+        public bool TryBeginCombatTravelTo(Vector3 destinationFeet, float epsilon = CombatFeetArriveEpsilon)
+        {
+            if (Unit != null && !Unit.IsAlive)
+            {
+                PlayDeathAnimation();
+                return false;
+            }
+
+            if (IsFeetNear(destinationFeet, epsilon))
+            {
+                return false;
+            }
+
+            BeginCombatTravel();
+            return true;
+        }
+
+        /// <summary>
+        /// Play moving while walking home, mirrored on X without changing authored scale.
+        /// </summary>
+        public void BeginCombatReturn()
+        {
+            if (Unit != null && !Unit.IsAlive)
+            {
+                PlayDeathAnimation();
+                return;
+            }
+
+            PlayMovingLoop();
+            ApplyReturnFacing();
+        }
+
+        /// <summary>
+        /// Play mirrored moving toward home. Returns false when already on the home cell.
+        /// </summary>
+        public bool TryBeginCombatReturnTo(Vector3 destinationFeet, float epsilon = CombatFeetArriveEpsilon)
+        {
+            if (Unit != null && !Unit.IsAlive)
+            {
+                PlayDeathAnimation();
+                return false;
+            }
+
+            if (IsFeetNear(destinationFeet, epsilon))
+            {
+                RestoreTravelFacing();
+                return false;
+            }
+
+            BeginCombatReturn();
+            return true;
+        }
+
+        public bool IsFeetNear(Vector3 feetWorld, float epsilon = CombatFeetArriveEpsilon)
+        {
+            var feet = FeetWorldPosition;
+            return Vector2.Distance(
+                new Vector2(feet.x, feet.y),
+                new Vector2(feetWorld.x, feetWorld.y)) <= Mathf.Max(0.01f, epsilon);
+        }
+
+        public bool IsRootNear(Vector3 worldPosition, float epsilon = CombatFeetArriveEpsilon)
+        {
+            var pos = transform.position;
+            return Vector2.Distance(
+                new Vector2(pos.x, pos.y),
+                new Vector2(worldPosition.x, worldPosition.y)) <= Mathf.Max(0.01f, epsilon);
+        }
+
+        /// <summary>Idle still after arriving on the fight cell — combat poses start after this.</summary>
+        public void ArriveAtCombatCell()
+        {
+            if (Unit != null && !Unit.IsAlive)
+            {
+                PlayDeathAnimation();
+                return;
+            }
+
+            RestoreTravelFacing();
+            PlayIdleStill();
+        }
+
+        /// <summary>After a phase: still idle, then resume looping idle clip.</summary>
+        public void FinishCombatPhaseIdle()
+        {
+            if (Unit != null && !Unit.IsAlive)
+            {
+                PlayDeathAnimation();
+                return;
+            }
+
+            RestoreTravelFacing();
+            PlayIdleStill();
+            PlayIdleState();
+        }
+
+        /// <summary>
+        /// Mirror the current sprite on X only. Magnitude of localScale stays authored.
+        /// </summary>
+        public void ApplyReturnFacing()
+        {
+            ResolveSpriteRendererReference();
+            if (spriteRenderer == null)
+            {
+                return;
+            }
+
+            if (!_returnFacingActive)
+            {
+                _authoredFlipX = spriteRenderer.flipX;
+                _returnFacingActive = true;
+            }
+
+            spriteRenderer.flipX = !_authoredFlipX;
+        }
+
+        public void RestoreTravelFacing()
+        {
+            if (!_returnFacingActive)
+            {
+                return;
+            }
+
+            ResolveSpriteRendererReference();
+            if (spriteRenderer != null)
+            {
+                spriteRenderer.flipX = _authoredFlipX;
+            }
+
+            _returnFacingActive = false;
         }
 
         public Vector3 AnchorPosition => _anchorCaptured ? _anchorPosition : transform.position;
@@ -611,6 +1159,12 @@ namespace FracturedChorus.UI
 
         private void PlayAttackAnimationInternal(SkillDefinitionSO skill, bool scheduleIdle)
         {
+            if (TryPlayAttackVisual(skill, scheduleIdle))
+            {
+                ScheduleSkillSfx(skill, ResolveAttackSimulatorClip(skill));
+                return;
+            }
+
             ResolveAnimatorReference();
             if (skill != null && skill.IsGuard)
             {
@@ -620,9 +1174,9 @@ namespace FracturedChorus.UI
             }
 
             var clip = ResolveSkillClip(skill, out var stateName);
-            if (clip == null && !string.IsNullOrEmpty(skillStateName))
+            if (clip == null && !string.IsNullOrEmpty(normalHitStateName))
             {
-                clip = ResolveClipByKeyword(skillStateName, skillStateName, out stateName);
+                clip = ResolveClipByKeyword(normalHitStateName, normalHitStateName, out stateName);
             }
 
             if (clip == null)
@@ -640,9 +1194,9 @@ namespace FracturedChorus.UI
                 clip = ResolveGuardClip(out stateName);
             }
 
-            if (clip == null && !string.IsNullOrEmpty(skillStateName))
+            if (clip == null && !string.IsNullOrEmpty(normalHitStateName))
             {
-                stateName = skillStateName;
+                stateName = normalHitStateName;
             }
 
             PlayCombatAnimation(clip, stateName, 0f, scheduleIdle);
@@ -681,8 +1235,13 @@ namespace FracturedChorus.UI
 
         public float EstimateSkillClipLength(SkillDefinitionSO skill)
         {
-            ResolveAnimatorReference();
-            var clip = ResolveSkillClip(skill, out _);
+            var clip = ResolveAttackSimulatorClip(skill);
+            if (clip == null)
+            {
+                ResolveAnimatorReference();
+                clip = ResolveSkillClip(skill, out _);
+            }
+
             if (clip == null)
             {
                 clip = ResolveClipByKeyword(null, "Attack", out _);
@@ -697,6 +1256,23 @@ namespace FracturedChorus.UI
             if (skill == null)
             {
                 return null;
+            }
+
+            // Authored party clip names (Normal / Skill / Ult)
+            var authored = skill.slotKind switch
+            {
+                SkillSlotKind.BasicAttack => normalHitStateName,
+                SkillSlotKind.Skill => skillStateName,
+                SkillSlotKind.Ultimate => ultStateName,
+                _ => normalHitStateName
+            };
+            if (!string.IsNullOrEmpty(authored))
+            {
+                var byAuthoredSlot = ResolveClipByKeyword(authored, authored, out stateName);
+                if (byAuthoredSlot != null && !IsSkillClipMismatch(skill.slotKind, byAuthoredSlot.name))
+                {
+                    return byAuthoredSlot;
+                }
             }
 
             if (!string.IsNullOrEmpty(skill.displayName))
@@ -770,7 +1346,7 @@ namespace FracturedChorus.UI
 
         private AnimationClip ResolveClipByKeyword(string preferredName, string keyword, out string stateName)
         {
-            stateName = preferredName;
+            stateName = string.IsNullOrWhiteSpace(preferredName) ? preferredName : preferredName.Trim();
             if (animator == null || animator.runtimeAnimatorController == null)
             {
                 return null;
@@ -988,6 +1564,8 @@ namespace FracturedChorus.UI
             ApplyVisuals();
             unit.OnHpChanged += HandleHpChanged;
             RefreshHp();
+            UnitSpriteSimulator.EnsureOn(this);
+            PlayIdleState();
         }
 
         /// <summary>Body/feet colliders — không đụng sprite. Giữ size/offset scene khi preserveSceneCollider.</summary>
@@ -1461,10 +2039,17 @@ namespace FracturedChorus.UI
 #if UNITY_EDITOR
         private void OnValidate()
         {
+            MergeGuardIntoCounter();
             if (bodyCollider == null)
             {
                 bodyCollider = GetComponent<BoxCollider2D>();
             }
+        }
+
+        [ContextMenu("Add Unit Sprite Simulator")]
+        private void AddUnitSpriteSimulator()
+        {
+            UnitSpriteSimulator.EnsureOn(this);
         }
 #endif
     }

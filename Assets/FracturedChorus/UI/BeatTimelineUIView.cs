@@ -21,7 +21,13 @@ namespace FracturedChorus.UI
     {
         [SerializeField] private RectTransform viewport;
         [SerializeField] private RectTransform slotsRow;
+        [Tooltip("LaneFootprint on Viewport — layout (anchor/pivot/Y/height) is scene SoT.")]
+        [SerializeField] private RectTransform laneFootprint;
+        [Tooltip("BossTrackFrame on Viewport — layout (anchor/pivot/Y/height) is scene SoT.")]
+        [SerializeField] private RectTransform bossTrackFrame;
         [SerializeField] private BeatSegmentView segmentTemplate;
+        [Tooltip("Sibling of Beat_0 under ScrollContent — placed after beat 22 of each phase.")]
+        [SerializeField] private RectTransform phaseDividerTemplate;
         [SerializeField] private RectTransform scanBar;
         [SerializeField] private RectTransform trackLine;
         [SerializeField] private Button confirmButton;
@@ -108,7 +114,7 @@ namespace FracturedChorus.UI
         [SerializeField] private Image avatarColumnBackgroundImage;
         [SerializeField] private RectTransform leftRailClefRoot;
         [SerializeField] private LeftRailLayout leftRailLayout = new LeftRailLayout();
-        [Tooltip("Keep Header / outer BeatTimeline frame position. Internal layout (TrackLine, ScrollContent, ScanBar) still auto-layouts.")]
+        [Tooltip("Scene RectTransforms are source of truth. ScrollContent / LaneFootprint follow scroll X; LaneLines and BossTrackFrame stay pinned to the Viewport.")]
         [SerializeField] private bool preserveSceneLayout = true;
 
         [Header("Browse Chevrons (scene SoT — layout on RectTransform)")]
@@ -120,6 +126,7 @@ namespace FracturedChorus.UI
         private BeatTimelineEngine _timeline;
         private CombatSession _session;
         private BeatSegmentView[] _slots;
+        private RectTransform[] _phaseDividers;
         private float[] _slotWidths;
         private float[] _slotOffsetPx;
         private float _contentWidthPx;
@@ -170,6 +177,11 @@ namespace FracturedChorus.UI
         private RectTransform _footprintLayer;
         private RectTransform _bossTrackFrame;
         private bool _bossTrackFrameAuthoredInScene;
+        private bool _laneFootprintAuthoredInScene;
+        private bool _scrollContentAuthoredInScene;
+        private SceneRectLock _scrollContentLock;
+        private SceneRectLock _laneFootprintLock;
+        private SceneRectLock _bossTrackFrameLock;
         private bool _laneLinesLayerAuthoredInScene;
         /// <summary>Scene-authored vertical band (viewport bottom-space). Captured once before redistribute.</summary>
         private bool _sceneLaneBandCaptured;
@@ -213,6 +225,7 @@ namespace FracturedChorus.UI
 
         // Intro-pause sau Deploy: snap cuối beat 0 vào ScanBar (anchor-based, không dùng localBeat threshold).
         private const float PhaseDividerVisualOffsetPx = 2f;
+        private const float PhaseDividerWidthPx = 3f;
         private const float AnchorScrollEpsilonPx = 0.01f;
         private const float BrowsePanEpsilonPx = 0.5f;
 
@@ -280,8 +293,33 @@ namespace FracturedChorus.UI
 
             if (slotsRow == null)
             {
-                slotsRow = transform.Find("Viewport/ScrollContent") as RectTransform;
+                slotsRow = transform.Find("Viewport/ScrollContent") as RectTransform
+                    ?? FindTimelineRect("ScrollContent");
             }
+
+            if (laneFootprint == null)
+            {
+                laneFootprint = FindTimelineRect("LaneFootprint");
+            }
+
+            if (bossTrackFrame == null)
+            {
+                bossTrackFrame = FindTimelineRect("BossTrackFrame");
+            }
+
+            if (laneFootprint != null)
+            {
+                _footprintLayer = laneFootprint;
+            }
+
+            if (bossTrackFrame != null)
+            {
+                _bossTrackFrame = bossTrackFrame;
+            }
+
+            CaptureScrollContentSceneRect();
+            CaptureLaneFootprintSceneRect();
+            CaptureBossTrackFrameSceneRect();
 
             if (segmentTemplate == null && slotsRow != null)
             {
@@ -290,6 +328,11 @@ namespace FracturedChorus.UI
                 {
                     segmentTemplate = beat0.GetComponent<BeatSegmentView>();
                 }
+            }
+
+            if (phaseDividerTemplate == null && slotsRow != null)
+            {
+                phaseDividerTemplate = slotsRow.Find("PhaseDivider") as RectTransform;
             }
 
             if (scanBar == null)
@@ -2118,6 +2161,8 @@ namespace FracturedChorus.UI
 
                 ApplySlotRect(_slots[i], _slotWidths[absBeat], _slotOffsetPx[absBeat]);
             }
+
+            LayoutPhaseDividers();
         }
 
         private int GetSegmentBeatSpan() => TimelineConstants.GetSegmentBeatCountForSegment(_roundSegmentIndex);
@@ -2130,12 +2175,17 @@ namespace FracturedChorus.UI
 
         private float GetBeatEndContentPx(int beatIndex)
         {
-            if (_slotOffsetPx == null || beatIndex < 0 || beatIndex + 1 >= _slotOffsetPx.Length)
+            if (beatIndex < 0)
             {
                 return 0f;
             }
 
-            return _slotOffsetPx[beatIndex + 1];
+            if (_slotOffsetPx != null && beatIndex + 1 < _slotOffsetPx.Length)
+            {
+                return _slotOffsetPx[beatIndex + 1];
+            }
+
+            return (beatIndex + 1) * TimelineLayoutLock.ClampSlotWidth(slotWidth);
         }
 
         private float GetPhaseDividerContentPx(int beatIndex) =>
@@ -2342,7 +2392,7 @@ namespace FracturedChorus.UI
             var contentScroll = Mathf.Clamp(_playheadHoldScrollPx + _browsePanPx, 0f, maxScroll);
             var homeX = GetScanBarReadLineX();
 
-            slotsRow.anchoredPosition = new Vector2(-contentScroll, 0f);
+            slotsRow.anchoredPosition = new Vector2(-contentScroll, _scrollContentLock.Y);
             scanBar.anchoredPosition = new Vector2(homeX - _browsePanPx, 0f);
             SyncLaneMarkersScroll();
             RefreshBrowseChevronVisibility();
@@ -2680,7 +2730,7 @@ namespace FracturedChorus.UI
             var readLineX = GetScanBarReadLineX();
             var clampedScroll = Mathf.Clamp(scrollPx, 0f, maxScroll);
 
-            slotsRow.anchoredPosition = new Vector2(-clampedScroll, 0f);
+            slotsRow.anchoredPosition = new Vector2(-clampedScroll, _scrollContentLock.Y);
             scanBar.anchoredPosition = new Vector2(readLineX, 0f);
 
             SyncLaneMarkersScroll();
@@ -2911,10 +2961,16 @@ namespace FracturedChorus.UI
 
             if (_footprintLayer == null)
             {
-                var existingFootprint = viewport.Find("LaneFootprint") as RectTransform;
-                if (existingFootprint != null)
+                _footprintLayer = laneFootprint;
+                if (_footprintLayer == null)
                 {
-                    _footprintLayer = existingFootprint;
+                    _footprintLayer = FindTimelineRect("LaneFootprint");
+                }
+
+                if (_footprintLayer != null)
+                {
+                    _laneFootprintAuthoredInScene = true;
+                    CaptureLaneFootprintSceneRect();
                 }
                 else
                 {
@@ -2926,6 +2982,7 @@ namespace FracturedChorus.UI
                     _footprintLayer.pivot = new Vector2(0f, 0.5f);
                     _footprintLayer.offsetMin = Vector2.zero;
                     _footprintLayer.offsetMax = Vector2.zero;
+                    laneFootprint = _footprintLayer;
                 }
             }
 
@@ -2949,12 +3006,23 @@ namespace FracturedChorus.UI
                 }
             }
 
-            _footprintLayer.SetAsLastSibling();
+            if (!preserveSceneLayout || !_laneFootprintAuthoredInScene)
+            {
+                _footprintLayer.SetAsLastSibling();
+            }
+
             _laneMarkersLayer.SetAsLastSibling();
             OrderViewportLayers();
             BringResolveFeedbackToFront();
-            _footprintLayer.sizeDelta = new Vector2(_contentWidthPx, 0f);
-            _laneMarkersLayer.sizeDelta = new Vector2(_contentWidthPx, 0f);
+            if (!preserveSceneLayout || !_laneFootprintAuthoredInScene)
+            {
+                ApplySceneContentWidth(_footprintLayer, in _laneFootprintLock, _contentWidthPx);
+            }
+
+            if (!preserveSceneLayout)
+            {
+                _laneMarkersLayer.sizeDelta = new Vector2(_contentWidthPx, _laneMarkersLayer.sizeDelta.y);
+            }
         }
 
         private void ApplyLaneLinesLayerInsets()
@@ -2986,12 +3054,12 @@ namespace FracturedChorus.UI
                 _staffBackground.transform.SetAsFirstSibling();
             }
 
-            if (_bossTrackFrame != null)
+            if (_bossTrackFrame != null && (!preserveSceneLayout || !_bossTrackFrameAuthoredInScene))
             {
                 _bossTrackFrame.SetSiblingIndex(_staffBackground != null ? 1 : 0);
             }
 
-            if (slotsRow != null)
+            if (slotsRow != null && (!preserveSceneLayout || !_scrollContentAuthoredInScene))
             {
                 var idx = 0;
                 if (_staffBackground != null)
@@ -3019,7 +3087,7 @@ namespace FracturedChorus.UI
                 _bossNoteClusterLayer.SetAsLastSibling();
             }
 
-            if (_footprintLayer != null)
+            if (_footprintLayer != null && (!preserveSceneLayout || !_laneFootprintAuthoredInScene))
             {
                 _footprintLayer.SetAsLastSibling();
             }
@@ -3219,11 +3287,16 @@ namespace FracturedChorus.UI
 
             if (_bossTrackFrame == null)
             {
-                var existing = viewport.Find("BossTrackFrame") as RectTransform;
-                if (existing != null)
+                _bossTrackFrame = bossTrackFrame;
+                if (_bossTrackFrame == null)
                 {
-                    _bossTrackFrame = existing;
+                    _bossTrackFrame = FindTimelineRect("BossTrackFrame");
+                }
+
+                if (_bossTrackFrame != null)
+                {
                     _bossTrackFrameAuthoredInScene = true;
+                    CaptureBossTrackFrameSceneRect();
                 }
                 else
                 {
@@ -3235,6 +3308,7 @@ namespace FracturedChorus.UI
                     _bossTrackFrame.pivot = new Vector2(0f, 0.5f);
                     CreateBossTrackChild("BorderTop", _bossTrackFrame, stretch: false);
                     _bossTrackFrameAuthoredInScene = false;
+                    bossTrackFrame = _bossTrackFrame;
                 }
             }
 
@@ -3252,6 +3326,7 @@ namespace FracturedChorus.UI
                 CreateBossTrackChild("BorderTop", _bossTrackFrame, stretch: false);
             }
 
+            DetachBossTrackFromScrollContent();
             LayoutBossTrackFrame();
             OrderViewportLayers();
         }
@@ -3334,6 +3409,18 @@ namespace FracturedChorus.UI
             return img;
         }
 
+        private void DetachBossTrackFromScrollContent()
+        {
+            if (_bossTrackFrame == null || viewport == null || !IsNestedInSlotsRow(_bossTrackFrame))
+            {
+                return;
+            }
+
+            _bossTrackFrame.SetParent(viewport, true);
+            _bossTrackFrameLock = default;
+            CaptureBossTrackFrameSceneRect();
+        }
+
         private void LayoutBossTrackFrame()
         {
             if (_bossTrackFrame == null || viewport == null)
@@ -3341,37 +3428,20 @@ namespace FracturedChorus.UI
                 return;
             }
 
-            var width = Mathf.Max(_contentWidthPx, viewport.rect.width);
-            var scrollX = slotsRow != null ? slotsRow.anchoredPosition.x : _bossTrackFrame.anchoredPosition.x;
+            CaptureBossTrackFrameSceneRect();
             var top = _bossTrackFrame.Find("BorderTop") as RectTransform;
 
-            // Thickness / BorderTop stay scene-authored; Y follows even staff layout when set.
-            // Runtime also keeps horizontal scroll width + X in sync with beat content.
             if (preserveSceneLayout && _bossTrackFrameAuthoredInScene)
             {
-                var railY = _layoutBossRailY > 1f
-                    ? _layoutBossRailY
-                    : _bossTrackFrame.anchoredPosition.y;
-                var sceneH = _bossTrackFrame.sizeDelta.y;
-                if (sceneH <= 0.01f)
-                {
-                    sceneH = ResolveBossTrackFrameHeight(top);
-                }
-
-                _bossTrackFrame.pivot = new Vector2(0f, 0.5f);
-                _bossTrackFrame.sizeDelta = new Vector2(width, sceneH);
-                _bossTrackFrame.anchoredPosition = new Vector2(scrollX, railY);
+                ApplySceneAuthoredPosition(_bossTrackFrame, in _bossTrackFrameLock);
                 return;
             }
 
             var borderH = Mathf.Max(1f, bossTrackFrameBorderThickness);
-            var fallbackRailY = _layoutBossRailY > 1f
-                ? _layoutBossRailY
-                : GetNoteCoverYFromBottom(viewport.rect.height);
+            var fallbackRailY = GetNoteCoverYFromBottom(viewport.rect.height);
 
-            // Frame pivots on the note rail (BorderTop at local y=0).
-            _bossTrackFrame.sizeDelta = new Vector2(width, borderH);
-            _bossTrackFrame.anchoredPosition = new Vector2(scrollX, fallbackRailY);
+            _bossTrackFrame.sizeDelta = new Vector2(viewport.rect.width, borderH);
+            _bossTrackFrame.anchoredPosition = new Vector2(0f, fallbackRailY);
             _bossTrackFrame.pivot = new Vector2(0f, 0.5f);
 
             LayoutBossTrackBorder(top, 0f, borderH);
@@ -3380,31 +3450,6 @@ namespace FracturedChorus.UI
             {
                 topImg.color = bossTrackFrameBorderTop;
             }
-        }
-
-        private float ResolveBossTrackFrameHeight(RectTransform borderTop)
-        {
-            if (borderTop != null)
-            {
-                var borderH = borderTop.rect.height;
-                if (borderH > 0.01f)
-                {
-                    return borderH;
-                }
-
-                if (borderTop.sizeDelta.y > 0.01f)
-                {
-                    return borderTop.sizeDelta.y;
-                }
-            }
-
-            var frameH = _bossTrackFrame != null ? _bossTrackFrame.sizeDelta.y : 0f;
-            if (frameH > 0.01f)
-            {
-                return frameH;
-            }
-
-            return Mathf.Max(1f, bossTrackFrameBorderThickness);
         }
 
         private static void LayoutBossTrackBorder(RectTransform border, float y, float thickness)
@@ -3802,7 +3847,7 @@ namespace FracturedChorus.UI
 
             if (_bossTrackFrame == null)
             {
-                _bossTrackFrame = viewport.Find("BossTrackFrame") as RectTransform;
+                _bossTrackFrame = FindTimelineRect("BossTrackFrame");
                 if (_bossTrackFrame != null)
                 {
                     _bossTrackFrameAuthoredInScene = true;
@@ -3970,32 +4015,41 @@ namespace FracturedChorus.UI
             ResolveNoteRailAnchoredY(viewportHeight);
 
         /// <summary>
-        /// Prefer even-layout boss Y, then authored BossTrackFrame, then serialized fallbacks.
+        /// Prefer authored BossTrackFrame Y, then even-layout boss Y, then serialized fallbacks.
         /// </summary>
         private float ResolveNoteRailAnchoredY(float viewportHeight)
         {
-            if (_layoutBossRailY > 1f)
-            {
-                return _layoutBossRailY;
-            }
-
             if (preserveSceneLayout)
             {
+                CaptureBossTrackFrameSceneRect();
+                if (_bossTrackFrameLock.Has && Mathf.Abs(_bossTrackFrameLock.Y) > 0.01f)
+                {
+                    return _bossTrackFrameLock.Y;
+                }
+
                 if (_bossTrackFrame == null && viewport != null)
                 {
-                    _bossTrackFrame = viewport.Find("BossTrackFrame") as RectTransform;
+                    _bossTrackFrame = bossTrackFrame != null
+                        ? bossTrackFrame
+                        : FindTimelineRect("BossTrackFrame");
                     if (_bossTrackFrame != null)
                     {
                         _bossTrackFrameAuthoredInScene = true;
+                        CaptureBossTrackFrameSceneRect();
                     }
                 }
 
                 if (_bossTrackFrameAuthoredInScene
                     && _bossTrackFrame != null
-                    && _bossTrackFrame.anchoredPosition.y > 1f)
+                    && Mathf.Abs(_bossTrackFrame.anchoredPosition.y) > 0.01f)
                 {
                     return _bossTrackFrame.anchoredPosition.y;
                 }
+            }
+
+            if (_layoutBossRailY > 1f)
+            {
+                return _layoutBossRailY;
             }
 
             if (bossNoteRailAnchoredY > 1f)
@@ -4584,17 +4638,12 @@ namespace FracturedChorus.UI
             var x = slotsRow.anchoredPosition.x;
             if (_laneMarkersLayer != null)
             {
-                _laneMarkersLayer.anchoredPosition = new Vector2(x, 0f);
+                _laneMarkersLayer.anchoredPosition = new Vector2(x, _laneMarkersLayer.anchoredPosition.y);
             }
 
-            if (_footprintLayer != null)
+            if (_footprintLayer != null && !IsNestedInSlotsRow(_footprintLayer))
             {
-                _footprintLayer.anchoredPosition = new Vector2(x, 0f);
-            }
-
-            if (_bossTrackFrame != null)
-            {
-                LayoutBossTrackFrame();
+                ApplySceneFollowScrollX(_footprintLayer, in _laneFootprintLock, x);
             }
 
             SyncBlockBarrierScroll();
@@ -5099,8 +5148,12 @@ namespace FracturedChorus.UI
             _slotOffsetPx[TotalBeats] = cumulative;
             _contentWidthPx = cumulative;
 
-            slotsRow.sizeDelta = new Vector2(cumulative, 0f);
+            if (!preserveSceneLayout || !_scrollContentAuthoredInScene)
+            {
+                ApplySceneContentWidth(slotsRow, in _scrollContentLock, cumulative);
+            }
             RebindWindowSlotRects();
+            EnsurePhaseDividers();
 
             _lastViewportWidth = viewport.rect.width;
 
@@ -5143,6 +5196,136 @@ namespace FracturedChorus.UI
             rt.pivot = new Vector2(0f, 0.5f);
             rt.anchoredPosition = new Vector2(xOffset, 0f);
             rt.sizeDelta = new Vector2(width, 0f);
+        }
+
+        private void EnsurePhaseDividers()
+        {
+            if (phaseDividerTemplate == null && slotsRow != null)
+            {
+                phaseDividerTemplate = slotsRow.Find("PhaseDivider") as RectTransform;
+            }
+
+            if (phaseDividerTemplate == null || slotsRow == null)
+            {
+                return;
+            }
+
+            if (!Application.isPlaying)
+            {
+                TimelineConstants.GetPhaseBeatRange(0, out _, out var count);
+                var lastBeat = Mathf.Max(0, count - 1);
+                ApplyPhaseDividerRect(phaseDividerTemplate, GetPhaseDividerContentPx(lastBeat));
+                phaseDividerTemplate.gameObject.SetActive(true);
+                return;
+            }
+
+            if (_phaseDividers != null && _phaseDividers.Length == TimelineConstants.UiVisiblePhaseCount)
+            {
+                LayoutPhaseDividers();
+                return;
+            }
+
+            var templateGo = phaseDividerTemplate.gameObject;
+            var wasActive = templateGo.activeSelf;
+            templateGo.SetActive(true);
+
+            _phaseDividers = new RectTransform[TimelineConstants.UiVisiblePhaseCount];
+            for (var i = 0; i < _phaseDividers.Length; i++)
+            {
+                var cloneGo = Instantiate(templateGo, slotsRow);
+                cloneGo.name = $"PhaseDivider_{i}";
+                cloneGo.SetActive(true);
+                MarkRuntimeClone(cloneGo);
+                _phaseDividers[i] = cloneGo.transform as RectTransform;
+            }
+
+            if (Application.isPlaying)
+            {
+                templateGo.SetActive(false);
+            }
+            else
+            {
+                templateGo.SetActive(wasActive);
+            }
+
+            LayoutPhaseDividers();
+        }
+
+        private void LayoutPhaseDividers()
+        {
+            if (_phaseDividers == null || _phaseDividers.Length == 0)
+            {
+                return;
+            }
+
+            var shown = 0;
+            var windowEnd = _windowStartBeat + UiSlotCount;
+            var phaseCount = TimelineConstants.PhaseCount;
+            for (var phase = 0; phase < phaseCount && shown < _phaseDividers.Length; phase++)
+            {
+                TimelineConstants.GetPhaseBeatRange(phase, out var startBeat, out var count);
+                if (count <= 0)
+                {
+                    continue;
+                }
+
+                var lastBeat = startBeat + count - 1;
+                if (!TimelineConstants.IsPhaseDividerAfter(lastBeat)
+                    || lastBeat < _windowStartBeat
+                    || lastBeat >= windowEnd)
+                {
+                    continue;
+                }
+
+                var rt = _phaseDividers[shown];
+                if (rt != null)
+                {
+                    ApplyPhaseDividerRect(rt, GetPhaseDividerContentPx(lastBeat));
+                    rt.gameObject.SetActive(true);
+                }
+
+                shown++;
+            }
+
+            for (var i = shown; i < _phaseDividers.Length; i++)
+            {
+                if (_phaseDividers[i] != null)
+                {
+                    _phaseDividers[i].gameObject.SetActive(false);
+                }
+            }
+        }
+
+        private void ApplyPhaseDividerRect(RectTransform rt, float x)
+        {
+            if (rt == null)
+            {
+                return;
+            }
+
+            rt.localScale = Vector3.one;
+            rt.anchorMin = new Vector2(0f, 0f);
+            rt.anchorMax = new Vector2(0f, 1f);
+            rt.pivot = new Vector2(0f, 0.5f);
+            rt.sizeDelta = new Vector2(PhaseDividerWidthPx, 0f);
+            rt.anchoredPosition = new Vector2(x, 0f);
+
+            var layoutElement = rt.GetComponent<LayoutElement>();
+            if (layoutElement == null)
+            {
+                layoutElement = rt.gameObject.AddComponent<LayoutElement>();
+            }
+
+            layoutElement.ignoreLayout = true;
+            layoutElement.minWidth = -1f;
+            layoutElement.preferredWidth = PhaseDividerWidthPx;
+            layoutElement.flexibleWidth = -1f;
+
+            var image = rt.GetComponent<Image>();
+            if (image != null)
+            {
+                image.raycastTarget = false;
+            }
         }
 
         private void DisableSlotsRowLayoutGroup()
@@ -5211,6 +5394,7 @@ namespace FracturedChorus.UI
             }
 
             HideAuthoredBeatTemplates();
+            EnsurePhaseDividers();
             _slotsBuilt = true;
         }
 
@@ -5232,6 +5416,11 @@ namespace FracturedChorus.UI
             if (beat1 != null)
             {
                 beat1.gameObject.SetActive(false);
+            }
+
+            if (phaseDividerTemplate != null)
+            {
+                phaseDividerTemplate.gameObject.SetActive(false);
             }
         }
 
@@ -5264,7 +5453,10 @@ namespace FracturedChorus.UI
             _lastFiredBeat = -1;
             if (slotsRow != null)
             {
-                slotsRow.anchoredPosition = Vector2.zero;
+                ApplySceneFollowScrollX(
+                    slotsRow,
+                    in _scrollContentLock,
+                    _scrollContentLock.Has ? _scrollContentLock.Position.x : 0f);
             }
         }
 
@@ -5295,6 +5487,12 @@ namespace FracturedChorus.UI
                 return;
             }
 
+            CaptureScrollContentSceneRect();
+            if (preserveSceneLayout && _scrollContentAuthoredInScene)
+            {
+                return;
+            }
+
             if (slotsRow.parent != viewport)
             {
                 slotsRow.SetParent(viewport, false);
@@ -5303,8 +5501,157 @@ namespace FracturedChorus.UI
             slotsRow.anchorMin = new Vector2(0f, 0f);
             slotsRow.anchorMax = new Vector2(0f, 1f);
             slotsRow.pivot = new Vector2(0f, 0.5f);
-            slotsRow.anchoredPosition = Vector2.zero;
-            slotsRow.sizeDelta = new Vector2(_contentWidthPx, 0f);
+            slotsRow.anchoredPosition = new Vector2(0f, _scrollContentLock.Y);
+            slotsRow.sizeDelta = new Vector2(_contentWidthPx, _scrollContentLock.Has ? _scrollContentLock.Height : 0f);
+        }
+
+        private void CaptureScrollContentSceneRect()
+        {
+            if (slotsRow == null)
+            {
+                return;
+            }
+
+            if (CaptureSceneRect(slotsRow, ref _scrollContentLock))
+            {
+                _scrollContentAuthoredInScene = true;
+            }
+        }
+
+        private void CaptureLaneFootprintSceneRect()
+        {
+            var target = _footprintLayer != null ? _footprintLayer : laneFootprint;
+            if (target == null)
+            {
+                return;
+            }
+
+            if (CaptureSceneRect(target, ref _laneFootprintLock))
+            {
+                _laneFootprintAuthoredInScene = true;
+            }
+        }
+
+        private void CaptureBossTrackFrameSceneRect()
+        {
+            var target = _bossTrackFrame != null ? _bossTrackFrame : bossTrackFrame;
+            if (target == null)
+            {
+                return;
+            }
+
+            if (CaptureSceneRect(target, ref _bossTrackFrameLock))
+            {
+                _bossTrackFrameAuthoredInScene = true;
+            }
+        }
+
+        private static bool CaptureSceneRect(RectTransform rt, ref SceneRectLock dest)
+        {
+            if (rt == null || dest.Has)
+            {
+                return dest.Has;
+            }
+
+            dest.Has = true;
+            dest.AnchorMin = rt.anchorMin;
+            dest.AnchorMax = rt.anchorMax;
+            dest.Pivot = rt.pivot;
+            dest.Position = rt.anchoredPosition;
+            dest.Size = rt.sizeDelta;
+            return true;
+        }
+
+        private static void ApplySceneFollowScrollX(RectTransform rt, in SceneRectLock authored, float x)
+        {
+            if (rt == null)
+            {
+                return;
+            }
+
+            var y = authored.Has ? authored.Position.y : rt.anchoredPosition.y;
+            rt.anchoredPosition = new Vector2(x, y);
+        }
+
+        private static void ApplySceneAuthoredPosition(RectTransform rt, in SceneRectLock authored)
+        {
+            if (rt == null || !authored.Has)
+            {
+                return;
+            }
+
+            rt.anchoredPosition = authored.Position;
+        }
+
+        private RectTransform FindTimelineRect(string objectName)
+        {
+            if (string.IsNullOrEmpty(objectName))
+            {
+                return null;
+            }
+
+            if (slotsRow != null && slotsRow.name == objectName)
+            {
+                return slotsRow;
+            }
+
+            return FindDeepChild(slotsRow, objectName)
+                ?? FindDeepChild(viewport, objectName)
+                ?? FindDeepChild(transform, objectName);
+        }
+
+        private static RectTransform FindDeepChild(Transform root, string objectName)
+        {
+            if (root == null)
+            {
+                return null;
+            }
+
+            for (var i = 0; i < root.childCount; i++)
+            {
+                var child = root.GetChild(i);
+                if (child.name == objectName)
+                {
+                    return child as RectTransform;
+                }
+
+                var nested = FindDeepChild(child, objectName);
+                if (nested != null)
+                {
+                    return nested;
+                }
+            }
+
+            return null;
+        }
+
+        private bool IsNestedInSlotsRow(RectTransform rt)
+        {
+            return rt != null && slotsRow != null && rt != slotsRow && rt.IsChildOf(slotsRow);
+        }
+
+        private static void ApplySceneContentWidth(RectTransform rt, in SceneRectLock authored, float width)
+        {
+            if (rt == null)
+            {
+                return;
+            }
+
+            var height = authored.Has ? authored.Size.y : rt.sizeDelta.y;
+            rt.sizeDelta = new Vector2(width, height);
+        }
+
+        private struct SceneRectLock
+        {
+            public bool Has;
+            public Vector2 AnchorMin;
+            public Vector2 AnchorMax;
+            public Vector2 Pivot;
+            public Vector2 Position;
+            public Vector2 Size;
+
+            public float Y => Has ? Position.y : 0f;
+            public float Height => Has ? Size.y : 0f;
         }
 
         private void AlignScanBar()
@@ -5339,16 +5686,19 @@ namespace FracturedChorus.UI
             for (var i = slotsRow.childCount - 1; i >= 0; i--)
             {
                 var child = slotsRow.GetChild(i);
-                if (child.name == "Beat_0" || child.name == "Beat_1")
+                if (child.name == "Beat_0" || child.name == "Beat_1" || child.name == "PhaseDivider")
                 {
                     continue;
                 }
 
-                if (child.name.StartsWith("Beat_") || child.name.StartsWith("BeatSlot_"))
+                if (child.name.StartsWith("Beat_") || child.name.StartsWith("BeatSlot_")
+                    || child.name.StartsWith("PhaseDivider_"))
                 {
                     DestroyBeatClone(child.gameObject);
                 }
             }
+
+            _phaseDividers = null;
         }
 
         private void HandleScanBeat(int beatIndex)

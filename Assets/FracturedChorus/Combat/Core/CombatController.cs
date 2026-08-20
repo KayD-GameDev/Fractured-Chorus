@@ -228,16 +228,6 @@ namespace FracturedChorus.Combat.Core
             return Mathf.Max(0f, CombatTimelineProfile.CombatIntroDurationSec);
         }
 
-        private float ResolveBeatDurationSec()
-        {
-            if (_musicSync != null && _musicSync.BeatDuration > 0.05f)
-            {
-                return _musicSync.BeatDuration;
-            }
-
-            return 60f / TimelineConstants.BossRemixBpm;
-        }
-
         private IEnumerator CombatIntroFallbackRoutine()
         {
             var wait = ResolveIntroDurationSec();
@@ -262,17 +252,16 @@ namespace FracturedChorus.Combat.Core
 
         private IEnumerator PlayOpeningBannersThenPlanning()
         {
-            var beat = ResolveBeatDurationSec();
             var banner = EnsurePhaseBanner();
             if (banner != null)
             {
-                yield return banner.PlayBattleStartRoutine(beat);
+                yield return banner.PlayBattleStartRoutine();
             }
 
             PlayPlanningTransitionSfx();
             if (banner != null)
             {
-                yield return banner.PlayPlanningRoutine(beat);
+                yield return banner.PlayPlanningRoutine();
             }
 
             if (_session == null || _session.IsEncounterOver)

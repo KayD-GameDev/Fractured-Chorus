@@ -241,6 +241,7 @@ namespace FracturedChorus.RunMap.UI
             _layout.FitToViewport(scrollRect, fitToViewport);
             _layout.ComputeContentSize(out _contentWidth, out _contentHeight);
             ApplyContentRect();
+            EnsureTemplateSet();
             ResolveLayers();
             EnsureTemplateSet();
             EnsurePlayerMarkerLayer(_contentWidth, _contentHeight);
@@ -1119,9 +1120,10 @@ namespace FracturedChorus.RunMap.UI
 
             templateSet = Resources.Load<MapNodeTemplateSetSO>("MapNodeTemplateSet_Default");
 #if UNITY_EDITOR
-            if (templateSet == null)
+            templateSet = AssetDatabase.LoadAssetAtPath<MapNodeTemplateSetSO>(MapNodeTemplateSetSO.DefaultAssetPath);
+            if (templateSet != null && !Application.isPlaying)
             {
-                templateSet = AssetDatabase.LoadAssetAtPath<MapNodeTemplateSetSO>(MapNodeTemplateSetSO.DefaultAssetPath);
+                EditorUtility.SetDirty(this);
             }
 #endif
         }

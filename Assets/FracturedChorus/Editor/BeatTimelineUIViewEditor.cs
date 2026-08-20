@@ -64,7 +64,6 @@ namespace FracturedChorus.Editor
     [CustomEditor(typeof(BeatTimelineUIView))]
     public sealed class BeatTimelineUIViewEditor : UnityEditor.Editor
     {
-        private static bool _dragging;
         private static bool _foldLayoutHelp = true;
 
         private static bool _foldLeftRail = true;
@@ -274,89 +273,6 @@ namespace FracturedChorus.Editor
             BossNoteLayoutPlayModePersist.Stash(view);
             EditorUtility.SetDirty(view);
             view.RebuildBossNoteClustersPublic();
-        }
-
-        private void OnSceneGUI()
-        {
-            if (!Application.isPlaying)
-            {
-                return;
-            }
-
-            var view = (BeatTimelineUIView)target;
-            if (view == null)
-            {
-                return;
-            }
-
-            // Unity 6.4+: parameterless overload — avoid obsolete FindObjectsSortMode.
-            var handles = Object.FindObjectsByType<BossNoteNumberHandle>();
-            if (handles == null || handles.Length == 0)
-            {
-                return;
-            }
-
-            var e = Event.current;
-            if (_dragging && e.button == 0 &&
-                (e.type == EventType.MouseUp || e.rawType == EventType.MouseUp))
-            {
-                _dragging = false;
-                BeatTimelineUIView.SuppressBossNoteClusterRebuild = false;
-                serializedObject.ApplyModifiedProperties();
-                BossNoteLayoutPlayModePersist.Stash(view);
-                EditorUtility.SetDirty(view);
-                view.RebuildBossNoteClustersPublic();
-            }
-
-            foreach (var handle in handles)
-            {
-                if (handle == null || handle.Rect == null)
-                {
-                    continue;
-                }
-
-                var rt = handle.Rect;
-                var world = rt.position;
-                var size = HandleUtility.GetHandleSize(world) * 0.12f;
-                Handles.color = new Color(1f, 0.92f, 0.2f, 0.95f);
-                Handles.DrawSolidDisc(world, Vector3.forward, size);
-                Handles.Label(world + Vector3.up * size * 2.2f, handle.gameObject.name, EditorStyles.boldLabel);
-
-                EditorGUI.BeginChangeCheck();
-                var newWorld = Handles.FreeMoveHandle(
-                    world,
-                    size * 1.4f,
-                    Vector3.zero,
-                    Handles.CircleHandleCap);
-                if (!EditorGUI.EndChangeCheck())
-                {
-                    continue;
-                }
-
-                if (!_dragging)
-                {
-                    _dragging = true;
-                    BeatTimelineUIView.SuppressBossNoteClusterRebuild = true;
-                    Undo.RecordObject(view, "Move Boss Note Number");
-                }
-
-                Undo.RecordObject(rt, "Move Boss Note Number");
-                var parent = rt.parent as RectTransform;
-                if (parent != null)
-                {
-                    var local = parent.InverseTransformPoint(newWorld);
-                    rt.anchoredPosition = new Vector2(local.x, local.y);
-                }
-                else
-                {
-                    rt.position = newWorld;
-                }
-
-                BakeToLayout(view, handle);
-                serializedObject.Update();
-                EditorUtility.SetDirty(view);
-                SceneView.RepaintAll();
-            }
         }
 
         private void BakeToLayout(BeatTimelineUIView view, BossNoteNumberHandle handle)

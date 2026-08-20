@@ -415,22 +415,19 @@ namespace FracturedChorus.RunMap
         private static void HideRoomOverlays()
         {
             foreach (var view in UnityEngine.Object.FindObjectsByType<TreasureRoomOverlayUIView>(
-                         FindObjectsInactive.Include,
-                         FindObjectsSortMode.None))
+                         FindObjectsInactive.Include))
             {
                 view.Hide();
             }
 
             foreach (var view in UnityEngine.Object.FindObjectsByType<EventRoomOverlayUIView>(
-                         FindObjectsInactive.Include,
-                         FindObjectsSortMode.None))
+                         FindObjectsInactive.Include))
             {
                 view.Hide();
             }
 
             foreach (var view in UnityEngine.Object.FindObjectsByType<CampRoomOverlayUIView>(
-                         FindObjectsInactive.Include,
-                         FindObjectsSortMode.None))
+                         FindObjectsInactive.Include))
             {
                 view.Hide();
             }
