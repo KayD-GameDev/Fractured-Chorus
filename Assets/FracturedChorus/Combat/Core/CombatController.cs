@@ -559,7 +559,9 @@ namespace FracturedChorus.Combat.Core
             var fromBeat = _relocateFromBeat;
 
             timelineView?.HideDropGhost();
-            timelineView?.ClearLaneMarkerRelocatePrepare();
+
+            // Giữ relocate pending trong lúc resolve để OnAgendaChanged không RefreshAll
+            // (phá GameObject đang OnEndDrag).
 
             // Thả trong viewport: đặt chỗ trống, swap pha Active, hoặc eat skill đích rồi đặt.
             if (timelineView != null && timelineView.IsScreenPointInViewport(screenPos)
@@ -571,9 +573,23 @@ namespace FracturedChorus.Combat.Core
                     hoverBeat = beat;
                 }
 
-                if (_session.TryResolveSkillDrop(
+                timelineView.SetSuppressAgendaRefresh(true);
+                bool placed;
+                AgendaEntry partner;
+                SkillDefinitionSO displacedSkill;
+                int displacedBeat;
+                try
+                {
+                    placed = _session.TryResolveSkillDrop(
                         unit, skill, beat, hoverBeat, fromBeat,
-                        out var partner, out var displacedSkill, out var displacedBeat))
+                        out partner, out displacedSkill, out displacedBeat);
+                }
+                finally
+                {
+                    timelineView.SetSuppressAgendaRefresh(false);
+                }
+
+                if (placed)
                 {
                     PlaySkillPlaceSfx();
                     ClearRelocateState();
@@ -935,9 +951,22 @@ namespace FracturedChorus.Combat.Core
                 hoverBeat = beat;
             }
 
-            if (!_session.TryResolveSkillDrop(
+            timelineView.SetSuppressAgendaRefresh(true);
+            bool placed;
+            SkillDefinitionSO displacedSkill;
+            int displacedBeat;
+            try
+            {
+                placed = _session.TryResolveSkillDrop(
                     unit, skill, beat, hoverBeat, relocateFromBeat: -1,
-                    out _, out var displacedSkill, out var displacedBeat))
+                    out _, out displacedSkill, out displacedBeat);
+            }
+            finally
+            {
+                timelineView.SetSuppressAgendaRefresh(false);
+            }
+
+            if (!placed)
             {
                 if (displacedSkill != null && displacedBeat >= 0)
                 {

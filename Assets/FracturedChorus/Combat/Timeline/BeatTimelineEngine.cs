@@ -425,7 +425,19 @@ namespace FracturedChorus.Combat.Timeline
         public bool CanAssignAction(CombatUnit unit, SkillDefinitionSO skill, int beatIndex) =>
             CanAssignAction(unit, skill, beatIndex, null);
 
-        public bool CanAssignAction(CombatUnit unit, SkillDefinitionSO skill, int beatIndex, AgendaEntry ignore)
+        public bool CanAssignAction(
+            CombatUnit unit,
+            SkillDefinitionSO skill,
+            int beatIndex,
+            AgendaEntry ignore) =>
+            CanAssignAction(unit, skill, beatIndex, ignore, null);
+
+        public bool CanAssignAction(
+            CombatUnit unit,
+            SkillDefinitionSO skill,
+            int beatIndex,
+            AgendaEntry ignore,
+            AgendaEntry placingEntry)
         {
             if (Phase != CombatPhase.Planning || unit == null || skill == null)
             {
@@ -437,12 +449,40 @@ namespace FracturedChorus.Combat.Timeline
                 return false;
             }
 
-            if (!SkillFootprintUtil.CanPlace(_agenda, unit, skill, beatIndex, PlanningHorizonBeat, ignore))
+            if (!SkillFootprintUtil.CanPlace(
+                    _agenda, unit, skill, beatIndex, PlanningHorizonBeat, ignore, placingEntry))
             {
                 return false;
             }
 
-            return !CombatCounterResolver.ActiveOverlapsFullyCounteredNote(this, skill, beatIndex, unit);
+            return !CombatCounterResolver.ActiveOverlapsFullyCounteredNote(
+                this, skill, beatIndex, unit, ignore);
+        }
+
+        public bool TryGetSwapPartner(
+            CombatUnit unit,
+            SkillDefinitionSO movingSkill,
+            int toBeat,
+            int hoverBeat,
+            out AgendaEntry partner)
+        {
+            partner = null;
+            if (unit == null || movingSkill == null)
+            {
+                return false;
+            }
+
+            if (SkillFootprintUtil.TryGetEntryAtBeat(_agenda, unit, hoverBeat, out var hovered, out var role)
+                && hovered?.Skill != null
+                && role == FootprintBeatRole.Active)
+            {
+                partner = hovered;
+                return true;
+            }
+
+            return SkillFootprintUtil.TryGetActivePhaseOverlapEntry(
+                       _agenda, unit, movingSkill, toBeat, out partner)
+                   && partner?.Skill != null;
         }
 
         public bool CanSwapRelocate(
@@ -458,31 +498,35 @@ namespace FracturedChorus.Combat.Timeline
             }
 
             if (fromBeat < 0 || toBeat < 0 || hoverBeat < 0
-                || fromBeat >= BeatCount || toBeat >= BeatCount || hoverBeat >= BeatCount
-                || fromBeat == toBeat)
+                || fromBeat >= BeatCount || toBeat >= BeatCount || hoverBeat >= BeatCount)
             {
                 return false;
             }
 
-            if (!SkillFootprintUtil.TryGetEntryAtBeat(_agenda, unit, hoverBeat, out var partner, out var role)
-                || partner?.Skill == null
-                || role != FootprintBeatRole.Active)
+            if (!TryGetSwapPartner(unit, movingSkill, toBeat, hoverBeat, out var partner)
+                || partner?.Skill == null)
             {
                 return false;
             }
 
-            if (!CanAssignAction(unit, movingSkill, toBeat, partner))
+            var destBeat = partner.BeatIndex;
+            if (fromBeat == destBeat)
             {
                 return false;
             }
 
-            if (!CanAssignAction(unit, partner.Skill, fromBeat, partner))
+            if (!CanAssignAction(unit, movingSkill, destBeat, partner))
+            {
+                return false;
+            }
+
+            if (!CanAssignAction(unit, partner.Skill, fromBeat, partner, partner))
             {
                 return false;
             }
 
             return !SkillFootprintUtil.FootprintsOverlap(
-                movingSkill, toBeat, unit, null,
+                movingSkill, destBeat, unit, null,
                 partner.Skill, fromBeat, partner.Unit, partner);
         }
 

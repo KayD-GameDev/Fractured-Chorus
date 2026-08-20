@@ -210,6 +210,7 @@ namespace FracturedChorus.UI
         private readonly Dictionary<(CombatUnit unit, int beat), TimelineLaneMarkerView> _laneMarkers = new();
         private TimelineLaneMarkerView _dropGhost;
         private (CombatUnit unit, int beat)? _relocatePendingKey;
+        private bool _suppressAgendaRefresh;
         private Func<CombatUnit, int, bool> _onBeginSkillRelocate;
         private Action<Vector2> _onSkillRelocateDrag;
         private Action<Vector2> _onEndSkillRelocate;
@@ -1076,7 +1077,7 @@ namespace FracturedChorus.UI
 
         private void HandleAgendaChanged()
         {
-            if (_relocatePendingKey.HasValue)
+            if (_suppressAgendaRefresh || _relocatePendingKey.HasValue)
             {
                 return;
             }
@@ -1527,6 +1528,11 @@ namespace FracturedChorus.UI
         public void EndLaneMarkerRelocate(Vector2 screenPos)
         {
             _onEndSkillRelocate?.Invoke(screenPos);
+        }
+
+        public void SetSuppressAgendaRefresh(bool suppress)
+        {
+            _suppressAgendaRefresh = suppress;
         }
 
         public void PrepareLaneMarkerRelocate(CombatUnit unit, int beatIndex)
@@ -4743,7 +4749,14 @@ namespace FracturedChorus.UI
                     valid = true;
                 }
 
+                var isSwapCandidate = _relocatePendingKey.HasValue
+                    && _relocatePendingKey.Value.unit == unit
+                    && _timeline.TryGetSwapPartner(
+                        unit, skill, beat, hoverBeat, out var swapPartner)
+                    && swapPartner != null;
+
                 if (!valid
+                    && !isSwapCandidate
                     && SkillFootprintUtil.TryGetEntryAtBeat(
                         _timeline.Agenda, unit, hoverBeat, out var victim, out _)
                     && victim != null
@@ -4972,26 +4985,62 @@ namespace FracturedChorus.UI
             }
 
             if (SkillFootprintUtil.TryGetEntryAtBeat(
-                    _timeline.Agenda, unit, hoverBeat, out var hovered, out _)
-                && hovered?.Skill != null)
+                    _timeline.Agenda, unit, hoverBeat, out var hovered, out var role)
+                && hovered?.Skill != null
+                && role != FootprintBeatRole.Active
+                && !SkillFootprintUtil.ActivePhasesOverlap(skill, placementBeat, unit, hovered))
             {
                 ApplyOccupiedSkillDropTint(hovered);
             }
 
-            foreach (var entry in _timeline.Agenda)
+            var agenda = _timeline.Agenda;
+            for (var i = 0; i < agenda.Count; i++)
             {
+                var entry = agenda[i];
                 if (entry?.Unit != unit || entry.Skill == null || entry == hovered)
                 {
                     continue;
                 }
 
-                if (SkillFootprintUtil.FootprintsOverlap(
-                        skill, placementBeat, unit, null,
-                        entry.Skill, entry.BeatIndex, entry.Unit, entry))
+                if (GhostTouchesStandingWithoutSkillPhaseSwap(skill, placementBeat, unit, entry))
                 {
                     ApplyOccupiedSkillDropTint(entry);
                 }
             }
+        }
+
+        private static bool GhostTouchesStandingWithoutSkillPhaseSwap(
+            SkillDefinitionSO ghostSkill,
+            int ghostPlacement,
+            CombatUnit unit,
+            AgendaEntry entry)
+        {
+            if (ghostSkill == null || entry?.Skill == null)
+            {
+                return false;
+            }
+
+            var touchesStanding = false;
+            foreach (var ghostBeat in SkillFootprintUtil.EnumerateFootprintBeats(ghostSkill, ghostPlacement, unit))
+            {
+                foreach (var occupied in SkillFootprintUtil.EnumerateFootprintBeats(
+                    entry.Skill, entry.BeatIndex, entry.Unit, entry))
+                {
+                    if (ghostBeat.BeatIndex != occupied.BeatIndex)
+                    {
+                        continue;
+                    }
+
+                    if (occupied.Role == FootprintBeatRole.StandingBefore
+                        || occupied.Role == FootprintBeatRole.StandingAfter)
+                    {
+                        touchesStanding = true;
+                    }
+                }
+            }
+
+            return touchesStanding && !SkillFootprintUtil.ActivePhasesOverlap(
+                ghostSkill, ghostPlacement, unit, entry);
         }
 
         private void ApplyOccupiedSkillDropTint(AgendaEntry entry)

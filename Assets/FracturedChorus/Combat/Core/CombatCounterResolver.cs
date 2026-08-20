@@ -204,7 +204,13 @@ namespace FracturedChorus.Combat.Core
             return GetActiveBeatIndices(entry).Contains(telegraph.BeatIndex);
         }
 
-        public static int CountCountersAtBeat(BeatTimelineEngine timeline, int beatIndex)
+        public static int CountCountersAtBeat(BeatTimelineEngine timeline, int beatIndex) =>
+            CountCountersAtBeat(timeline, beatIndex, null);
+
+        public static int CountCountersAtBeat(
+            BeatTimelineEngine timeline,
+            int beatIndex,
+            AgendaEntry ignore)
         {
             if (timeline == null)
             {
@@ -220,7 +226,11 @@ namespace FracturedChorus.Combat.Core
             var count = 0;
             foreach (var entry in timeline.Agenda)
             {
-                if (entry.Unit == null || entry.Unit.Side != GridSide.Player || entry.Skill == null || entry.Skill.IsGuard)
+                if (entry == ignore
+                    || entry.Unit == null
+                    || entry.Unit.Side != GridSide.Player
+                    || entry.Skill == null
+                    || entry.Skill.IsGuard)
                 {
                     continue;
                 }
@@ -428,21 +438,35 @@ namespace FracturedChorus.Combat.Core
             }
         }
 
-        public static bool IsTelegraphFullyCountered(EnemyTelegraph telegraph, BeatTimelineEngine timeline)
+        public static bool IsTelegraphFullyCountered(EnemyTelegraph telegraph, BeatTimelineEngine timeline) =>
+            IsTelegraphFullyCountered(telegraph, timeline, null);
+
+        public static bool IsTelegraphFullyCountered(
+            EnemyTelegraph telegraph,
+            BeatTimelineEngine timeline,
+            AgendaEntry ignore)
         {
             if (telegraph == null || timeline == null)
             {
                 return false;
             }
 
-            return GetRemainingHits(telegraph, timeline) <= 0;
+            return GetRemainingHits(telegraph, timeline, ignore) <= 0;
         }
 
         public static bool ActiveOverlapsFullyCounteredNote(
             BeatTimelineEngine timeline,
             SkillDefinitionSO skill,
             int placementBeat,
-            CombatUnit unit)
+            CombatUnit unit) =>
+            ActiveOverlapsFullyCounteredNote(timeline, skill, placementBeat, unit, null);
+
+        public static bool ActiveOverlapsFullyCounteredNote(
+            BeatTimelineEngine timeline,
+            SkillDefinitionSO skill,
+            int placementBeat,
+            CombatUnit unit,
+            AgendaEntry ignore)
         {
             if (timeline == null || skill == null || placementBeat < 0)
             {
@@ -458,7 +482,7 @@ namespace FracturedChorus.Combat.Core
 
                 foreach (var telegraph in timeline.GetImpactTelegraphsAtBeat(info.BeatIndex))
                 {
-                    if (IsTelegraphFullyCountered(telegraph, timeline))
+                    if (IsTelegraphFullyCountered(telegraph, timeline, ignore))
                     {
                         return true;
                     }
@@ -469,7 +493,13 @@ namespace FracturedChorus.Combat.Core
         }
 
         /// <summary>Hits still needed to cancel — spawn HitsRequired minus current Active counters on that beat.</summary>
-        public static int GetRemainingHits(EnemyTelegraph telegraph, BeatTimelineEngine timeline)
+        public static int GetRemainingHits(EnemyTelegraph telegraph, BeatTimelineEngine timeline) =>
+            GetRemainingHits(telegraph, timeline, null);
+
+        public static int GetRemainingHits(
+            EnemyTelegraph telegraph,
+            BeatTimelineEngine timeline,
+            AgendaEntry ignore)
         {
             if (telegraph == null)
             {
@@ -484,7 +514,7 @@ namespace FracturedChorus.Combat.Core
                 return required;
             }
 
-            return Mathf.Max(0, required - CountCountersAtBeat(timeline, telegraph.BeatIndex));
+            return Mathf.Max(0, required - CountCountersAtBeat(timeline, telegraph.BeatIndex, ignore));
         }
 
         /// <summary>Preview remaining hits if <paramref name="pendingSkill"/> Active window covers the telegraph beat.</summary>

@@ -298,6 +298,10 @@ namespace FracturedChorus.Combat.Presentation
             }
 
             yield return EncounterDirector.WaitArmedVictimFocus();
+            if (ultImpactHoldSeconds > 0f)
+            {
+                yield return new WaitForSeconds(ultImpactHoldSeconds);
+            }
 
             var holdSeconds = Mathf.Max(ResolveShieldHoldSeconds(skill), ultDomeHoldSeconds);
             if (EncounterDirector.IsPresenting)
@@ -326,7 +330,11 @@ namespace FracturedChorus.Combat.Presentation
                 yield break;
             }
 
-            yield return new WaitForSeconds(1f);
+            if (ultAftermathHoldSeconds > 0f)
+            {
+                yield return new WaitForSeconds(ultAftermathHoldSeconds);
+            }
+
             yield return ReturnHome(charlotte, home, norHitRetreatSeconds);
             yield return boss.MoveFeetToRoutine(
                 bossHome,

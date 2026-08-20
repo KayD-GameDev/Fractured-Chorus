@@ -7009,6 +7009,7 @@ MonoBehaviour:
   encounterAnimSpeed: 0.7
   ultimateEncounterAnimSpeed: 0.42
   ultimateAftermathHoldSeconds: 0.55
+  ultimateReturnDelaySeconds: 1
   hideOtherUnits: 1
   hideUiDuringEncounter: 1
   focusDimFactor: 0.12

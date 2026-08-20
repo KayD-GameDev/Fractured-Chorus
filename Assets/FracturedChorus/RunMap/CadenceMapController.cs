@@ -433,8 +433,7 @@ namespace FracturedChorus.RunMap
             }
 
             foreach (var view in UnityEngine.Object.FindObjectsByType<ShopRoomOverlayUIView>(
-                         FindObjectsInactive.Include,
-                         FindObjectsSortMode.None))
+                         FindObjectsInactive.Include))
             {
                 view.Hide();
             }

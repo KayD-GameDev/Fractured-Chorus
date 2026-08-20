@@ -351,6 +351,11 @@ namespace FracturedChorus.Combat.Presentation
                 if (IsUltimateSkill(playerSkill))
                 {
                     RestoreEncounterAnimSpeed();
+                    if (_ultimateVictimHitPlayed && ultimateAftermathHoldSeconds > 0f)
+                    {
+                        yield return new WaitForSeconds(ultimateAftermathHoldSeconds);
+                    }
+
                     var returnDelay = Mathf.Max(0f, ultimateReturnDelaySeconds);
                     if (returnDelay > 0f)
                     {

@@ -307,9 +307,10 @@ namespace FracturedChorus.Combat.Core
         }
 
         /// <summary>
-        /// Relocate drop onto another same-unit Active beat: partner moves to <paramref name="fromBeat"/>,
-        /// dragged skill is assigned at <paramref name="toBeat"/>. Partner must occupy
-        /// <paramref name="hoverBeat"/> as Active.
+        /// Relocate drop onto another same-unit skill-phase (Active/S): partner moves to
+        /// <paramref name="fromBeat"/>, dragged skill is assigned at <paramref name="toBeat"/>.
+        /// Partner is the skill under the cursor's Active beat, or the unique skill whose
+        /// Active overlaps the ghost Active. Both footprints must still fit.
         /// </summary>
         public bool TrySwapRelocatePlayerAction(
             CombatUnit unit,
@@ -334,19 +335,25 @@ namespace FracturedChorus.Combat.Core
                 return false;
             }
 
-            if (!SkillFootprintUtil.TryGetEntryAtBeat(Timeline.Agenda, unit, hoverBeat, out partner, out var role)
-                || partner?.Skill == null
-                || role != FootprintBeatRole.Active)
+            if (!Timeline.TryGetSwapPartner(unit, skill, toBeat, hoverBeat, out partner)
+                || partner?.Skill == null)
             {
                 partner = null;
                 return false;
             }
 
-            var partnerOldBeat = partner.BeatIndex;
+            var destBeat = partner.BeatIndex;
+            var partnerOldBeat = destBeat;
+            if (fromBeat == destBeat)
+            {
+                partner = null;
+                return false;
+            }
+
             RevertPlanningUtilityEffects(partner);
             partner.BeatIndex = fromBeat;
 
-            if (!TryAssignPlayerAction(unit, skill, toBeat))
+            if (!TryAssignPlayerAction(unit, skill, destBeat))
             {
                 partner.BeatIndex = partnerOldBeat;
                 ApplyPlanningUtilityEffects(partner);
@@ -384,8 +391,9 @@ namespace FracturedChorus.Combat.Core
         }
 
         /// <summary>
-        /// Drop on empty beat → assign. Hover Active of another same-unit skill → swap if relocate
-        /// and valid, else eat that skill then assign. Hover Standing → eat then assign.
+        /// Relocate: overlapping Active phases swap placement beats if both footprints still fit.
+        /// Failed S-on-S swap does not eat. Hover Standing with no Active overlap → eat then assign.
+        /// New skill from radial does not swap. Empty beat → assign.
         /// </summary>
         public bool TryResolveSkillDrop(
             CombatUnit unit,
@@ -406,8 +414,28 @@ namespace FracturedChorus.Combat.Core
                 return false;
             }
 
+            AgendaEntry phasePartner = null;
+            var phasePartnerOldBeat = -1;
+            if (relocateFromBeat >= 0
+                && Timeline.TryGetSwapPartner(unit, skill, placementBeat, hoverBeat, out phasePartner)
+                && phasePartner?.Skill != null)
+            {
+                phasePartnerOldBeat = phasePartner.BeatIndex;
+                if (TrySwapRelocatePlayerAction(
+                        unit, skill, relocateFromBeat, placementBeat, hoverBeat, out swapPartner)
+                    && swapPartner != null)
+                {
+                    displacedSkill = swapPartner.Skill;
+                    displacedBeat = phasePartnerOldBeat;
+                    return true;
+                }
+
+                swapPartner = null;
+                return false;
+            }
+
             if (!SkillFootprintUtil.TryGetEntryAtBeat(
-                    Timeline.Agenda, unit, hoverBeat, out var victim, out var role)
+                    Timeline.Agenda, unit, hoverBeat, out var victim, out _)
                 || victim?.Skill == null)
             {
                 return TryAssignPlayerAction(unit, skill, placementBeat);
@@ -415,17 +443,6 @@ namespace FracturedChorus.Combat.Core
 
             displacedSkill = victim.Skill;
             displacedBeat = victim.BeatIndex;
-
-            if (role == FootprintBeatRole.Active
-                && relocateFromBeat >= 0
-                && TrySwapRelocatePlayerAction(
-                    unit, skill, relocateFromBeat, placementBeat, hoverBeat, out swapPartner)
-                && swapPartner != null)
-            {
-                return true;
-            }
-
-            swapPartner = null;
             return TryEatThenAssign(unit, skill, placementBeat, victim);
         }
 
