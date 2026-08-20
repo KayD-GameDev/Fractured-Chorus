@@ -9,6 +9,13 @@ namespace FracturedChorus.Meta.Economy
         public const int CampHealCost = 30;
         public const int RelayCost = 50;
         public const int HubHealCost = 40;
+        public const int ShopHealPotionCost = 40;
+        public const int ShopPrepCost = 35;
+        public const int ShopArmorCost = 45;
+        public const int ShopReviveCost = 50;
+        public const int ShopPlaceCounterCost = 40;
+        public const float ShopArmorShieldPercent = 0.25f;
+        public const int ShopPrepAmount = 1;
 
         public static int BattleReward(int floor) => 40 + Mathf.Max(0, floor) * 5;
 

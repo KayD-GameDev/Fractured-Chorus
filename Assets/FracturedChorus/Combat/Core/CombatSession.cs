@@ -289,6 +289,11 @@ namespace FracturedChorus.Combat.Core
             if (entry != null)
             {
                 entry.StandingAfterOverride = SkillFootprintUtil.GetStandingAfter(skill, unit);
+                if (RunEventCombatMods.TryConsumePlaceCounterPlus())
+                {
+                    entry.ActiveBeatsOverride = SkillFootprintUtil.GetActiveBeats(skill) + 1;
+                }
+
                 if (unit.PendingReduceS2 > 0)
                 {
                     unit.SetPendingReduceS2(0);
@@ -338,7 +343,7 @@ namespace FracturedChorus.Combat.Core
             if (skill.effectKind == SkillEffectKind.DelayBossNote)
             {
                 var delay = Mathf.Max(1, skill.ResolveEffectValue(empowerPreview));
-                var sEnd = entry.BeatIndex + SkillFootprintUtil.GetActiveBeats(skill) - 1;
+                var sEnd = entry.BeatIndex + SkillFootprintUtil.GetActiveBeats(skill, entry.Unit, entry) - 1;
                 var moves = Timeline.DelayImpactTelegraphsAfterBeat(sEnd, CombatTimelineProfile.TotalBeats, delay);
                 entry.PlanningDelayMoves.Clear();
                 entry.PlanningDelayMoves.AddRange(moves);
@@ -976,6 +981,68 @@ namespace FracturedChorus.Combat.Core
             }
 
             TryEndEncounterIfDecided();
+        }
+
+        public void ApplyPlayerSkillDamagePulse(int beatIndex, int pulseIndex, int pulseCount)
+        {
+            if (Timeline == null || pulseCount < 1 || pulseIndex < 0 || IsEncounterOver)
+            {
+                return;
+            }
+
+            var telegraphs = Timeline.GetImpactTelegraphsAtBeat(beatIndex);
+            var entries = GetPlayerEntriesActiveAtBeat(beatIndex);
+            var enemyBeat = telegraphs != null && telegraphs.Count > 0 ? telegraphs[0].BeatIndex : beatIndex;
+            foreach (var entry in entries)
+            {
+                if (entry?.Unit == null || entry.Skill == null || !entry.Unit.IsAlive)
+                {
+                    continue;
+                }
+
+                if (entry.EffectPayloadApplied && pulseIndex > 0 && entry.PendingHitDamage <= 0f)
+                {
+                    continue;
+                }
+
+                var target = PickTarget(entry);
+                var timing = Cover.RemapPlayerTiming(
+                    BeatTimingResolver.Resolve(entry.BeatIndex, enemyBeat));
+                var ctx = new CombatContext
+                {
+                    Grid = Grid,
+                    Timeline = Timeline,
+                    Source = entry.Unit,
+                    Target = target,
+                    Skill = entry.Skill,
+                    BeatTiming = timing,
+                    IsEmpowered = entry.IsEmpowered,
+                    Entry = entry,
+                    CoverOutgoingMultiplier = Cover.OutgoingDamageMultiplier
+                };
+
+                if (pulseIndex == 0 || entry.PendingHitDamage < 0f)
+                {
+                    entry.PendingHitDamage = SkillActionCommand.ComputeOutgoingDamage(ctx, target, out _);
+                }
+
+                var hitsLeft = pulseCount - pulseIndex;
+                var leftover = Mathf.Max(0f, entry.PendingHitDamage);
+                var amount = hitsLeft <= 1 ? leftover : leftover / hitsLeft;
+                entry.PendingHitDamage = leftover - amount;
+                if (target != null && amount > 0f)
+                {
+                    var crit = false;
+                    SkillActionCommand.ComputeOutgoingDamage(ctx, target, out crit);
+                    target.TakeDamage(amount, crit);
+                }
+
+                if (pulseIndex >= pulseCount - 1)
+                {
+                    entry.EffectPayloadApplied = true;
+                    entry.PendingHitDamage = 0f;
+                }
+            }
         }
 
         private void ResolvePlayerAttack(AgendaEntry entry, BeatTiming timing)

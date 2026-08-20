@@ -175,6 +175,59 @@ namespace FracturedChorus.UI.Loading
             }
         }
 
+        public static void ShowCoverNow()
+        {
+            Ensure().ShowCover();
+        }
+
+        public static void HideCoverNow()
+        {
+            if (Instance == null || Instance._busy)
+            {
+                return;
+            }
+
+            Instance.HideCover();
+        }
+
+        public void ShowCover()
+        {
+            if (_busy)
+            {
+                return;
+            }
+
+            EnsureView();
+            if (!gameObject.activeSelf)
+            {
+                gameObject.SetActive(true);
+            }
+
+            if (view != null)
+            {
+                view.PickRandomBackground();
+                view.SetProgress(0f);
+                view.SetVisible(true, true);
+            }
+
+            if (canvasGroup != null)
+            {
+                canvasGroup.alpha = 1f;
+                canvasGroup.blocksRaycasts = true;
+                canvasGroup.interactable = false;
+            }
+        }
+
+        public void HideCover()
+        {
+            if (_busy)
+            {
+                return;
+            }
+
+            HideImmediate();
+        }
+
         public bool BeginLoad(string sceneName, LoadSceneMode mode)
         {
             if (_busy)

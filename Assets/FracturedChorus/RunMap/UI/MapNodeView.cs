@@ -10,18 +10,13 @@ namespace FracturedChorus.RunMap.UI
 {
     public class MapNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
-        private const string RenAvatarPath =
-            "Assets/FracturedChorus/Art/UI/Combat/Timeline/LeftRail/Avatars/ren_chibi_avatar_v1.png";
-
         [SerializeField] private Image fillImage;
         [SerializeField] private Image strokeImage;
         [SerializeField] private Image iconImage;
         [SerializeField] private Image selectionFrameImage;
-        [SerializeField] private Image playerMarkerImage;
         [SerializeField] private Text labelText;
         [SerializeField] private Button button;
         [SerializeField] private MapNodeIconSetSO iconSet;
-        [SerializeField] private Sprite playerMarkerSprite;
 
         private const float HoverScale = 1.12f;
         private const float ClickPulseScale = 1.24f;
@@ -30,13 +25,11 @@ namespace FracturedChorus.RunMap.UI
 
         private Image _hitImage;
         private PinkySectorId _sector = PinkySectorId.Pulse;
-        private static Sprite s_renAvatar;
         private bool _hovered;
         private float _clickPulse;
         private Color _iconBaseColor = Color.white;
 
         public MapNodeData BoundNode { get; private set; }
-        public bool SuppressPlayerMarker { get; set; }
         public event Action<MapNodeView> Clicked;
 
         private void Awake()
@@ -51,7 +44,6 @@ namespace FracturedChorus.RunMap.UI
             EnsureCircleSprites();
             EnsureIconImage();
             EnsureSelectionFrame();
-            EnsurePlayerMarker();
             DisableChildRaycastsExceptButtonTarget();
 
             if (button != null)
@@ -114,14 +106,10 @@ namespace FracturedChorus.RunMap.UI
         private bool CanHover() =>
             BoundNode != null && !BoundNode.Cleared && (button == null || button.interactable);
 
-        public void Configure(MapNodeIconSetSO set, PinkySectorId sector, Sprite renAvatar = null)
+        public void Configure(MapNodeIconSetSO set, PinkySectorId sector)
         {
             iconSet = set;
             _sector = sector;
-            if (renAvatar != null)
-            {
-                playerMarkerSprite = renAvatar;
-            }
         }
 
         private void EnsureHitTarget()
@@ -155,11 +143,6 @@ namespace FracturedChorus.RunMap.UI
             if (selectionFrameImage != null)
             {
                 selectionFrameImage.raycastTarget = false;
-            }
-
-            if (playerMarkerImage != null)
-            {
-                playerMarkerImage.raycastTarget = false;
             }
 
             if (labelText != null)
@@ -249,38 +232,6 @@ namespace FracturedChorus.RunMap.UI
             selectionFrameImage.enabled = false;
         }
 
-        private void EnsurePlayerMarker()
-        {
-            if (playerMarkerImage != null)
-            {
-                return;
-            }
-
-            var existing = transform.Find("PlayerMarker");
-            if (existing != null)
-            {
-                playerMarkerImage = existing.GetComponent<Image>();
-                if (playerMarkerImage != null)
-                {
-                    return;
-                }
-            }
-
-            var go = new GameObject("PlayerMarker", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-            go.transform.SetParent(transform, false);
-            go.transform.SetAsLastSibling();
-            var rect = go.GetComponent<RectTransform>();
-            rect.anchorMin = new Vector2(0.5f, 1f);
-            rect.anchorMax = new Vector2(0.5f, 1f);
-            rect.pivot = new Vector2(0.5f, 0f);
-            rect.anchoredPosition = new Vector2(0f, 8f);
-            rect.sizeDelta = new Vector2(32f, 32f);
-            playerMarkerImage = go.GetComponent<Image>();
-            playerMarkerImage.preserveAspect = true;
-            playerMarkerImage.raycastTarget = false;
-            playerMarkerImage.enabled = false;
-        }
-
         public void Bind(MapNodeData node)
         {
             BoundNode = node;
@@ -296,7 +247,6 @@ namespace FracturedChorus.RunMap.UI
 
             EnsureIconImage();
             EnsureSelectionFrame();
-            EnsurePlayerMarker();
 
             var sprite = ResolveNodeSprite();
             var useIcon = sprite != null;
@@ -310,7 +260,7 @@ namespace FracturedChorus.RunMap.UI
             {
                 iconColor = new Color(0.72f, 0.74f, 0.78f, 1f);
             }
-            else if (!BoundNode.Cleared && current && !SuppressPlayerMarker)
+            else if (!BoundNode.Cleared && current)
             {
                 stroke = FcColorTokens.Brand.CyanNeonBody;
                 iconColor = Color.white;
@@ -390,18 +340,6 @@ namespace FracturedChorus.RunMap.UI
 
             _iconBaseColor = iconColor;
 
-            if (playerMarkerImage != null)
-            {
-                var marker = ResolvePlayerMarkerSprite();
-                var showMarker = current && marker != null && !SuppressPlayerMarker;
-                playerMarkerImage.enabled = showMarker;
-                if (showMarker)
-                {
-                    playerMarkerImage.sprite = marker;
-                    playerMarkerImage.color = Color.white;
-                }
-            }
-
             if (button != null)
             {
                 button.interactable = !BoundNode.Cleared;
@@ -420,30 +358,13 @@ namespace FracturedChorus.RunMap.UI
                 : null;
         }
 
-        private Sprite ResolvePlayerMarkerSprite()
-        {
-            if (playerMarkerSprite != null)
-            {
-                return playerMarkerSprite;
-            }
-
-#if UNITY_EDITOR
-            if (s_renAvatar == null)
-            {
-                s_renAvatar = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(RenAvatarPath);
-            }
-#endif
-            return s_renAvatar;
-        }
-
         public void WireImages(
             Image fill,
             Image stroke,
             Text label,
             Button btn,
             Image icon = null,
-            Image selectionFrame = null,
-            Image playerMarker = null)
+            Image selectionFrame = null)
         {
             fillImage = fill;
             strokeImage = stroke;
@@ -451,7 +372,6 @@ namespace FracturedChorus.RunMap.UI
             button = btn;
             iconImage = icon;
             selectionFrameImage = selectionFrame;
-            playerMarkerImage = playerMarker;
             EnsureHitTarget();
             DisableChildRaycastsExceptButtonTarget();
         }

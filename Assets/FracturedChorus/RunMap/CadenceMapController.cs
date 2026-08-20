@@ -6,6 +6,7 @@ using FracturedChorus.RunMap.Core;
 using FracturedChorus.RunMap.UI;
 using FracturedChorus.Tutorial;
 using FracturedChorus.UI;
+using FracturedChorus.UI.Loading;
 using UnityEngine;
 using UnityEngine.UI;
 #if UNITY_EDITOR
@@ -22,7 +23,8 @@ namespace FracturedChorus.RunMap
             MapNodes = 1,
             Treasure = 2,
             Event = 3,
-            Camp = 4
+            Camp = 4,
+            Shop = 5
         }
 
         public static CadenceMapController Instance { get; private set; }
@@ -233,6 +235,8 @@ namespace FracturedChorus.RunMap
                 return;
             }
 
+            LoadingScreenController.ShowCoverNow();
+
             var seed = bootstrap != null ? bootstrap.ResolveSeed() : Random.Range(1, int.MaxValue);
             Progress.BeginPinkyRun(seed);
             RunMapBgmController.StopAll();
@@ -269,6 +273,7 @@ namespace FracturedChorus.RunMap
             {
                 Debug.LogError($"[Fractured Chorus] GenerateSector failed: {ex.Message}\n{ex.StackTrace}");
                 _innerBootCoroutine = null;
+                HideLoadingOverlay();
                 yield break;
             }
 
@@ -276,6 +281,7 @@ namespace FracturedChorus.RunMap
             {
                 Debug.LogError("[Fractured Chorus] CadenceMapController: innerController null.");
                 _innerBootCoroutine = null;
+                HideLoadingOverlay();
                 yield break;
             }
 
@@ -339,6 +345,7 @@ namespace FracturedChorus.RunMap
                     : $"Pinky — Map {mapIndex}/3 · {sectorTitle} · F1 → {bossLabel}");
 
             _innerBootCoroutine = null;
+            HideLoadingOverlay();
         }
 
         private static int SectorMapIndex(PinkySectorId sector) => sector switch
@@ -356,6 +363,7 @@ namespace FracturedChorus.RunMap
             SetInnerUiActive(false);
             HideEditPreviewRuntime();
             HideRoomOverlays();
+            HideLoadingOverlay();
 
             if (macroMapRoot != null)
             {
@@ -423,6 +431,18 @@ namespace FracturedChorus.RunMap
             {
                 view.Hide();
             }
+
+            foreach (var view in UnityEngine.Object.FindObjectsByType<ShopRoomOverlayUIView>(
+                         FindObjectsInactive.Include,
+                         FindObjectsSortMode.None))
+            {
+                view.Hide();
+            }
+        }
+
+        private static void HideLoadingOverlay()
+        {
+            LoadingScreenController.HideCoverNow();
         }
 
         private static void DestroyNodeEditPreview(Transform parent)
@@ -546,6 +566,7 @@ namespace FracturedChorus.RunMap
 
         private IEnumerator LoadBossCombatDeferred(PinkySectorId sector)
         {
+            _ = sector;
             if (bossSceneLoadDelaySec > 0f)
             {
                 yield return new WaitForSecondsRealtime(bossSceneLoadDelaySec);
@@ -716,6 +737,17 @@ namespace FracturedChorus.RunMap
 
                         ShowCampRoomEditPreview();
                         break;
+                    case RunMapEditorPreview.Shop:
+                        SetMacroLayerActive(false);
+                        SetInnerUiActive(false);
+                        DestroyNodeEditPreview(innerMapRoot != null ? innerMapRoot.transform : transform);
+                        if (backToMacroButton != null)
+                        {
+                            backToMacroButton.gameObject.SetActive(false);
+                        }
+
+                        ShowShopRoomEditPreview();
+                        break;
                 }
 
                 EditorUtility.SetDirty(this);
@@ -803,6 +835,12 @@ namespace FracturedChorus.RunMap
         private void ShowCampRoomEditPreview()
         {
             var overlay = CampRoomOverlayUIView.EnsureOnCanvas(ResolveCanvasRoot());
+            overlay?.ShowEditPreview();
+        }
+
+        private void ShowShopRoomEditPreview()
+        {
+            var overlay = ShopRoomOverlayUIView.EnsureOnCanvas(ResolveCanvasRoot());
             overlay?.ShowEditPreview();
         }
 

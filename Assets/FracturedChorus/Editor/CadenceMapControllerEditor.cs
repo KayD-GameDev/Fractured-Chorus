@@ -62,9 +62,16 @@ namespace FracturedChorus.Editor
                 MarkDirty(controller);
             }
 
+            if (GUILayout.Button("Shop"))
+            {
+                Undo.RecordObject(controller, "Preview Shop");
+                controller.SetEditorPreview(CadenceMapController.RunMapEditorPreview.Shop);
+                MarkDirty(controller);
+            }
+
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.HelpBox(
-                "Map Select → MacroMapLayer\nMap Nodes → InnerMapLayer + layout preview\nTreasure / Event → overlay + video BG\nCamp → overlay + still BG",
+                "Map Select → MacroMapLayer\nMap Nodes → InnerMapLayer + layout preview\nTreasure / Event → overlay + video BG\nCamp / Shop → overlay + still BG",
                 MessageType.None);
 
             if (GUILayout.Button("Show Map Nodes Preview"))

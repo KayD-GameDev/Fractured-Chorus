@@ -5,7 +5,7 @@ namespace FracturedChorus.Combat.Timeline
         public const int BossTotalBeats = 677;
         public const int RunTotalBeats = 689;
         public const int BossIntroBeatCount = 12;
-        public const int RunIntroBeatCount = 5;
+        public const int RunIntroBeatCount = 12;
 
         public static int TotalBeats { get; private set; } = BossTotalBeats;
         public static int CombatIntroBeatCount { get; private set; } = BossIntroBeatCount;

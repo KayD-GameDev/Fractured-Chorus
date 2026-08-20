@@ -41,6 +41,11 @@
 - SyncPod on ear: circular pod, **blue** waveform + **thin black cable** down to collar
 - Path: `Art/Characters/Astra/School/astra_hima_uniform_menu_fullbody_v1.png`
 
+### Title screen pose
+- Path: `Art/UI/TitleScreen/SheetV1/char_astra_title_pose_v1_alpha.png`
+- Natural contrapposto; tablet in one hand, free hand relaxed
+- School identity (pink tie, white stockings, HIMA badge, SyncPod)
+
 ## Outfit C — Cadence Boss (luminous dark / Arc 1)
 - High-contrast **bright + dark** idol-boss suit (not pure all-black): black structured panels mixed with luminous **white** panels
 - Pleated skirt mixes black and white; gold hem; crimson inner flash OK

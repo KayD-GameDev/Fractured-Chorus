@@ -437,7 +437,7 @@ namespace FracturedChorus.Combat.Presentation
                     ImpactSeconds = Mathf.Max(0.12f, skill3ImpactSeconds),
                     FinaleImpactScale = Mathf.Max(1f, skill3FinaleImpactScale),
                     FinaleImpactSeconds = Mathf.Max(0.12f, skill3FinaleImpactSeconds),
-                    AftermathHoldSeconds = Mathf.Max(0f, skill3AftermathHoldSeconds),
+                    AftermathHoldSeconds = 0f,
                     FlightSeconds = Mathf.Max(0.1f, skill3FlightSeconds),
                     StaggerSeconds = Mathf.Max(0f, skill3StaggerSeconds),
                     BoltCount = Mathf.Clamp(skill3BoltCount, 1, 8),
@@ -474,12 +474,13 @@ namespace FracturedChorus.Combat.Presentation
 
             yield return EncounterDirector.WaitArmedVictimFocus();
 
-            if (!returnHome)
+            if (returnHome)
             {
-                yield break;
+                yield return new WaitForSeconds(1f);
+                coda.SnapFeetTo(home, coda.transform.position.z);
+                coda.CaptureAnchor();
+                coda.PlayIdleState();
             }
-
-            yield return ReturnHome(coda, home, skill3RetreatSeconds);
         }
 
         public void EnsureDefaults()

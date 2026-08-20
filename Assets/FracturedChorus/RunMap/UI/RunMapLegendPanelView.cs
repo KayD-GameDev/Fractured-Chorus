@@ -7,7 +7,6 @@ using UnityEngine.UI;
 
 namespace FracturedChorus.RunMap.UI
 {
-    /// <summary>Đồng bộ legend: màu MapNodePalette, font/spacing từ MapLayoutConstants.</summary>
     [ExecuteAlways]
     public class RunMapLegendPanelView : MonoBehaviour
     {
@@ -207,6 +206,7 @@ namespace FracturedChorus.RunMap.UI
                 return;
             }
 
+            hint.text = "Bấm tên để xem thông tin.";
             hint.fontSize = MapLayoutConstants.LegendHintFontSize;
             hint.color = new Color(0.62f, 0.65f, 0.7f);
             hint.lineSpacing = MapLayoutConstants.LegendHintLineSpacing;
@@ -237,10 +237,12 @@ namespace FracturedChorus.RunMap.UI
             var desc = row.Find("Desc")?.GetComponent<Text>();
             if (desc != null)
             {
+                desc.text = MapNodeCatalog.Title(type);
                 desc.fontSize = MapLayoutConstants.LegendDescFontSize;
                 desc.color = new Color(0.88f, 0.9f, 0.93f);
                 desc.horizontalOverflow = HorizontalWrapMode.Overflow;
                 desc.verticalOverflow = VerticalWrapMode.Overflow;
+                desc.raycastTarget = false;
 
                 var le = desc.GetComponent<LayoutElement>() ?? desc.gameObject.AddComponent<LayoutElement>();
                 le.minHeight = 0f;
@@ -269,7 +271,10 @@ namespace FracturedChorus.RunMap.UI
                 dot = CreateSwatchRoot(row);
             }
 
+            dot.gameObject.SetActive(true);
             ConfigureSwatch(dot, type);
+
+            WireRowClick(row, type);
         }
 
         private Transform CreateSwatchRoot(Transform row)
@@ -299,7 +304,27 @@ namespace FracturedChorus.RunMap.UI
 
         private void ConfigureSwatch(Transform dot, MapNodeType type)
         {
-            EnsureDotSquare(dot, type);
+            var diameter = type == MapNodeType.Start
+                ? MapLayoutConstants.LegendDotSize * MapLayoutConstants.StartNodeScale
+                : MapLayoutConstants.LegendDotSize;
+
+            var rect = dot as RectTransform ?? dot.GetComponent<RectTransform>();
+            if (rect != null)
+            {
+                rect.anchorMin = new Vector2(0f, 0.5f);
+                rect.anchorMax = new Vector2(0f, 0.5f);
+                rect.pivot = new Vector2(0.5f, 0.5f);
+                rect.anchoredPosition = Vector2.zero;
+                rect.sizeDelta = new Vector2(diameter, diameter);
+            }
+
+            var le = dot.GetComponent<LayoutElement>() ?? dot.gameObject.AddComponent<LayoutElement>();
+            le.minWidth = diameter;
+            le.minHeight = diameter;
+            le.preferredWidth = diameter;
+            le.preferredHeight = diameter;
+            le.flexibleWidth = 0f;
+            le.flexibleHeight = 0f;
 
             var legacyImage = dot.GetComponent<Image>();
             if (legacyImage != null)
@@ -307,7 +332,6 @@ namespace FracturedChorus.RunMap.UI
                 legacyImage.enabled = false;
             }
 
-            var diameter = LegendDotDiameter(type);
             var stroke = EnsureImageChild(dot, "Stroke", StretchMin, StretchMax, Vector2.zero, Vector2.zero);
             var inset = diameter * (3f / MapLayoutConstants.NodeDiameter);
             var fill = EnsureImageChild(
@@ -319,9 +343,7 @@ namespace FracturedChorus.RunMap.UI
                 new Vector2(-inset, -inset));
             var icon = EnsureImageChild(dot, "Icon", StretchMin, StretchMax, Vector2.zero, Vector2.zero);
 
-            var sprite = iconSet != null
-                ? iconSet.Resolve(type, type == MapNodeType.Boss, PinkySectorId.Canticle)
-                : null;
+            var sprite = ResolveIconSet()?.Resolve(type, type == MapNodeType.Boss, PinkySectorId.Canticle);
 
             if (sprite != null)
             {
@@ -348,35 +370,18 @@ namespace FracturedChorus.RunMap.UI
             fill.raycastTarget = false;
         }
 
-        private static float LegendDotDiameter(MapNodeType type) =>
-            type == MapNodeType.Start
-                ? MapLayoutConstants.LegendDotSize * MapLayoutConstants.StartNodeScale
-                : MapLayoutConstants.LegendDotSize;
-
-        private static void EnsureDotSquare(Transform dot, MapNodeType type)
+        private MapNodeIconSetSO ResolveIconSet()
         {
-            var diameter = LegendDotDiameter(type);
-            var rect = dot as RectTransform ?? dot.GetComponent<RectTransform>();
-            if (rect != null)
+            if (iconSet != null)
             {
-                rect.anchorMin = new Vector2(0f, 0.5f);
-                rect.anchorMax = new Vector2(0f, 0.5f);
-                rect.pivot = new Vector2(0.5f, 0.5f);
-                rect.anchoredPosition = Vector2.zero;
-                rect.sizeDelta = new Vector2(diameter, diameter);
+                return iconSet;
             }
 
-            var le = dot.GetComponent<LayoutElement>() ?? dot.gameObject.AddComponent<LayoutElement>();
-            le.minWidth = diameter;
-            le.minHeight = diameter;
-            le.preferredWidth = diameter;
-            le.preferredHeight = diameter;
-            le.flexibleWidth = 0f;
-            le.flexibleHeight = 0f;
-
-            var fitter = dot.GetComponent<AspectRatioFitter>() ?? dot.gameObject.AddComponent<AspectRatioFitter>();
-            fitter.aspectMode = AspectRatioFitter.AspectMode.WidthControlsHeight;
-            fitter.aspectRatio = 1f;
+#if UNITY_EDITOR
+            iconSet = UnityEditor.AssetDatabase.LoadAssetAtPath<MapNodeIconSetSO>(
+                "Assets/FracturedChorus/Data/ScriptableObjects/Presets/MapNodeIconSet_Default.asset");
+#endif
+            return iconSet;
         }
 
         private static Image EnsureImageChild(
@@ -411,6 +416,40 @@ namespace FracturedChorus.RunMap.UI
             rect.localScale = Vector3.one;
 
             return go.GetComponent<Image>();
+        }
+
+        private void WireRowClick(Transform row, MapNodeType type)
+        {
+            var graphic = row.GetComponent<Image>();
+            if (graphic == null)
+            {
+                graphic = row.gameObject.AddComponent<Image>();
+            }
+
+            graphic.color = new Color(1f, 1f, 1f, 0.001f);
+            graphic.raycastTarget = true;
+
+            var button = row.GetComponent<Button>() ?? row.gameObject.AddComponent<Button>();
+            button.targetGraphic = graphic;
+            button.transition = Selectable.Transition.None;
+            button.onClick.RemoveAllListeners();
+            button.onClick.AddListener(() => ShowTypeInfo(type));
+        }
+
+        private static void ShowTypeInfo(MapNodeType type)
+        {
+            if (!Application.isPlaying)
+            {
+                return;
+            }
+
+            var panel = UnityEngine.Object.FindAnyObjectByType<RunMapNodeInfoPanel>(FindObjectsInactive.Include);
+            if (panel == null)
+            {
+                return;
+            }
+
+            panel.ShowTypeInfo(type);
         }
 
         private static bool TryParseRowType(string rowName, out MapNodeType type)

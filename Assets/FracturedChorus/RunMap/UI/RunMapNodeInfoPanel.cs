@@ -106,6 +106,19 @@ namespace FracturedChorus.RunMap.UI
             }
         }
 
+        public void ShowTypeInfo(MapNodeType type)
+        {
+            Show(
+                new MapNodeData
+                {
+                    Type = type,
+                    IsBoss = type == MapNodeType.Boss
+                },
+                canTravel: false,
+                onConfirm: null,
+                onCancel: Hide);
+        }
+
         public void Hide()
         {
             _boundNode = null;

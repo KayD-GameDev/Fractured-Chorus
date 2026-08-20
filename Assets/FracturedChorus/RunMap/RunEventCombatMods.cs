@@ -14,6 +14,7 @@ namespace FracturedChorus.RunMap
         public static bool PendingOverhealToShield { get; private set; }
         public static float PendingShieldPercent { get; private set; }
         public static int PendingPrep { get; private set; }
+        public static int PendingPlaceCounterPlus { get; private set; }
         public static int PendingFirstPlaceReduceS2 { get; private set; }
         public static bool FirstPlaceConsumed { get; private set; }
 
@@ -40,15 +41,41 @@ namespace FracturedChorus.RunMap
                     PendingFirstPlaceReduceS2 += Mathf.Max(1, Mathf.RoundToInt(choice.Magnitude));
                     break;
                 case EventChoiceKind.PrepBonus:
-                    PendingPrep += Mathf.Max(1, Mathf.RoundToInt(choice.Magnitude));
+                    AddPrep(Mathf.Max(1, Mathf.RoundToInt(choice.Magnitude)));
                     break;
                 case EventChoiceKind.StartShieldPercent:
-                    PendingShieldPercent += choice.Magnitude;
+                    AddArmorShieldPercent(choice.Magnitude);
                     break;
                 case EventChoiceKind.NextBattleCrit:
                     NextCritBonus += choice.Magnitude;
                     break;
             }
+        }
+
+        public static void AddPrep(int amount)
+        {
+            PendingPrep += Mathf.Max(0, amount);
+        }
+
+        public static void AddArmorShieldPercent(float percent)
+        {
+            PendingShieldPercent += Mathf.Max(0f, percent);
+        }
+
+        public static void AddPlaceCounterPlus(int amount = 1)
+        {
+            PendingPlaceCounterPlus += Mathf.Max(0, amount);
+        }
+
+        public static bool TryConsumePlaceCounterPlus()
+        {
+            if (PendingPlaceCounterPlus <= 0)
+            {
+                return false;
+            }
+
+            PendingPlaceCounterPlus--;
+            return true;
         }
 
         public static void ApplyStartOfBattle(Combat.Core.CombatSession session)
@@ -150,6 +177,7 @@ namespace FracturedChorus.RunMap
             PendingOverhealToShield = false;
             PendingShieldPercent = 0f;
             PendingPrep = 0;
+            PendingPlaceCounterPlus = 0;
         }
     }
 }

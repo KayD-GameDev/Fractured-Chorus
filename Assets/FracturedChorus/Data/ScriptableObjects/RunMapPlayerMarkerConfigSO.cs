@@ -5,6 +5,9 @@ namespace FracturedChorus.Data
     [CreateAssetMenu(fileName = "RunMapPlayerMarkerConfig", menuName = "Fractured Chorus/Run Map Player Marker")]
     public sealed class RunMapPlayerMarkerConfigSO : ScriptableObject
     {
+        public const string DefaultAssetPath =
+            "Assets/FracturedChorus/Data/ScriptableObjects/Presets/RunMapPlayerMarker_Default.asset";
+
         [Header("Sprites")]
         [SerializeField] private Sprite idleSprite;
         [SerializeField] private Sprite travelSprite;
