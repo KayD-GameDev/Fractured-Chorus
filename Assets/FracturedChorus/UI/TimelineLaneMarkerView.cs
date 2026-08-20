@@ -315,6 +315,48 @@ namespace FracturedChorus.UI
             _background.color = new Color(c.r, c.g, c.b, alpha);
         }
 
+        private Color _overlapTintSaved;
+        private Color _overlapGlowSaved;
+        private bool _overlapTinted;
+
+        public void SetOverlapTint(Color tint, bool enabled)
+        {
+            if (_background == null || _gapAnchorMode)
+            {
+                return;
+            }
+
+            if (enabled)
+            {
+                if (!_overlapTinted)
+                {
+                    _overlapTintSaved = _background.color;
+                    _overlapGlowSaved = _glow != null ? _glow.color : Color.white;
+                    _overlapTinted = true;
+                }
+
+                _background.color = tint;
+                if (_glow != null)
+                {
+                    _glow.color = tint;
+                }
+
+                return;
+            }
+
+            if (!_overlapTinted)
+            {
+                return;
+            }
+
+            _overlapTinted = false;
+            _background.color = _overlapTintSaved;
+            if (_glow != null)
+            {
+                _glow.color = _overlapGlowSaved;
+            }
+        }
+
         public void SetInvalidPreview(bool invalid)
         {
             if (_background == null || _gapAnchorMode)

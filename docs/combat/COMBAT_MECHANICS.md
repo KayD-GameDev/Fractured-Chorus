@@ -113,9 +113,11 @@ Kết quả: trễ tối đa **~1 beat** (~0.39s @ 152 BPM) — snap beat kế, 
 ### Planning UX
 
 - Gán hết skill **không** auto-resume — bắt buộc bấm **Execute**.
-- Kéo marker skill → **xóa ngay** khi bắt đầu kéo (dots footprint biến mất cùng lúc).
+- Kéo marker skill trên lane → skill đó rời agenda (ghost theo chuột); **các nốt khác cùng line và line nhân vật khác vẫn hiện**. Chỉ ẩn footprint của skill đang cầm.
+- **Relocate swap:** thả ghost lên pha **Active (S)** của skill khác **cùng unit** → đổi beat nếu cả hai S1/S/S2 vẫn hợp lệ. Thả lên **Standing (S1/S2)**, hoặc lên S mà không swap được → **xóa skill đang trên line** rồi đặt skill đang kéo. Kéo skill mới từ radial lên S/standing của skill khác: không swap, cùng luật xóa skill đích rồi đặt. Ghost đụng S hoặc S1/S2 của skill trên line → nhuộm cả skill đó `#AF2C42` (vẫn thả được nếu luật trên cho phép).
+- Kéo ra ngoài timeline → xóa skill đang relocate.
 - **Skill radial (W/A/D):** chỉ hiện phím + tên skill — không cost AV (placement không tốn AV).
-- Đặt skill: bao nhiêu cũng được miễn **không overlap S1/S/S2** trên cùng unit (`SkillFootprintUtil.CanPlace`).
+- Đặt skill: bao nhiêu cũng được miễn **không overlap S1/S/S2** trên cùng unit (`SkillFootprintUtil.CanPlace`), trừ swap pha S / eat skill đích khi thả lên standing hoặc S không swap được.
 - **Hex floor (ô vị trí):** hiện hex **Player** suốt mọi cửa sổ planning (`IsPlanningWindowOpen`), ẩn khi timeline chạy. Hex **Enemy** luôn ẩn — `CombatController.ApplySlotFloorVisibilityForCurrentPhase` → `BoardDragController.SetSlotFloorsVisible` / `GridCellMarker.SetFloorVisible`.
 - **Nút Execute:** `CombatExecuteOverlayUIView.ApplyAlphaHitTest` — `alphaHitTestMinimumThreshold = 0.1` **chỉ khi** `texture.isReadable` (tránh Console error); nếu chưa Readable thì tạm full-rect. Sprites `combat_btn_deploy_v1` / `combat_btn_execute_v1` cần Read/Write + Uncompressed — menu **Fractured Chorus → Ensure Combat Button Sprites Readable** (`CombatButtonSpriteImportSettings`).
 
@@ -140,7 +142,7 @@ Timeline giữ **một hàng cột beat duy nhất**. Trên đó overlay **N dò
 
 ### Đặt skill — kéo-thả + highlight phím
 
-1. **Kéo-thả:** kéo từ `SkillSlot_{Top,Left,Right}` → preview footprint S1/S/S2 trên lane → thả → `TryAssignPlayerAction` (chặn overlap qua `SkillFootprintUtil`).
+1. **Kéo-thả:** kéo từ `SkillSlot_{Top,Left,Right}` → preview footprint S1/S/S2 trên lane (nốt đã đặt **vẫn hiện**, gồm line nhân vật khác) → thả → `TryResolveSkillDrop`. Kéo lại marker trên lane → relocate; thả lên **S** cùng unit thì **swap** nếu vừa, không thì xóa skill đích. Thả lên **S1/S2** → xóa skill đích rồi đặt.
 2. **Click:** highlight ô radial.
 3. **W / A / D:** gắn skill ô tương ứng vào chuột (ghost bám con trỏ); có thể **đổi W/A/D** khi đang kéo → **click / thả** lên lane timeline để gán.
 
@@ -510,7 +512,7 @@ Window 12 beat → party outgoing dmg ×1.25; Early/Late → OnBeat (player + Gu
 | Ren Cycle Shift | 🔲 P0 | Fixed element |
 | Mini pressure (no HP leak) | 🔲 P0 | N/A |
 | Note HP degrade (tím/xanh/đỏ) | 🔲 P0 | 1-hit telegraph |
-| Enforce footprint overlap | ✅ MVP | `SkillFootprintUtil`, `CanAssignAction(unit, skill, beat)` |
+| Enforce footprint overlap | ✅ MVP | `SkillFootprintUtil`, `CanAssignAction`; swap chỉ pha S; S1/S2 hoặc S không swap → eat `TryEatThenAssign` |
 | Round segment 1 phase × 22 beat · lookahead 3 | ✅ MVP | `EnsureTelegraphLookahead`, Charlotte delay cascade |
 | Skill panel circular scene-only | ✅ MVP | `ApplyCircularPanelStyle`, `UpgradeRadialSlotStyle` |
 | W/A/D swap while keyboard drag | ✅ MVP | `TryGetDirectionKeyPressedThisFrame` |

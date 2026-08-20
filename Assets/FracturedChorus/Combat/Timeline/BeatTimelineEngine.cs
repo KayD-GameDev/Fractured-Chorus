@@ -422,7 +422,10 @@ namespace FracturedChorus.Combat.Timeline
             return true;
         }
 
-        public bool CanAssignAction(CombatUnit unit, SkillDefinitionSO skill, int beatIndex)
+        public bool CanAssignAction(CombatUnit unit, SkillDefinitionSO skill, int beatIndex) =>
+            CanAssignAction(unit, skill, beatIndex, null);
+
+        public bool CanAssignAction(CombatUnit unit, SkillDefinitionSO skill, int beatIndex, AgendaEntry ignore)
         {
             if (Phase != CombatPhase.Planning || unit == null || skill == null)
             {
@@ -434,12 +437,53 @@ namespace FracturedChorus.Combat.Timeline
                 return false;
             }
 
-            if (!SkillFootprintUtil.CanPlace(_agenda, unit, skill, beatIndex, PlanningHorizonBeat))
+            if (!SkillFootprintUtil.CanPlace(_agenda, unit, skill, beatIndex, PlanningHorizonBeat, ignore))
             {
                 return false;
             }
 
             return !CombatCounterResolver.ActiveOverlapsFullyCounteredNote(this, skill, beatIndex, unit);
+        }
+
+        public bool CanSwapRelocate(
+            CombatUnit unit,
+            SkillDefinitionSO movingSkill,
+            int fromBeat,
+            int toBeat,
+            int hoverBeat)
+        {
+            if (Phase != CombatPhase.Planning || unit == null || movingSkill == null)
+            {
+                return false;
+            }
+
+            if (fromBeat < 0 || toBeat < 0 || hoverBeat < 0
+                || fromBeat >= BeatCount || toBeat >= BeatCount || hoverBeat >= BeatCount
+                || fromBeat == toBeat)
+            {
+                return false;
+            }
+
+            if (!SkillFootprintUtil.TryGetEntryAtBeat(_agenda, unit, hoverBeat, out var partner, out var role)
+                || partner?.Skill == null
+                || role != FootprintBeatRole.Active)
+            {
+                return false;
+            }
+
+            if (!CanAssignAction(unit, movingSkill, toBeat, partner))
+            {
+                return false;
+            }
+
+            if (!CanAssignAction(unit, partner.Skill, fromBeat, partner))
+            {
+                return false;
+            }
+
+            return !SkillFootprintUtil.FootprintsOverlap(
+                movingSkill, toBeat, unit, null,
+                partner.Skill, fromBeat, partner.Unit, partner);
         }
 
         public void ClearPlayerAgenda()

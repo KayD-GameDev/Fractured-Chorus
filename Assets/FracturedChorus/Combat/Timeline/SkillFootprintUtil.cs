@@ -29,6 +29,7 @@ namespace FracturedChorus.Combat.Timeline
         private static readonly List<int> ScratchNew = new();
         private static readonly List<int> ScratchOccupied = new();
         private static readonly List<int> ScratchEntry = new();
+        private static readonly List<int> ScratchSwap = new();
 
         public static int GetStandingBefore(SkillDefinitionSO skill) =>
             skill != null ? Mathf.Max(0, skill.standingBeatsBefore) : 0;
@@ -176,7 +177,14 @@ namespace FracturedChorus.Combat.Timeline
             }
         }
 
-        public static void CollectUnitOccupiedBeats(IReadOnlyList<AgendaEntry> agenda, CombatUnit unit, List<int> results)
+        public static void CollectUnitOccupiedBeats(IReadOnlyList<AgendaEntry> agenda, CombatUnit unit, List<int> results) =>
+            CollectUnitOccupiedBeats(agenda, unit, results, null);
+
+        public static void CollectUnitOccupiedBeats(
+            IReadOnlyList<AgendaEntry> agenda,
+            CombatUnit unit,
+            List<int> results,
+            AgendaEntry ignore)
         {
             results.Clear();
             if (agenda == null || unit == null)
@@ -186,7 +194,7 @@ namespace FracturedChorus.Combat.Timeline
 
             foreach (var entry in agenda)
             {
-                if (entry?.Unit != unit || entry.Skill == null)
+                if (entry?.Unit != unit || entry.Skill == null || entry == ignore)
                 {
                     continue;
                 }
@@ -204,12 +212,137 @@ namespace FracturedChorus.Combat.Timeline
             }
         }
 
+        public static bool TryGetEntryAtBeat(
+            IReadOnlyList<AgendaEntry> agenda,
+            CombatUnit unit,
+            int beat,
+            out AgendaEntry entry,
+            out FootprintBeatRole role)
+        {
+            entry = null;
+            role = default;
+            if (agenda == null || unit == null || beat < 0 || beat >= CombatTimelineProfile.TotalBeats)
+            {
+                return false;
+            }
+
+            foreach (var candidate in agenda)
+            {
+                if (candidate?.Unit != unit || candidate.Skill == null)
+                {
+                    continue;
+                }
+
+                foreach (var info in EnumerateFootprintBeats(
+                    candidate.Skill, candidate.BeatIndex, candidate.Unit, candidate))
+                {
+                    if (info.BeatIndex != beat)
+                    {
+                        continue;
+                    }
+
+                    entry = candidate;
+                    role = info.Role;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public static AgendaEntry FindSingleOverlappingEntry(
+            IReadOnlyList<AgendaEntry> agenda,
+            CombatUnit unit,
+            SkillDefinitionSO skill,
+            int placementBeat)
+        {
+            if (agenda == null || unit == null || skill == null)
+            {
+                return null;
+            }
+
+            CollectOccupiedBeats(skill, placementBeat, ScratchNew, unit);
+            if (ScratchNew.Count == 0)
+            {
+                return null;
+            }
+
+            AgendaEntry found = null;
+            foreach (var entry in agenda)
+            {
+                if (entry?.Unit != unit || entry.Skill == null)
+                {
+                    continue;
+                }
+
+                var overlaps = false;
+                foreach (var info in EnumerateFootprintBeats(entry.Skill, entry.BeatIndex, entry.Unit, entry))
+                {
+                    if (ScratchNew.Contains(info.BeatIndex))
+                    {
+                        overlaps = true;
+                        break;
+                    }
+                }
+
+                if (!overlaps)
+                {
+                    continue;
+                }
+
+                if (found != null)
+                {
+                    return null;
+                }
+
+                found = entry;
+            }
+
+            return found;
+        }
+
+        public static bool FootprintsOverlap(
+            SkillDefinitionSO skillA,
+            int beatA,
+            CombatUnit unitA,
+            AgendaEntry entryA,
+            SkillDefinitionSO skillB,
+            int beatB,
+            CombatUnit unitB,
+            AgendaEntry entryB)
+        {
+            ScratchSwap.Clear();
+            foreach (var info in EnumerateFootprintBeats(skillA, beatA, unitA, entryA))
+            {
+                ScratchSwap.Add(info.BeatIndex);
+            }
+
+            foreach (var info in EnumerateFootprintBeats(skillB, beatB, unitB, entryB))
+            {
+                if (ScratchSwap.Contains(info.BeatIndex))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public static bool CanPlace(
             IReadOnlyList<AgendaEntry> agenda,
             CombatUnit unit,
             SkillDefinitionSO skill,
             int placementBeat,
-            int planningHorizonBeat = 0)
+            int planningHorizonBeat = 0) =>
+            CanPlace(agenda, unit, skill, placementBeat, planningHorizonBeat, null);
+
+        public static bool CanPlace(
+            IReadOnlyList<AgendaEntry> agenda,
+            CombatUnit unit,
+            SkillDefinitionSO skill,
+            int placementBeat,
+            int planningHorizonBeat,
+            AgendaEntry ignore)
         {
             if (unit == null || skill == null || placementBeat < 0 || placementBeat >= CombatTimelineProfile.TotalBeats)
             {
@@ -237,7 +370,7 @@ namespace FracturedChorus.Combat.Timeline
                 return false;
             }
 
-            CollectUnitOccupiedBeats(agenda, unit, ScratchOccupied);
+            CollectUnitOccupiedBeats(agenda, unit, ScratchOccupied, ignore);
             foreach (var beat in ScratchNew)
             {
                 if (ScratchOccupied.Contains(beat))

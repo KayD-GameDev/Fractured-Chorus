@@ -301,6 +301,129 @@ namespace FracturedChorus.Combat.Core
             return true;
         }
 
+        /// <summary>
+        /// Relocate drop onto another same-unit Active beat: partner moves to <paramref name="fromBeat"/>,
+        /// dragged skill is assigned at <paramref name="toBeat"/>. Partner must occupy
+        /// <paramref name="hoverBeat"/> as Active.
+        /// </summary>
+        public bool TrySwapRelocatePlayerAction(
+            CombatUnit unit,
+            SkillDefinitionSO skill,
+            int fromBeat,
+            int toBeat,
+            int hoverBeat,
+            out AgendaEntry partner)
+        {
+            partner = null;
+            if (unit == null
+                || unit.Side != GridSide.Player
+                || !IsPlanningWindowOpen
+                || skill == null
+                || Timeline == null)
+            {
+                return false;
+            }
+
+            if (!Timeline.CanSwapRelocate(unit, skill, fromBeat, toBeat, hoverBeat))
+            {
+                return false;
+            }
+
+            if (!SkillFootprintUtil.TryGetEntryAtBeat(Timeline.Agenda, unit, hoverBeat, out partner, out var role)
+                || partner?.Skill == null
+                || role != FootprintBeatRole.Active)
+            {
+                partner = null;
+                return false;
+            }
+
+            var partnerOldBeat = partner.BeatIndex;
+            RevertPlanningUtilityEffects(partner);
+            partner.BeatIndex = fromBeat;
+
+            if (!TryAssignPlayerAction(unit, skill, toBeat))
+            {
+                partner.BeatIndex = partnerOldBeat;
+                ApplyPlanningUtilityEffects(partner);
+                partner = null;
+                return false;
+            }
+
+            ApplyPlanningUtilityEffects(partner);
+            Debug.Log(
+                $"[Combat] Swap {unit.DisplayName} {skill.displayName} @{fromBeat} ↔ {partner.Skill.displayName} @{partnerOldBeat}");
+            return true;
+        }
+
+        /// <summary>
+        /// Remove <paramref name="victim"/> from the line, then try to place <paramref name="skill"/>.
+        /// Victim is not restored if assign fails.
+        /// </summary>
+        public bool TryEatThenAssign(
+            CombatUnit unit,
+            SkillDefinitionSO skill,
+            int placementBeat,
+            AgendaEntry victim)
+        {
+            if (unit == null || skill == null || victim?.Skill == null || Timeline == null)
+            {
+                return false;
+            }
+
+            if (!TryRemovePlayerAction(victim.Unit, victim.BeatIndex))
+            {
+                return false;
+            }
+
+            return TryAssignPlayerAction(unit, skill, placementBeat);
+        }
+
+        /// <summary>
+        /// Drop on empty beat → assign. Hover Active of another same-unit skill → swap if relocate
+        /// and valid, else eat that skill then assign. Hover Standing → eat then assign.
+        /// </summary>
+        public bool TryResolveSkillDrop(
+            CombatUnit unit,
+            SkillDefinitionSO skill,
+            int placementBeat,
+            int hoverBeat,
+            int relocateFromBeat,
+            out AgendaEntry swapPartner,
+            out SkillDefinitionSO displacedSkill,
+            out int displacedBeat)
+        {
+            swapPartner = null;
+            displacedSkill = null;
+            displacedBeat = -1;
+
+            if (unit == null || skill == null || Timeline == null)
+            {
+                return false;
+            }
+
+            if (!SkillFootprintUtil.TryGetEntryAtBeat(
+                    Timeline.Agenda, unit, hoverBeat, out var victim, out var role)
+                || victim?.Skill == null)
+            {
+                return TryAssignPlayerAction(unit, skill, placementBeat);
+            }
+
+            displacedSkill = victim.Skill;
+            displacedBeat = victim.BeatIndex;
+
+            if (role == FootprintBeatRole.Active
+                && relocateFromBeat >= 0
+                && TrySwapRelocatePlayerAction(
+                    unit, skill, relocateFromBeat, placementBeat, hoverBeat, out swapPartner)
+                && swapPartner != null)
+            {
+                return true;
+            }
+
+            swapPartner = null;
+            return TryEatThenAssign(unit, skill, placementBeat, victim);
+        }
+
         public bool TryRemovePlayerAction(CombatUnit unit, int beatIndex)
         {
             if (unit == null || Phase != CombatPhase.Planning || Timeline == null)

@@ -244,28 +244,13 @@ MonoBehaviour:
   idleStateName: Kiki-Idle
   movingStateName: Kiki-Moving
   deathStateName: Kiki-Death
+  normalHitStateName: 
   skillStateName: 
+  ultStateName: 
   hitRetriggerNormalizedTime: 0.35
   preserveSceneVisuals: 1
   preserveSceneCollider: 1
   showWorldHpLabel: 0
---- !u!114 &7695635
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7695628}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 57801d1152c33644e8e44afe45bba9f7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitSpriteSimulator
-  spritePreview: 0
-  spriteLayouts:
-  - sprite: {fileID: 0}
-    localScale: {x: 0, y: 0, z: 0}
-    feetAnchorLocal: {x: 0, y: 0, z: 0}
 --- !u!61 &7695633
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -334,6 +319,29 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &7695635
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7695628}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57801d1152c33644e8e44afe45bba9f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitSpriteSimulator
+  spritePreview: 0
+  spriteLayouts:
+  - displayName: 
+    kind: 0
+    sprite: {fileID: 21300000, guid: b1c2d3e4f5a64789b0c1d2e3f4a50607, type: 3}
+    animationClip: {fileID: 0}
+    linkedState: 1
+    localScale: {x: 0.2, y: 0.2, z: 0.2}
+    feetAnchorLocal: {x: 0.79, y: -1.24, z: 0}
+    colliderSize: {x: 0.9, y: 0.9}
+    colliderOffset: {x: 0, y: 0}
 --- !u!1 &9683624
 GameObject:
   m_ObjectHideFlags: 0
@@ -3768,53 +3776,11 @@ MonoBehaviour:
   deathStateName: Ren Death
   normalHitStateName: Ren Skill 1
   skillStateName: Ren - Skill 2
-  ultStateName: Ren - Skill 3 
+  ultStateName: Ren - Skill 3
   hitRetriggerNormalizedTime: 0.35
   preserveSceneVisuals: 1
   preserveSceneCollider: 1
   showWorldHpLabel: 0
---- !u!114 &487667178
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 487667171}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 57801d1152c33644e8e44afe45bba9f7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitSpriteSimulator
-  spritePreview: 0
-  spriteLayouts:
-  - displayName: Idle Sprite
-    kind: 0
-    sprite: {fileID: 7369638930748108147, guid: 9a437a3dfde73224686f2d2a81ee930e, type: 3}
-    animationClip: {fileID: 7400000, guid: d196d390a1b52234ea48ebf6deccfdda, type: 2}
-    linkedState: 1
-    localScale: {x: 0.2, y: 0.2, z: 0}
-    feetAnchorLocal: {x: 1.07, y: -3.72, z: 0}
-  - displayName: NormalHit
-    kind: 1
-    sprite: {fileID: 7369638930748108147, guid: 9a437a3dfde73224686f2d2a81ee930e, type: 3}
-    animationClip: {fileID: 7400000, guid: a33391cad1009b540aa01ba8031868a1, type: 2}
-    linkedState: 8
-    localScale: {x: 0.2, y: 0.2, z: 0}
-    feetAnchorLocal: {x: 1.07, y: -3.72, z: 0}
-  - displayName: SkillHit
-    kind: 1
-    sprite: {fileID: 7369638930748108147, guid: 9a437a3dfde73224686f2d2a81ee930e, type: 3}
-    animationClip: {fileID: 7400000, guid: 8a448ee907f49b2468cbc83b73c8b58c, type: 2}
-    linkedState: 9
-    localScale: {x: 0.2, y: 0.2, z: 0}
-    feetAnchorLocal: {x: 1.07, y: -3.72, z: 0}
-  - displayName: UltHit
-    kind: 1
-    sprite: {fileID: 7369638930748108147, guid: 9a437a3dfde73224686f2d2a81ee930e, type: 3}
-    animationClip: {fileID: 7400000, guid: 8f0816f5325864a45abf4b37b8969f82, type: 2}
-    linkedState: 10
-    localScale: {x: 0.2, y: 0.2, z: 0}
-    feetAnchorLocal: {x: 1.07, y: -3.72, z: 0}
 --- !u!61 &487667176
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -3883,6 +3849,56 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &487667178
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 487667171}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57801d1152c33644e8e44afe45bba9f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitSpriteSimulator
+  spritePreview: 0
+  spriteLayouts:
+  - displayName: Idle Sprite
+    kind: 0
+    sprite: {fileID: 7369638930748108147, guid: 9a437a3dfde73224686f2d2a81ee930e, type: 3}
+    animationClip: {fileID: 7400000, guid: d196d390a1b52234ea48ebf6deccfdda, type: 2}
+    linkedState: 1
+    localScale: {x: 0.2, y: 0.2, z: 0}
+    feetAnchorLocal: {x: 1.07, y: -3.72, z: 0}
+    colliderSize: {x: 0, y: 0}
+    colliderOffset: {x: 0, y: 0}
+  - displayName: NormalHit
+    kind: 1
+    sprite: {fileID: 7369638930748108147, guid: 9a437a3dfde73224686f2d2a81ee930e, type: 3}
+    animationClip: {fileID: 7400000, guid: a33391cad1009b540aa01ba8031868a1, type: 2}
+    linkedState: 8
+    localScale: {x: 0.2, y: 0.2, z: 0}
+    feetAnchorLocal: {x: 1.07, y: -3.72, z: 0}
+    colliderSize: {x: 0, y: 0}
+    colliderOffset: {x: 0, y: 0}
+  - displayName: SkillHit
+    kind: 1
+    sprite: {fileID: 7369638930748108147, guid: 9a437a3dfde73224686f2d2a81ee930e, type: 3}
+    animationClip: {fileID: 7400000, guid: 8a448ee907f49b2468cbc83b73c8b58c, type: 2}
+    linkedState: 9
+    localScale: {x: 0.2, y: 0.2, z: 0}
+    feetAnchorLocal: {x: 1.07, y: -3.72, z: 0}
+    colliderSize: {x: 0, y: 0}
+    colliderOffset: {x: 0, y: 0}
+  - displayName: UltHit
+    kind: 1
+    sprite: {fileID: 7369638930748108147, guid: 9a437a3dfde73224686f2d2a81ee930e, type: 3}
+    animationClip: {fileID: 7400000, guid: 8f0816f5325864a45abf4b37b8969f82, type: 2}
+    linkedState: 10
+    localScale: {x: 0.2, y: 0.2, z: 0}
+    feetAnchorLocal: {x: 1.07, y: -3.72, z: 0}
+    colliderSize: {x: 0, y: 0}
+    colliderOffset: {x: 0, y: 0}
 --- !u!1 &504853132
 GameObject:
   m_ObjectHideFlags: 0
@@ -5276,6 +5292,9 @@ MonoBehaviour:
   moveCamera: 1
   cameraZoomOrtho: 5.2
   cameraMoveSeconds: 0.16
+  ultimateCasterZoomOrtho: 3.15
+  ultimateVictimZoomOrtho: 3.25
+  ultimateFocusSeconds: 0.18
   swordCastHoldSeconds: 0.14
 --- !u!1 &715640726
 GameObject:
@@ -6402,6 +6421,7 @@ MonoBehaviour:
   codaSkill23Clip: {fileID: 0}
   charlotteSkill1Clip: {fileID: 0}
   charlotteSkill2Clip: {fileID: 0}
+  charlotteSkill2DashClip: {fileID: 0}
   charlotteSkill3Clip: {fileID: 0}
   renSkillVolume: 1
   renSkillCueNormalizedTime: 0.45
@@ -8175,11 +8195,79 @@ MonoBehaviour:
   deathStateName: Coda - Death
   normalHitStateName: Coda Skill 1
   skillStateName: Coda Skill 2
-  ultStateName: Coda Skill 3 
+  ultStateName: Coda Skill 3
   hitRetriggerNormalizedTime: 0.35
   preserveSceneVisuals: 1
   preserveSceneCollider: 1
   showWorldHpLabel: 0
+--- !u!61 &1144376354
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1144376349}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: -0.26253343, y: -1.4966847}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.78, y: 0.5}
+    oldSize: {x: 7.62, y: 10.04}
+    newSize: {x: 7.62, y: 10.04}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 3.52535, y: 8.456403}
+  m_EdgeRadius: 0
+--- !u!95 &1144376355
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1144376349}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 9f3606f88c566af4ba799d178ea6b508, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!114 &1144376356
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8266,74 +8354,6 @@ MonoBehaviour:
     feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
     colliderSize: {x: 3.52535, y: 8.456403}
     colliderOffset: {x: -0.26253343, y: -1.4966847}
---- !u!61 &1144376354
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1144376349}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: -0.26253343, y: -1.4966847}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.77916324, y: 0.5689823}
-    oldSize: {x: 7.62, y: 10.04}
-    newSize: {x: 7.62, y: 10.04}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 3.52535, y: 8.456403}
-  m_EdgeRadius: 0
---- !u!95 &1144376355
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1144376349}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 9f3606f88c566af4ba799d178ea6b508, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &1153346078
 GameObject:
   m_ObjectHideFlags: 0

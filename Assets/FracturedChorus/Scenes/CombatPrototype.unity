@@ -3842,7 +3842,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 11
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 8886398286473154763, guid: efd81572e16ac5f43825cba0078be835, type: 3}
+  m_Sprite: {fileID: -7428215157034606851, guid: c717b6aad7a95364c80e530ab2dde0db, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -3924,8 +3924,8 @@ BoxCollider2D:
   m_Offset: {x: -0.31349665, y: 0.0683794}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.4293351, y: 0.51796806}
-    oldSize: {x: 7.83, y: 8.34}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 7.27, y: 8.5}
     newSize: {x: 7.27, y: 8.5}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -3967,7 +3967,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 57801d1152c33644e8e44afe45bba9f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitSpriteSimulator
-  spritePreview: 4
+  spritePreview: 0
   spriteLayouts:
   - displayName: Idle
     kind: 0
@@ -4918,7 +4918,7 @@ MonoBehaviour:
   idleStateName: Ren Idle
   movingStateName: Ren Moving
   deathStateName: Ren Death
-  normalHitStateName: Ren Skill 1
+  normalHitStateName: Ren - Skill 1
   skillStateName: Ren - Skill 2
   ultStateName: Ren - Skill 3
   hitRetriggerNormalizedTime: 0.35
@@ -14934,8 +14934,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 13.920021}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 6.9599915}
+  m_SizeDelta: {x: 0, y: -13.92}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1693148350
 MonoBehaviour:

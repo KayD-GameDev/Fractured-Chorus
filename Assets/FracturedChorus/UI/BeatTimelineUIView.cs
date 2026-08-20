@@ -220,8 +220,11 @@ namespace FracturedChorus.UI
         private BossNoteClusterView _bossNoteClusters;
         private readonly List<Image> _dropPreviewDots = new();
         private readonly List<Image> _dropCoverOverlays = new();
+        private readonly Dictionary<(CombatUnit unit, int beat), Color> _overlapTintSaved = new();
+        private readonly List<TimelineLaneMarkerView> _overlapTintedMarkers = new();
 
         private static readonly Color StandingDotColor = new Color(0.5f, 0.5f, 0.55f, 0.4f);
+        private static readonly Color DropOverlapTint = new Color(0xAF / 255f, 0x2C / 255f, 0x42 / 255f, 1f);
 
         // Intro-pause sau Deploy: snap cuối beat 0 vào ScanBar (anchor-based, không dùng localBeat threshold).
         private const float PhaseDividerVisualOffsetPx = 2f;
@@ -1535,23 +1538,23 @@ namespace FracturedChorus.UI
             }
         }
 
-        public void SoftHideFootprintsForRelocate(CombatUnit unit)
+        public void SoftHideFootprintsForRelocate(CombatUnit unit, SkillDefinitionSO skill, int placementBeat)
         {
-            if (unit == null)
+            if (unit == null || skill == null)
             {
                 return;
             }
 
-            foreach (var kvp in _footprintDots)
+            foreach (var info in SkillFootprintUtil.EnumerateFootprintBeats(skill, placementBeat, unit))
             {
-                if (kvp.Key.unit != unit || kvp.Value == null)
+                if (!_footprintDots.TryGetValue((unit, info.BeatIndex), out var dot) || dot == null)
                 {
                     continue;
                 }
 
-                var c = kvp.Value.color;
-                kvp.Value.color = new Color(c.r, c.g, c.b, 0f);
-                kvp.Value.raycastTarget = false;
+                var c = dot.color;
+                dot.color = new Color(c.r, c.g, c.b, 0f);
+                dot.raycastTarget = false;
             }
         }
 
@@ -3075,8 +3078,8 @@ namespace FracturedChorus.UI
                 slotsRow.SetSiblingIndex(idx);
             }
 
-            // Runtime layers in front of track content. Do not move ScanBar when
-            // preserveSceneLayout — Scene sibling order is source of truth (ScanBar before LaneLines).
+            // Draw order (sibling only — do not move authored rects). ScanBar stays
+            // when preserveSceneLayout (scene SoT: ScanBar before LaneLines).
             if (_laneLinesLayer != null)
             {
                 _laneLinesLayer.SetAsLastSibling();
@@ -3087,7 +3090,7 @@ namespace FracturedChorus.UI
                 _bossNoteClusterLayer.SetAsLastSibling();
             }
 
-            if (_footprintLayer != null && (!preserveSceneLayout || !_laneFootprintAuthoredInScene))
+            if (_footprintLayer != null)
             {
                 _footprintLayer.SetAsLastSibling();
             }
@@ -4721,7 +4724,36 @@ namespace FracturedChorus.UI
                 return;
             }
 
-            var valid = _timeline != null && _timeline.CanAssignAction(unit, skill, beat);
+            var valid = false;
+            if (_timeline != null)
+            {
+                valid = _timeline.CanAssignAction(unit, skill, beat);
+                var hoverBeat = beat;
+                if (!TryGetBeatAtScreenPoint(screen, out hoverBeat))
+                {
+                    hoverBeat = beat;
+                }
+
+                if (!valid
+                    && _relocatePendingKey.HasValue
+                    && _relocatePendingKey.Value.unit == unit
+                    && _timeline.CanSwapRelocate(
+                        unit, skill, _relocatePendingKey.Value.beat, beat, hoverBeat))
+                {
+                    valid = true;
+                }
+
+                if (!valid
+                    && SkillFootprintUtil.TryGetEntryAtBeat(
+                        _timeline.Agenda, unit, hoverBeat, out var victim, out _)
+                    && victim != null
+                    && _timeline.CanAssignAction(unit, skill, beat, victim))
+                {
+                    valid = true;
+                }
+
+                TintOccupiedSkillsOnDrop(unit, skill, beat, hoverBeat);
+            }
             var gapAnchor = SkillFootprintUtil.UsesGapCenterAnchor(skill);
             var laneY = ResolveLaneYInLayer(_footprintLayer, laneIdx, viewport.rect.height);
             var markerLaneY = ResolveLaneYInLayer(_laneMarkersLayer, laneIdx, viewport.rect.height);
@@ -4832,6 +4864,7 @@ namespace FracturedChorus.UI
             var dot = CreateFootprintDot(size);
             ApplyFootprintVisual(dot, tint, size, sprite);
             dot.rectTransform.anchoredPosition = new Vector2(ContentXForBeat(beat), laneY);
+            dot.rectTransform.SetAsLastSibling();
             dot.gameObject.SetActive(true);
             _dropPreviewDots.Add(dot);
         }
@@ -4885,6 +4918,7 @@ namespace FracturedChorus.UI
             var dot = CreateFootprintDot(size);
             dot.color = color;
             dot.rectTransform.anchoredPosition = new Vector2(ContentXForBeat(beat), laneY);
+            dot.rectTransform.SetAsLastSibling();
             dot.gameObject.SetActive(true);
             _dropPreviewDots.Add(dot);
         }
@@ -4922,6 +4956,102 @@ namespace FracturedChorus.UI
 
             _dropCoverOverlays.Clear();
             _bossNoteClusters?.EndPerfectPreview();
+            ClearOccupiedSkillDropTint();
+        }
+
+        private void TintOccupiedSkillsOnDrop(
+            CombatUnit unit,
+            SkillDefinitionSO skill,
+            int placementBeat,
+            int hoverBeat)
+        {
+            ClearOccupiedSkillDropTint();
+            if (_timeline?.Agenda == null || unit == null || skill == null)
+            {
+                return;
+            }
+
+            if (SkillFootprintUtil.TryGetEntryAtBeat(
+                    _timeline.Agenda, unit, hoverBeat, out var hovered, out _)
+                && hovered?.Skill != null)
+            {
+                ApplyOccupiedSkillDropTint(hovered);
+            }
+
+            foreach (var entry in _timeline.Agenda)
+            {
+                if (entry?.Unit != unit || entry.Skill == null || entry == hovered)
+                {
+                    continue;
+                }
+
+                if (SkillFootprintUtil.FootprintsOverlap(
+                        skill, placementBeat, unit, null,
+                        entry.Skill, entry.BeatIndex, entry.Unit, entry))
+                {
+                    ApplyOccupiedSkillDropTint(entry);
+                }
+            }
+        }
+
+        private void ApplyOccupiedSkillDropTint(AgendaEntry entry)
+        {
+            if (entry?.Unit == null || entry.Skill == null)
+            {
+                return;
+            }
+
+            foreach (var info in SkillFootprintUtil.EnumerateFootprintBeats(
+                entry.Skill, entry.BeatIndex, entry.Unit, entry))
+            {
+                var key = (entry.Unit, info.BeatIndex);
+                if (!_footprintDots.TryGetValue(key, out var dot) || dot == null)
+                {
+                    continue;
+                }
+
+                if (!_overlapTintSaved.ContainsKey(key))
+                {
+                    _overlapTintSaved[key] = dot.color;
+                }
+
+                var saved = _overlapTintSaved[key];
+                if (saved.a <= 0.01f)
+                {
+                    continue;
+                }
+
+                dot.color = new Color(DropOverlapTint.r, DropOverlapTint.g, DropOverlapTint.b, 1f);
+            }
+
+            if (_laneMarkers.TryGetValue((entry.Unit, entry.BeatIndex), out var marker) && marker != null)
+            {
+                marker.SetOverlapTint(DropOverlapTint, true);
+                if (!_overlapTintedMarkers.Contains(marker))
+                {
+                    _overlapTintedMarkers.Add(marker);
+                }
+            }
+        }
+
+        private void ClearOccupiedSkillDropTint()
+        {
+            foreach (var kvp in _overlapTintSaved)
+            {
+                if (_footprintDots.TryGetValue(kvp.Key, out var dot) && dot != null)
+                {
+                    dot.color = kvp.Value;
+                }
+            }
+
+            _overlapTintSaved.Clear();
+
+            foreach (var marker in _overlapTintedMarkers)
+            {
+                marker?.SetOverlapTint(DropOverlapTint, false);
+            }
+
+            _overlapTintedMarkers.Clear();
         }
 
         private Camera GetUiCameraForTimeline()

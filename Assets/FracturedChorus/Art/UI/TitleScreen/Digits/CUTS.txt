@@ -1,0 +1,11 @@
+0: x=0 w=239 h=200 gutter_after=5
+1: x=244 w=81 h=200 gutter_after=5
+2: x=330 w=216 h=200 gutter_after=5
+3: x=551 w=209 h=200 gutter_after=5
+4: x=765 w=198 h=200 gutter_after=5
+5: x=968 w=217 h=200 gutter_after=5
+6: x=1190 w=209 h=200 gutter_after=5
+7: x=1404 w=187 h=200 gutter_after=5
+8: x=1596 w=212 h=200 gutter_after=5
+9: x=1813 w=212 h=200 gutter_after=0
+sheet=2025x200
