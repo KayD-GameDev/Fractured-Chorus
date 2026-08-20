@@ -44,9 +44,12 @@ namespace FracturedChorus.Menu
             _enabled = enabled;
             if (enabled)
             {
-                _selectedIndex = -1;
-                EventSystem.current?.SetSelectedGameObject(null);
                 RefreshLoadGameInteractable();
+                if (_selectedIndex < 0)
+                {
+                    _selectedIndex = FindFirstInteractableIndex();
+                }
+
                 RefreshHighlight();
             }
         }
@@ -80,13 +83,6 @@ namespace FracturedChorus.Menu
 
         public void NotifyHoverExit(int index)
         {
-            if (!_enabled || _selectedIndex != index)
-            {
-                return;
-            }
-
-            _selectedIndex = -1;
-            RefreshHighlight();
         }
 
         public void HandleInput()
@@ -192,6 +188,7 @@ namespace FracturedChorus.Menu
 
                 option.rowView.Configure(this, i, option.label, hitArea, option.interactable);
                 EnsurePointerSfx(hitArea != null ? hitArea.gameObject : option.row.gameObject, option.rowView);
+                EnsurePointerSfx(option.row.gameObject, option.rowView);
             }
         }
 
@@ -382,42 +379,38 @@ namespace FracturedChorus.Menu
 
         private void RefreshHighlight()
         {
-            if (highlightBar == null || options == null)
+            if (options == null)
             {
                 return;
             }
 
-            if (_selectedIndex < 0 || _selectedIndex >= options.Length)
+            var hasSelection = _selectedIndex >= 0 && _selectedIndex < options.Length;
+            if (highlightBar != null)
             {
-                highlightBar.gameObject.SetActive(false);
-                for (var i = 0; i < options.Length; i++)
+                if (!hasSelection)
                 {
-                    options[i].rowView?.SetInteractable(options[i].interactable);
-                    options[i].rowView?.ApplySelectionVisual(false);
+                    highlightBar.gameObject.SetActive(false);
                 }
-
-                return;
+                else
+                {
+                    var row = options[_selectedIndex].row;
+                    if (row != null)
+                    {
+                        highlightBar.gameObject.SetActive(true);
+                        highlightBar.SetParent(row, false);
+                        highlightBar.anchorMin = Vector2.zero;
+                        highlightBar.anchorMax = Vector2.one;
+                        highlightBar.offsetMin = new Vector2(-12f, -4f);
+                        highlightBar.offsetMax = new Vector2(12f, 4f);
+                        highlightBar.SetAsFirstSibling();
+                    }
+                }
             }
-
-            var row = options[_selectedIndex].row;
-            if (row == null)
-            {
-                return;
-            }
-
-            highlightBar.gameObject.SetActive(true);
-            highlightBar.SetParent(row, false);
-            var barRect = highlightBar;
-            barRect.anchorMin = Vector2.zero;
-            barRect.anchorMax = Vector2.one;
-            barRect.offsetMin = new Vector2(-12f, -4f);
-            barRect.offsetMax = new Vector2(12f, 4f);
-            barRect.SetAsFirstSibling();
 
             for (var i = 0; i < options.Length; i++)
             {
                 options[i].rowView?.SetInteractable(options[i].interactable);
-                options[i].rowView?.ApplySelectionVisual(i == _selectedIndex);
+                options[i].rowView?.ApplySelectionVisual(hasSelection && i == _selectedIndex);
             }
         }
 

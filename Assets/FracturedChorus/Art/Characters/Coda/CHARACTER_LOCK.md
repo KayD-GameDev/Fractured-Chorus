@@ -34,6 +34,11 @@
 - Art / proportion: same polish family as Ren school fullbody (~7.5–8 heads)
 - Pose: must differ from Ren (no look-over-shoulder) and Charlotte (no tank hand-on-hip)
 
+### Title screen pose
+- Path: `Art/UI/TitleScreen/SheetV1/char_coda_title_pose_v1_alpha.png`
+- Natural weight-shift idle (not stiff front-on, not ear-touch)
+- Light RGB-split glitch on ponytail / sleeve only — legs and feet stay solid
+
 ## Outfit A — Cadence world
 - White hoodie under dark tech jacket with cyan pixel/check accents, straps/buckles
 - Purple ribbon at collar

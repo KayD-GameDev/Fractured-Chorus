@@ -293,6 +293,16 @@ namespace FracturedChorus.Audio
 
         public void PlayRenSkillSlotImmediate(SkillSlotKind slotKind)
         {
+            PlayRenSkillSlot(slotKind, restart: false);
+        }
+
+        public void PlayRenSkillSlotRestarted(SkillSlotKind slotKind)
+        {
+            PlayRenSkillSlot(slotKind, restart: true);
+        }
+
+        private void PlayRenSkillSlot(SkillSlotKind slotKind, bool restart)
+        {
             EnsureRenSkillClips();
             var clip = slotKind switch
             {
@@ -301,6 +311,12 @@ namespace FracturedChorus.Audio
                 SkillSlotKind.Ultimate => renSkill3Clip,
                 _ => null
             };
+            if (restart)
+            {
+                PlaySkillClipRestarted(clip);
+                return;
+            }
+
             PlaySkillClipImmediate(clip);
         }
 
@@ -394,6 +410,23 @@ namespace FracturedChorus.Audio
             renSkillSource.mute = false;
             renSkillSource.volume = renSkillVolume;
             renSkillSource.PlayOneShot(clip, renSkillVolume);
+        }
+
+        private void PlaySkillClipRestarted(AudioClip clip)
+        {
+            if (clip == null)
+            {
+                return;
+            }
+
+            EnsureRenSkillSource();
+            renSkillSource.spatialBlend = 0f;
+            renSkillSource.mute = false;
+            renSkillSource.volume = renSkillVolume;
+            renSkillSource.Stop();
+            renSkillSource.clip = clip;
+            renSkillSource.loop = false;
+            renSkillSource.Play();
         }
 
         private void PlayClip(

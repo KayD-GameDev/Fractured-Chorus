@@ -15,7 +15,7 @@ namespace FracturedChorus.Combat.Presentation
 
         [Header("Hit-stop — Ultimate (punchy)")]
         [SerializeField] private float ultimateTrauma = 0.78f;
-        [SerializeField] private float ultimateHitStopSeconds = 0.1f;
+        [SerializeField] private float ultimateHitStopSeconds = 0.16f;
         [SerializeField] [Range(0.01f, 1f)] private float ultimateTimeScale = 0.08f;
 
         [Header("Hit-stop — Medium")]
@@ -27,6 +27,8 @@ namespace FracturedChorus.Combat.Presentation
         private float _noiseTime;
         private Vector3 _lastShakeOffset;
         private float _lastShakeRoll;
+        private Vector3 _shakeAppliedPos;
+        private bool _shakeOnCamera;
         private float _savedTimeScale = 1f;
         private bool _hitStopActive;
         private Coroutine _hitStopRoutine;
@@ -158,6 +160,8 @@ namespace FracturedChorus.Combat.Presentation
 
             cam.transform.position += _lastShakeOffset;
             cam.transform.Rotate(0f, 0f, _lastShakeRoll);
+            _shakeAppliedPos = cam.transform.position;
+            _shakeOnCamera = true;
         }
 
         private void StartHitStop(float durationSeconds, float scale)
@@ -209,10 +213,13 @@ namespace FracturedChorus.Combat.Presentation
             {
                 _lastShakeOffset = Vector3.zero;
                 _lastShakeRoll = 0f;
+                _shakeOnCamera = false;
                 return;
             }
 
-            if (_lastShakeOffset.sqrMagnitude > 0f || Mathf.Abs(_lastShakeRoll) > 0.0001f)
+            if (_shakeOnCamera
+                && (cam.transform.position - _shakeAppliedPos).sqrMagnitude < 0.0001f
+                && (_lastShakeOffset.sqrMagnitude > 0f || Mathf.Abs(_lastShakeRoll) > 0.0001f))
             {
                 cam.transform.position -= _lastShakeOffset;
                 cam.transform.Rotate(0f, 0f, -_lastShakeRoll);
@@ -220,6 +227,7 @@ namespace FracturedChorus.Combat.Presentation
 
             _lastShakeOffset = Vector3.zero;
             _lastShakeRoll = 0f;
+            _shakeOnCamera = false;
         }
 
         private Camera ResolveCamera()

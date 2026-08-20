@@ -840,6 +840,24 @@ namespace FracturedChorus.UI
         public Vector3 FeetWorldPosition =>
             feetAnchor != null ? feetAnchor.transform.position : transform.position;
 
+        public Bounds GetVisualBounds()
+        {
+            ResolveSpriteRendererReference();
+            ResolveBodyColliderReference();
+
+            if (bodyCollider != null)
+            {
+                return bodyCollider.bounds;
+            }
+
+            if (spriteRenderer != null && spriteRenderer.sprite != null)
+            {
+                return spriteRenderer.bounds;
+            }
+
+            return new Bounds(transform.position, Vector3.one);
+        }
+
         /// <summary>Anchor cạnh phải thân nhân vật — dùng cho skill panel UI.</summary>
         public Vector3 GetSkillPanelAnchorWorld()
         {

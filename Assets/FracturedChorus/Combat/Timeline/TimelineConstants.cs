@@ -70,7 +70,7 @@ namespace FracturedChorus.Combat.Timeline
         /// <summary>Intro length in musical beats (timing). Notes spawn only after intro ends.</summary>
         public const int CombatIntroBeatCount = 12;
 
-        /// <summary>Full-music intro = offset + 12 beats @ 152 BPM (~5.90s).</summary>
+        /// <summary>Full-music intro = offset + 12 beats @ 152 BPM.</summary>
         public const float CombatIntroDurationSec =
             BossRemixFirstBeatOffsetSec + CombatIntroBeatCount * (60f / BossRemixBpm);
 

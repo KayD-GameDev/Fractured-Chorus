@@ -1,0 +1,624 @@
+fileFormatVersion: 2
+guid: 3bd9d5ec32880f94cbc8839c5c0e37b3
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -6456686165459298419
+    second: logo_fracture_chorus_ui_v1_0
+  - first:
+      213: -1250189603951494846
+    second: logo_fracture_chorus_ui_v1_1
+  - first:
+      213: 3004981543410740411
+    second: logo_fracture_chorus_ui_v1_2
+  - first:
+      213: -685659323869920477
+    second: logo_fracture_chorus_ui_v1_3
+  - first:
+      213: -7348882706459612568
+    second: logo_fracture_chorus_ui_v1_4
+  - first:
+      213: 1293822986643471069
+    second: logo_fracture_chorus_ui_v1_5
+  - first:
+      213: -6773725552087338192
+    second: logo_fracture_chorus_ui_v1_6
+  - first:
+      213: 6591204939126321113
+    second: logo_fracture_chorus_ui_v1_7
+  - first:
+      213: 6553232211080185743
+    second: logo_fracture_chorus_ui_v1_8
+  - first:
+      213: 7567257260891298448
+    second: logo_fracture_chorus_ui_v1_9
+  - first:
+      213: -4858632147375941882
+    second: logo_fracture_chorus_ui_v1_10
+  - first:
+      213: 7449822287023841819
+    second: logo_fracture_chorus_ui_v1_11
+  - first:
+      213: 5868961307386017675
+    second: logo_fracture_chorus_ui_v1_12
+  - first:
+      213: 6150729903597694585
+    second: logo_fracture_chorus_ui_v1_13
+  - first:
+      213: 3489511454208188690
+    second: logo_fracture_chorus_ui_v1_14
+  - first:
+      213: -1788337457332529145
+    second: logo_fracture_chorus_ui_v1_15
+  - first:
+      213: -6753652930915433025
+    second: logo_fracture_chorus_ui_v1_16
+  - first:
+      213: 1798657001954707792
+    second: logo_fracture_chorus_ui_v1_17
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WindowsStoreApps
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: logo_fracture_chorus_ui_v1_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 1501
+        height: 380
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d879e99342e3566a0800000000000000
+      internalID: -6456686165459298419
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logo_fracture_chorus_ui_v1_1
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 128
+        width: 128
+        height: 96
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 249b592dd2f66aee0800000000000000
+      internalID: -1250189603951494846
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logo_fracture_chorus_ui_v1_2
+      rect:
+        serializedVersion: 2
+        x: 274
+        y: 127
+        width: 150
+        height: 106
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bbc2a9beac6d3b920800000000000000
+      internalID: 3004981543410740411
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logo_fracture_chorus_ui_v1_3
+      rect:
+        serializedVersion: 2
+        x: 424
+        y: 128
+        width: 147
+        height: 96
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3238ccb4a7c0c76f0800000000000000
+      internalID: -685659323869920477
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logo_fracture_chorus_ui_v1_4
+      rect:
+        serializedVersion: 2
+        x: 576
+        y: 128
+        width: 109
+        height: 96
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 86aa6715d16830a90800000000000000
+      internalID: -7348882706459612568
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logo_fracture_chorus_ui_v1_5
+      rect:
+        serializedVersion: 2
+        x: 694
+        y: 128
+        width: 76
+        height: 96
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dda7e11c62594f110800000000000000
+      internalID: 1293822986643471069
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logo_fracture_chorus_ui_v1_6
+      rect:
+        serializedVersion: 2
+        x: 781
+        y: 156
+        width: 33
+        height: 67
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 033f8d5cf74eef1a0800000000000000
+      internalID: -6773725552087338192
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logo_fracture_chorus_ui_v1_7
+      rect:
+        serializedVersion: 2
+        x: 825
+        y: 128
+        width: 128
+        height: 95
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9dfac6e68f9a87b50800000000000000
+      internalID: 6591204939126321113
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logo_fracture_chorus_ui_v1_8
+      rect:
+        serializedVersion: 2
+        x: 967
+        y: 197
+        width: 136
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f870518b9f1c1fa50800000000000000
+      internalID: 6553232211080185743
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logo_fracture_chorus_ui_v1_9
+      rect:
+        serializedVersion: 2
+        x: 765
+        y: 130
+        width: 39
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 09adb6fb26c440960800000000000000
+      internalID: 7567257260891298448
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logo_fracture_chorus_ui_v1_10
+      rect:
+        serializedVersion: 2
+        x: 967
+        y: 122
+        width: 130
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6071d59ddcba29cb0800000000000000
+      internalID: -4858632147375941882
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logo_fracture_chorus_ui_v1_11
+      rect:
+        serializedVersion: 2
+        x: 68
+        y: 16
+        width: 135
+        height: 93
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b1228d136e5136760800000000000000
+      internalID: 7449822287023841819
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logo_fracture_chorus_ui_v1_12
+      rect:
+        serializedVersion: 2
+        x: 231
+        y: 15
+        width: 139
+        height: 94
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b877147c63db27150800000000000000
+      internalID: 5868961307386017675
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logo_fracture_chorus_ui_v1_13
+      rect:
+        serializedVersion: 2
+        x: 388
+        y: 15
+        width: 152
+        height: 95
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 97e20556248cb5550800000000000000
+      internalID: 6150729903597694585
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logo_fracture_chorus_ui_v1_14
+      rect:
+        serializedVersion: 2
+        x: 566
+        y: 16
+        width: 130
+        height: 93
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2116cbbed2c3d6030800000000000000
+      internalID: 3489511454208188690
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logo_fracture_chorus_ui_v1_15
+      rect:
+        serializedVersion: 2
+        x: 728
+        y: 15
+        width: 132
+        height: 94
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7085b2dbe8c8e27e0800000000000000
+      internalID: -1788337457332529145
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logo_fracture_chorus_ui_v1_16
+      rect:
+        serializedVersion: 2
+        x: 876
+        y: 16
+        width: 133
+        height: 75
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fb5828411743642a0800000000000000
+      internalID: -6753652930915433025
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: logo_fracture_chorus_ui_v1_17
+      rect:
+        serializedVersion: 2
+        x: 885
+        y: 88
+        width: 114
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 059874a730d16f810800000000000000
+      internalID: 1798657001954707792
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      logo_fracture_chorus_ui_v1_0: -6456686165459298419
+      logo_fracture_chorus_ui_v1_1: -1250189603951494846
+      logo_fracture_chorus_ui_v1_10: -4858632147375941882
+      logo_fracture_chorus_ui_v1_11: 7449822287023841819
+      logo_fracture_chorus_ui_v1_12: 5868961307386017675
+      logo_fracture_chorus_ui_v1_13: 6150729903597694585
+      logo_fracture_chorus_ui_v1_14: 3489511454208188690
+      logo_fracture_chorus_ui_v1_15: -1788337457332529145
+      logo_fracture_chorus_ui_v1_16: -6753652930915433025
+      logo_fracture_chorus_ui_v1_17: 1798657001954707792
+      logo_fracture_chorus_ui_v1_2: 3004981543410740411
+      logo_fracture_chorus_ui_v1_3: -685659323869920477
+      logo_fracture_chorus_ui_v1_4: -7348882706459612568
+      logo_fracture_chorus_ui_v1_5: 1293822986643471069
+      logo_fracture_chorus_ui_v1_6: -6773725552087338192
+      logo_fracture_chorus_ui_v1_7: 6591204939126321113
+      logo_fracture_chorus_ui_v1_8: 6553232211080185743
+      logo_fracture_chorus_ui_v1_9: 7567257260891298448
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

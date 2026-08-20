@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using FracturedChorus.Combat.Grid;
 using FracturedChorus.Combat.Units;
 using FracturedChorus.Data;
+using FracturedChorus.RunMap;
 using UnityEngine;
 
 namespace FracturedChorus.Combat.Timeline
@@ -34,7 +36,27 @@ namespace FracturedChorus.Combat.Timeline
             skill != null ? Mathf.Max(0, skill.standingBeatsBefore) : 0;
 
         public static int GetActiveBeats(SkillDefinitionSO skill) =>
-            skill != null ? Mathf.Max(1, skill.activeBeats) : 1;
+            GetActiveBeats(skill, null, null);
+
+        public static int GetActiveBeats(SkillDefinitionSO skill, CombatUnit unit) =>
+            GetActiveBeats(skill, unit, null);
+
+        public static int GetActiveBeats(SkillDefinitionSO skill, CombatUnit unit, AgendaEntry entry)
+        {
+            if (entry != null && entry.ActiveBeatsOverride > 0)
+            {
+                return entry.ActiveBeatsOverride;
+            }
+
+            var active = skill != null ? Mathf.Max(1, skill.activeBeats) : 1;
+            if (entry == null && unit != null && unit.Side == GridSide.Player
+                && RunEventCombatMods.PendingPlaceCounterPlus > 0)
+            {
+                return active + RunEventCombatMods.PendingPlaceCounterPlus;
+            }
+
+            return active;
+        }
 
         public static bool UsesGapCenterAnchor(SkillDefinitionSO skill) =>
             skill != null && GetActiveBeats(skill) % 2 == 0;
@@ -157,7 +179,7 @@ namespace FracturedChorus.Combat.Timeline
             }
 
             var s1 = GetStandingBefore(skill);
-            var active = GetActiveBeats(skill);
+            var active = GetActiveBeats(skill, unit, entry);
             var s2 = GetStandingAfter(skill, unit, entry);
 
             for (var i = s1; i >= 1; i--)

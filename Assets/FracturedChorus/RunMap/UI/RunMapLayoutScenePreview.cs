@@ -213,7 +213,6 @@ namespace FracturedChorus.RunMap.UI
                 {
                     view.gameObject.name = label;
                     view.gameObject.hideFlags = PreviewHideFlags;
-                    view.SuppressPlayerMarker = true;
                     view.Configure(icons, sector);
                     view.Bind(node);
                     var button = view.GetComponent<Button>();

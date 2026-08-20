@@ -266,7 +266,9 @@ namespace FracturedChorus.Combat.Core
                 entry.BeatIndex,
                 beatIndex,
                 timeline,
-                IsEmpowerActiveForCounters(entry));
+                IsEmpowerActiveForCounters(entry),
+                entry.Unit,
+                entry);
         }
 
         /// <summary>
@@ -280,12 +282,24 @@ namespace FracturedChorus.Combat.Core
             BeatTimelineEngine timeline,
             bool empowerActive)
         {
+            return ResolveHitContribution(skill, placementBeat, beatIndex, timeline, empowerActive, null, null);
+        }
+
+        public static int ResolveHitContribution(
+            SkillDefinitionSO skill,
+            int placementBeat,
+            int beatIndex,
+            BeatTimelineEngine timeline,
+            bool empowerActive,
+            CombatUnit unit,
+            AgendaEntry entry)
+        {
             if (skill == null || placementBeat < 0 || beatIndex < 0)
             {
                 return 0;
             }
 
-            var active = SkillFootprintUtil.GetActiveBeats(skill);
+            var active = SkillFootprintUtil.GetActiveBeats(skill, unit, entry);
             if (beatIndex < placementBeat || beatIndex >= placementBeat + active)
             {
                 return 0;
@@ -324,12 +338,20 @@ namespace FracturedChorus.Combat.Core
 
         public static int FindFirstActiveImpactBeat(AgendaEntry entry, BeatTimelineEngine timeline)
         {
-            if (entry?.Skill == null)
+            if (entry?.Skill == null || timeline == null)
             {
                 return -1;
             }
 
-            return FindFirstActiveImpactBeatForPlacement(entry.Skill, entry.BeatIndex, timeline);
+            foreach (var beat in GetActiveBeatIndices(entry))
+            {
+                if (timeline.GetImpactTelegraphsAtBeat(beat).Count > 0)
+                {
+                    return beat;
+                }
+            }
+
+            return -1;
         }
 
         public static bool HasCounterOnBeat(BeatTimelineEngine timeline, int beatIndex) =>
@@ -487,7 +509,9 @@ namespace FracturedChorus.Combat.Core
                 pendingPlacementBeat,
                 telegraph.BeatIndex,
                 timeline,
-                empower);
+                empower,
+                pendingUnit,
+                null);
             return Mathf.Max(0, remaining - contrib);
         }
 
@@ -577,7 +601,7 @@ namespace FracturedChorus.Combat.Core
                 yield break;
             }
 
-            var active = SkillFootprintUtil.GetActiveBeats(entry.Skill);
+            var active = SkillFootprintUtil.GetActiveBeats(entry.Skill, entry.Unit, entry);
             for (var i = 0; i < active; i++)
             {
                 yield return entry.BeatIndex + i;

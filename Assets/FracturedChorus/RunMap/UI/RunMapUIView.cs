@@ -242,6 +242,7 @@ namespace FracturedChorus.RunMap.UI
             _layout.ComputeContentSize(out _contentWidth, out _contentHeight);
             ApplyContentRect();
             ResolveLayers();
+            EnsureTemplateSet();
             EnsurePlayerMarkerLayer(_contentWidth, _contentHeight);
             ConfigureLayers(_contentWidth, _contentHeight, connectionsLayer, nodesLayer, floorLabelsLayer, playerMarkerLayer);
 
@@ -283,7 +284,6 @@ namespace FracturedChorus.RunMap.UI
         {
             _lastRunState = runState;
             var currentId = runState.CurrentNodeId;
-            var useExternalMarker = playerMarkerConfig != null && playerMarker != null;
 
             foreach (var pair in _nodeViews)
             {
@@ -293,7 +293,6 @@ namespace FracturedChorus.RunMap.UI
                     continue;
                 }
 
-                pair.Value.SuppressPlayerMarker = useExternalMarker;
                 pair.Value.RefreshVisual(
                     runState.CanSelectNode(graph, node),
                     runState.IsVisited(pair.Key),
@@ -313,6 +312,8 @@ namespace FracturedChorus.RunMap.UI
 
         public void AnimateTravelToNode(MapNodeData from, MapNodeData to, System.Action onComplete)
         {
+            EnsurePlayerMarkerConfig();
+            EnsurePlayerMarkerLayer(_contentWidth, _contentHeight);
             if (playerMarker == null || playerMarkerConfig == null || from == null || to == null)
             {
                 onComplete?.Invoke();
@@ -329,6 +330,56 @@ namespace FracturedChorus.RunMap.UI
             var toPos = MapContentToMarkerLayerPosition(_layout.NodePosition(to));
             playerMarker.SetVisible(true);
             playerMarker.PlayTravel(fromPos, toPos, onComplete);
+        }
+
+        public void SnapMarkerToNode(MapNodeData node)
+        {
+            EnsurePlayerMarkerConfig();
+            EnsurePlayerMarkerLayer(_contentWidth, _contentHeight);
+            if (playerMarker == null || node == null)
+            {
+                return;
+            }
+
+            playerMarker.StopTravel();
+            playerMarker.SetVisible(true);
+            playerMarker.SnapTo(MapContentToMarkerLayerPosition(_layout.NodePosition(node)));
+        }
+
+        public void RevealTraveledEdge(int fromId, int toId, System.Action onComplete)
+        {
+            MapConnectionLineView target = null;
+            for (var i = 0; i < _connectionViews.Count; i++)
+            {
+                var line = _connectionViews[i];
+                if (line != null && line.FromNodeId == fromId && line.ToNodeId == toId)
+                {
+                    target = line;
+                    break;
+                }
+            }
+
+            if (target == null || _boundGraph == null)
+            {
+                onComplete?.Invoke();
+                return;
+            }
+
+            var fromNode = _boundGraph.GetNode(fromId);
+            var toNode = _boundGraph.GetNode(toId);
+            if (fromNode == null || toNode == null)
+            {
+                onComplete?.Invoke();
+                return;
+            }
+
+            target.PlayReveal(
+                _layout.NodePosition(fromNode),
+                _layout.NodePosition(toNode),
+                VisitedEdgeColor,
+                visitedLineThickness,
+                0.28f,
+                onComplete);
         }
 
         private void RefreshPlayerMarker(MapGraph graph, RunState runState)
@@ -363,6 +414,7 @@ namespace FracturedChorus.RunMap.UI
 
         private void EnsurePlayerMarkerLayer(float width, float height)
         {
+            EnsurePlayerMarkerConfig();
             if (playerMarkerConfig == null)
             {
                 return;
@@ -410,6 +462,33 @@ namespace FracturedChorus.RunMap.UI
 
             EnsureMapLayerOrder();
             EnsureScrollMarkerSync();
+        }
+
+        private void EnsurePlayerMarkerConfig()
+        {
+            if (playerMarkerConfig != null)
+            {
+                return;
+            }
+
+            if (playerMarker != null)
+            {
+                playerMarkerConfig = playerMarker.GetConfig();
+            }
+
+            if (playerMarkerConfig != null)
+            {
+                return;
+            }
+
+            playerMarkerConfig = Resources.Load<RunMapPlayerMarkerConfigSO>("RunMapPlayerMarker_Default");
+#if UNITY_EDITOR
+            if (playerMarkerConfig == null)
+            {
+                playerMarkerConfig = AssetDatabase.LoadAssetAtPath<RunMapPlayerMarkerConfigSO>(
+                    RunMapPlayerMarkerConfigSO.DefaultAssetPath);
+            }
+#endif
         }
 
         private void ConsolidatePlayerMarkerLayers(RectTransform content)
@@ -992,7 +1071,7 @@ namespace FracturedChorus.RunMap.UI
                 var diameter = _layout.NodeVisualDiameter(node);
                 rect.sizeDelta = new Vector2(diameter, diameter);
 
-                view.Configure(icons, graph.Profile.Sector, playerMarkerSprite);
+                view.Configure(icons, graph.Profile.Sector);
                 view.Bind(node);
                 view.Clicked -= OnNodeClicked;
                 view.Clicked += OnNodeClicked;
@@ -1038,8 +1117,12 @@ namespace FracturedChorus.RunMap.UI
                 return;
             }
 
+            templateSet = Resources.Load<MapNodeTemplateSetSO>("MapNodeTemplateSet_Default");
 #if UNITY_EDITOR
-            templateSet = AssetDatabase.LoadAssetAtPath<MapNodeTemplateSetSO>(MapNodeTemplateSetSO.DefaultAssetPath);
+            if (templateSet == null)
+            {
+                templateSet = AssetDatabase.LoadAssetAtPath<MapNodeTemplateSetSO>(MapNodeTemplateSetSO.DefaultAssetPath);
+            }
 #endif
         }
 
@@ -1183,16 +1266,27 @@ namespace FracturedChorus.RunMap.UI
 
         private MapConnectionLineView SpawnConnectionLine(Transform parent)
         {
+            EnsureTemplateSet();
             var prefab = templateSet != null ? templateSet.ConnectionPrefab : null;
-            if (prefab == null)
+            if (prefab != null)
             {
-                Debug.LogError("[Fractured Chorus] RunMapUIView: MapConnection prefab chưa gán — gán MapNodeTemplateSet.");
-                return null;
+                var clone = Instantiate(prefab, parent);
+                clone.gameObject.SetActive(true);
+                return clone;
             }
 
-            var clone = Instantiate(prefab, parent);
-            clone.gameObject.SetActive(true);
-            return clone;
+            var go = new GameObject(
+                "MapConnection",
+                typeof(RectTransform),
+                typeof(CanvasRenderer),
+                typeof(Image),
+                typeof(MapConnectionLineView));
+            go.transform.SetParent(parent, false);
+            var image = go.GetComponent<Image>();
+            image.raycastTarget = false;
+            var line = go.GetComponent<MapConnectionLineView>();
+            line.WireImage(image);
+            return line;
         }
 
         private void RefreshConnectionHighlights(RunState runState)
@@ -1372,6 +1466,17 @@ namespace FracturedChorus.RunMap.UI
 
         public bool IsTraveling => _travelRoutine != null;
 
+        public void StopTravel()
+        {
+            if (_travelRoutine == null)
+            {
+                return;
+            }
+
+            StopCoroutine(_travelRoutine);
+            _travelRoutine = null;
+        }
+
         public RunMapPlayerMarkerConfigSO GetConfig() => config;
 
         private void Awake()
@@ -1437,7 +1542,7 @@ namespace FracturedChorus.RunMap.UI
                 StopCoroutine(_travelRoutine);
             }
 
-            if (config == null || markerImage == null)
+            if (config == null || markerImage == null || !isActiveAndEnabled || !gameObject.activeInHierarchy)
             {
                 SnapTo(toNode);
                 onComplete?.Invoke();
@@ -1445,6 +1550,11 @@ namespace FracturedChorus.RunMap.UI
             }
 
             _travelRoutine = StartCoroutine(TravelRoutine(fromNode, toNode, onComplete));
+            if (_travelRoutine == null)
+            {
+                SnapTo(toNode);
+                onComplete?.Invoke();
+            }
         }
 
         private IEnumerator TravelRoutine(Vector2 fromNode, Vector2 toNode, System.Action onComplete)

@@ -17,6 +17,8 @@ namespace FracturedChorus.Combat.Timeline
         public bool EmpowerResolved;
         public bool EffectPayloadApplied;
         public int StandingAfterOverride = -1;
+        public int ActiveBeatsOverride;
+        public float PendingHitDamage = -1f;
         public bool PlanningEffectApplied;
         public int PlanningDelayAmount;
         public readonly List<TelegraphBeatMove> PlanningDelayMoves = new();

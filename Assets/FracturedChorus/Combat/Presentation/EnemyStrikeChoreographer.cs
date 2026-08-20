@@ -304,14 +304,8 @@ namespace FracturedChorus.Combat.Presentation
             if (report.WasCountered)
             {
                 CollectCounteringEntries(report.BeatIndex);
-                foreach (var (view, entry) in _counterEntriesScratch)
+                foreach (var (view, _) in _counterEntriesScratch)
                 {
-                    if (entry?.Skill != null
-                        && entry.Skill.slotKind is SkillSlotKind.Skill or SkillSlotKind.Ultimate)
-                    {
-                        continue;
-                    }
-
                     view.PlayCounterHold();
                 }
             }
@@ -748,27 +742,12 @@ namespace FracturedChorus.Combat.Presentation
                 && charlotteSkillChoreographer != null
                 && charlotteSkillChoreographer.Handles(bodyEntry.Skill, bodyView))
             {
-                var charlotteMid = ResolveMidStaging(attackerView);
-                var charlotteKnockback = StartCoroutine(
-                    attackerView.MoveFeetToRoutine(
-                        charlotteMid,
-                        ResolveMoveSeconds(
-                            attackerView.FeetWorldPosition,
-                            charlotteMid,
-                            knockbackSpeed,
-                            knockbackSeconds)));
-
                 yield return charlotteSkillChoreographer.PlaySkillRoutine(
                     bodyView,
                     attackerView,
                     bodyEntry.Skill,
                     returnHome: true,
                     onImpact: () => FlushHpFeedback(report.Attacker));
-
-                if (charlotteKnockback != null)
-                {
-                    yield return charlotteKnockback;
-                }
 
                 FlushRemainingHpFeedback();
                 yield break;
@@ -840,6 +819,11 @@ namespace FracturedChorus.Combat.Presentation
                 if (ultKnockback != null)
                 {
                     yield return ultKnockback;
+                }
+
+                if (!EncounterDirector.IsPresenting)
+                {
+                    yield return new WaitForSeconds(1f);
                 }
 
                 FlushRemainingHpFeedback();
