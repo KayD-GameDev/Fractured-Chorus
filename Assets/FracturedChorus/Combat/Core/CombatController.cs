@@ -1105,11 +1105,6 @@ namespace FracturedChorus.Combat.Core
                 return;
             }
 
-            if (EncounterDirector.IsPresenting)
-            {
-                return;
-            }
-
             var view = UnitView.FindForUnit(unit);
             if (view != null)
             {

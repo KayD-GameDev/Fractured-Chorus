@@ -1132,7 +1132,7 @@ namespace FracturedChorus.Combat.Presentation
                 beatIndex,
                 playerView != null ? playerView.Unit : null,
                 enemyView != null ? enemyView.Unit : null);
-            // HP popups: CombatController → UnitView.FindForUnit (includes inactive duel extras).
+            // HP popups spawn from CombatController.OnUnitHpChanged during this resolve.
         }
 
         private void ResolveBeatWithPresentationPair(int beatIndex, CombatUnit player, CombatUnit enemy)
