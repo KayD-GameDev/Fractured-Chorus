@@ -4,6 +4,7 @@ using System.Linq;
 using FracturedChorus.Combat.Bootstrap;
 using FracturedChorus.Combat.Core;
 using FracturedChorus.Combat.Grid;
+using FracturedChorus.Combat.Presentation;
 using FracturedChorus.Combat.Timeline;
 using FracturedChorus.Data;
 using FracturedChorus.UI;
@@ -86,7 +87,6 @@ namespace FracturedChorus.Editor
 
         private const float SideGap = HexBoardLayout.DefaultSideGap;
 
-        [MenuItem("Fractured Chorus/Fix Input System (EventSystem)")]
         public static void FixInputSystemInScene()
         {
             CombatInputSetup.EnsureEventSystem();
@@ -101,7 +101,6 @@ namespace FracturedChorus.Editor
             Debug.Log("[Fractured Chorus] EventSystem + Physics2DRaycaster on Main Camera. Save scene.");
         }
 
-        [MenuItem("Fractured Chorus/Apply All Play-Ready Updates")]
         public static void ApplyAllPlayReadyUpdates()
         {
             FixInputSystemInScene();
@@ -318,7 +317,6 @@ namespace FracturedChorus.Editor
                     : $"[Fractured Chorus] Restored scene from {sourceAssetPath}. Save scene (Ctrl+S).");
         }
 
-        [MenuItem("Fractured Chorus/Fix Combat Scene Errors (Missing Scripts + Timeline Clones)")]
         public static void FixCombatSceneErrorsMenu()
         {
             FixCombatSceneErrors(silent: false);
@@ -379,7 +377,6 @@ namespace FracturedChorus.Editor
             return removed;
         }
 
-        [MenuItem("Fractured Chorus/Migrate Unit Colliders (2D + Feet)")]
         public static void MigrateUnitCollidersTo2D()
         {
             var views = Object.FindObjectsByType<UnitView>(FindObjectsInactive.Include);
@@ -395,7 +392,6 @@ namespace FracturedChorus.Editor
                 $"[Fractured Chorus] Migrated {views.Length} UnitView(s) to BoxCollider2D + FeetAnchor (keeps scene collider when Preserve Scene Collider is enabled). Save scene.");
         }
 
-        [MenuItem("Fractured Chorus/Fit Unit Colliders To Sprite (override scene)")]
         public static void FitUnitCollidersToSprite()
         {
             var views = Object.FindObjectsByType<UnitView>(FindObjectsInactive.Include);
@@ -409,7 +405,6 @@ namespace FracturedChorus.Editor
             Debug.Log($"[Fractured Chorus] Refit BoxCollider2D to sprite on {views.Length} unit(s). Save scene (Ctrl+S).");
         }
 
-        [MenuItem("Fractured Chorus/Restore Unit Sprites from Presets")]
         public static void RestoreUnitSpritesFromPresets()
         {
             var views = Object.FindObjectsByType<UnitView>(FindObjectsInactive.Include);
@@ -444,7 +439,6 @@ namespace FracturedChorus.Editor
             Debug.Log($"[Fractured Chorus] Restored battleSprite on {restored} unit(s). Save scene.");
         }
 
-        [MenuItem("Fractured Chorus/Setup Combat Scene Hierarchy")]
         public static void SetupCombatSceneHierarchy()
         {
             var existing = GameObject.Find("CombatRoot");
@@ -654,6 +648,7 @@ namespace FracturedChorus.Editor
         {
             var sim = UnitSpriteSimulator.EnsureOn(view);
             sim?.AuthorCurrentAsState(UnitCombatVisualState.Idle);
+            SkillVfxSimulator.EnsureOn(view);
         }
 
         private static BeatTimelineUIView CreateTimelineUi(Canvas canvas)
@@ -897,7 +892,6 @@ namespace FracturedChorus.Editor
             return HexBoardLayout.GetWorldPosition(position, SideGap);
         }
 
-        [MenuItem("Fractured Chorus/Rebuild Hex Board Grid (scene)")]
         public static void RebuildHexBoardInScene()
         {
             var gridRoot = GameObject.Find("CombatRoot/World/Grid") ?? GameObject.Find("World/Grid") ?? GameObject.Find("Grid");
@@ -970,7 +964,6 @@ namespace FracturedChorus.Editor
             Debug.Log($"[Fractured Chorus] Hex board rebuilt 2×3. Removed {deleted} bottom-row cell(s), kept top 2 rows (units + top), re-indexed to R0(top)/R1(units) + snapped saved coordinates. Save scene.");
         }
 
-        [MenuItem("Fractured Chorus/Add Knight of Despair (Boss) to Scene")]
         public static void AddKnightOfDespairToScene()
         {
             RunBossSceneSetup(saveScene: true, log: true);

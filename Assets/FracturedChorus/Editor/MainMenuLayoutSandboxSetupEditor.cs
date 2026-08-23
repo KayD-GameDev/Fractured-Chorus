@@ -24,7 +24,6 @@ namespace FracturedChorus.Editor
         private const string PressAnyKeyPath = PoseDir + "ui_press_any_key_v1.png";
         private const float CharacterFitHeight = 1080f;
 
-        [MenuItem("Fractured Chorus/Create MainMenu Layout Sandbox Scene")]
         public static void CreateScene()
         {
             EnsureFolder("Assets/FracturedChorus/Scenes");
@@ -37,7 +36,6 @@ namespace FracturedChorus.Editor
             Debug.Log($"[Fractured Chorus] Saved {ScenePath} — layout sandbox, not in Build Settings.");
         }
 
-        [MenuItem("Fractured Chorus/Apply MainMenu Layout Sandbox Art")]
         public static void ApplyArtToOpenScene()
         {
             var root = GameObject.Find("MainMenuLayoutSandboxRoot");
@@ -67,7 +65,6 @@ namespace FracturedChorus.Editor
             Debug.Log("[Fractured Chorus] Sandbox art applied — Attract / Main Menu layers at root. Save scene.");
         }
 
-        [MenuItem("Fractured Chorus/Ensure MainMenu Layout Sandbox Layers")]
         public static void EnsureLayersMenu()
         {
             var root = GameObject.Find("MainMenuLayoutSandboxRoot");
@@ -96,7 +93,6 @@ namespace FracturedChorus.Editor
             Debug.Log("[Fractured Chorus] AttractLayer + MainMenuLayer at sandbox root. Toggle in Hierarchy or Inspector.");
         }
 
-        [MenuItem("Fractured Chorus/Rebuild MainMenu Layout Sandbox Hierarchy")]
         public static void RebuildActiveScene()
         {
             var existing = GameObject.Find("MainMenuLayoutSandboxRoot");

@@ -36,7 +36,6 @@ namespace FracturedChorus.Editor
             }
         }
 
-        [MenuItem("Fractured Chorus/Repair Animator Graphs (close stale window)")]
         public static void RepairFromMenu()
         {
             var stale = SanitizeGraphEdges();

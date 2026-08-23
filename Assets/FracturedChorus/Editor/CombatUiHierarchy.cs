@@ -1063,7 +1063,6 @@ namespace FracturedChorus.Editor
             so.ApplyModifiedPropertiesWithoutUndo();
         }
 
-        [MenuItem("Fractured Chorus/Setup Skill Panel in Hierarchy")]
         public static void EnsureSkillPanelInHierarchy()
         {
             var canvas = ResolveCombatCanvasTransform();
@@ -1097,7 +1096,6 @@ namespace FracturedChorus.Editor
         /// <summary>
         /// Batch/menu: mở CombatPrototype, thêm SkillSlot_Template + Frame trên art, save scene.
         /// </summary>
-        [MenuItem("Fractured Chorus/Migrate Skill Slot Template (CombatPrototype)")]
         public static void MigrateSkillSlotTemplateCombatPrototype()
         {
             const string scenePath = "Assets/FracturedChorus/Scenes/CombatPrototype.unity";

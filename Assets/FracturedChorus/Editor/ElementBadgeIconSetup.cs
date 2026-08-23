@@ -10,7 +10,6 @@ namespace FracturedChorus.Editor
     {
         private const string IconFolder = "Assets/FracturedChorus/Art/UI";
 
-        [MenuItem("Fractured Chorus/Apply Element Badge Icons (Stat Blocks)")]
         public static void ApplyToStatBlocks()
         {
             EnsureSpriteImportSettings();

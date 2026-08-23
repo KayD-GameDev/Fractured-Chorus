@@ -133,6 +133,7 @@ GameObject:
   - component: {fileID: 7695633}
   - component: {fileID: 7695634}
   - component: {fileID: 7695635}
+  - component: {fileID: 7695636}
   m_Layer: 0
   m_Name: Unit_Kiki_Ueda
   m_TagString: Untagged
@@ -3663,6 +3664,7 @@ GameObject:
   - component: {fileID: 487667176}
   - component: {fileID: 487667177}
   - component: {fileID: 487667178}
+  - component: {fileID: 487667179}
   m_Layer: 0
   m_Name: Unit_Ren
   m_TagString: Untagged
@@ -8082,6 +8084,7 @@ GameObject:
   - component: {fileID: 1144376354}
   - component: {fileID: 1144376355}
   - component: {fileID: 1144376356}
+  - component: {fileID: 1144376357}
   m_Layer: 0
   m_Name: Unit_Mage
   m_TagString: Untagged
@@ -14035,6 +14038,78 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &7695636
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7695628}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2a8f5d1e6b04739a4c7d9e0b3f18655, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Combat.Presentation.SkillVfxSimulator
+  skill: {fileID: 11400000, guid: e4f5a6b7c8d94a12e3f4a5060718293a, type: 2}
+  profileOverride: {fileID: 0}
+  caster: {fileID: 0}
+  target: {fileID: 0}
+  useEncounterStage: 0
+  stageRow: 1
+  stageColumn: 0
+  sideGap: 3.5
+  previewLive: 0
+  loopSlide: 1
+  previewSpeed: 1
+  showImpact: 1
+--- !u!114 &487667179
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 487667171}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2a8f5d1e6b04739a4c7d9e0b3f18655, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Combat.Presentation.SkillVfxSimulator
+  skill: {fileID: 11400000, guid: d290998a860c53d4794580a0ecd18147, type: 2}
+  profileOverride: {fileID: 0}
+  caster: {fileID: 0}
+  target: {fileID: 0}
+  useEncounterStage: 0
+  stageRow: 1
+  stageColumn: 0
+  sideGap: 3.5
+  previewLive: 0
+  loopSlide: 1
+  previewSpeed: 1
+  showImpact: 1
+--- !u!114 &1144376357
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1144376349}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2a8f5d1e6b04739a4c7d9e0b3f18655, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Combat.Presentation.SkillVfxSimulator
+  skill: {fileID: 11400000, guid: 5da094b42c443ac4b92bd19f906704dc, type: 2}
+  profileOverride: {fileID: 0}
+  caster: {fileID: 0}
+  target: {fileID: 0}
+  useEncounterStage: 0
+  stageRow: 1
+  stageColumn: 0
+  sideGap: 3.5
+  previewLive: 0
+  loopSlide: 1
+  previewSpeed: 1
+  showImpact: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

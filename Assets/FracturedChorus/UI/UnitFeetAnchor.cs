@@ -8,7 +8,10 @@ namespace FracturedChorus.UI
     /// </summary>
     public class UnitFeetAnchor : MonoBehaviour
     {
-        [SerializeField] private Vector2 gizmoSize = new(0.2f, 0.1f);
+        [SerializeField] private UnitMarkerShape gizmoShape = UnitMarkerShape.Square;
+        [SerializeField] private Color gizmoColor = new(1f, 0.85f, 0.2f, 0.95f);
+        [SerializeField] [Min(0.02f)] private float gizmoSize = 0.2f;
+        [SerializeField] private bool gizmoAlwaysVisible = true;
 
         public void WireReferences()
         {
@@ -34,10 +37,20 @@ namespace FracturedChorus.UI
         }
 
 #if UNITY_EDITOR
+        private void OnDrawGizmos()
+        {
+            if (gizmoAlwaysVisible)
+            {
+                UnitMarkerGizmo.DrawAt(transform.position, gizmoShape, gizmoColor, gizmoSize);
+            }
+        }
+
         private void OnDrawGizmosSelected()
         {
-            Gizmos.color = new Color(1f, 0.85f, 0.2f, 0.9f);
-            Gizmos.DrawWireCube(transform.position, gizmoSize);
+            if (!gizmoAlwaysVisible)
+            {
+                UnitMarkerGizmo.DrawAt(transform.position, gizmoShape, gizmoColor, gizmoSize);
+            }
         }
 #endif
     }

@@ -24,7 +24,6 @@ namespace FracturedChorus.Editor
         private const string ButtonPressPath = "Assets/FracturedChorus/Audio/SFX/MainMenu_ButtonPress.wav";
         private const string MenuTingPath = "Assets/FracturedChorus/Audio/SFX/MainMenu_ChangeMenu_Ting.mp3";
 
-        [MenuItem("Fractured Chorus/Create PrologueVN Scene")]
         public static void CreatePrologueVNScene()
         {
             var scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
@@ -43,7 +42,6 @@ namespace FracturedChorus.Editor
             Debug.Log($"[Fractured Chorus] Saved {ScenePath}");
         }
 
-        [MenuItem("Fractured Chorus/Setup PrologueVN Scene Hierarchy")]
         public static void SetupPrologueVNSceneHierarchy()
         {
             var existing = GameObject.Find("PrologueVNRoot");
@@ -329,7 +327,6 @@ namespace FracturedChorus.Editor
             EditorBuildSettings.scenes = buildScenes;
         }
 
-        [MenuItem("Fractured Chorus/Create PrologueVN Layout Config")]
         public static void CreatePrologueVNLayoutConfigAsset()
         {
             const string folder = "Assets/FracturedChorus/Data/ScriptableObjects";
@@ -358,7 +355,6 @@ namespace FracturedChorus.Editor
             Debug.Log($"[Fractured Chorus] Created {path}");
         }
 
-        [MenuItem("Fractured Chorus/Fix Contract Sprite Import")]
         public static void FixContractSpriteImport()
         {
             var importer = AssetImporter.GetAtPath(PrologueContractLayout.ContractSpritePath) as TextureImporter;
@@ -378,7 +374,6 @@ namespace FracturedChorus.Editor
             Debug.Log("[Fractured Chorus] Contract sprite reimported as Single sprite.");
         }
 
-        [MenuItem("Fractured Chorus/Upgrade PrologueVN Choice UI")]
         public static void UpgradePrologueChoiceUi()
         {
             var choiceView = Object.FindAnyObjectByType<PrologueChoiceView>();

@@ -133,6 +133,7 @@ GameObject:
   - component: {fileID: 7695633}
   - component: {fileID: 7695634}
   - component: {fileID: 7695635}
+  - component: {fileID: 7695636}
   m_Layer: 0
   m_Name: Unit_Grunt
   m_TagString: Untagged
@@ -154,6 +155,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1026443470}
+  - {fileID: 668980924}
+  - {fileID: 1444155959}
   m_Father: {fileID: 1783593214}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &7695631
@@ -236,6 +239,8 @@ MonoBehaviour:
   hpLabel: {fileID: 0}
   bodyCollider: {fileID: 7695633}
   feetAnchor: {fileID: 1026443471}
+  receiveDmg: {fileID: 668980922}
+  projectile: {fileID: 1444155958}
   animator: {fileID: 7695634}
   counterStateName: 
   guardStateName: 
@@ -339,8 +344,37 @@ MonoBehaviour:
     linkedState: 1
     localScale: {x: 0.15, y: 0.15, z: 0}
     feetAnchorLocal: {x: 0.79, y: -1.24, z: 0}
+    receiveDmgLocal: {x: 0, y: 0, z: 0}
+    projectileLocal: {x: 0, y: 0, z: 0}
     colliderSize: {x: 0, y: 0}
     colliderOffset: {x: 0, y: 0}
+--- !u!114 &7695636
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7695628}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2a8f5d1e6b04739a4c7d9e0b3f18655, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Combat.Presentation.SkillVfxSimulator
+  skill: {fileID: 11400000, guid: 3447135c31f31bf4b86503cedb3ca79c, type: 2}
+  profileOverride: {fileID: 0}
+  caster: {fileID: 7695632}
+  projectileA: {fileID: 1444155958}
+  targets:
+  - {fileID: 377598857}
+  - {fileID: 487667175}
+  - {fileID: 1144376353}
+  previewLive: 0
+  previewPaused: 0
+  hideSprite: 0
+  hidePattern: 0
+  loopSlide: 1
+  previewSpeed: 1
+  showImpact: 1
 --- !u!1 &9683624
 GameObject:
   m_ObjectHideFlags: 0
@@ -2818,7 +2852,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf84e4915f50f7e44b496aa958caf118, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitFeetAnchor
-  gizmoSize: {x: 0.2, y: 0.1}
+  gizmoShape: 2
+  gizmoColor: {r: 1, g: 0.85, b: 0.2, a: 0.95}
+  gizmoSize: 0.2
+  gizmoAlwaysVisible: 1
 --- !u!1 &291594473
 GameObject:
   m_ObjectHideFlags: 0
@@ -2998,7 +3035,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf84e4915f50f7e44b496aa958caf118, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitFeetAnchor
-  gizmoSize: {x: 0.2, y: 0.1}
+  gizmoShape: 2
+  gizmoColor: {r: 1, g: 0.85, b: 0.2, a: 0.95}
+  gizmoSize: 0.2
+  gizmoAlwaysVisible: 1
 --- !u!4 &306838249
 Transform:
   m_ObjectHideFlags: 0
@@ -3255,6 +3295,7 @@ GameObject:
   - component: {fileID: 335934022}
   - component: {fileID: 335934023}
   - component: {fileID: 335934024}
+  - component: {fileID: 335934025}
   m_Layer: 0
   m_Name: Unit_Grunt
   m_TagString: Untagged
@@ -3283,6 +3324,8 @@ MonoBehaviour:
   hpLabel: {fileID: 0}
   bodyCollider: {fileID: 335934022}
   feetAnchor: {fileID: 306838247}
+  receiveDmg: {fileID: 447240261}
+  projectile: {fileID: 358505477}
   animator: {fileID: 335934023}
   counterStateName: 
   guardStateName: 
@@ -3370,6 +3413,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 306838249}
+  - {fileID: 447240263}
+  - {fileID: 358505478}
   m_Father: {fileID: 1783593214}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!61 &335934022
@@ -3461,8 +3506,37 @@ MonoBehaviour:
     linkedState: 1
     localScale: {x: 0.15, y: 0.15, z: 0}
     feetAnchorLocal: {x: 0, y: -0.45, z: 0}
+    receiveDmgLocal: {x: 0, y: 0, z: 0}
+    projectileLocal: {x: 0, y: 0, z: 0}
     colliderSize: {x: 0, y: 0}
     colliderOffset: {x: 0, y: 0}
+--- !u!114 &335934025
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 335934017}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2a8f5d1e6b04739a4c7d9e0b3f18655, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Combat.Presentation.SkillVfxSimulator
+  skill: {fileID: 11400000, guid: 3447135c31f31bf4b86503cedb3ca79c, type: 2}
+  profileOverride: {fileID: 0}
+  caster: {fileID: 335934018}
+  projectileA: {fileID: 358505477}
+  targets:
+  - {fileID: 377598857}
+  - {fileID: 487667175}
+  - {fileID: 1144376353}
+  previewLive: 0
+  previewPaused: 0
+  hideSprite: 0
+  hidePattern: 0
+  loopSlide: 1
+  previewSpeed: 1
+  showImpact: 1
 --- !u!1 &349389865
 GameObject:
   m_ObjectHideFlags: 0
@@ -3575,6 +3649,54 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 350638639}
   m_CullTransparentMesh: 1
+--- !u!1 &358505476
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 358505478}
+  - component: {fileID: 358505477}
+  m_Layer: 0
+  m_Name: Projectile
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &358505477
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 358505476}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1a8c4e27b6f4a19b3e5d0c8f2a74690, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitProjectileAnchor
+  gizmoShape: 1
+  gizmoColor: {r: 0.35, g: 0.85, b: 1, a: 0.95}
+  gizmoSize: 0.16
+  gizmoAlwaysVisible: 1
+--- !u!4 &358505478
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 358505476}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 5.8, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 335934021}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &368062585
 GameObject:
   m_ObjectHideFlags: 0
@@ -3770,6 +3892,7 @@ GameObject:
   - component: {fileID: 377598858}
   - component: {fileID: 377598859}
   - component: {fileID: 377598860}
+  - component: {fileID: 377598861}
   m_Layer: 0
   m_Name: Unit_Charlott
   m_TagString: Untagged
@@ -3786,11 +3909,13 @@ Transform:
   m_GameObject: {fileID: 377598853}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.55, y: 0.02, z: -0.05}
+  m_LocalPosition: {x: -1.5404438, y: 0.0037691593, z: -0.05}
   m_LocalScale: {x: 0.19826, y: 0.212055, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 285992547}
+  - {fileID: 1142289443}
+  - {fileID: 1143880314}
   m_Father: {fileID: 1783593214}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &377598856
@@ -3842,7 +3967,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 11
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -7428215157034606851, guid: c717b6aad7a95364c80e530ab2dde0db, type: 3}
+  m_Sprite: {fileID: -4320761258177927782, guid: 73aff530d524a5a46b753fbe65cf6913, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -3873,6 +3998,8 @@ MonoBehaviour:
   hpLabel: {fileID: 0}
   bodyCollider: {fileID: 377598858}
   feetAnchor: {fileID: 285992548}
+  receiveDmg: {fileID: 1142289442}
+  projectile: {fileID: 1143880313}
   animator: {fileID: 377598859}
   counterStateName: Charlott_Counter
   guardStateName: 
@@ -3924,8 +4051,8 @@ BoxCollider2D:
   m_Offset: {x: -0.31349665, y: 0.0683794}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 7.27, y: 8.5}
+    pivot: {x: 0.7818036, y: 0.57254344}
+    oldSize: {x: 10.51432, y: 7.31}
     newSize: {x: 7.27, y: 8.5}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -3971,13 +4098,15 @@ MonoBehaviour:
   spriteLayouts:
   - displayName: Idle
     kind: 0
-    sprite: {fileID: -7428215157034606851, guid: c717b6aad7a95364c80e530ab2dde0db, type: 3}
+    sprite: {fileID: -4320761258177927782, guid: 73aff530d524a5a46b753fbe65cf6913, type: 3}
     animationClip: {fileID: 7400000, guid: 2dc3e2c876cd75449ae3cd97466a85e0, type: 2}
     linkedState: 1
     localScale: {x: 0.19826, y: 0.212055, z: 0}
     feetAnchorLocal: {x: -0.27, y: -1.63, z: 0}
-    colliderSize: {x: 0, y: 0}
-    colliderOffset: {x: 0, y: 0}
+    receiveDmgLocal: {x: 1.23, y: 0.62, z: 0}
+    projectileLocal: {x: 2.9668546, y: 1.2033348, z: 0}
+    colliderSize: {x: 4.1703157, y: 8.623627}
+    colliderOffset: {x: -0.31349665, y: 0.0683794}
   - displayName: Death
     kind: 0
     sprite: {fileID: -7270613684948771677, guid: 9caad1461c1fefe49aa0e26202664cf0, type: 3}
@@ -3985,8 +4114,10 @@ MonoBehaviour:
     linkedState: 7
     localScale: {x: 0.20759803, y: 0.22204278, z: 0}
     feetAnchorLocal: {x: -0.27, y: -1.63, z: 0}
-    colliderSize: {x: 0, y: 0}
-    colliderOffset: {x: 0, y: 0}
+    receiveDmgLocal: {x: 1.23, y: 0.62, z: 0}
+    projectileLocal: {x: 0, y: 5.8, z: 0}
+    colliderSize: {x: 4.1703157, y: 8.623627}
+    colliderOffset: {x: -0.31349665, y: 0.0683794}
   - displayName: Moving
     kind: 0
     sprite: {fileID: -8768929131254168515, guid: 47d7d76b5b3146149bfb549f18be11ed, type: 3}
@@ -3994,8 +4125,10 @@ MonoBehaviour:
     linkedState: 2
     localScale: {x: 0.3853021, y: 0.41211152, z: 0}
     feetAnchorLocal: {x: 0.74, y: -0.43, z: 0}
-    colliderSize: {x: 0, y: 0}
-    colliderOffset: {x: 0, y: 0}
+    receiveDmgLocal: {x: 1.23, y: 0.62, z: 0}
+    projectileLocal: {x: 0, y: 5.8, z: 0}
+    colliderSize: {x: 4.1703157, y: 8.623627}
+    colliderOffset: {x: -0.31349665, y: 0.0683794}
   - displayName: Hurt
     kind: 0
     sprite: {fileID: -2581751109061018785, guid: 061bacc281d24c247a085df375dd7e1f, type: 3}
@@ -4003,8 +4136,10 @@ MonoBehaviour:
     linkedState: 6
     localScale: {x: 0.19826, y: 0.212055, z: 0}
     feetAnchorLocal: {x: -0.27, y: -1.63, z: 0}
-    colliderSize: {x: 0, y: 0}
-    colliderOffset: {x: 0, y: 0}
+    receiveDmgLocal: {x: 1.23, y: 0.62, z: 0}
+    projectileLocal: {x: 0, y: 5.8, z: 0}
+    colliderSize: {x: 4.1703157, y: 8.623627}
+    colliderOffset: {x: -0.31349665, y: 0.0683794}
   - displayName: Counter
     kind: 0
     sprite: {fileID: 8886398286473154763, guid: efd81572e16ac5f43825cba0078be835, type: 3}
@@ -4012,8 +4147,10 @@ MonoBehaviour:
     linkedState: 5
     localScale: {x: 0.19826, y: 0.212055, z: 0}
     feetAnchorLocal: {x: -0.27, y: -1.63, z: 0}
-    colliderSize: {x: 0, y: 0}
-    colliderOffset: {x: 0, y: 0}
+    receiveDmgLocal: {x: 1.23, y: 0.62, z: 0}
+    projectileLocal: {x: 0, y: 5.8, z: 0}
+    colliderSize: {x: 4.1703157, y: 8.623627}
+    colliderOffset: {x: -0.31349665, y: 0.0683794}
   - displayName: NormalHit
     kind: 1
     sprite: {fileID: -7428215157034606851, guid: c717b6aad7a95364c80e530ab2dde0db, type: 3}
@@ -4021,8 +4158,10 @@ MonoBehaviour:
     linkedState: 8
     localScale: {x: 0.19826, y: 0.212055, z: 0}
     feetAnchorLocal: {x: -0.27, y: -1.63, z: 0}
-    colliderSize: {x: 0, y: 0}
-    colliderOffset: {x: 0, y: 0}
+    receiveDmgLocal: {x: 1.23, y: 0.62, z: 0}
+    projectileLocal: {x: 0, y: 5.8, z: 0}
+    colliderSize: {x: 4.1703157, y: 8.623627}
+    colliderOffset: {x: -0.31349665, y: 0.0683794}
   - displayName: SkillHit
     kind: 1
     sprite: {fileID: -7428215157034606851, guid: c717b6aad7a95364c80e530ab2dde0db, type: 3}
@@ -4030,8 +4169,10 @@ MonoBehaviour:
     linkedState: 9
     localScale: {x: 0.19826, y: 0.212055, z: 0}
     feetAnchorLocal: {x: -0.27, y: -1.63, z: 0}
-    colliderSize: {x: 0, y: 0}
-    colliderOffset: {x: 0, y: 0}
+    receiveDmgLocal: {x: 1.23, y: 0.62, z: 0}
+    projectileLocal: {x: 0, y: 5.8, z: 0}
+    colliderSize: {x: 4.1703157, y: 8.623627}
+    colliderOffset: {x: -0.31349665, y: 0.0683794}
   - displayName: UltHit
     kind: 1
     sprite: {fileID: -7428215157034606851, guid: c717b6aad7a95364c80e530ab2dde0db, type: 3}
@@ -4039,8 +4180,37 @@ MonoBehaviour:
     linkedState: 10
     localScale: {x: 0.19826, y: 0.212055, z: 0}
     feetAnchorLocal: {x: -0.27, y: -1.63, z: 0}
-    colliderSize: {x: 0, y: 0}
-    colliderOffset: {x: 0, y: 0}
+    receiveDmgLocal: {x: 1.23, y: 0.62, z: 0}
+    projectileLocal: {x: 0, y: 5.8, z: 0}
+    colliderSize: {x: 4.1703157, y: 8.623627}
+    colliderOffset: {x: -0.31349665, y: 0.0683794}
+--- !u!114 &377598861
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 377598853}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2a8f5d1e6b04739a4c7d9e0b3f18655, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Combat.Presentation.SkillVfxSimulator
+  skill: {fileID: 11400000, guid: 1a3ed7762916ff74b82dea72f16dabf9, type: 2}
+  profileOverride: {fileID: 11400000, guid: 048f1ec8d341a354dacd3f5317e10f91, type: 2}
+  caster: {fileID: 377598857}
+  projectileA: {fileID: 1143880313}
+  targets:
+  - {fileID: 7695632}
+  - {fileID: 335934018}
+  - {fileID: 1164589710}
+  previewLive: 0
+  previewPaused: 0
+  hideSprite: 0
+  hidePattern: 0
+  loopSlide: 0
+  previewSpeed: 0.56
+  showImpact: 1
 --- !u!1 &404302628
 GameObject:
   m_ObjectHideFlags: 0
@@ -4449,6 +4619,71 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a9c8b7d6e5f44321a0b1c2d3e4f56789, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.TimelineLaneAvatarSlotView
+--- !u!1 &447240260
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 447240263}
+  - component: {fileID: 447240261}
+  - component: {fileID: 447240262}
+  m_Layer: 0
+  m_Name: ReceiveDmg
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &447240261
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 447240260}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7c3e19d4b8f62e01c5d9a4e7b2f8013, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitReceiveDmgAnchor
+  gizmoShape: 4
+  gizmoColor: {r: 1, g: 0.28, b: 0.32, a: 0.95}
+  gizmoSize: 0.16
+  gizmoAlwaysVisible: 1
+--- !u!114 &447240262
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 447240260}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9e5f31a6d0b84f23e7c1a2d5b8e9046, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitMarkerGizmo
+  shape: 4
+  color: {r: 1, g: 0.28, b: 0.32, a: 0.95}
+  size: 0.16
+  alwaysVisible: 1
+--- !u!4 &447240263
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 447240260}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 335934021}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &458919644
 GameObject:
   m_ObjectHideFlags: 0
@@ -4794,6 +5029,71 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 480003293}
   m_CullTransparentMesh: 1
+--- !u!1 &487631363
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 487631366}
+  - component: {fileID: 487631364}
+  - component: {fileID: 487631365}
+  m_Layer: 0
+  m_Name: ReceiveDmg
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &487631364
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 487631363}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7c3e19d4b8f62e01c5d9a4e7b2f8013, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitReceiveDmgAnchor
+  gizmoShape: 4
+  gizmoColor: {r: 1, g: 0.28, b: 0.32, a: 0.95}
+  gizmoSize: 0.16
+  gizmoAlwaysVisible: 1
+--- !u!114 &487631365
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 487631363}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9e5f31a6d0b84f23e7c1a2d5b8e9046, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitMarkerGizmo
+  shape: 4
+  color: {r: 1, g: 0.28, b: 0.32, a: 0.95}
+  size: 0.16
+  alwaysVisible: 1
+--- !u!4 &487631366
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 487631363}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.26253518, y: -1.4966843, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1144376350}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &487667171
 GameObject:
   m_ObjectHideFlags: 0
@@ -4808,6 +5108,7 @@ GameObject:
   - component: {fileID: 487667176}
   - component: {fileID: 487667177}
   - component: {fileID: 487667178}
+  - component: {fileID: 487667179}
   m_Layer: 0
   m_Name: Unit_Ren
   m_TagString: Untagged
@@ -4829,6 +5130,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1279832176}
+  - {fileID: 1565291458}
+  - {fileID: 935398312}
   m_Father: {fileID: 1783593214}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &487667174
@@ -4911,6 +5214,8 @@ MonoBehaviour:
   hpLabel: {fileID: 0}
   bodyCollider: {fileID: 487667176}
   feetAnchor: {fileID: 1279832177}
+  receiveDmg: {fileID: 1565291456}
+  projectile: {fileID: 935398311}
   animator: {fileID: 487667177}
   counterStateName: Ren Counter
   guardStateName: 
@@ -5014,6 +5319,8 @@ MonoBehaviour:
     linkedState: 1
     localScale: {x: 0.2, y: 0.2, z: 0}
     feetAnchorLocal: {x: 1.07, y: -3.72, z: 0}
+    receiveDmgLocal: {x: 0, y: 0, z: 0}
+    projectileLocal: {x: 0, y: 0, z: 0}
     colliderSize: {x: 4.0332365, y: 9.061505}
     colliderOffset: {x: 0.6842146, y: -1.6745038}
   - displayName: Die
@@ -5023,6 +5330,8 @@ MonoBehaviour:
     linkedState: 7
     localScale: {x: 0.58718735, y: 0.58718735, z: 0}
     feetAnchorLocal: {x: 0.01, y: -0.1, z: 0}
+    receiveDmgLocal: {x: 0, y: 0, z: 0}
+    projectileLocal: {x: 0, y: 0, z: 0}
     colliderSize: {x: 0, y: 0}
     colliderOffset: {x: 0, y: 0}
   - displayName: Hurt
@@ -5032,6 +5341,8 @@ MonoBehaviour:
     linkedState: 6
     localScale: {x: 0.18985128, y: 0.18985128, z: 0}
     feetAnchorLocal: {x: 1.07, y: -3.11, z: 0}
+    receiveDmgLocal: {x: 0, y: 0, z: 0}
+    projectileLocal: {x: 0, y: 0, z: 0}
     colliderSize: {x: 0, y: 0}
     colliderOffset: {x: 0, y: 0}
   - displayName: Moving
@@ -5041,6 +5352,8 @@ MonoBehaviour:
     linkedState: 2
     localScale: {x: 0.2, y: 0.2, z: 0}
     feetAnchorLocal: {x: -0.76, y: -2.03, z: 0}
+    receiveDmgLocal: {x: 0, y: 0, z: 0}
+    projectileLocal: {x: 0, y: 0, z: 0}
     colliderSize: {x: 0, y: 0}
     colliderOffset: {x: 0, y: 0}
   - displayName: Counter
@@ -5050,6 +5363,8 @@ MonoBehaviour:
     linkedState: 5
     localScale: {x: 0.19486512, y: 0.19486512, z: 0}
     feetAnchorLocal: {x: 1.21, y: -3.27, z: 0}
+    receiveDmgLocal: {x: 0, y: 0, z: 0}
+    projectileLocal: {x: 0, y: 0, z: 0}
     colliderSize: {x: 0, y: 0}
     colliderOffset: {x: 0, y: 0}
   - displayName: NormalHit
@@ -5059,6 +5374,8 @@ MonoBehaviour:
     linkedState: 8
     localScale: {x: 0.2, y: 0.2, z: 0}
     feetAnchorLocal: {x: 1.07, y: -3.72, z: 0}
+    receiveDmgLocal: {x: 0, y: 0, z: 0}
+    projectileLocal: {x: 0, y: 0, z: 0}
     colliderSize: {x: 0, y: 0}
     colliderOffset: {x: 0, y: 0}
   - displayName: SkillHit
@@ -5068,6 +5385,8 @@ MonoBehaviour:
     linkedState: 9
     localScale: {x: 0.2, y: 0.2, z: 0}
     feetAnchorLocal: {x: 1.07, y: -3.72, z: 0}
+    receiveDmgLocal: {x: 0, y: 0, z: 0}
+    projectileLocal: {x: 0, y: 0, z: 0}
     colliderSize: {x: 0, y: 0}
     colliderOffset: {x: 0, y: 0}
   - displayName: UltHit
@@ -5077,8 +5396,37 @@ MonoBehaviour:
     linkedState: 10
     localScale: {x: 0.2, y: 0.2, z: 0}
     feetAnchorLocal: {x: 1.07, y: -3.72, z: 0}
+    receiveDmgLocal: {x: 0, y: 0, z: 0}
+    projectileLocal: {x: 0, y: 0, z: 0}
     colliderSize: {x: 0, y: 0}
     colliderOffset: {x: 0, y: 0}
+--- !u!114 &487667179
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 487667171}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2a8f5d1e6b04739a4c7d9e0b3f18655, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Combat.Presentation.SkillVfxSimulator
+  skill: {fileID: 11400000, guid: d290998a860c53d4794580a0ecd18147, type: 2}
+  profileOverride: {fileID: 0}
+  caster: {fileID: 487667175}
+  projectileA: {fileID: 935398311}
+  targets:
+  - {fileID: 7695632}
+  - {fileID: 335934018}
+  - {fileID: 1164589710}
+  previewLive: 0
+  previewPaused: 0
+  hideSprite: 0
+  hidePattern: 0
+  loopSlide: 1
+  previewSpeed: 1
+  showImpact: 1
 --- !u!1 &504853132
 GameObject:
   m_ObjectHideFlags: 0
@@ -6028,6 +6376,71 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!1 &668980921
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 668980924}
+  - component: {fileID: 668980922}
+  - component: {fileID: 668980923}
+  m_Layer: 0
+  m_Name: ReceiveDmg
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &668980922
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 668980921}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7c3e19d4b8f62e01c5d9a4e7b2f8013, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitReceiveDmgAnchor
+  gizmoShape: 4
+  gizmoColor: {r: 1, g: 0.28, b: 0.32, a: 0.95}
+  gizmoSize: 0.16
+  gizmoAlwaysVisible: 1
+--- !u!114 &668980923
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 668980921}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9e5f31a6d0b84f23e7c1a2d5b8e9046, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitMarkerGizmo
+  shape: 4
+  color: {r: 1, g: 0.28, b: 0.32, a: 0.95}
+  size: 0.16
+  alwaysVisible: 1
+--- !u!4 &668980924
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 668980921}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7695629}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &674388375
 GameObject:
   m_ObjectHideFlags: 0
@@ -9520,6 +9933,54 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!1 &935398310
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 935398312}
+  - component: {fileID: 935398311}
+  m_Layer: 0
+  m_Name: Projectile
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &935398311
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 935398310}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1a8c4e27b6f4a19b3e5d0c8f2a74690, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitProjectileAnchor
+  gizmoShape: 1
+  gizmoColor: {r: 0.35, g: 0.85, b: 1, a: 0.95}
+  gizmoSize: 0.16
+  gizmoAlwaysVisible: 1
+--- !u!4 &935398312
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 935398310}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 5.8, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 487667172}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &953482227
 GameObject:
   m_ObjectHideFlags: 0
@@ -9654,7 +10115,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf84e4915f50f7e44b496aa958caf118, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitFeetAnchor
-  gizmoSize: {x: 0.2, y: 0.1}
+  gizmoShape: 2
+  gizmoColor: {r: 1, g: 0.85, b: 0.2, a: 0.95}
+  gizmoSize: 0.2
+  gizmoAlwaysVisible: 1
 --- !u!1 &969193082
 GameObject:
   m_ObjectHideFlags: 0
@@ -9858,6 +10322,54 @@ RectTransform:
   m_AnchoredPosition: {x: 75, y: 42}
   m_SizeDelta: {x: 121.76, y: 26.58}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &979510037
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 979510038}
+  - component: {fileID: 979510040}
+  m_Layer: 0
+  m_Name: Projectile
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &979510038
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 979510037}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -2.28, y: 8.1, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1164589711}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &979510040
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 979510037}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1a8c4e27b6f4a19b3e5d0c8f2a74690, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitProjectileAnchor
+  gizmoShape: 1
+  gizmoColor: {r: 0.35, g: 0.85, b: 1, a: 0.95}
+  gizmoSize: 0.16
+  gizmoAlwaysVisible: 1
 --- !u!1 &1005674789
 GameObject:
   m_ObjectHideFlags: 0
@@ -9887,7 +10399,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf84e4915f50f7e44b496aa958caf118, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitFeetAnchor
-  gizmoSize: {x: 0.2, y: 0.1}
+  gizmoShape: 2
+  gizmoColor: {r: 1, g: 0.85, b: 0.2, a: 0.95}
+  gizmoSize: 0.2
+  gizmoAlwaysVisible: 1
 --- !u!4 &1005674791
 Transform:
   m_ObjectHideFlags: 0
@@ -9897,7 +10412,7 @@ Transform:
   m_GameObject: {fileID: 1005674789}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.06, y: -4.69, z: 0}
+  m_LocalPosition: {x: -1.62, y: -4.48, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -10221,7 +10736,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf84e4915f50f7e44b496aa958caf118, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitFeetAnchor
-  gizmoSize: {x: 0.2, y: 0.1}
+  gizmoShape: 2
+  gizmoColor: {r: 1, g: 0.85, b: 0.2, a: 0.95}
+  gizmoSize: 0.2
+  gizmoAlwaysVisible: 1
 --- !u!1 &1026455019
 GameObject:
   m_ObjectHideFlags: 0
@@ -10982,6 +11500,102 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+--- !u!1 &1142289441
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1142289443}
+  - component: {fileID: 1142289442}
+  m_Layer: 0
+  m_Name: ReceiveDmg
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1142289442
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1142289441}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7c3e19d4b8f62e01c5d9a4e7b2f8013, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitReceiveDmgAnchor
+  gizmoShape: 0
+  gizmoColor: {r: 1, g: 0.28, b: 0.32, a: 0.95}
+  gizmoSize: 0.16
+  gizmoAlwaysVisible: 1
+--- !u!4 &1142289443
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1142289441}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1.23, y: 0.62, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 377598854}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1143880312
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1143880314}
+  - component: {fileID: 1143880313}
+  m_Layer: 0
+  m_Name: Projectile
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1143880313
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1143880312}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1a8c4e27b6f4a19b3e5d0c8f2a74690, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitProjectileAnchor
+  gizmoShape: 1
+  gizmoColor: {r: 0.35, g: 0.85, b: 1, a: 0.95}
+  gizmoSize: 0.16
+  gizmoAlwaysVisible: 1
+--- !u!4 &1143880314
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1143880312}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2.9668546, y: 1.2033348, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 377598854}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1144376349
 GameObject:
   m_ObjectHideFlags: 0
@@ -10996,6 +11610,7 @@ GameObject:
   - component: {fileID: 1144376354}
   - component: {fileID: 1144376355}
   - component: {fileID: 1144376356}
+  - component: {fileID: 1144376357}
   m_Layer: 0
   m_Name: Unit_Coda
   m_TagString: Untagged
@@ -11017,6 +11632,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 956599415}
+  - {fileID: 487631366}
+  - {fileID: 1816729236}
   m_Father: {fileID: 1783593214}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &1144376352
@@ -11099,6 +11716,8 @@ MonoBehaviour:
   hpLabel: {fileID: 0}
   bodyCollider: {fileID: 1144376354}
   feetAnchor: {fileID: 956599416}
+  receiveDmg: {fileID: 487631364}
+  projectile: {fileID: 1816729235}
   animator: {fileID: 1144376355}
   counterStateName: Coda - Counter
   guardStateName: 
@@ -11202,6 +11821,8 @@ MonoBehaviour:
     linkedState: 1
     localScale: {x: 0.21, y: 0.2, z: 0}
     feetAnchorLocal: {x: -0.04, y: -2.71, z: 0}
+    receiveDmgLocal: {x: 0, y: 0, z: 0}
+    projectileLocal: {x: 0, y: 0, z: 0}
     colliderSize: {x: 3.52535, y: 8.456403}
     colliderOffset: {x: -0.26253343, y: -1.4966847}
   - displayName: moving
@@ -11211,6 +11832,8 @@ MonoBehaviour:
     linkedState: 2
     localScale: {x: 0.21, y: 0.2, z: 0}
     feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
+    receiveDmgLocal: {x: 0, y: 0, z: 0}
+    projectileLocal: {x: 0, y: 0, z: 0}
     colliderSize: {x: 3.52535, y: 8.456403}
     colliderOffset: {x: -0.26253343, y: -1.4966847}
   - displayName: die
@@ -11220,6 +11843,8 @@ MonoBehaviour:
     linkedState: 7
     localScale: {x: 0.5217883, y: 0.49694127, z: 0}
     feetAnchorLocal: {x: -0.1, y: 0.59, z: 0}
+    receiveDmgLocal: {x: 0, y: 0, z: 0}
+    projectileLocal: {x: 0, y: 0, z: 0}
     colliderSize: {x: 2.680799, y: 2.9410703}
     colliderOffset: {x: 0.015550852, y: 1.2609812}
   - displayName: hurt
@@ -11229,6 +11854,8 @@ MonoBehaviour:
     linkedState: 6
     localScale: {x: 0.21, y: 0.2, z: 0}
     feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
+    receiveDmgLocal: {x: 0, y: 0, z: 0}
+    projectileLocal: {x: 0, y: 0, z: 0}
     colliderSize: {x: 3.52535, y: 8.456403}
     colliderOffset: {x: -0.26253343, y: -1.4966847}
   - displayName: counter
@@ -11238,6 +11865,8 @@ MonoBehaviour:
     linkedState: 5
     localScale: {x: 0.21, y: 0.2, z: 0}
     feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
+    receiveDmgLocal: {x: 0, y: 0, z: 0}
+    projectileLocal: {x: 0, y: 0, z: 0}
     colliderSize: {x: 3.52535, y: 8.456403}
     colliderOffset: {x: -0.26253343, y: -1.4966847}
   - displayName: NormalHit
@@ -11247,6 +11876,8 @@ MonoBehaviour:
     linkedState: 8
     localScale: {x: 0.21, y: 0.2, z: 0}
     feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
+    receiveDmgLocal: {x: 0, y: 0, z: 0}
+    projectileLocal: {x: 0, y: 0, z: 0}
     colliderSize: {x: 3.52535, y: 8.456403}
     colliderOffset: {x: -0.26253343, y: -1.4966847}
   - displayName: SkillHit
@@ -11256,6 +11887,8 @@ MonoBehaviour:
     linkedState: 9
     localScale: {x: 0.21, y: 0.2, z: 0}
     feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
+    receiveDmgLocal: {x: 0, y: 0, z: 0}
+    projectileLocal: {x: 0, y: 0, z: 0}
     colliderSize: {x: 3.52535, y: 8.456403}
     colliderOffset: {x: -0.26253343, y: -1.4966847}
   - displayName: UltHit
@@ -11265,8 +11898,37 @@ MonoBehaviour:
     linkedState: 10
     localScale: {x: 0.21, y: 0.2, z: 0}
     feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
+    receiveDmgLocal: {x: 0, y: 0, z: 0}
+    projectileLocal: {x: 0, y: 0, z: 0}
     colliderSize: {x: 3.52535, y: 8.456403}
     colliderOffset: {x: -0.26253343, y: -1.4966847}
+--- !u!114 &1144376357
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1144376349}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2a8f5d1e6b04739a4c7d9e0b3f18655, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Combat.Presentation.SkillVfxSimulator
+  skill: {fileID: 11400000, guid: 5da094b42c443ac4b92bd19f906704dc, type: 2}
+  profileOverride: {fileID: 0}
+  caster: {fileID: 1144376353}
+  projectileA: {fileID: 1816729235}
+  targets:
+  - {fileID: 7695632}
+  - {fileID: 335934018}
+  - {fileID: 1164589710}
+  previewLive: 0
+  previewPaused: 0
+  hideSprite: 0
+  hidePattern: 0
+  loopSlide: 1
+  previewSpeed: 1
+  showImpact: 1
 --- !u!1 &1153346078
 GameObject:
   m_ObjectHideFlags: 0
@@ -11526,6 +12188,7 @@ GameObject:
   - component: {fileID: 1164589712}
   - component: {fileID: 1164589714}
   - component: {fileID: 1164589715}
+  - component: {fileID: 1164589716}
   m_Layer: 0
   m_Name: Unit_Knight of Despair
   m_TagString: Untagged
@@ -11554,6 +12217,8 @@ MonoBehaviour:
   hpLabel: {fileID: 0}
   bodyCollider: {fileID: 1164589712}
   feetAnchor: {fileID: 1005674790}
+  receiveDmg: {fileID: 1494223234}
+  projectile: {fileID: 979510040}
   animator: {fileID: 1164589714}
   counterStateName: 
   guardStateName: 
@@ -11577,11 +12242,13 @@ Transform:
   m_GameObject: {fileID: 1164589709}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4.085, y: 0.621, z: -0.05}
-  m_LocalScale: {x: 0.2, y: 0.2, z: 0.2}
+  m_LocalPosition: {x: 4.21, y: 0.699, z: 0}
+  m_LocalScale: {x: 0.2, y: 0.2, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1005674791}
+  - {fileID: 979510038}
+  - {fileID: 1494223236}
   m_Father: {fileID: 1783593214}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!61 &1164589712
@@ -11732,8 +12399,37 @@ MonoBehaviour:
     linkedState: 1
     localScale: {x: 0.2, y: 0.2, z: 0.2}
     feetAnchorLocal: {x: -0.06, y: -4.69, z: 0}
+    receiveDmgLocal: {x: 0, y: 0, z: 0}
+    projectileLocal: {x: 0, y: 0, z: 0}
     colliderSize: {x: 0, y: 0}
     colliderOffset: {x: 0, y: 0}
+--- !u!114 &1164589716
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1164589709}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2a8f5d1e6b04739a4c7d9e0b3f18655, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Combat.Presentation.SkillVfxSimulator
+  skill: {fileID: 11400000, guid: d5c6b7a890e12345678970a1b2c3d4eb, type: 2}
+  profileOverride: {fileID: 11400000, guid: e4c0f7a3b8d26951c6e9f2a1d5b30877, type: 2}
+  caster: {fileID: 1164589710}
+  projectileA: {fileID: 979510040}
+  targets:
+  - {fileID: 377598857}
+  - {fileID: 487667175}
+  - {fileID: 1144376353}
+  previewLive: 1
+  previewPaused: 1
+  hideSprite: 0
+  hidePattern: 0
+  loopSlide: 1
+  previewSpeed: 0.2
+  showImpact: 1
 --- !u!1 &1173406307
 GameObject:
   m_ObjectHideFlags: 0
@@ -12346,7 +13042,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf84e4915f50f7e44b496aa958caf118, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitFeetAnchor
-  gizmoSize: {x: 0.2, y: 0.1}
+  gizmoShape: 2
+  gizmoColor: {r: 1, g: 0.85, b: 0.2, a: 0.95}
+  gizmoSize: 0.2
+  gizmoAlwaysVisible: 1
 --- !u!1 &1285816819
 GameObject:
   m_ObjectHideFlags: 0
@@ -12956,6 +13655,54 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1413621198}
   m_CullTransparentMesh: 1
+--- !u!1 &1444155957
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1444155959}
+  - component: {fileID: 1444155958}
+  m_Layer: 0
+  m_Name: Projectile
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1444155958
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1444155957}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1a8c4e27b6f4a19b3e5d0c8f2a74690, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitProjectileAnchor
+  gizmoShape: 1
+  gizmoColor: {r: 0.35, g: 0.85, b: 1, a: 0.95}
+  gizmoSize: 0.16
+  gizmoAlwaysVisible: 1
+--- !u!4 &1444155959
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1444155957}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 5.8, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7695629}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1447538485
 GameObject:
   m_ObjectHideFlags: 0
@@ -13350,6 +14097,71 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!1 &1494223233
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1494223236}
+  - component: {fileID: 1494223234}
+  - component: {fileID: 1494223235}
+  m_Layer: 0
+  m_Name: ReceiveDmg
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1494223234
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1494223233}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7c3e19d4b8f62e01c5d9a4e7b2f8013, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitReceiveDmgAnchor
+  gizmoShape: 4
+  gizmoColor: {r: 1, g: 0.28, b: 0.32, a: 0.95}
+  gizmoSize: 0.16
+  gizmoAlwaysVisible: 1
+--- !u!114 &1494223235
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1494223233}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9e5f31a6d0b84f23e7c1a2d5b8e9046, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitMarkerGizmo
+  shape: 4
+  color: {r: 1, g: 0.28, b: 0.32, a: 0.95}
+  size: 0.16
+  alwaysVisible: 1
+--- !u!4 &1494223236
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1494223233}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -2.6, y: 0.2, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1164589711}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1506069826
 GameObject:
   m_ObjectHideFlags: 0
@@ -13733,6 +14545,71 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!1 &1565291455
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1565291458}
+  - component: {fileID: 1565291456}
+  - component: {fileID: 1565291457}
+  m_Layer: 0
+  m_Name: ReceiveDmg
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1565291456
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1565291455}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7c3e19d4b8f62e01c5d9a4e7b2f8013, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitReceiveDmgAnchor
+  gizmoShape: 4
+  gizmoColor: {r: 1, g: 0.28, b: 0.32, a: 0.95}
+  gizmoSize: 0.16
+  gizmoAlwaysVisible: 1
+--- !u!114 &1565291457
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1565291455}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9e5f31a6d0b84f23e7c1a2d5b8e9046, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitMarkerGizmo
+  shape: 4
+  color: {r: 1, g: 0.28, b: 0.32, a: 0.95}
+  size: 0.16
+  alwaysVisible: 1
+--- !u!4 &1565291458
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1565291455}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.68421364, y: -1.6745036, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 487667172}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1588402475
 GameObject:
   m_ObjectHideFlags: 0
@@ -15906,6 +16783,54 @@ Sprite:
   m_Bones: []
   m_ScriptableObjects: []
   m_SpriteID: 
+--- !u!1 &1816729234
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1816729236}
+  - component: {fileID: 1816729235}
+  m_Layer: 0
+  m_Name: Projectile
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1816729235
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1816729234}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1a8c4e27b6f4a19b3e5d0c8f2a74690, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitProjectileAnchor
+  gizmoShape: 1
+  gizmoColor: {r: 0.35, g: 0.85, b: 1, a: 0.95}
+  gizmoSize: 0.16
+  gizmoAlwaysVisible: 1
+--- !u!4 &1816729236
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1816729234}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 5.8, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1144376350}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1816883014
 GameObject:
   m_ObjectHideFlags: 0

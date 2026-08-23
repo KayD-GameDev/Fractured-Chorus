@@ -7,7 +7,6 @@ namespace FracturedChorus.Editor
 {
     public static class PartyTimelineSkillNoteSetup
     {
-        [MenuItem("Fractured Chorus/Rebind Party Timeline Skill Notes")]
         public static void RebindAll()
         {
             RebindCharacter(

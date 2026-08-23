@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using FracturedChorus.Combat.Presentation;
 using FracturedChorus.UI;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -23,7 +24,6 @@ namespace FracturedChorus.Editor
         private const string CharlotteSkillClip = "Assets/FracturedChorus/Art/Characters/Charlotte/Animation/Charlott_Skill.anim";
         private const string CharlotteUltClip = "Assets/FracturedChorus/Art/Characters/Charlotte/Animation/Charlott_Ultimate.anim";
 
-        [MenuItem("Fractured Chorus/Wire Party Combat Visuals")]
         public static void WireOpenScene()
         {
             var views = Object.FindObjectsByType<UnitView>(FindObjectsInactive.Include);
@@ -79,6 +79,7 @@ namespace FracturedChorus.Editor
             var sim = UnitSpriteSimulator.EnsureOn(view);
             if (sim == null)
             {
+                SkillVfxSimulator.EnsureOn(view);
                 return true;
             }
 
@@ -92,6 +93,7 @@ namespace FracturedChorus.Editor
             sim.EnsureClipLinkedState(
                 UnitCombatVisualState.UltHit, "UltHit", LoadClip(kit.UltPath));
             EditorUtility.SetDirty(sim);
+            SkillVfxSimulator.EnsureOn(view);
             return true;
         }
 

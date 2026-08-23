@@ -20,7 +20,6 @@ namespace FracturedChorus.Editor
         private const int BuildingsMinArea = 200;
         private const int CropPadding = 4;
 
-        [MenuItem("Fractured Chorus/Import Loading Screen Art")]
         public static void Import()
         {
             try

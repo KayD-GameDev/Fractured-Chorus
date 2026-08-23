@@ -64,7 +64,6 @@ namespace FracturedChorus.Editor
             BatchSeedTimelineLanePreviewAndSave();
         }
 
-        [MenuItem("Fractured Chorus/Fix Execute Overlay (Remove Missing Scripts)")]
         public static void FixExecuteOverlayMissingScripts()
         {
             var overlayGo = GameObject.Find("CombatCanvas/ExecuteOverlayUI") ?? GameObject.Find("ExecuteOverlayUI");
@@ -142,7 +141,6 @@ namespace FracturedChorus.Editor
             Debug.Log("[Fractured Chorus] ExecuteOverlayUI fixed. Save scene (Ctrl+S).");
         }
 
-        [MenuItem("Fractured Chorus/Add Execute Overlay (Hierarchy)")]
         public static void AddExecuteOverlayToScene()
         {
             var canvasTransform = CombatUiHierarchy.ResolveCombatCanvasTransform();
@@ -184,7 +182,6 @@ namespace FracturedChorus.Editor
             Debug.Log("[Fractured Chorus] ExecuteOverlayUI ready in Hierarchy. Adjust RectTransform in Inspector, then Save scene.");
         }
 
-        [MenuItem("Fractured Chorus/Seed Timeline Lane Preview (Hierarchy)")]
         public static void SeedTimelineLanePreview()
         {
             if (Application.isPlaying)
@@ -234,7 +231,6 @@ namespace FracturedChorus.Editor
             Debug.Log($"[Fractured Chorus] Batch seeded timeline lane preview and saved {scenePath}.");
         }
 
-        [MenuItem("Fractured Chorus/Rebuild Timeline + Skill Panel (Hierarchy)")]
         public static void RebuildUiHierarchy()
         {
             var canvasTransform = CombatUiHierarchy.ResolveCombatCanvasTransform();
@@ -271,13 +267,11 @@ namespace FracturedChorus.Editor
             Debug.Log("[Fractured Chorus] Rebuilt BeatTimelineUI + SkillPanelUI + PartyStatusBarUI + ExecuteOverlayUI. Save scene.");
         }
 
-        [MenuItem("Fractured Chorus/Upgrade Party Card Template (Hierarchy)")]
         public static void UpgradePartyCardTemplate()
         {
             CombatUiHierarchy.UpgradePartyCardTemplatesInScene();
         }
 
-        [MenuItem("Fractured Chorus/Restore Clear Card Templates (Hierarchy)")]
         public static void RestoreClearCardTemplates()
         {
             CombatUiHierarchy.RestoreClearCardTemplatesInScene();
@@ -295,7 +289,6 @@ namespace FracturedChorus.Editor
             Debug.Log($"[Fractured Chorus] Batch restored clear-card templates and saved {scenePath}.");
         }
 
-        [MenuItem("Fractured Chorus/Ensure Embedded Party Card Slots (Hierarchy)")]
         public static void EnsureEmbeddedPartyCardSlots()
         {
             var cards = UnityEngine.Object.FindObjectsByType<PartyMemberCardView>(FindObjectsInactive.Include);
@@ -315,25 +308,21 @@ namespace FracturedChorus.Editor
             Debug.Log($"[Fractured Chorus] Ensured Embedded CardArt/BarStack on {cards.Length} card(s). Save scene (Ctrl+S).");
         }
 
-        [MenuItem("Fractured Chorus/Fix Party Status Bar (Move to CombatCanvas)")]
         public static void FixPartyStatusBarPlacement()
         {
             CombatUiHierarchy.FixPartyStatusBarPlacement();
         }
 
-        [MenuItem("Fractured Chorus/Find Missing Scripts (Active Scene)")]
         public static void FindMissingScriptsInActiveScene()
         {
             CombatUiHierarchy.LogMissingScriptsInActiveScene();
         }
 
-        [MenuItem("Fractured Chorus/Remove Missing Scripts (Active Scene)")]
         public static void RemoveMissingScriptsInActiveScene()
         {
             CombatUiHierarchy.RemoveMissingScriptsInActiveScene();
         }
 
-        [MenuItem("Fractured Chorus/Remove Missing Scripts (All Hub Scenes)")]
         public static void RemoveMissingScriptsInHubScenes()
         {
             CombatUiHierarchy.RemoveMissingScriptsInScenes(
@@ -346,7 +335,6 @@ namespace FracturedChorus.Editor
                 "Assets/FracturedChorus/Scenes/OpeningInvestigation.unity");
         }
 
-        [MenuItem("Fractured Chorus/Add Party Status Bar (Hierarchy)")]
         public static void AddPartyStatusBarToScene()
         {
             CombatUiHierarchy.RenameBackgroundCanvasInScene();
@@ -373,21 +361,18 @@ namespace FracturedChorus.Editor
             Debug.Log("[Fractured Chorus] PartyStatusBarUI ready under CombatCanvas (top-left). Save scene.");
         }
 
-        [MenuItem("Fractured Chorus/Setup Party Cards in Hierarchy")]
         public static void SetupPartyCardsInHierarchy()
         {
             CombatUiHierarchy.EnsurePartyCardsInHierarchy();
             ElementBadgeIconSetup.ApplyToStatBlocks();
         }
 
-        [MenuItem("Fractured Chorus/Add Enemy Status Bar (Hierarchy)")]
         public static void AddEnemyStatusBarToScene()
         {
             CombatUiHierarchy.AddEnemyStatusBarToScene();
             ElementBadgeIconSetup.ApplyToStatBlocks();
         }
 
-        [MenuItem("Fractured Chorus/Setup Enemy Cards in Hierarchy")]
         public static void SetupEnemyCardsInHierarchy()
         {
             CombatUiHierarchy.EnsureEnemyCardsInHierarchy();

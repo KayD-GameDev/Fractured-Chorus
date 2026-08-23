@@ -17,7 +17,6 @@ namespace FracturedChorus.Editor
         private const string SkillAsset = "Assets/FracturedChorus/Resources/Skills/tank_skill.asset";
         private const string UltAsset = "Assets/FracturedChorus/Resources/Skills/tank_ult.asset";
 
-        [MenuItem("Fractured Chorus/Rebind Charlott Skill Icons")]
         public static void RebindIcons()
         {
             AssetDatabase.ImportAsset(BasicPath, ImportAssetOptions.ForceUpdate);

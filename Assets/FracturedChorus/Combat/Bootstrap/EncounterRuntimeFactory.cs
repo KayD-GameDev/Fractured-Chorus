@@ -460,8 +460,19 @@ namespace FracturedChorus.Combat.Bootstrap
 
         private static SkillDefinitionSO CreateGruntStrike(string id, string name)
         {
+            var fromResources = Resources.Load<SkillDefinitionSO>($"Skills/{id}");
+            if (fromResources != null)
+            {
+                return fromResources;
+            }
+
             var skill = CreateSkill(id, name, SkillSlotKind.BasicAttack, 1, ActionGlowType.Attack);
             skill.baseDamage = 0;
+            if (id == "boss_despair_core")
+            {
+                skill.vfxProfile = Resources.Load<SkillVfxProfileSO>("Skills/Vfx/SkillVfx_boss_despair_core");
+            }
+
             return skill;
         }
 

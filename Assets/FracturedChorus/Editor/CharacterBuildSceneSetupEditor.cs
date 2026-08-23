@@ -22,7 +22,6 @@ namespace FracturedChorus.Editor
             "Assets/FracturedChorus/Art/UI/StatusMenu/ren_hima_uniform_menu_fullbody_v1.png";
         private const string SlashPath = "Assets/FracturedChorus/Art/UI/StatusMenu/statusmenu_slash_accent.png";
 
-        [MenuItem("Fractured Chorus/Create CharacterBuild Scene")]
         public static void CreateScene()
         {
             EnsureFolder("Assets/FracturedChorus/Scenes");
@@ -35,7 +34,6 @@ namespace FracturedChorus.Editor
             Debug.Log($"[Fractured Chorus] Saved {ScenePath}. Open and Play to test Build UI.");
         }
 
-        [MenuItem("Fractured Chorus/Heal CharacterBuild Scene Hierarchy")]
         public static void HealScene()
         {
             var scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);

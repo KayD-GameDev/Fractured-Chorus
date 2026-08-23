@@ -162,6 +162,7 @@ GameObject:
   - component: {fileID: 673581502653174237}
   - component: {fileID: 7111845093726154501}
   - component: {fileID: 7111845093726154502}
+  - component: {fileID: 7111845093726154503}
   m_Layer: 0
   m_Name: Elite 2 - Cassetti
   m_TagString: Untagged
@@ -184,6 +185,8 @@ Transform:
   m_Children:
   - {fileID: 659901167400676380}
   - {fileID: 4198039270601646347}
+  - {fileID: 1805000000000000102}
+  - {fileID: 1805000000000000105}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &4200633613050692509
@@ -288,6 +291,8 @@ MonoBehaviour:
   hpLabel: {fileID: 2541853990147954278}
   bodyCollider: {fileID: 0}
   feetAnchor: {fileID: 596971585256553590}
+  receiveDmg: {fileID: 1805000000000000106}
+  projectile: {fileID: 1805000000000000103}
   animator: {fileID: 673581502653174237}
   counterStateName: 
   guardStateName: 
@@ -321,3 +326,123 @@ MonoBehaviour:
     linkedState: 1
     localScale: {x: 1, y: 1, z: 1}
     feetAnchorLocal: {x: 0.19, y: -1.21, z: -0.05}
+--- !u!114 &7111845093726154503
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4576555274146226630}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2a8f5d1e6b04739a4c7d9e0b3f18655, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Combat.Presentation.SkillVfxSimulator
+  skill: {fileID: 0}
+  profileOverride: {fileID: 0}
+  caster: {fileID: 0}
+  target: {fileID: 0}
+  useEncounterStage: 0
+  stageRow: 1
+  stageColumn: 0
+  sideGap: 3.5
+  previewLive: 0
+  loopSlide: 1
+  previewSpeed: 1
+  showImpact: 1
+--- !u!1 &1805000000000000101
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1805000000000000102}
+  - component: {fileID: 1805000000000000103}
+  m_Layer: 0
+  m_Name: Projectile
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1805000000000000102
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1805000000000000101}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.15, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 467749744637681752}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1805000000000000103
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1805000000000000101}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1a8c4e27b6f4a19b3e5d0c8f2a74690, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitProjectileAnchor
+  gizmoShape: 1
+  gizmoColor: {r: 0.35, g: 0.85, b: 1, a: 0.95}
+  gizmoSize: 0.16
+  gizmoAlwaysVisible: 1
+--- !u!1 &1805000000000000104
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1805000000000000105}
+  - component: {fileID: 1805000000000000106}
+  m_Layer: 0
+  m_Name: ReceiveDmg
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1805000000000000105
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1805000000000000104}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.45, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 467749744637681752}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1805000000000000106
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1805000000000000104}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7c3e19d4b8f62e01c5d9a4e7b2f8013, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitReceiveDmgAnchor
+  gizmoShape: 4
+  gizmoColor: {r: 1, g: 0.28, b: 0.32, a: 0.95}
+  gizmoSize: 0.16
+  gizmoAlwaysVisible: 1

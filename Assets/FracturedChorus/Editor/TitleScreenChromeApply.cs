@@ -21,7 +21,6 @@ namespace FracturedChorus.Editor
         private const string SandboxScenePath = "Assets/FracturedChorus/Scenes/MainMenuLayoutSandbox.unity";
         private const float CharacterFitHeight = 1080f;
 
-        [MenuItem("Fractured Chorus/Apply Title Screen Art To MainMenuStartGame")]
         public static void ApplyToOpenScene()
         {
             var root = GameObject.Find("MainMenuStartGameRoot");

@@ -9,7 +9,6 @@ namespace FracturedChorus.Editor
     {
         private const string PrefabPath = "Assets/FracturedChorus/Resources/UI/LoadingScreen.prefab";
 
-        [MenuItem("Fractured Chorus/Build Loading Screen Prefab")]
         public static void Build()
         {
             LoadingScreenController controller = null;

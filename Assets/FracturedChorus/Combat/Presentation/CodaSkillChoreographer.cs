@@ -186,6 +186,7 @@ namespace FracturedChorus.Combat.Presentation
                 coda.CaptureAnchor();
             }
 
+            yield return EncounterDirector.PresentArmedCaster();
             coda.PlayAttackAnimationHold(skill);
 
             var chargeSeconds = ResolveSkill2ChargeSeconds();

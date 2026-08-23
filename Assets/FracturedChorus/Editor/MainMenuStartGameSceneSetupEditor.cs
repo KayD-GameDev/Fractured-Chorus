@@ -25,7 +25,6 @@ namespace FracturedChorus.Editor
         private const string ConfigBackgroundPath = "Assets/FracturedChorus/Art/UI/ConfigMenu/config_bg_memory_hall_v1.png";
         private const string ConfigRenPosePath = "Assets/FracturedChorus/Art/Characters/Ren/School/ren_config_pose_fx_v1.png";
 
-        [MenuItem("Fractured Chorus/Create MainMenuStartGame Scene")]
         public static void CreateMainMenuStartGameScene()
         {
             var scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
@@ -44,7 +43,6 @@ namespace FracturedChorus.Editor
             Debug.Log($"[Fractured Chorus] Saved {ScenePath} — Build index 0. Play to test.");
         }
 
-        [MenuItem("Fractured Chorus/Setup MainMenuStartGame Scene Hierarchy")]
         public static void SetupMainMenuStartGameSceneHierarchy()
         {
             var existing = GameObject.Find("MainMenuStartGameRoot");
@@ -111,7 +109,6 @@ namespace FracturedChorus.Editor
             EditorApplication.Exit(0);
         }
 
-        [MenuItem("Fractured Chorus/Upgrade MainMenuStartGame Menu And Audio")]
         public static void UpgradeMainMenuStartGameMenuAndAudio()
         {
             var root = GameObject.Find("MainMenuStartGameRoot");
@@ -154,7 +151,6 @@ namespace FracturedChorus.Editor
             Debug.Log("[Fractured Chorus] Menu buttons, BGM loop, OFF-BEAT ARCHIVE upgraded — Save scene.");
         }
 
-        [MenuItem("Fractured Chorus/Upgrade Off-Beat Transport Icons")]
         public static void UpgradeOffBeatTransportIcons()
         {
             var controller = Object.FindAnyObjectByType<OffBeatArchiveController>();
@@ -209,7 +205,6 @@ namespace FracturedChorus.Editor
             Debug.Log("[Fractured Chorus] Off-Beat transport icons assigned — Save scene.");
         }
 
-        [MenuItem("Fractured Chorus/Upgrade Off-Beat SyncPod Layout")]
         public static void UpgradeOffBeatSyncPodLayout()
         {
             var rootController = Object.FindAnyObjectByType<MainMenuStartGameController>();
@@ -234,7 +229,6 @@ namespace FracturedChorus.Editor
             Debug.Log("[Fractured Chorus] Off-Beat SyncPod layout rebuilt — Save scene.");
         }
 
-        [MenuItem("Fractured Chorus/Upgrade Off-Beat Archive Player")]
         public static void UpgradeOffBeatArchivePlayer()
         {
             var controller = Object.FindAnyObjectByType<MainMenuStartGameController>();
@@ -310,13 +304,11 @@ namespace FracturedChorus.Editor
             EditorApplication.Exit(0);
         }
 
-        [MenuItem("Fractured Chorus/Upgrade MainMenuStartGame Config UI")]
         public static void UpgradeMainMenuStartGameConfigUi()
         {
             EnsureMainMenuStartGameConfigUi(preserveLayout: true);
         }
 
-        [MenuItem("Fractured Chorus/Rebuild MainMenuStartGame Config UI (Resets Layout)")]
         public static void RebuildMainMenuStartGameConfigUi()
         {
             if (!EditorUtility.DisplayDialog(
@@ -377,7 +369,6 @@ namespace FracturedChorus.Editor
                 : "[Fractured Chorus] Config UI rebuilt from defaults — Save scene.");
         }
 
-        [MenuItem("Fractured Chorus/Unlock Config UI Free Layout")]
         public static void UnlockConfigUiFreeLayoutMenu()
         {
             if (!UnlockConfigUiFreeLayout())
@@ -458,7 +449,6 @@ namespace FracturedChorus.Editor
             }
         }
 
-        [MenuItem("Fractured Chorus/Ensure Config Skip Unread Row")]
         public static void EnsureConfigSkipUnreadRowMenu()
         {
             if (!EnsureConfigSkipUnreadRow())
@@ -649,7 +639,6 @@ namespace FracturedChorus.Editor
             }
         }
 
-        [MenuItem("Fractured Chorus/Upgrade MainMenuStartGame Layers")]
         public static void UpgradeMainMenuStartGameLayers()
         {
             var canvas = GameObject.Find("MainMenuCanvas")?.transform;

@@ -16,6 +16,8 @@ MonoBehaviour:
   displayName: Core Strike
   icon: {fileID: 0}
   frame: {fileID: 0}
+  timelineActiveSprite: {fileID: 0}
+  timelineStandingSprite: {fileID: 0}
   description: 
   slotKind: 0
   avCost: 0
@@ -25,3 +27,28 @@ MonoBehaviour:
   targetType: 0
   glowType: 0
   baseDamage: 0
+  standingBeatsBefore: 1
+  activeBeats: 1
+  standingBeatsAfter: 1
+  effectKind: 0
+  effectValue: 0
+  grantsCycleShift: 0
+  grantTimedShield: 0
+  timedShieldAmount: 0
+  timedShieldDurationBeats: 0
+  timedShieldUntilPhaseEnd: 0
+  timedShieldAllAllies: 0
+  usesPrepEmpower: 0
+  prepEmpowerThreshold: 1
+  prepEmpowerCost: 1
+  empowerEffectValue: 0
+  empowerDamageMultiplier: 1
+  empowerExtraHits: 0
+  empowerForceHarmony: 0
+  empowerKeepDelayTier: 0
+  empowerOverhealToShield: 0
+  empowerOverhealShieldCap: 30
+  empowerPartyReduceS2: 0
+  empowerGiftPrepToTarget: 0
+  empowerGuardChargeOnPerfect: 0
+  vfxProfile: {fileID: 11400000, guid: e4c0f7a3b8d26951c6e9f2a1d5b30877, type: 2}

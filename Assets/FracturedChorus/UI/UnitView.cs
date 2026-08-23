@@ -18,6 +18,8 @@ namespace FracturedChorus.UI
     public class UnitView : MonoBehaviour
     {
         private const string FeetAnchorObjectName = "FeetAnchor";
+        public const string ReceiveDmgObjectName = "ReceiveDmg";
+        public const string ProjectileObjectName = "Projectile";
 
         [Header("Unit Data")]
         [SerializeField] private UnitPresetSO preset;
@@ -33,6 +35,8 @@ namespace FracturedChorus.UI
         [FormerlySerializedAs("clickCollider")]
         [SerializeField] private BoxCollider2D bodyCollider;
         [SerializeField] private UnitFeetAnchor feetAnchor;
+        [SerializeField] private UnitReceiveDmgAnchor receiveDmg;
+        [SerializeField] private UnitProjectileAnchor projectile;
         [SerializeField] private Animator animator;
         [Header("Combat poses — Counter is also Guard")]
         [SerializeField] private string counterStateName;
@@ -59,6 +63,26 @@ namespace FracturedChorus.UI
         public UnitPresetSO Preset => preset;
         public string DemoUnitKey => demoUnitKey;
         public UnitFeetAnchor FeetAnchor => feetAnchor;
+        public UnitReceiveDmgAnchor ReceiveDmg => receiveDmg;
+        public UnitProjectileAnchor Projectile => projectile;
+
+        public Vector3 ReceiveDmgWorld
+        {
+            get
+            {
+                EnsureReceiveDmg();
+                return receiveDmg != null ? receiveDmg.transform.position : GetVisualBounds().center;
+            }
+        }
+
+        public Vector3 ProjectileWorld
+        {
+            get
+            {
+                EnsureProjectile();
+                return projectile != null ? projectile.transform.position : GetSkillPanelAboveAnchorWorld();
+            }
+        }
         public SpriteRenderer BodySpriteRenderer
         {
             get
@@ -501,7 +525,7 @@ namespace FracturedChorus.UI
                 && TryPlaySimulatorVisual(UnitCombatVisualState.Skill, 0f, scheduleIdle);
         }
 
-        private static UnitCombatVisualState ResolveAttackVisualState(SkillDefinitionSO skill)
+        public static UnitCombatVisualState ResolveAttackVisualState(SkillDefinitionSO skill)
         {
             if (skill == null)
             {
@@ -1434,6 +1458,39 @@ namespace FracturedChorus.UI
             return new Bounds(transform.position, Vector3.one);
         }
 
+        /// <summary>
+        /// Encounter camera bounds. Uses the body collider/sprite only — VFX children
+        /// (Projectile/Impact) must not widen the frame and kill skill zoom.
+        /// </summary>
+        public Bounds GetCameraBounds()
+        {
+            var bounds = GetVisualBounds();
+            if (IsFiniteBounds(bounds) && bounds.size.x > 0.02f && bounds.size.y > 0.02f)
+            {
+                return bounds;
+            }
+
+            ResolveSpriteRendererReference();
+            if (spriteRenderer != null && spriteRenderer.sprite != null)
+            {
+                var spriteBounds = spriteRenderer.bounds;
+                if (IsFiniteBounds(spriteBounds) && spriteBounds.size.x > 0.02f && spriteBounds.size.y > 0.02f)
+                {
+                    return spriteBounds;
+                }
+            }
+
+            return new Bounds(transform.position, Vector3.one);
+        }
+
+        private static bool IsFiniteBounds(Bounds bounds)
+        {
+            var c = bounds.center;
+            var s = bounds.size;
+            return !float.IsNaN(c.x) && !float.IsNaN(c.y) && !float.IsNaN(s.x) && !float.IsNaN(s.y)
+                   && !float.IsInfinity(s.x) && !float.IsInfinity(s.y);
+        }
+
         /// <summary>Anchor cạnh phải thân nhân vật — dùng cho skill panel UI.</summary>
         public Vector3 GetSkillPanelAnchorWorld()
         {
@@ -1565,6 +1622,7 @@ namespace FracturedChorus.UI
             unit.OnHpChanged += HandleHpChanged;
             RefreshHp();
             UnitSpriteSimulator.EnsureOn(this);
+            SkillVfxSimulator.EnsureOn(this);
             PlayIdleState();
         }
 
@@ -1575,6 +1633,8 @@ namespace FracturedChorus.UI
             RemoveLegacyBoxCollider();
             EnsureBodyCollider2D();
             EnsureFeetAnchor();
+            EnsureReceiveDmg();
+            EnsureProjectile();
         }
 
         /// <summary>Editor/menu — ghi đè collider theo sprite (bỏ qua preserveSceneCollider).</summary>
@@ -1781,6 +1841,120 @@ namespace FracturedChorus.UI
             }
 
             feetAnchor.WireReferences();
+        }
+
+        public void EnsureReceiveDmg()
+        {
+            if (receiveDmg == null)
+            {
+                receiveDmg = GetComponentInChildren<UnitReceiveDmgAnchor>(true);
+            }
+
+            if (receiveDmg == null)
+            {
+                var existing = transform.Find(ReceiveDmgObjectName);
+                if (existing != null)
+                {
+                    receiveDmg = existing.GetComponent<UnitReceiveDmgAnchor>();
+                    if (receiveDmg == null)
+                    {
+                        receiveDmg = existing.gameObject.AddComponent<UnitReceiveDmgAnchor>();
+                    }
+                }
+            }
+
+            if (receiveDmg == null)
+            {
+                var go = new GameObject(ReceiveDmgObjectName);
+                go.transform.SetParent(transform, false);
+                receiveDmg = go.AddComponent<UnitReceiveDmgAnchor>();
+                go.transform.position = GetVisualBounds().center;
+            }
+
+            receiveDmg.WireReferences();
+        }
+
+        public void EnsureProjectile()
+        {
+            if (projectile == null)
+            {
+                projectile = GetComponentInChildren<UnitProjectileAnchor>(true);
+            }
+
+            if (projectile == null)
+            {
+                var existing = transform.Find(ProjectileObjectName);
+                if (existing != null)
+                {
+                    projectile = existing.GetComponent<UnitProjectileAnchor>();
+                    if (projectile == null)
+                    {
+                        projectile = existing.gameObject.AddComponent<UnitProjectileAnchor>();
+                    }
+                }
+            }
+
+            if (projectile == null)
+            {
+                var go = new GameObject(ProjectileObjectName);
+                go.transform.SetParent(transform, false);
+                projectile = go.AddComponent<UnitProjectileAnchor>();
+                go.transform.position = GetSkillPanelAboveAnchorWorld();
+            }
+
+            projectile.WireReferences();
+            DestroyLegacyVfxPreviewChildren();
+        }
+
+        public void DestroyLegacyVfxPreviewChildren()
+        {
+            for (var i = transform.childCount - 1; i >= 0; i--)
+            {
+                var child = transform.GetChild(i);
+                if (child == null)
+                {
+                    continue;
+                }
+
+                var n = child.name;
+                if (n != "Impact"
+                    && !n.StartsWith("Projectile_", System.StringComparison.Ordinal)
+                    && n != SkillVfxSimulator.PreviewRootName)
+                {
+                    continue;
+                }
+
+                if (Application.isPlaying)
+                {
+                    Destroy(child.gameObject);
+                }
+                else
+                {
+                    DestroyImmediate(child.gameObject);
+                }
+            }
+        }
+
+        public void PlaceProjectileAt(Vector3 world)
+        {
+            EnsureProjectile();
+            if (projectile == null)
+            {
+                return;
+            }
+
+            projectile.transform.position = world;
+        }
+
+        public void PlaceReceiveDmgAt(Vector3 world)
+        {
+            EnsureReceiveDmg();
+            if (receiveDmg == null)
+            {
+                return;
+            }
+
+            receiveDmg.transform.position = world;
         }
 
         private void PositionFeetAnchorAtSpriteBase()
@@ -2044,12 +2218,28 @@ namespace FracturedChorus.UI
             {
                 bodyCollider = GetComponent<BoxCollider2D>();
             }
+
+            UnityEditor.EditorApplication.delayCall += () =>
+            {
+                if (this != null)
+                {
+                    EnsureReceiveDmg();
+                    EnsureProjectile();
+                    SkillVfxSimulator.EnsureOn(this);
+                }
+            };
         }
 
         [ContextMenu("Add Unit Sprite Simulator")]
         private void AddUnitSpriteSimulator()
         {
             UnitSpriteSimulator.EnsureOn(this);
+        }
+
+        [ContextMenu("Add Skill VFX Simulator")]
+        private void AddSkillVfxSimulator()
+        {
+            SkillVfxSimulator.EnsureOn(this);
         }
 #endif
     }

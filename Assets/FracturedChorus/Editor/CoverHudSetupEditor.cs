@@ -16,7 +16,6 @@ namespace FracturedChorus.Editor
         private const string ResourcesCoverPath =
             "Assets/FracturedChorus/Resources/UI/Combat/combat_btn_cover_v1.png";
 
-        [MenuItem("Fractured Chorus/Setup Cover HUD (Hierarchy)")]
         public static void SetupCoverHudInHierarchy()
         {
             SyncHologramSpriteToResources();
@@ -152,7 +151,6 @@ namespace FracturedChorus.Editor
             return gauge;
         }
 
-        [MenuItem("Fractured Chorus/Build Cover Energy Gauge (Scene)")]
         public static void BuildCoverEnergyGaugeMenu()
         {
             var hud = Object.FindAnyObjectByType<CoverHudView>();
@@ -219,7 +217,6 @@ namespace FracturedChorus.Editor
             EditorUtility.SetDirty(hud);
         }
 
-        [MenuItem("Fractured Chorus/Sync Cover Button Sprite (Hologram → Resources)")]
         public static void SyncHologramSpriteToResources()
         {
             if (!System.IO.File.Exists(HologramArtPath) &&

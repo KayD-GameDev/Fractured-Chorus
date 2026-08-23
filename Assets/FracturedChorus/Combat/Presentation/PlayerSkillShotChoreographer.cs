@@ -295,6 +295,7 @@ namespace FracturedChorus.Combat.Presentation
             EnsureDefaults();
             parent = parent != null ? parent : (shotParent != null ? shotParent : transform);
 
+            yield return EncounterDirector.PresentArmedCaster();
             if (bulletMuzzleDelaySeconds > 0f)
             {
                 yield return new WaitForSeconds(bulletMuzzleDelaySeconds);
