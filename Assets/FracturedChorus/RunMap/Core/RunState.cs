@@ -23,6 +23,34 @@ namespace FracturedChorus.RunMap.Core
 
         public bool IsVisited(int nodeId) => _visitedIds.Contains(nodeId);
 
+        /// <summary>
+        /// Dựng lại đường đi từ save. Map sinh deterministic từ seed nên chỉ cần danh sách node id
+        /// theo đúng thứ tự; node nào không còn tồn tại trong graph thì bỏ qua.
+        /// Gọi trước EnterNode để node hiện tại vẫn nằm cuối đường đi.
+        /// </summary>
+        public void ImportVisited(MapGraph graph, IReadOnlyList<int> visitedNodeIds)
+        {
+            _visitedOrder.Clear();
+            _visitedIds.Clear();
+
+            if (graph == null || visitedNodeIds == null)
+            {
+                return;
+            }
+
+            foreach (var nodeId in visitedNodeIds)
+            {
+                var node = graph.GetNode(nodeId);
+                if (node == null || !_visitedIds.Add(nodeId))
+                {
+                    continue;
+                }
+
+                node.Visited = true;
+                _visitedOrder.Add(nodeId);
+            }
+        }
+
         public void EnterNode(MapNodeData node)
         {
             if (node == null)

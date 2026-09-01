@@ -71,7 +71,6 @@ namespace FracturedChorus.Hub.CharacterBuild
 
         [Header("Dev")]
         [SerializeField] private bool seedUnspentWhenEmpty = true;
-        [SerializeField] private int stubLevel = 15;
         [SerializeField] private int stubNextExp = 3600;
 
         private readonly List<Button> _equipSlotButtons = new List<Button>();
@@ -122,10 +121,6 @@ namespace FracturedChorus.Hub.CharacterBuild
             else if (TownMapInput.MonthNextPressed())
             {
                 CycleMember(1);
-            }
-            else if (TownMapInput.CancelPressed())
-            {
-                // Standalone scene — no hub to return to.
             }
             else if (WasPressed(Key.V))
             {
@@ -324,12 +319,12 @@ namespace FracturedChorus.Hub.CharacterBuild
 
             if (levelLabel != null)
             {
-                levelLabel.text = $"Lv {stubLevel}";
+                levelLabel.text = $"Lv {entry.Level}";
             }
 
             if (nextExpLabel != null)
             {
-                nextExpLabel.text = $"NEXT EXP {stubNextExp}";
+                nextExpLabel.text = $"NEXT EXP {Mathf.Max(0, stubNextExp - entry.Exp)}";
             }
 
             RefreshElementHighlights(bases.Element);
@@ -498,7 +493,7 @@ namespace FracturedChorus.Hub.CharacterBuild
                 _equipSlotButtons.Add(button);
             }
 
-            foreach (var unlock in SkillUnlockCatalog.UnlockedFor(Roster[_memberIndex]))
+            foreach (var unlock in SkillUnlockCatalog.UnlockedFor(Roster[_memberIndex], entry.Level))
             {
                 var skillId = unlock.SkillId;
                 var button = CreateEquipButton(

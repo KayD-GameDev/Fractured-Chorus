@@ -221,7 +221,7 @@ namespace FracturedChorus.Hub
 
             if (levelLabel != null)
             {
-                levelLabel.text = "Lv 15";
+                levelLabel.text = $"Lv {entry.Level}";
             }
 
             SetBar("St", bases.St + entry.StrPoints, 120f);

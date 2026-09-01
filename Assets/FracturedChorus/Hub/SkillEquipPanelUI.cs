@@ -162,7 +162,7 @@ namespace FracturedChorus.Hub
                 _slotButtons.Add(button);
             }
 
-            foreach (var unlock in SkillUnlockCatalog.UnlockedFor(_characterId))
+            foreach (var unlock in SkillUnlockCatalog.UnlockedFor(_characterId, entry.Level))
             {
                 var skillId = unlock.SkillId;
                 var button = CreateActionButton(
@@ -327,8 +327,6 @@ namespace FracturedChorus.Hub
             public int UnlockLevel { get; }
         }
 
-        private const int PartyLevelStub = 15;
-
         private static readonly Dictionary<string, UnlockEntry[]> Tables = new Dictionary<string, UnlockEntry[]>
         {
             {
@@ -357,7 +355,7 @@ namespace FracturedChorus.Hub
             }
         };
 
-        public static IEnumerable<(string SkillId, string DisplayName)> UnlockedFor(string characterId)
+        public static IEnumerable<(string SkillId, string DisplayName)> UnlockedFor(string characterId, int characterLevel)
         {
             if (!Tables.TryGetValue(characterId, out var entries))
             {
@@ -366,7 +364,7 @@ namespace FracturedChorus.Hub
 
             foreach (var entry in entries)
             {
-                if (PartyLevelStub >= entry.UnlockLevel)
+                if (characterLevel >= entry.UnlockLevel)
                 {
                     yield return (entry.SkillId, entry.DisplayNameValue);
                 }

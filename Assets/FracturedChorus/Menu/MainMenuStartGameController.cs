@@ -21,7 +21,8 @@ namespace FracturedChorus.Menu
             Attract,
             MainMenu,
             Settings,
-            OffBeatArchive
+            OffBeatArchive,
+            LoadGame
         }
 
         [SerializeField] private CanvasGroup attractLayer;
@@ -29,6 +30,7 @@ namespace FracturedChorus.Menu
         [SerializeField] private CanvasGroup mainMenuUi;
         [SerializeField] private CanvasGroup settingsOverlay;
         [SerializeField] private CanvasGroup offBeatArchiveOverlay;
+        [SerializeField] private CanvasGroup loadLayer;
         [SerializeField] private OffBeatArchiveController offBeatArchiveController;
         [SerializeField] private MainMenuStartGameMenuController menuController;
         [SerializeField] private MainMenuConfigOverlayController configOverlayController;
@@ -78,6 +80,15 @@ namespace FracturedChorus.Menu
                 offBeatArchiveOverlay.gameObject.SetActive(false);
             }
 
+            // Preview trong Editor có thể để LoadLayer đang bật; vào game phải tắt lại,
+            // SaveLoadSlotListView sẽ tự bật khi người chơi chọn LOAD GAME.
+            var load = ResolveLoadLayer();
+            if (load != null)
+            {
+                load.alpha = 1f;
+                load.gameObject.SetActive(false);
+            }
+
             if (attractLayer != null)
             {
                 attractLayer.blocksRaycasts = false;
@@ -99,6 +110,26 @@ namespace FracturedChorus.Menu
         private void OnDestroy()
         {
             MainMenuGameSettings.SettingsChanged -= OnGameSettingsChanged;
+        }
+
+        /// <summary>
+        /// Scene dựng trước khi có field loadLayer sẽ để trống reference; tìm lại theo component
+        /// thay vì bắt kéo tay, và gán luôn để lần sau khỏi quét.
+        /// </summary>
+        public CanvasGroup ResolveLoadLayer()
+        {
+            if (loadLayer != null)
+            {
+                return loadLayer;
+            }
+
+            var view = transform.root.GetComponentInChildren<SaveLoadSlotListView>(true);
+            if (view != null)
+            {
+                loadLayer = view.GetComponent<CanvasGroup>();
+            }
+
+            return loadLayer;
         }
 
         private void OnGameSettingsChanged()
@@ -259,24 +290,36 @@ namespace FracturedChorus.Menu
                         SetMainMenuEditorVisible(false);
                         SetSettingsEditorVisible(false);
                         SetOffBeatArchiveEditorVisible(false);
+                        SetLoadLayerEditorVisible(false);
                         break;
                     case MainMenuEditorPreview.MainMenu:
                         SetLayerActive(attractLayer, false, alpha: 0f);
                         SetMainMenuEditorVisible(true);
                         SetSettingsEditorVisible(false);
                         SetOffBeatArchiveEditorVisible(false);
+                        SetLoadLayerEditorVisible(false);
                         break;
                     case MainMenuEditorPreview.Settings:
                         SetLayerActive(attractLayer, false, alpha: 0f);
                         SetMainMenuEditorVisible(false);
                         SetOffBeatArchiveEditorVisible(false);
+                        SetLoadLayerEditorVisible(false);
                         SetSettingsEditorVisible(true);
                         break;
                     case MainMenuEditorPreview.OffBeatArchive:
                         SetLayerActive(attractLayer, false, alpha: 0f);
                         SetMainMenuEditorVisible(true);
                         SetSettingsEditorVisible(false);
+                        SetLoadLayerEditorVisible(false);
                         SetOffBeatArchiveEditorVisible(true);
+                        break;
+                    case MainMenuEditorPreview.LoadGame:
+                        // Giữ main menu phía sau vì lúc chơi thật panel cũng chồng lên nền đó.
+                        SetLayerActive(attractLayer, false, alpha: 0f);
+                        SetMainMenuEditorVisible(true);
+                        SetSettingsEditorVisible(false);
+                        SetOffBeatArchiveEditorVisible(false);
+                        SetLoadLayerEditorVisible(true);
                         break;
                 }
             }
@@ -299,6 +342,33 @@ namespace FracturedChorus.Menu
             }
 
             layer.alpha = alpha;
+        }
+
+        private void SetLoadLayerEditorVisible(bool visible)
+        {
+            var layer = ResolveLoadLayer();
+            if (layer == null)
+            {
+                if (visible)
+                {
+                    Debug.LogWarning(
+                        "[Fractured Chorus] Chưa có Load Layer trong scene. " +
+                        "Bấm 'Build Load Layer' trong Inspector hoặc chạy " +
+                        "Fractured Chorus/Save/Install Load Layer In Open Scene.",
+                        this);
+                }
+
+                return;
+            }
+
+            if (layer.gameObject.activeSelf != visible)
+            {
+                layer.gameObject.SetActive(visible);
+            }
+
+            layer.alpha = visible ? 1f : 0f;
+            layer.interactable = false;
+            layer.blocksRaycasts = false;
         }
 
         private void SetOffBeatArchiveEditorVisible(bool visible)

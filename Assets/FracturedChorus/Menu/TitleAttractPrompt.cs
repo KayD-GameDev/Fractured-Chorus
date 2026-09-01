@@ -1,22 +1,21 @@
 using UnityEngine;
-#if ENABLE_INPUT_SYSTEM
-using UnityEngine.InputSystem;
-#endif
 
 namespace FracturedChorus.Menu
 {
+    /// <summary>
+    /// Nhấp nháy dòng "PRESS ANY KEY" trên attract screen. Việc bắt phím để rời attract do
+    /// MainMenuStartGameController lo, component này chỉ lo phần nhìn.
+    /// </summary>
     public sealed class TitleAttractPrompt : MonoBehaviour
     {
-        [SerializeField] private MainMenuLayoutSandboxLayers layers;
         [SerializeField] private CanvasGroup promptGroup;
         [SerializeField] private float blinkHz = 0.5f;
         [SerializeField] private float minAlpha = 0.18f;
         [SerializeField] private float maxAlpha = 1f;
         [SerializeField] private float onDuty = 0.7f;
 
-        public void Bind(MainMenuLayoutSandboxLayers boundLayers, CanvasGroup group)
+        public void Bind(CanvasGroup group)
         {
-            layers = boundLayers;
             promptGroup = group;
             blinkHz = 0.5f;
             onDuty = 0.7f;
@@ -35,89 +34,24 @@ namespace FracturedChorus.Menu
                 promptGroup.blocksRaycasts = false;
                 promptGroup.interactable = false;
             }
-
-            if (layers == null)
-            {
-                layers = GetComponentInParent<MainMenuLayoutSandboxLayers>();
-            }
         }
 
         private void Update()
         {
-            if (!Application.isPlaying)
+            if (!Application.isPlaying || promptGroup == null)
             {
                 return;
             }
 
-            if (promptGroup != null)
+            var u = Mathf.Repeat(Time.unscaledTime * blinkHz, 1f);
+            if (u < onDuty)
             {
-                var u = Mathf.Repeat(Time.unscaledTime * blinkHz, 1f);
-                float alpha;
-                if (u < onDuty)
-                {
-                    alpha = maxAlpha;
-                }
-                else
-                {
-                    var fade = Mathf.InverseLerp(1f, onDuty, u);
-                    alpha = Mathf.Lerp(minAlpha, maxAlpha, fade * fade);
-                }
-
-                promptGroup.alpha = alpha;
-            }
-
-            if (layers == null)
-            {
-                layers = GetComponentInParent<MainMenuLayoutSandboxLayers>();
-            }
-
-            if (layers == null || layers.AttractLayer == null || !layers.AttractLayer.activeInHierarchy)
-            {
+                promptGroup.alpha = maxAlpha;
                 return;
             }
 
-            if (layers.MainMenuLayer != null && layers.MainMenuLayer.activeInHierarchy)
-            {
-                return;
-            }
-
-            if (WasAnyInputPressed())
-            {
-                layers.ShowMainMenu();
-            }
-        }
-
-        private static bool WasAnyInputPressed()
-        {
-#if ENABLE_INPUT_SYSTEM
-            if (Keyboard.current != null && Keyboard.current.anyKey.wasPressedThisFrame)
-            {
-                return true;
-            }
-
-            if (Mouse.current != null &&
-                (Mouse.current.leftButton.wasPressedThisFrame || Mouse.current.rightButton.wasPressedThisFrame))
-            {
-                return true;
-            }
-
-            if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.wasPressedThisFrame)
-            {
-                return true;
-            }
-
-            if (Gamepad.current != null &&
-                (Gamepad.current.buttonSouth.wasPressedThisFrame ||
-                 Gamepad.current.startButton.wasPressedThisFrame ||
-                 Gamepad.current.selectButton.wasPressedThisFrame))
-            {
-                return true;
-            }
-
-            return false;
-#else
-            return Input.anyKeyDown;
-#endif
+            var fade = Mathf.InverseLerp(1f, onDuty, u);
+            promptGroup.alpha = Mathf.Lerp(minAlpha, maxAlpha, fade * fade);
         }
     }
 }

@@ -9,6 +9,7 @@ using FracturedChorus.Combat.Presentation;
 using FracturedChorus.Combat.Timeline;
 using FracturedChorus.Combat.Units;
 using FracturedChorus.Data;
+using FracturedChorus.Meta;
 using FracturedChorus.RunMap;
 using FracturedChorus.Tutorial;
 using FracturedChorus.UI;
@@ -1395,6 +1396,24 @@ namespace FracturedChorus.Combat.Core
             }
 
             TutorialDirector.Ensure().StartCombatTrack();
+        }
+
+        private void OnEnable()
+        {
+            GameMetaSession.Saving += FlushHpToSession;
+        }
+
+        private void OnDisable()
+        {
+            GameMetaSession.Saving -= FlushHpToSession;
+        }
+
+        private void FlushHpToSession()
+        {
+            if (_session != null)
+            {
+                PartyRunHpStore.CaptureFromSession(_session);
+            }
         }
 
         private void OnDestroy()

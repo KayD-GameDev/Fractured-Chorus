@@ -65,10 +65,15 @@ namespace FracturedChorus.RunMap
             StartCoroutine(BootRunMap());
         }
 
-        private void OnEnable() => BindNodeClickHandlers();
+        private void OnEnable()
+        {
+            BindNodeClickHandlers();
+            GameMetaSession.Saving += FlushRunToSession;
+        }
 
         private void OnDisable()
         {
+            GameMetaSession.Saving -= FlushRunToSession;
             UnbindNodeClickHandlers();
 
             if (_bossLoadCoroutine != null)
@@ -76,6 +81,11 @@ namespace FracturedChorus.RunMap
                 StopCoroutine(_bossLoadCoroutine);
                 _bossLoadCoroutine = null;
             }
+        }
+
+        private void FlushRunToSession()
+        {
+            RunMapRunSave.FlushToSession(Graph, State);
         }
 
         private void BindNodeClickHandlers()

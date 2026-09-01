@@ -3909,7 +3909,7 @@ Transform:
   m_GameObject: {fileID: 377598853}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.5404438, y: 0.0037691593, z: -0.05}
+  m_LocalPosition: {x: -1.5552872, y: 0.027342796, z: -0.05}
   m_LocalScale: {x: 0.19826, y: 0.212055, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3967,7 +3967,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 11
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -4320761258177927782, guid: 73aff530d524a5a46b753fbe65cf6913, type: 3}
+  m_Sprite: {fileID: -2279726170448293518, guid: 73aff530d524a5a46b753fbe65cf6913, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -4051,8 +4051,8 @@ BoxCollider2D:
   m_Offset: {x: -0.31349665, y: 0.0683794}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.7818036, y: 0.57254344}
-    oldSize: {x: 10.51432, y: 7.31}
+    pivot: {x: 0.7134743, y: 0.45334768}
+    oldSize: {x: 8.373441, y: 9.67}
     newSize: {x: 7.27, y: 8.5}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -4068,7 +4068,7 @@ Animator:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 377598853}
-  m_Enabled: 0
+  m_Enabled: 1
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: fffd2289f4da9a541a5a6ae6497aee9f, type: 2}
   m_CullingMode: 0
@@ -4098,13 +4098,13 @@ MonoBehaviour:
   spriteLayouts:
   - displayName: Idle
     kind: 0
-    sprite: {fileID: -4320761258177927782, guid: 73aff530d524a5a46b753fbe65cf6913, type: 3}
+    sprite: {fileID: -7428215157034606851, guid: c717b6aad7a95364c80e530ab2dde0db, type: 3}
     animationClip: {fileID: 7400000, guid: 2dc3e2c876cd75449ae3cd97466a85e0, type: 2}
     linkedState: 1
     localScale: {x: 0.19826, y: 0.212055, z: 0}
     feetAnchorLocal: {x: -0.27, y: -1.63, z: 0}
     receiveDmgLocal: {x: 1.23, y: 0.62, z: 0}
-    projectileLocal: {x: 2.9668546, y: 1.2033348, z: 0}
+    projectileLocal: {x: 0, y: 5.8, z: 0}
     colliderSize: {x: 4.1703157, y: 8.623627}
     colliderOffset: {x: -0.31349665, y: 0.0683794}
   - displayName: Death
@@ -4204,8 +4204,8 @@ MonoBehaviour:
   - {fileID: 7695632}
   - {fileID: 335934018}
   - {fileID: 1164589710}
-  previewLive: 0
-  previewPaused: 0
+  previewLive: 1
+  previewPaused: 1
   hideSprite: 0
   hidePattern: 0
   loopSlide: 0
@@ -5059,7 +5059,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7c3e19d4b8f62e01c5d9a4e7b2f8013, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitReceiveDmgAnchor
-  gizmoShape: 4
+  gizmoShape: 0
   gizmoColor: {r: 1, g: 0.28, b: 0.32, a: 0.95}
   gizmoSize: 0.16
   gizmoAlwaysVisible: 1
@@ -5075,7 +5075,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c9e5f31a6d0b84f23e7c1a2d5b8e9046, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitMarkerGizmo
-  shape: 4
+  shape: 0
   color: {r: 1, g: 0.28, b: 0.32, a: 0.95}
   size: 0.16
   alwaysVisible: 1
@@ -5088,7 +5088,7 @@ Transform:
   m_GameObject: {fileID: 487631363}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.26253518, y: -1.4966843, z: 0}
+  m_LocalPosition: {x: 1.12, y: -0.3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -11590,7 +11590,7 @@ Transform:
   m_GameObject: {fileID: 1143880312}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.9668546, y: 1.2033348, z: 0}
+  m_LocalPosition: {x: 0, y: 5.8, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -14555,7 +14555,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1565291458}
   - component: {fileID: 1565291456}
-  - component: {fileID: 1565291457}
   m_Layer: 0
   m_Name: ReceiveDmg
   m_TagString: Untagged
@@ -14575,26 +14574,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7c3e19d4b8f62e01c5d9a4e7b2f8013, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitReceiveDmgAnchor
-  gizmoShape: 4
+  gizmoShape: 0
   gizmoColor: {r: 1, g: 0.28, b: 0.32, a: 0.95}
   gizmoSize: 0.16
   gizmoAlwaysVisible: 1
---- !u!114 &1565291457
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1565291455}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c9e5f31a6d0b84f23e7c1a2d5b8e9046, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitMarkerGizmo
-  shape: 4
-  color: {r: 1, g: 0.28, b: 0.32, a: 0.95}
-  size: 0.16
-  alwaysVisible: 1
 --- !u!4 &1565291458
 Transform:
   m_ObjectHideFlags: 0
@@ -14604,7 +14587,7 @@ Transform:
   m_GameObject: {fileID: 1565291455}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.68421364, y: -1.6745036, z: 0}
+  m_LocalPosition: {x: 2.03, y: -1.42, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -19162,7 +19145,7 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2140000100}
   m_Enabled: 1
-  m_Alpha: 1
+  m_Alpha: 0
   m_Interactable: 0
   m_BlocksRaycasts: 0
   m_IgnoreParentGroups: 1
@@ -19217,8 +19200,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: -0.056}
   m_AnchorMin: {x: 0.5, y: 0.55}
   m_AnchorMax: {x: 0.5, y: 0.55}
-  m_AnchoredPosition: {x: 0, y: 122}
-  m_SizeDelta: {x: 741.25, y: 439.02}
+  m_AnchoredPosition: {x: 0.0000019073, y: 105}
+  m_SizeDelta: {x: 513.98, y: 304.41}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2140000112
 CanvasRenderer:

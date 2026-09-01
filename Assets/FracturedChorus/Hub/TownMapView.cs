@@ -42,6 +42,7 @@ namespace FracturedChorus.Hub
         private Action<string> _onActivityChosen;
         private DayPhase _phase;
         private GameMetaState _state;
+        private bool _hasRestoredSavedPin;
 
         private void Awake()
         {
@@ -142,6 +143,44 @@ namespace FracturedChorus.Hub
             RefreshPinVisibility();
             ClearPinSelection();
             districtPanel?.Hide();
+            RestoreSavedPin();
+        }
+
+        /// <summary>
+        /// Chọn lại pin người chơi đang đứng lúc save. Chỉ chạy đúng một lần cho mỗi lần vào scene —
+        /// Show() còn được gọi lại sau mỗi activity, tự mở district panel những lần đó sẽ rất phiền.
+        /// Pin đã ẩn ở phase hiện tại thì bỏ qua.
+        /// </summary>
+        private void RestoreSavedPin()
+        {
+            if (_hasRestoredSavedPin)
+            {
+                return;
+            }
+
+            _hasRestoredSavedPin = true;
+
+            var hubLocation = _state?.HubLocation;
+            if (hubLocation == null || !hubLocation.HasLocation)
+            {
+                return;
+            }
+
+            foreach (var pin in _pins)
+            {
+                if (pin.LocationId != hubLocation.LastLocationId)
+                {
+                    continue;
+                }
+
+                if (!pin.MatchesPhase(_phase, _state))
+                {
+                    return;
+                }
+
+                OnPinSelected(pin.Definition);
+                return;
+            }
         }
 
         public void Hide()
@@ -290,6 +329,7 @@ namespace FracturedChorus.Hub
                 pin.SetSelected(pin.LocationId == location.Id);
             }
 
+            _state?.HubLocation.SetLocation(location.Id);
             districtPanel?.Show(location, _phase, OnDistrictConfirm, ClearPinSelection);
         }
 
@@ -297,6 +337,11 @@ namespace FracturedChorus.Hub
         {
             districtPanel?.Hide();
             ClearPinSelection();
+
+            // Ghi trước khi chạy activity: activity có thể đổi scene, và khi quay lại
+            // ta muốn map mở đúng chỗ người chơi vừa đứng.
+            _state?.HubLocation.SetLocation(location.Id, sub.Id);
+
             _onActivityChosen?.Invoke(sub.ActivityId);
         }
 

@@ -691,6 +691,7 @@ namespace FracturedChorus.Editor
             var settingsOverlay = CreateSettingsOverlay(canvas.transform, controller);
             var archiveOverlay = CreateOffBeatArchiveOverlay(canvas.transform, controller);
             var sceneFadeOverlay = EnsureSceneFadeOverlay(canvas.transform);
+            var loadLayer = SaveLoadLayerBuilder.EnsureLoadLayer(root.transform);
             EnsureMainMenuBgm(root.transform);
             EnsureMainMenuTitleVoice(root.transform);
             EnsureMainMenuTransitionSfx(root.transform);
@@ -700,6 +701,7 @@ namespace FracturedChorus.Editor
             menuUiGroup.alpha = 1f;
 
             WireController(controller, attractLayer, mainMenuBackground, menuUiGroup, menuController, settingsOverlay, archiveOverlay, sceneFadeOverlay);
+            SaveLoadLayerBuilder.BindToController(root.transform, loadLayer);
             TitleScreenChromeApply.Apply(root);
             controller.SetEditorPreview(MainMenuStartGameController.MainMenuEditorPreview.Attract);
             SceneFontSetupEditor.FinalizeSceneCanvas(canvas.gameObject);
@@ -977,9 +979,14 @@ namespace FracturedChorus.Editor
             }
         }
 
+        /// <summary>
+        /// Giá trị lúc dựng scene thôi. LOAD GAME từng bị khóa cứng vì chưa có save system;
+        /// giờ MainMenuStartGameMenuController.RefreshLoadGameInteractable quyết định theo
+        /// việc có file save hay không, nên ở đây không khóa nữa.
+        /// </summary>
         private static bool IsMenuRowInteractable(string labelText)
         {
-            return labelText != "LOAD GAME";
+            return true;
         }
 
         private static void SetMenuOptions(

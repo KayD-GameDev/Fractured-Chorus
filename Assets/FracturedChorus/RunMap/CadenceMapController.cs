@@ -90,20 +90,7 @@ namespace FracturedChorus.RunMap
             }
         }
 
-        private void Update()
-        {
-            if (!FracturedChorus.Meta.GameMetaSession.HasSession
-                || !FracturedChorus.Meta.GameMetaSession.Current.RunSnapshot.HasActiveRun)
-            {
-                return;
-            }
-
-            if (UnityEngine.InputSystem.Keyboard.current != null &&
-                UnityEngine.InputSystem.Keyboard.current.escapeKey.wasPressedThisFrame)
-            {
-                ReturnToCampusHub();
-            }
-        }
+        // ESC nay mở status menu ở mọi scene; quay về Campus Hub dùng nút "Campus Hub" góc dưới trái.
 
         private void EnsureCampusHubHotkey()
         {

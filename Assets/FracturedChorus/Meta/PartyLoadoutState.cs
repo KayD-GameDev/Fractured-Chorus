@@ -13,6 +13,9 @@ namespace FracturedChorus.Meta
     [Serializable]
     public sealed class CharacterLoadoutEntry
     {
+        /// <summary>Level khởi điểm của party, thay cho stub hardcode 15 nằm rải trong UI.</summary>
+        public const int DefaultLevel = 15;
+
         public string CharacterId;
         public string[] EquippedSkillIds = { string.Empty, string.Empty, string.Empty };
         public int UnspentStatPoints;
@@ -20,6 +23,8 @@ namespace FracturedChorus.Meta
         public int MaPoints;
         public int EnPoints;
         public int HbPoints;
+        public int Level = DefaultLevel;
+        public int Exp;
 
         public CharacterLoadoutEntry()
         {
@@ -87,6 +92,10 @@ namespace FracturedChorus.Meta
             existing.MaPoints = Math.Max(0, entry.MaPoints);
             existing.EnPoints = Math.Max(0, entry.EnPoints);
             existing.HbPoints = Math.Max(0, entry.HbPoints);
+
+            // Save version 2 không có Level nên đọc lên là 0 — coi như level khởi điểm.
+            existing.Level = entry.Level > 0 ? entry.Level : CharacterLoadoutEntry.DefaultLevel;
+            existing.Exp = Math.Max(0, entry.Exp);
         }
 
         public void Clear()

@@ -28,6 +28,7 @@ namespace FracturedChorus.Menu
         private static void Bootstrap()
         {
             Load();
+            Meta.GameMetaSession.DefaultDifficultyProvider = () => (int)Difficulty;
         }
 
         public static void Load()

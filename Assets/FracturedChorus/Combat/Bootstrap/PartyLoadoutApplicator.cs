@@ -217,22 +217,63 @@ namespace FracturedChorus.Combat.Bootstrap
             }
         }
 
-        private static string ResolveCharacterId(CombatUnit unit)
+        /// <summary>
+        /// Bảng map tường minh, xếp theo thứ tự ưu tiên. Khớp chính xác trước, sau đó mới khớp tiền tố
+        /// để các preset biến thể (vd "ren_alt") vẫn nhận đúng nhân vật.
+        /// "dps" là unitId cũ của UnitPreset_Ren.asset, giữ lại để save đời trước còn đọc được.
+        /// </summary>
+        private static readonly (string Key, string CharacterId)[] CharacterIdAliases =
         {
-            var id = unit.UnitId?.ToLowerInvariant() ?? string.Empty;
-            if (id.Contains("ren"))
+            ("ren", PartyCharacterIds.Ren),
+            ("dps", PartyCharacterIds.Ren),
+            ("charlotte", PartyCharacterIds.Charlotte),
+            ("charlott", PartyCharacterIds.Charlotte),
+            ("tank", PartyCharacterIds.Charlotte),
+            ("coda", PartyCharacterIds.Coda),
+            ("mage", PartyCharacterIds.Coda)
+        };
+
+        public static string ResolveCharacterId(CombatUnit unit)
+        {
+            if (unit == null)
             {
-                return PartyCharacterIds.Ren;
+                return null;
             }
 
-            if (id.Contains("tank") || id.Contains("charlotte") || id.Contains("charlott"))
+            var resolved = ResolveCharacterId(unit.UnitId) ?? ResolveCharacterId(unit.DisplayName);
+            if (resolved == null)
             {
-                return PartyCharacterIds.Charlotte;
+                Debug.LogWarning(
+                    $"[Fractured Chorus] PartyLoadoutApplicator: không map được party member " +
+                    $"unitId='{unit.UnitId}' displayName='{unit.DisplayName}' sang characterId. " +
+                    "Skill đã trang bị và stat point sẽ bị bỏ qua — kiểm tra unitId của UnitPresetSO.");
             }
 
-            if (id.Contains("mage") || id.Contains("coda"))
+            return resolved;
+        }
+
+        public static string ResolveCharacterId(string rawId)
+        {
+            if (string.IsNullOrWhiteSpace(rawId))
             {
-                return PartyCharacterIds.Coda;
+                return null;
+            }
+
+            var key = rawId.Trim();
+            foreach (var alias in CharacterIdAliases)
+            {
+                if (string.Equals(key, alias.Key, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    return alias.CharacterId;
+                }
+            }
+
+            foreach (var alias in CharacterIdAliases)
+            {
+                if (key.StartsWith(alias.Key, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    return alias.CharacterId;
+                }
             }
 
             return null;

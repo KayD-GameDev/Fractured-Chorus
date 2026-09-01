@@ -41,6 +41,20 @@ namespace FracturedChorus.RunMap.Core
             CanticleCleared = false;
         }
 
+        /// <summary>
+        /// Nạp lại tiến độ 3 sector từ file save. Trước đây các cờ này chỉ nằm trong RAM nên
+        /// tắt game giữa cadence là mất sạch tiến độ Pulse/Echo/Canticle.
+        /// </summary>
+        public void ImportSectorClears(int seed, PinkySectorId currentSector, bool pulse, bool echo, bool canticle)
+        {
+            RunSeed = seed;
+            ActiveVault = VaultFingerId.Pinky;
+            CurrentSector = currentSector;
+            PulseCleared = pulse;
+            EchoCleared = echo;
+            CanticleCleared = canticle;
+        }
+
         public void MarkSectorCleared(PinkySectorId sector)
         {
             switch (sector)

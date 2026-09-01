@@ -3,7 +3,6 @@ using FracturedChorus.Menu;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace FracturedChorus.Editor
@@ -18,7 +17,6 @@ namespace FracturedChorus.Editor
         private const string PressAnyKeyPath = PoseDir + "ui_press_any_key_v1.png";
         private const string BtnNormalPath = PoseDir + "ui_btn_shard_normal_v1_alpha.png";
         private const string BtnSelectedPath = PoseDir + "ui_btn_shard_selected_v1_alpha.png";
-        private const string SandboxScenePath = "Assets/FracturedChorus/Scenes/MainMenuLayoutSandbox.unity";
         private const float CharacterFitHeight = 1080f;
 
         public static void ApplyToOpenScene()
@@ -74,208 +72,12 @@ namespace FracturedChorus.Editor
             EnsureCast(menuBg);
             EnsureLogo(menuBg, new Vector2(0f, 1f), 720f, centerPivot: false);
             ApplyMenuPanel(menuPanel);
-            CopyLayoutFromSandbox(attract, menuBg, menuPanel);
             var controller = root.GetComponent<MainMenuStartGameController>();
             if (controller != null)
             {
                 controller.SetEditorPreview(MainMenuStartGameController.MainMenuEditorPreview.Attract);
                 EditorUtility.SetDirty(controller);
             }
-        }
-
-        private static void CopyLayoutFromSandbox(Transform attract, Transform menuBg, RectTransform menuPanel)
-        {
-            var sandbox = FindLoadedScene(SandboxScenePath);
-            var opened = !sandbox.IsValid();
-            if (opened)
-            {
-                sandbox = EditorSceneManager.OpenScene(SandboxScenePath, OpenSceneMode.Additive);
-            }
-
-            try
-            {
-                var sandboxRoot = FindRoot(sandbox, "MainMenuLayoutSandboxRoot");
-                if (sandboxRoot == null)
-                {
-                    Debug.LogWarning("[Fractured Chorus] Sandbox root missing — layout copy skipped.");
-                    return;
-                }
-
-                var srcAttract = FindDeep(sandboxRoot.transform, "AttractLayer");
-                var srcMenu = FindDeep(sandboxRoot.transform, "MainMenuLayer");
-                if (srcAttract == null || srcMenu == null)
-                {
-                    Debug.LogWarning("[Fractured Chorus] Sandbox Attract/MainMenu layer missing — layout copy skipped.");
-                    return;
-                }
-
-                CopyChildRect(srcAttract, attract, "Logo");
-                CopyChildRect(srcAttract, attract, "HudRing");
-                CopyChildRect(srcAttract, attract, "PressAnyKey");
-                CopyChildRect(srcMenu, menuBg, "Logo");
-                CopyChildRect(srcMenu, menuBg, "HudRing");
-                CopyChildRect(srcMenu, menuBg, "CastLayer");
-                var srcCast = srcMenu.Find("CastLayer");
-                var dstCast = menuBg.Find("CastLayer");
-                if (srcCast != null && dstCast != null)
-                {
-                    CopyChildRect(srcCast, dstCast, "Char_Astra");
-                    CopyChildRect(srcCast, dstCast, "Char_Charlotte");
-                    CopyChildRect(srcCast, dstCast, "Char_Coda");
-                    CopyChildRect(srcCast, dstCast, "Char_Ren");
-                }
-
-                var srcPanel = srcMenu.Find("MenuPanel") as RectTransform;
-                if (srcPanel != null)
-                {
-                    CopyRect(srcPanel, menuPanel);
-                    var srcLayout = srcPanel.GetComponent<VerticalLayoutGroup>();
-                    var dstLayout = menuPanel.GetComponent<VerticalLayoutGroup>();
-                    if (srcLayout != null && dstLayout != null)
-                    {
-                        dstLayout.padding = new RectOffset(
-                            srcLayout.padding.left,
-                            srcLayout.padding.right,
-                            srcLayout.padding.top,
-                            srcLayout.padding.bottom);
-                        dstLayout.spacing = srcLayout.spacing;
-                        dstLayout.childAlignment = srcLayout.childAlignment;
-                        dstLayout.childControlWidth = srcLayout.childControlWidth;
-                        dstLayout.childControlHeight = srcLayout.childControlHeight;
-                        dstLayout.childForceExpandWidth = srcLayout.childForceExpandWidth;
-                        dstLayout.childForceExpandHeight = srcLayout.childForceExpandHeight;
-                    }
-
-                    CopyButtonRows(srcPanel, menuPanel);
-                }
-            }
-            finally
-            {
-                if (opened && sandbox.IsValid())
-                {
-                    EditorSceneManager.CloseScene(sandbox, true);
-                }
-            }
-        }
-
-        private static void CopyButtonRows(Transform srcPanel, Transform dstPanel)
-        {
-            foreach (Transform dstRow in dstPanel)
-            {
-                if (!dstRow.name.StartsWith("Row_"))
-                {
-                    continue;
-                }
-
-                var srcRow = srcPanel.Find(dstRow.name);
-                if (srcRow == null)
-                {
-                    continue;
-                }
-
-                var srcLayout = srcRow.GetComponent<LayoutElement>();
-                var dstLayout = dstRow.GetComponent<LayoutElement>();
-                if (srcLayout != null && dstLayout != null)
-                {
-                    dstLayout.preferredHeight = srcLayout.preferredHeight;
-                    dstLayout.minHeight = srcLayout.minHeight;
-                    dstLayout.flexibleWidth = srcLayout.flexibleWidth;
-                    dstLayout.flexibleHeight = srcLayout.flexibleHeight;
-                    dstLayout.ignoreLayout = srcLayout.ignoreLayout;
-                }
-
-                var srcShard = srcRow.GetComponent<Image>();
-                var dstShard = dstRow.GetComponent<Image>();
-                if (srcShard != null && dstShard != null)
-                {
-                    dstShard.color = srcShard.color;
-                    dstShard.preserveAspect = srcShard.preserveAspect;
-                    dstShard.type = srcShard.type;
-                    dstShard.useSpriteMesh = srcShard.useSpriteMesh;
-                    dstShard.pixelsPerUnitMultiplier = srcShard.pixelsPerUnitMultiplier;
-                }
-
-                CopyChildRect(srcRow, dstRow, "Icon");
-                CopyChildRect(srcRow, dstRow, "Label");
-                var srcText = srcRow.Find("Label")?.GetComponent<Text>();
-                var dstText = dstRow.Find("Label")?.GetComponent<Text>();
-                if (srcText != null && dstText != null)
-                {
-                    dstText.fontSize = srcText.fontSize;
-                    dstText.fontStyle = srcText.fontStyle;
-                    dstText.alignment = srcText.alignment;
-                    dstText.color = srcText.color;
-                    dstText.horizontalOverflow = srcText.horizontalOverflow;
-                    dstText.verticalOverflow = srcText.verticalOverflow;
-                    dstText.resizeTextForBestFit = srcText.resizeTextForBestFit;
-                    EditorUtility.SetDirty(dstText);
-                }
-
-                EditorUtility.SetDirty(dstRow);
-            }
-        }
-
-        private static Scene FindLoadedScene(string path)
-        {
-            for (var i = 0; i < SceneManager.sceneCount; i++)
-            {
-                var scene = SceneManager.GetSceneAt(i);
-                if (scene.path == path)
-                {
-                    return scene;
-                }
-            }
-
-            return default;
-        }
-
-        private static GameObject FindRoot(Scene scene, string name)
-        {
-            if (!scene.IsValid())
-            {
-                return null;
-            }
-
-            var roots = scene.GetRootGameObjects();
-            for (var i = 0; i < roots.Length; i++)
-            {
-                if (roots[i].name == name)
-                {
-                    return roots[i];
-                }
-            }
-
-            return null;
-        }
-
-        private static void CopyChildRect(Transform srcParent, Transform dstParent, string childName)
-        {
-            var src = srcParent.Find(childName) as RectTransform;
-            var dst = dstParent.Find(childName) as RectTransform;
-            if (src == null || dst == null)
-            {
-                return;
-            }
-
-            CopyRect(src, dst);
-            var srcImage = src.GetComponent<Image>();
-            var dstImage = dst.GetComponent<Image>();
-            if (srcImage != null && dstImage != null)
-            {
-                dstImage.color = srcImage.color;
-            }
-        }
-
-        private static void CopyRect(RectTransform src, RectTransform dst)
-        {
-            dst.anchorMin = src.anchorMin;
-            dst.anchorMax = src.anchorMax;
-            dst.pivot = src.pivot;
-            dst.sizeDelta = src.sizeDelta;
-            dst.anchoredPosition = src.anchoredPosition;
-            dst.localScale = src.localScale;
-            dst.localRotation = src.localRotation;
-            EditorUtility.SetDirty(dst);
         }
 
         private static void BindLayerSprite(GameObject layer, string path)
@@ -411,7 +213,7 @@ namespace FracturedChorus.Editor
             }
 
             var prompt = EnsureComponent<TitleAttractPrompt>(go);
-            prompt.Bind(null, group);
+            prompt.Bind(group);
             EditorUtility.SetDirty(prompt);
             var logo = attract.Find("Logo");
             if (logo != null)

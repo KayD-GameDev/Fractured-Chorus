@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce73a71ac68f23f48a5aad627d27478a, type: 3}
   m_Name: UnitPreset_Ren
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.UnitPresetSO
-  unitId: DPS
+  unitId: ren
   displayName: Ren
   role: 1
   statBlock: {fileID: 11400000, guid: b5b6bcbfbbe8aae43bfbf63bb565f5d5, type: 2}

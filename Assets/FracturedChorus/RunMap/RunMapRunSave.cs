@@ -8,9 +8,23 @@ namespace FracturedChorus.RunMap
     {
         public static void Persist(MapGraph graph, RunState state)
         {
-            if (graph == null || state == null || !GameMetaSession.HasSession)
+            if (!FlushToSession(graph, state))
             {
                 return;
+            }
+
+            GameMetaSession.Save();
+        }
+
+        /// <summary>
+        /// Chỉ đổ tiến độ run vào session, không ghi file. Dùng khi SaveToSlot đã sắp ghi đĩa
+        /// và đang bắn event Saving — gọi Persist() lúc đó sẽ ghi hai lần.
+        /// </summary>
+        public static bool FlushToSession(MapGraph graph, RunState state)
+        {
+            if (graph == null || state == null || !GameMetaSession.HasSession)
+            {
+                return false;
             }
 
             var snap = GameMetaSession.Current.RunSnapshot;
@@ -20,7 +34,13 @@ namespace FracturedChorus.RunMap
             snap.CurrentFloor = state.CurrentFloor;
             snap.ActiveSector = (int)graph.Profile.Sector;
             snap.ClearedNodeIds = CollectClearedNodeIds(graph);
-            GameMetaSession.Save();
+            snap.VisitedNodeIds = CollectVisitedNodeIds(state);
+
+            var progress = CadenceRunProgress.Session;
+            snap.PulseCleared = progress.PulseCleared;
+            snap.EchoCleared = progress.EchoCleared;
+            snap.CanticleCleared = progress.CanticleCleared;
+            return true;
         }
 
         public static bool TryRestore(MapGraph graph, RunState state)
@@ -36,16 +56,50 @@ namespace FracturedChorus.RunMap
                 return false;
             }
 
-            ApplyClearedNodes(graph, snap.ClearedNodeIds);
-
             var node = graph.GetNode(snap.CurrentNodeId);
             if (node == null)
             {
                 return false;
             }
 
+            ApplyClearedNodes(graph, snap.ClearedNodeIds);
+            RestoreSectorProgress(snap);
+
+            // ImportVisited trước EnterNode để node hiện tại nằm đúng cuối đường đi.
+            state.ImportVisited(graph, snap.VisitedNodeIds);
             state.EnterNode(node);
             return true;
+        }
+
+        private static void RestoreSectorProgress(RunSnapshot snap)
+        {
+            var sector = System.Enum.IsDefined(typeof(PinkySectorId), snap.ActiveSector)
+                ? (PinkySectorId)snap.ActiveSector
+                : PinkySectorId.Pulse;
+
+            CadenceRunProgress.Session.ImportSectorClears(
+                snap.Seed,
+                sector,
+                snap.PulseCleared,
+                snap.EchoCleared,
+                snap.CanticleCleared);
+        }
+
+        private static int[] CollectVisitedNodeIds(RunState state)
+        {
+            var visited = state.VisitedPath;
+            if (visited == null || visited.Count == 0)
+            {
+                return System.Array.Empty<int>();
+            }
+
+            var ids = new int[visited.Count];
+            for (var i = 0; i < ids.Length; i++)
+            {
+                ids[i] = visited[i];
+            }
+
+            return ids;
         }
 
         private static int[] CollectClearedNodeIds(MapGraph graph)
