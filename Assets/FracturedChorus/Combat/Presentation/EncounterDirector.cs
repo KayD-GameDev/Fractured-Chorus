@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using FracturedChorus.Audio;
 using FracturedChorus.Combat.Core;
 using FracturedChorus.Combat.Grid;
+using FracturedChorus.Combat.Qte;
 using FracturedChorus.Combat.Timeline;
 using FracturedChorus.Combat.Units;
 using FracturedChorus.Data;
@@ -43,6 +44,7 @@ namespace FracturedChorus.Combat.Presentation
         [FormerlySerializedAs("letterboxOverlay")]
         [SerializeField] private EncounterLetterboxOverlay letterboxOverlay;
         [SerializeField] private CombatMusicController musicController;
+        [SerializeField] private CombatQteController qteController;
         private ICombatMusicSync _musicSync;
 
         [Header("Stage — Player/Enemy R1 C0")]
@@ -264,7 +266,38 @@ namespace FracturedChorus.Combat.Presentation
 
             focusDimmer?.Configure(focusDimFactor, focusFadeSeconds);
             EnsureLetterbox();
+            EnsureQteController();
             CombatImpactFeel.Ensure(transform, focusCamera != null ? focusCamera : Camera.main);
+        }
+
+        private void EnsureQteController()
+        {
+            if (qteController == null)
+            {
+                qteController = GetComponent<CombatQteController>();
+            }
+
+            if (qteController == null)
+            {
+                qteController = FindAnyObjectByType<CombatQteController>(FindObjectsInactive.Include);
+            }
+
+            if (qteController == null)
+            {
+                qteController = gameObject.AddComponent<CombatQteController>();
+            }
+        }
+
+        private IEnumerator TryRunCounterQte(int beatIndex)
+        {
+            EnsureQteController();
+            if (qteController == null)
+            {
+                CombatQteModifiers.Clear();
+                yield break;
+            }
+
+            yield return qteController.TryRunIfCounterBeat(_session, beatIndex);
         }
 
         private void EnsureLetterbox()
@@ -660,6 +693,8 @@ namespace FracturedChorus.Combat.Presentation
             UnitView enemyView,
             SkillDefinitionSO playerSkill)
         {
+            yield return TryRunCounterQte(beatIndex);
+
             var swordCount = ResolveSwordCount(beatIndex);
             if (swordCount > 0)
             {
@@ -667,7 +702,7 @@ namespace FracturedChorus.Combat.Presentation
                 yield break;
             }
 
-            var countered = IsBeatFullyCountered(beatIndex);
+            var countered = ShouldPresentAsCountered(beatIndex);
             if (countered)
             {
                 playerView.PlayCounterHold();
@@ -784,7 +819,8 @@ namespace FracturedChorus.Combat.Presentation
             SkillDefinitionSO playerSkill,
             int swordCount)
         {
-            var countered = IsBeatFullyCountered(beatIndex);
+            var countered = ShouldPresentAsCountered(beatIndex);
+            var playPlayerAttack = IsBeatFullyCountered(beatIndex);
             enemyView.PlayCastHold();
             if (countered)
             {
@@ -830,7 +866,7 @@ namespace FracturedChorus.Combat.Presentation
             }
 
             EnsureCharlotteSkillChoreographer();
-            if (countered
+            if (playPlayerAttack
                 && charlotteSkillChoreographer != null
                 && charlotteSkillChoreographer.Handles(playerSkill, playerView))
             {
@@ -839,7 +875,7 @@ namespace FracturedChorus.Combat.Presentation
             }
 
             EnsureCodaSkillChoreographer();
-            if (countered
+            if (playPlayerAttack
                 && codaSkillChoreographer != null
                 && codaSkillChoreographer.Handles(playerSkill, playerView))
             {
@@ -847,7 +883,7 @@ namespace FracturedChorus.Combat.Presentation
                 yield break;
             }
 
-            if (countered
+            if (playPlayerAttack
                 && playerSkillShotChoreographer != null
                 && playerSkillShotChoreographer.IsMeleeSkill(playerSkill))
             {
@@ -855,7 +891,7 @@ namespace FracturedChorus.Combat.Presentation
                 yield break;
             }
 
-            if (countered
+            if (playPlayerAttack
                 && playerSkillShotChoreographer != null
                 && playerSkillShotChoreographer.IsMultiBulletSkill(playerSkill))
             {
@@ -863,15 +899,15 @@ namespace FracturedChorus.Combat.Presentation
                 yield break;
             }
 
-            if (countered && HasRenderableVfxProfile(playerSkill))
+            if (playPlayerAttack && HasRenderableVfxProfile(playerSkill))
             {
                 yield return PlayProfileSkillResolve(beatIndex, playerView, enemyView, playerSkill);
                 yield break;
             }
 
-            if (countered)
+            if (playPlayerAttack)
             {
-                if (!IsUltimateSkill(playerSkill))
+                if (countered && !IsUltimateSkill(playerSkill))
                 {
                     enemyView.PlayBeCounteredHold();
                 }
@@ -1353,6 +1389,11 @@ namespace FracturedChorus.Combat.Presentation
             return null;
         }
 
+        private bool ShouldPresentAsCountered(int beatIndex)
+        {
+            return IsBeatFullyCountered(beatIndex) && CombatQteModifiers.AllowsCancel;
+        }
+
         private bool IsBeatFullyCountered(int beatIndex)
         {
             if (_session?.Timeline == null)
@@ -1739,6 +1780,11 @@ namespace FracturedChorus.Combat.Presentation
 
         private void FinishEncounter()
         {
+            if (qteController != null)
+            {
+                qteController.HideImmediate();
+            }
+            CombatQteModifiers.Clear();
             CombatImpactFeel.ActiveInstance?.CancelAll();
             HideLetterboxSafe();
             ClearUltimateFocus();
@@ -1756,6 +1802,11 @@ namespace FracturedChorus.Combat.Presentation
             }
 
             CombatImpactFeel.ActiveInstance?.CancelAll();
+            if (qteController != null)
+            {
+                qteController.HideImmediate();
+            }
+            CombatQteModifiers.Clear();
             HideLetterboxSafe();
             ClearUltimateFocus();
             RestorePhaseHomes();

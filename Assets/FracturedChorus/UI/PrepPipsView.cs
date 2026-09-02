@@ -19,6 +19,9 @@ namespace FracturedChorus.UI
 
         private const float SegmentGap = 1.5f;
 
+        private Color _pipOn = PipOn;
+        private Color _pipOff = PipOff;
+        private Color _pipFlash = PipFlash;
         private readonly Image[] _pips = new Image[CombatUnit.PrepCap];
         private readonly bool[] _pipCreatedByCode = new bool[CombatUnit.PrepCap];
         private RectTransform _root;
@@ -57,6 +60,13 @@ namespace FracturedChorus.UI
             view._rootCreatedByCode = true;
             view.EnsureBuilt();
             return view;
+        }
+
+        public void SetColors(Color on, Color off)
+        {
+            _pipOn = on;
+            _pipOff = off;
+            ApplyVisual(_displayed, animate: false);
         }
 
         public void SetLayoutMode(LayoutMode mode)
@@ -315,7 +325,7 @@ namespace FracturedChorus.UI
                     continue;
                 }
 
-                pip.color = i < prep ? PipOn : PipOff;
+                pip.color = i < prep ? _pipOn : _pipOff;
                 if (!animate)
                 {
                     pip.rectTransform.localScale = Vector3.one;
@@ -339,7 +349,7 @@ namespace FracturedChorus.UI
                 yield break;
             }
 
-            pip.color = gained ? Color.white : PipFlash;
+            pip.color = gained ? Color.white : _pipFlash;
             pip.rectTransform.localScale = Vector3.one * 1.15f;
             yield return new WaitForSecondsRealtime(0.12f);
             ApplyVisual(_displayed, animate: false);

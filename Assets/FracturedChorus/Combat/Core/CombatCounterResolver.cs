@@ -438,6 +438,33 @@ namespace FracturedChorus.Combat.Core
             }
         }
 
+        public static bool HasCounterOverlapAtBeat(BeatTimelineEngine timeline, int beatIndex)
+        {
+            if (timeline == null || beatIndex < 0)
+            {
+                return false;
+            }
+
+            var telegraphs = timeline.GetImpactTelegraphsAtBeat(beatIndex);
+            if (telegraphs == null || telegraphs.Count == 0)
+            {
+                return false;
+            }
+
+            foreach (var entry in timeline.Agenda)
+            {
+                foreach (var telegraph in telegraphs)
+                {
+                    if (IsCounterEntry(entry, telegraph) && telegraph.BeatIndex == beatIndex)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
         public static bool IsTelegraphFullyCountered(EnemyTelegraph telegraph, BeatTimelineEngine timeline) =>
             IsTelegraphFullyCountered(telegraph, timeline, null);
 

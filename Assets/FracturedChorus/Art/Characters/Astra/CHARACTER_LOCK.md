@@ -63,7 +63,7 @@
 - Same polish family as Ren school fullbody (~8 heads, cel + rim)
 - Full body must be one continuous figure — hips and legs correctly joined
 
-## Combat icon (boss)
+## Combat icon (boss) — legacy baked composite
 - Path: `Art/UI/Combat/Characters/astra_character_icon_bars_boss_v1.png`
 - Layout: tilted diamond + name stack + two bars; diamond uses boss crimson/magenta (not party cyan-blue)
 - Facing: toward **left** (boss side; opposite party icons that face right)
@@ -71,12 +71,20 @@
 - Expression: cunning / sly smirk (gian xảo)
 - Face/outfit: Cadence Boss luminous-dark identity
 
-## Mini-boss target icons (scene combat)
-| Target | Name on card | Path |
-|--------|--------------|------|
-| **Mắt** (EYE) | Chart Lord / **Eye** | `Art/UI/Combat/Boss/Astra/astra_miniboss_eye_icon_v1.png` |
-| **Micro** | Chart Lord / **Micro** | `Art/UI/Combat/Boss/Astra/astra_miniboss_mic_icon_v1.png` |
-- Format: **same card grammar as boss icon** (`astra_character_icon_bars_boss_v1.png`) — tilted crimson diamond + name stack + two bars; subject faces left; NOT circular buff badge
+## Combat enemy card
+- Portrait: `Art/UI/Combat/Characters/Avatars/astra_enemy_avatar_v1.png` (bust only; faces left)
+- Chrome (shared): `Art/UI/Combat/PartyCard/` — CardBg jagged (mirrored), AccentShard crimson, bar track
+- Hierarchy: CardBg / AccentShard / Avatar / NameLabel / BarStack (HP number+bar, PREP number+pips) / ElementBadge
+- Wired via `UnitPreset_Boss_Despair.combatCardSprite` → Avatar Image on enemy status bar
+- Element circle: top-right of card; HP fill red; tilt +6°
+- Card size follows scene CardTemplate (~240×118)
+
+## Mini-boss target cards
+| Target | Name on card | Portrait (bust) |
+|--------|--------------|-----------------|
+| **Mắt** (EYE) | AstraEye | `Art/UI/Combat/Characters/Avatars/astra_eye_enemy_avatar_v1.png` |
+| **Micro** | AstraMic | `Art/UI/Combat/Characters/Avatars/astra_mic_enemy_avatar_v1.png` |
+- Same modular chrome as Astra enemy card. Legacy composites: `astra_miniboss_eye_icon_v1.png`, `astra_miniboss_mic_icon_v1.png`
 
 ## Tone
 - Stage/School: bright, welcoming idol — Pulse key energy

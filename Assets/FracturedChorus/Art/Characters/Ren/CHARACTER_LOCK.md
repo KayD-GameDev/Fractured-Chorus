@@ -58,13 +58,12 @@
 Tone: keep **ngầu** — restrained face acting, no cartoon exaggeration.
 
 ## Combat party card
-- Path: `Art/UI/Combat/Characters/Ren_Clear_charCard.png`
-- Grammar: tilted cyan diamond + name **Ren** + two bar slots (top = HP, bottom = Prep 3-segment rectangles)
-- Wired via `UnitPreset_Ren.combatCardSprite` → EmbeddedBars skin on party status bar
-- Display only via `CardArt` (no Border / Avatar chrome)
+- Portrait: `Art/UI/Combat/Characters/Avatars/ren_party_avatar_v1.png` (bust only; cut from Clear card)
+- Chrome (shared): `Art/UI/Combat/PartyCard/` — CardBg jagged, AccentShard diamond, bar track
+- Hierarchy: CardBg / AccentShard / Avatar / NameLabel / BarStack (HP number+bar, PREP number+pips) / ElementBadge
+- Wired via `UnitPreset_Ren.combatCardSprite` → Avatar Image on party status bar
 - Element circle: top-right of card (Melody badge)
-- Card size follows scene CardTemplate height × art aspect (no squash)
-- Bar stack rotation: −18° (matches art slots slanting down left→right)
+- Card size follows scene CardTemplate (~240×120); BarStack rotation authored in Hierarchy
 
 ## Speaker
 - `Speaker_Ren.asset` — id `ren` — `IsProtagonist` / right-slot preference in dual portrait

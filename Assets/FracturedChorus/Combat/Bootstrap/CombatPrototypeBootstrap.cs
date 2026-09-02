@@ -5,6 +5,7 @@ using FracturedChorus.Combat.Difficulty;
 using FracturedChorus.Combat.Formation;
 using FracturedChorus.Combat.Grid;
 using FracturedChorus.Combat.Presentation;
+using FracturedChorus.Combat.Qte;
 using FracturedChorus.Combat.Timeline;
 using FracturedChorus.Combat.Units;
 using FracturedChorus.Data;
@@ -44,6 +45,14 @@ namespace FracturedChorus.Combat.Bootstrap
         [SerializeField] private PlayerSkillShotChoreographer playerSkillShotChoreographer;
         [FormerlySerializedAs("resolveCutsceneDirector")]
         [SerializeField] private EncounterDirector encounterDirector;
+
+        [Header("Counter QTE")]
+        [Tooltip("Tỷ lệ gặp QTE mặc định (phase 1–2). Mỗi 2 phase sau cộng thêm theo profile.")]
+        [Range(0f, 1f)]
+        [SerializeField] private float qteDefaultChance = 0.30f;
+        [Tooltip("Miss: không hủy đòn, giảm dmg phase 1–2. Tăng mỗi 2 phase, cap trên profile (35%).")]
+        [Range(0f, 1f)]
+        [SerializeField] private float qteMissDamageReduction = 0.25f;
 
         [Header("Grid layout")]
         [SerializeField] private float sideGap = HexBoardLayout.DefaultSideGap;
@@ -851,6 +860,16 @@ namespace FracturedChorus.Combat.Bootstrap
                 playerSkillShotChoreographer,
                 musicSync,
                 letterbox);
+
+            var qte = encounterDirector.GetComponent<CombatQteController>();
+            if (qte == null)
+            {
+                qte = encounterDirector.gameObject.AddComponent<CombatQteController>();
+            }
+
+            var overlay = FindAnyObjectByType<CombatQteOverlayView>(FindObjectsInactive.Include)
+                          ?? CombatQteOverlayView.EnsureCreated();
+            qte.Configure(qte.Profile, overlay, qteDefaultChance, qteMissDamageReduction);
         }
 
         private void EnsureAudioListener()

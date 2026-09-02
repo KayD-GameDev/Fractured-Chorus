@@ -272,6 +272,12 @@ namespace FracturedChorus.Editor
             CombatUiHierarchy.UpgradePartyCardTemplatesInScene();
         }
 
+        [MenuItem("Fractured Chorus/Combat UI/Rebuild Party Card Template (modular)")]
+        public static void RebuildModularPartyCardTemplate()
+        {
+            CombatUiHierarchy.RebuildModularPartyCardTemplateInScene();
+        }
+
         public static void RestoreClearCardTemplates()
         {
             CombatUiHierarchy.RestoreClearCardTemplatesInScene();
@@ -294,6 +300,11 @@ namespace FracturedChorus.Editor
             var cards = UnityEngine.Object.FindObjectsByType<PartyMemberCardView>(FindObjectsInactive.Include);
             foreach (var card in cards)
             {
+                if (card.transform.Find("Avatar") != null)
+                {
+                    continue;
+                }
+
                 CombatUiHierarchy.EnsureEmbeddedCardHierarchy(card.transform, forceRestore: true);
                 card.WireReferences();
                 EditorUtility.SetDirty(card);

@@ -288,7 +288,7 @@ namespace FracturedChorus.Combat.Bootstrap
         {
             var preset = ScriptableObject.CreateInstance<UnitPresetSO>();
             preset.unitId = "boss_despair";
-            preset.displayName = "Knight of Despair";
+            preset.displayName = "Astra";
             preset.role = UnitRole.Boss;
             preset.stats = new UnitStats
             {

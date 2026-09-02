@@ -119,6 +119,15 @@ namespace FracturedChorus.UI
 
         private static bool IsDisplay(string name, Transform transform)
         {
+            if (name == "HpValue"
+                || name == "PrepValue"
+                || name == "NameLabel"
+                || name == "HpLabel"
+                || name == "PrepLabel")
+            {
+                return true;
+            }
+
             if (name == "DateLabel"
                 || name == "LogTitle"
                 || name == "AgreeLabel"

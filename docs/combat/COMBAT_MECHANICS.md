@@ -104,6 +104,30 @@ Kết quả: trễ tối đa **~1 beat** (~0.39s @ 152 BPM) — snap beat kế, 
 - **Planning visual:** mỗi counter Active giảm 1 hit hiển thị (Tím→Xanh→Đỏ→`cover_perfect`); resolve vẫn so `CountCountersAtBeat >= HitsRequired`.
 - **Portrait / NoteTier** → glyph nốt nhạc Neon Cadence (`BossNoteClusterBuilder`): số = remaining; màu Tím/Xanh/Đỏ; **hai nốt spawn HitsRequired=1 kề nhau** → nốt đôi span 2 cột; nốt 2/3 luôn đơn (5 variant hash theo beat). Đủ hit → `cover_perfect` (size ≈ ô số ×1.35, cap `0.72 ×` khoảng beat kề; hold preview ×1.1). Spawn: Grunt luôn **Đỏ**; Elite **70% Đỏ / 30% Xanh**; Boss roll đủ 3 màu theo phase.
 
+### Counter QTE (Execute encounter)
+
+Ref visual: Expedition 33 shrinking ring, restyle Neon Cadence. Chỉ roll khi **Execute** đã chạy và beat là **counter** (Active S trùng telegraph quái).
+
+**Data:** [`CombatQteProfile.asset`](../Assets/FracturedChorus/Data/ScriptableObjects/CombatQteProfile.asset) (`CombatQteProfileSO`) — chance, cửa Perfect/Good, hệ số dmg, sprite, phím. Overlay scene `CombatQteOverlay` (Canvas sort 560, **không** nằm dưới CombatCanvas để vẫn hiện khi encounter ẩn HUD). Menu **Fractured Chorus → Combat → Setup QTE Overlay**.
+
+**Default trên SO (đổi Inspector):**
+
+| | Perfect | Good | Miss | Không roll |
+|--|---------|------|------|------------|
+| Hủy nốt quái | có | có | **không** (đòn vẫn đánh) | như counter đủ hit |
+| Player dmg | ×1.50 | ×1.20 | ×(1 − reduction) | ×1.0 |
+| Enemy dmg | — | — | ×(1 − reduction), đòn vẫn trúng | — |
+
+**Miss reduction:** `min(missReductionCap, missReductionBase + missReductionStep × floor(phaseIndex / phasesPerStep))` — default **−25%** dmg, +5% mỗi 2 phase, **cap −35%** (giữ ×0.75 → ×0.70 → ×0.65). Không hủy telegraph.
+
+**Chance:** `min(chanceCap, baseChance + chanceStep × floor(phaseIndex / phasesPerStep))` — default 30% +10% mỗi 2 phase, cap 80%.
+
+**Input:** Space (hoặc click) khi vòng ngoài co vào vòng trong. Block Space vẫn khóa trên beat counter; encounter pause → Space rảnh cho QTE.
+
+**Tune trên CombatRoot** (foldout **Counter QTE**): `Default chance` (`qteDefaultChance`) · `Miss dmg reduction` (`qteMissDamageReduction`). Không cần mở `.asset`.
+
+**Code:** `CombatQteController` · `CombatQteModifiers` · hook `EncounterDirector.PlayDuelAndResolve` trước choreo / `ResolveImpactHp`.
+
 ### Resolve đòn quái
 
 - Counter đủ → cancel · không counter → block (nếu hợp lệ) → dmg.
@@ -528,6 +552,7 @@ Window 12 beat → party outgoing dmg ×1.25; Early/Late → OnBeat (player + Gu
 | DelayBossNote @ Planning | ✅ MVP | `DelayImpactTelegraphsAfterBeat` · slide VFX |
 | ReduceS2 + buff icon | ✅ MVP | `PendingReduceS2` · `PartyMemberCardView` BuffReduceS2 |
 | Counter presentation feel | ✅ MVP | `CounterPresentationDriver` · Perfect chip · MULTI |
+| Counter QTE (encounter) | ✅ | `CombatQteProfileSO` · overlay sort 560 · Perfect/Good/Miss |
 | Elite note roll 70/30 | ✅ MVP | `BossTelegraphPlanner.RollEliteNoteTier` |
 | Intro-pause @ beat 6 | (removed) | Thừa khi planning mở từ đầu trận |
 | Segment handoff no jump | ✅ MVP | `continueFromHold`, `RefreshTelegraphsAndSlots` |
@@ -544,6 +569,8 @@ Window 12 beat → party outgoing dmg ×1.25; Early/Late → OnBeat (player + Gu
 
 | Ngày | Nội dung |
 |------|----------|
+| 2026-09-02 | **Counter QTE** Miss: không hủy đòn, giảm dmg −25% (cap −35%, +5%/2 phase) hai phía |
+| 2026-09-02 | **Counter QTE** trong encounter: `CombatQteProfileSO` (chance/grade/sprite Inspector) · Perfect/Good hủy + bonus dmg · Miss không hủy, giảm dmg hai phía · overlay Canvas 560 |
 | 2026-08-02 | Phase **22 beat**; lookahead 3 phase; nốt ≥ beat 3; mật độ ×1.25; Charlotte delay cascade giữ nốt qua phase |
 | 2026-08-01 | **Uniform beat + nhạc liên tục.** Boss track → Eternal Spark Boss Remix (152 BPM · 677 beat · 169 bar); `MusicBeatMapSO` sang model `bpm + offset`, bỏ pipeline CSV. Nhạc chạy từ lúc vào trận và **không bao giờ pause** — planning chỉ duck 0.7× + lowpass 900 Hz; Execute re-anchor scan vào mốc bar kế (Beat Offset Anchor). Deploy gộp vào Planning (`IsPlanningWindowOpen`), một nút **Execute**; bỏ intro-pause @ beat 6, bỏ planning BGM / transition stinger / lớp Ren Cover |
 | 2026-07-17 | Bỏ Phase AV budget gate; assign = footprint only; BaseAv = order + dmg target |

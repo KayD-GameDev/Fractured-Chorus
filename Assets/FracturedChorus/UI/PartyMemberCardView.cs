@@ -8,7 +8,7 @@ using UnityEngine.UI;
 namespace FracturedChorus.UI
 {
     /// <summary>
-    /// Thẻ party/enemy — hiển thị nhân vật chỉ qua CardArt (+ BarStack Hierarchy).
+    /// Thẻ party/enemy — party modular (CardBg/Avatar/HP-Prep numbers); enemy vẫn CardArt composite.
     /// Clone từ CardTemplate lúc Play. Vị trí/size lấy từ Hierarchy.
     /// </summary>
     public class PartyMemberCardView : MonoBehaviour
@@ -22,9 +22,21 @@ namespace FracturedChorus.UI
         [SerializeField] private Image elementBadgeRing;
         [SerializeField] private Image elementIcon;
         [SerializeField] private Image cardArtImage;
+        [SerializeField] private Image cardBg;
+        [SerializeField] private Image accentShard;
+        [SerializeField] private Image avatarImage;
+        [SerializeField] private Text nameLabel;
+        [SerializeField] private Text hpLabel;
+        [SerializeField] private Text hpValue;
+        [SerializeField] private Text prepLabel;
+        [SerializeField] private Text prepValue;
         [SerializeField] private RectTransform barStack;
         [SerializeField] private RectTransform healthSlot;
         [SerializeField] private RectTransform gaugeSlot;
+        [Header("CardTemplate preview")]
+        [Tooltip("Presets dùng để đổi Avatar/tên trên CardTemplate trong Edit Mode.")]
+        [SerializeField] private UnitPresetSO[] characterCardPresets;
+        [SerializeField] private int previewCharacterIndex;
 
         private CombatUnit _unit;
         private PrepPipsView _prepPips;
@@ -39,6 +51,87 @@ namespace FracturedChorus.UI
 
         public CombatUnit BoundUnit => _unit;
         public bool UsesEmbeddedCardArt => _embeddedSkin;
+        public bool IsPartyAuthoringCard => !IsEnemyCard();
+
+        /// <summary>
+        /// Edit Mode: gán Avatar + tên (+ HP preview) từ preset đang chọn trên CardTemplate.
+        /// Play Mode Bind() ghi đè theo unit thật.
+        /// </summary>
+        public void ApplyInspectorPreview()
+        {
+            if (Application.isPlaying)
+            {
+                return;
+            }
+
+            WireModularReferences();
+            var preset = ResolvePreviewPreset();
+            if (preset == null)
+            {
+                return;
+            }
+
+            var portrait = preset.ResolveCombatCardSprite() ?? preset.battleSprite;
+            ApplyPortrait(portrait);
+            ApplyNameLabel(preset);
+            if (hpValue != null)
+            {
+                hpValue.text = preset.ResolveStats().MaxHp.ToString();
+            }
+
+            if (prepValue != null)
+            {
+                prepValue.text = "0";
+            }
+
+            ApplyPartyResourceColors();
+        }
+
+        public void SetPreviewCharacterIndex(int index)
+        {
+            if (characterCardPresets == null || characterCardPresets.Length == 0)
+            {
+                previewCharacterIndex = 0;
+                return;
+            }
+
+            previewCharacterIndex = Mathf.Clamp(index, 0, characterCardPresets.Length - 1);
+            ApplyInspectorPreview();
+        }
+
+        public UnitPresetSO[] CharacterCardPresets => characterCardPresets;
+        public int PreviewCharacterIndex => previewCharacterIndex;
+
+        private UnitPresetSO ResolvePreviewPreset()
+        {
+            if (characterCardPresets == null || characterCardPresets.Length == 0)
+            {
+                return null;
+            }
+
+            var index = Mathf.Clamp(previewCharacterIndex, 0, characterCardPresets.Length - 1);
+            return characterCardPresets[index];
+        }
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            if (Application.isPlaying)
+            {
+                return;
+            }
+
+            UnityEditor.EditorApplication.delayCall += () =>
+            {
+                if (this == null)
+                {
+                    return;
+                }
+
+                ApplyInspectorPreview();
+            };
+        }
+#endif
 
         /// <summary>
         /// Gọi ngay sau Instantiate từ EnemyStatusBar — copy Rect chrome từ template factory,
@@ -62,6 +155,7 @@ namespace FracturedChorus.UI
         public void WireReferences()
         {
             DestroyLegacyChrome();
+            WireModularReferences();
 
             if (healthBarBg == null)
             {
@@ -120,6 +214,7 @@ namespace FracturedChorus.UI
             if (!_useEnemyTemplateHierarchy)
             {
                 EnsureEmbeddedHierarchy();
+                EnsureModularHierarchy();
             }
 
             EnsureHealthBarVisuals();
@@ -153,6 +248,7 @@ namespace FracturedChorus.UI
             }
 
             EnsureEmbeddedHierarchy();
+            EnsureModularHierarchy();
             EnsureElementBadgeExists(transform as RectTransform);
             if (elementBadgeRing != null)
             {
@@ -171,6 +267,9 @@ namespace FracturedChorus.UI
         private bool IsEnemyCard() =>
             _useEnemyTemplateHierarchy
             || GetComponentInParent<EnemyStatusBarUIView>(true) != null;
+
+        private bool UsesModularChrome() =>
+            avatarImage != null || transform.Find("Avatar") != null;
 
         public void Bind(CombatUnit unit, UnitPresetSO preset)
         {
@@ -309,37 +408,28 @@ namespace FracturedChorus.UI
             }
 
             EnsureEmbeddedHierarchy();
-            // Chỉ CardArt hiển thị hình — combat card art, fallback battleSprite.
-            var cardArt = preset?.ResolveCombatCardSprite() ?? preset?.battleSprite;
-            _embeddedSkin = cardArt != null;
-            // Mọi thẻ dùng chung size CardTemplate (Ren grammar) — không scale theo sprite crop.
+            EnsureModularHierarchy();
+            // Portrait trên Avatar; CardArt composite cũ ẩn khi đã có Avatar.
+            var portrait = preset?.ResolveCombatCardSprite() ?? preset?.battleSprite;
+            _embeddedSkin = portrait != null;
             ApplyUniformCardRootSize();
             SyncLayoutElementToAuthoredSize();
 
-            if (cardArtImage != null)
-            {
-                cardArtImage.gameObject.SetActive(true);
-                cardArtImage.sprite = cardArt;
-                cardArtImage.color = cardArt != null ? Color.white : new Color(0.2f, 0.2f, 0.24f, 1f);
-                cardArtImage.type = Image.Type.Simple;
-                cardArtImage.preserveAspect = false;
-                cardArtImage.raycastTarget = false;
-                StretchFull(cardArtImage.rectTransform);
-            }
+            ApplyPortrait(portrait);
+            ApplyNameLabel(preset);
 
             if (barStack != null)
             {
                 barStack.gameObject.SetActive(true);
-                // Chỉ đổi Y lúc load — giữ nguyên X / size / xoay / anchor từ CardTemplate.
                 ApplyBarStackYFromPreset(preset);
             }
 
-            // Khớp CardTemplate: BarStack trên CardArt trong Hierarchy; ElementBadge vẫn vẽ sau cùng.
             RestoreCardChildSiblingOrder();
 
             PlaceHealthBarInSlot(healthSlot);
             EnsurePrepPips();
             _prepPips?.LayoutIn(gaugeSlot);
+            ApplyPartyResourceColors();
             ApplyBadgeLayout();
             PlaceBuffForEmbedded();
             BringElementBadgeToFront();
@@ -351,20 +441,38 @@ namespace FracturedChorus.UI
         /// </summary>
         private void ApplyEnemyCardSkinFromTemplate(UnitPresetSO preset)
         {
-            var cardArt = preset?.ResolveCombatCardSprite() ?? preset?.battleSprite;
-            _embeddedSkin = cardArt != null;
+            WireModularReferences();
+            var portrait = preset?.ResolveCombatCardSprite() ?? preset?.battleSprite;
+            _embeddedSkin = portrait != null;
             ApplyUniformCardRootSize();
             SyncLayoutElementToAuthoredSize();
+
+            if (avatarImage != null)
+            {
+                ApplyPortrait(portrait);
+                ApplyNameLabel(preset);
+                if (barStack != null)
+                {
+                    barStack.gameObject.SetActive(true);
+                }
+
+                RestoreCardChildSiblingOrder();
+                PlaceHealthBarInSlot(healthSlot);
+                EnsurePrepPips();
+                _prepPips?.LayoutIn(gaugeSlot);
+                ApplyPartyResourceColors();
+                BringElementBadgeToFront();
+                return;
+            }
 
             if (cardArtImage != null)
             {
                 cardArtImage.gameObject.SetActive(true);
-                cardArtImage.sprite = cardArt;
-                cardArtImage.color = cardArt != null ? Color.white : new Color(0.2f, 0.2f, 0.24f, 1f);
+                cardArtImage.sprite = portrait;
+                cardArtImage.color = portrait != null ? Color.white : new Color(0.2f, 0.2f, 0.24f, 1f);
                 cardArtImage.type = Image.Type.Simple;
                 cardArtImage.preserveAspect = false;
                 cardArtImage.raycastTarget = false;
-                // Không StretchFull — giữ Rect CardArt từ Enemy CardTemplate.
             }
 
             if (barStack != null)
@@ -372,7 +480,6 @@ namespace FracturedChorus.UI
                 barStack.gameObject.SetActive(true);
             }
 
-            // HealthBar đã nằm trong HealthSlot trên template → chỉ sync visual, không SetParent/Stretch.
             if (healthBarBg != null)
             {
                 EnsureHealthBarVisuals();
@@ -381,7 +488,6 @@ namespace FracturedChorus.UI
 
             EnsurePrepPips();
             ApplyHealthSlotTopFromPreset(preset);
-            // Không LayoutIn / ApplyBadgeLayout / PlaceBuff / reorder sibling / BarStack Y.
         }
 
         /// <summary>
@@ -409,6 +515,14 @@ namespace FracturedChorus.UI
         {
             if (source == null)
             {
+                return;
+            }
+
+            WireModularReferences();
+            // Modular P5: Instantiate đã copy Rect. Không kéo BarStack ra sau CardBg (HP bị che).
+            if (transform.Find("Avatar") != null || transform.Find("CardBg") != null)
+            {
+                RestoreCardChildSiblingOrder();
                 return;
             }
 
@@ -505,20 +619,38 @@ namespace FracturedChorus.UI
             dst.localScale = src.localScale;
         }
 
-        /// <summary>BarStack → CardArt → (buff) → ElementBadge — như Hierarchy CardTemplate.</summary>
+        /// <summary>BarStack → CardArt/Avatar → (buff) → ElementBadge — như Hierarchy CardTemplate.</summary>
         private void RestoreCardChildSiblingOrder()
         {
+            SetSiblingIfPresent(cardBg != null ? cardBg.rectTransform : transform.Find("CardBg") as RectTransform, 0);
+            SetSiblingIfPresent(accentShard != null ? accentShard.rectTransform : transform.Find("AccentShard") as RectTransform, 1);
+            var avatarRt = avatarImage != null ? avatarImage.rectTransform : transform.Find("Avatar") as RectTransform;
+            SetSiblingIfPresent(avatarRt, 2);
             if (barStack != null)
             {
-                barStack.SetAsFirstSibling();
+                barStack.SetSiblingIndex(3);
             }
 
-            if (cardArtImage != null)
+            if (cardArtImage != null && (avatarImage == null || !avatarImage.gameObject.activeSelf))
             {
-                // Ngay sau BarStack.
-                var artIndex = barStack != null ? 1 : 0;
-                cardArtImage.rectTransform.SetSiblingIndex(artIndex);
+                cardArtImage.rectTransform.SetSiblingIndex(barStack != null ? 4 : 3);
             }
+
+            var nameRt = nameLabel != null ? nameLabel.rectTransform : transform.Find("NameLabel") as RectTransform;
+            if (nameRt != null)
+            {
+                nameRt.SetAsLastSibling();
+            }
+        }
+
+        private static void SetSiblingIfPresent(RectTransform rt, int index)
+        {
+            if (rt == null)
+            {
+                return;
+            }
+
+            rt.SetSiblingIndex(Mathf.Clamp(index, 0, rt.parent.childCount - 1));
         }
 
         /// <summary>
@@ -526,6 +658,11 @@ namespace FracturedChorus.UI
         /// </summary>
         private void ApplyBarStackYFromPreset(UnitPresetSO preset)
         {
+            if (avatarImage != null)
+            {
+                return;
+            }
+
             if (barStack == null || preset == null || preset.barStackAnchoredY < 0f)
             {
                 return;
@@ -561,10 +698,237 @@ namespace FracturedChorus.UI
             cardRt.sizeDelta = _authoredCardSize;
         }
 
+        /// <summary>Gỡ Border legacy. Avatar modular phải giữ lại.</summary>
         private void DestroyLegacyChrome()
         {
             DestroyUiObject(transform.Find("Border")?.gameObject);
-            DestroyUiObject(transform.Find("Avatar")?.gameObject);
+        }
+
+        private void WireModularReferences()
+        {
+            cardBg ??= transform.Find("CardBg")?.GetComponent<Image>();
+            accentShard ??= transform.Find("AccentShard")?.GetComponent<Image>();
+            avatarImage ??= transform.Find("Avatar")?.GetComponent<Image>();
+            nameLabel ??= transform.Find("NameLabel")?.GetComponent<Text>();
+            hpLabel ??= transform.Find("BarStack/HealthSlot/HpLabel")?.GetComponent<Text>();
+            hpValue ??= transform.Find("BarStack/HealthSlot/HpValue")?.GetComponent<Text>();
+            prepLabel ??= transform.Find("BarStack/GaugeSlot/PrepLabel")?.GetComponent<Text>();
+            prepValue ??= transform.Find("BarStack/GaugeSlot/PrepValue")?.GetComponent<Text>();
+        }
+
+        /// <summary>Tạo node modular thiếu. Rect đã author thì giữ nguyên.</summary>
+        private void EnsureModularHierarchy()
+        {
+            if (IsEnemyCard())
+            {
+                return;
+            }
+
+            var cardRt = transform as RectTransform;
+            if (cardRt == null)
+            {
+                return;
+            }
+
+            cardBg = EnsureImageChild(cardRt, "CardBg", PartyCardLayout.ApplyModularCardBgRect, cardBg);
+            accentShard = EnsureImageChild(
+                cardRt,
+                "AccentShard",
+                rt => PartyCardLayout.ApplyModularAccentRect(rt),
+                accentShard);
+            avatarImage = EnsureImageChild(
+                cardRt,
+                "Avatar",
+                rt => PartyCardLayout.ApplyModularAvatarRect(rt),
+                avatarImage);
+            if (avatarImage != null)
+            {
+                avatarImage.preserveAspect = true;
+            }
+
+            nameLabel = EnsureTextChild(
+                cardRt,
+                "NameLabel",
+                rt => PartyCardLayout.ApplyModularNameRect(rt),
+                nameLabel,
+                16,
+                "NAME");
+            if (healthSlot != null)
+            {
+                hpLabel = EnsureTextChild(healthSlot, "HpLabel", PartyCardLayout.ApplyModularHpLabelRect, hpLabel, 10, "HP");
+                hpValue = EnsureTextChild(healthSlot, "HpValue", PartyCardLayout.ApplyModularHpValueRect, hpValue, 20, "0");
+            }
+
+            if (gaugeSlot != null)
+            {
+                prepLabel = EnsureTextChild(gaugeSlot, "PrepLabel", PartyCardLayout.ApplyModularPrepLabelRect, prepLabel, 10, "PREP");
+                prepValue = EnsureTextChild(gaugeSlot, "PrepValue", PartyCardLayout.ApplyModularPrepValueRect, prepValue, 16, "0");
+            }
+
+            if (cardBg != null)
+            {
+                cardBg.preserveAspect = false;
+                if (cardBg.sprite == null)
+                {
+                    cardBg.sprite = Resources.Load<Sprite>("UI/Combat/PartyCard/party_card_bg_jagged_v1");
+                }
+            }
+
+            if (accentShard != null && accentShard.sprite == null)
+            {
+                accentShard.sprite = Resources.Load<Sprite>("UI/Combat/PartyCard/party_card_accent_diamond_v1");
+            }
+        }
+
+        private Image EnsureImageChild(
+            RectTransform parent,
+            string childName,
+            System.Action<RectTransform> applyFallback,
+            Image existing)
+        {
+            if (existing != null)
+            {
+                return existing;
+            }
+
+            var found = parent.Find(childName)?.GetComponent<Image>();
+            if (found != null)
+            {
+                return found;
+            }
+
+            var go = new GameObject(childName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            var rt = go.GetComponent<RectTransform>();
+            rt.SetParent(parent, false);
+            applyFallback?.Invoke(rt);
+            var image = go.GetComponent<Image>();
+            image.raycastTarget = false;
+            image.preserveAspect = true;
+            image.color = Color.white;
+            return image;
+        }
+
+        private Text EnsureTextChild(
+            RectTransform parent,
+            string childName,
+            System.Action<RectTransform> applyFallback,
+            Text existing,
+            int fontSize,
+            string placeholder)
+        {
+            if (existing != null)
+            {
+                return existing;
+            }
+
+            var found = parent.Find(childName)?.GetComponent<Text>();
+            if (found != null)
+            {
+                return found;
+            }
+
+            var go = new GameObject(childName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+            var rt = go.GetComponent<RectTransform>();
+            rt.SetParent(parent, false);
+            applyFallback?.Invoke(rt);
+            var text = go.GetComponent<Text>();
+            text.fontSize = fontSize;
+            text.alignment = TextAnchor.MiddleLeft;
+            text.text = placeholder;
+            text.raycastTarget = false;
+            text.horizontalOverflow = HorizontalWrapMode.Overflow;
+            text.verticalOverflow = VerticalWrapMode.Overflow;
+            UiFontCatalog.ApplyAutomatic(text);
+            return text;
+        }
+
+        private void ApplyPortrait(Sprite portrait)
+        {
+            if (avatarImage != null)
+            {
+                avatarImage.gameObject.SetActive(true);
+                avatarImage.sprite = portrait;
+                avatarImage.color = portrait != null ? Color.white : new Color(0.2f, 0.2f, 0.24f, 1f);
+                avatarImage.type = Image.Type.Simple;
+                avatarImage.preserveAspect = true;
+                avatarImage.raycastTarget = false;
+                if (cardArtImage != null)
+                {
+                    cardArtImage.gameObject.SetActive(false);
+                }
+
+                return;
+            }
+
+            if (cardArtImage == null)
+            {
+                return;
+            }
+
+            cardArtImage.gameObject.SetActive(true);
+            cardArtImage.sprite = portrait;
+            cardArtImage.color = portrait != null ? Color.white : new Color(0.2f, 0.2f, 0.24f, 1f);
+            cardArtImage.type = Image.Type.Simple;
+            cardArtImage.preserveAspect = false;
+            cardArtImage.raycastTarget = false;
+            StretchFull(cardArtImage.rectTransform);
+        }
+
+        private void ApplyNameLabel(UnitPresetSO preset)
+        {
+            if (nameLabel == null)
+            {
+                return;
+            }
+
+            nameLabel.gameObject.SetActive(true);
+            nameLabel.text = preset != null ? preset.displayName : string.Empty;
+            nameLabel.color = FcColorTokens.Brand.TextPrimary;
+            UiFontCatalog.ApplyAutomatic(nameLabel);
+        }
+
+        private void ApplyPartyResourceColors()
+        {
+            var hpColor = IsEnemyCard()
+                ? FcColorTokens.Brand.RedSelection
+                : FcColorTokens.Brand.CyanNeonCore;
+            var prepColor = FcColorTokens.Brand.MagentaAccent;
+            if (hpLabel != null)
+            {
+                hpLabel.color = hpColor;
+                UiFontCatalog.ApplyAutomatic(hpLabel);
+            }
+
+            if (hpValue != null)
+            {
+                hpValue.color = hpColor;
+                UiFontCatalog.ApplyAutomatic(hpValue);
+            }
+
+            if (prepLabel != null)
+            {
+                prepLabel.color = prepColor;
+                UiFontCatalog.ApplyAutomatic(prepLabel);
+            }
+
+            if (prepValue != null)
+            {
+                prepValue.color = prepColor;
+                UiFontCatalog.ApplyAutomatic(prepValue);
+            }
+
+            if (healthBarBg != null && UsesModularChrome())
+            {
+                healthBarBg.color = Color.white;
+            }
+
+            if (healthBarFill != null)
+            {
+                healthBarFill.color = hpColor;
+            }
+
+            EnsurePrepPips();
+            _prepPips?.SetColors(prepColor, new Color(0.18f, 0.06f, 0.12f, 0.8f));
         }
 
         private void SyncLayoutElementToAuthoredSize()
@@ -623,7 +987,14 @@ namespace FracturedChorus.UI
                     barStack = go.GetComponent<RectTransform>();
                     barStack.SetParent(cardRt, false);
                     go.SetActive(false);
-                    PartyCardLayout.ApplyEmbeddedBarStackRect(barStack);
+                    if (IsEnemyCard())
+                    {
+                        PartyCardLayout.ApplyEmbeddedBarStackRect(barStack);
+                    }
+                    else
+                    {
+                        PartyCardLayout.ApplyModularBarStackRect(barStack);
+                    }
                 }
             }
 
@@ -715,11 +1086,7 @@ namespace FracturedChorus.UI
 
             elementBadgeRing.gameObject.SetActive(true);
             elementBadgeRing.enabled = true;
-            // Enemy: giữ sibling order của CardTemplate (BarStack → CardArt → ElementBadge).
-            if (!IsEnemyCard())
-            {
-                elementBadgeRing.transform.SetAsLastSibling();
-            }
+            elementBadgeRing.transform.SetAsLastSibling();
         }
 
         private void PlaceHealthBarInSlot(RectTransform slot)
@@ -734,13 +1101,23 @@ namespace FracturedChorus.UI
             if (bgRt.parent == slot)
             {
                 EnsureHealthBarVisuals();
-                healthBarBg.color = new Color(1f, 1f, 1f, 0f);
+                HideCompositeHealthTrack();
                 return;
             }
 
             bgRt.SetParent(slot, false);
             StretchFull(bgRt);
             EnsureHealthBarVisuals();
+            HideCompositeHealthTrack();
+        }
+
+        private void HideCompositeHealthTrack()
+        {
+            if (healthBarBg == null || avatarImage != null)
+            {
+                return;
+            }
+
             healthBarBg.color = new Color(1f, 1f, 1f, 0f);
         }
 
@@ -990,12 +1367,25 @@ namespace FracturedChorus.UI
                 healthBarFillRect.offsetMax = Vector2.zero;
             }
 
-            if (cardArtImage != null)
+            if (hpValue != null)
             {
-                var alpha = _unit.IsAlive ? 1f : 0.35f;
-                var c = cardArtImage.color;
-                cardArtImage.color = new Color(c.r, c.g, c.b, alpha);
+                hpValue.text = _unit.CurrentHp.ToString();
             }
+
+            var portraitAlpha = _unit.IsAlive ? 1f : 0.35f;
+            ApplyPortraitAlpha(cardArtImage, portraitAlpha);
+            ApplyPortraitAlpha(avatarImage, portraitAlpha);
+        }
+
+        private static void ApplyPortraitAlpha(Image image, float alpha)
+        {
+            if (image == null)
+            {
+                return;
+            }
+
+            var c = image.color;
+            image.color = new Color(c.r, c.g, c.b, alpha);
         }
 
         private void RefreshPrep(bool animate)
@@ -1005,7 +1395,12 @@ namespace FracturedChorus.UI
                 EnsurePrepPips();
             }
 
-            _prepPips?.SetPrep(_unit != null ? _unit.Prep : 0, animate);
+            var prep = _unit != null ? _unit.Prep : 0;
+            _prepPips?.SetPrep(prep, animate);
+            if (prepValue != null)
+            {
+                prepValue.text = prep.ToString();
+            }
         }
 
         private void RefreshReduceS2BuffIcon()
@@ -1047,9 +1442,15 @@ namespace FracturedChorus.UI
 
             if (healthBarBg != null)
             {
-                healthBarBg.sprite = white;
+                if (healthBarBg.sprite == null)
+                {
+                    healthBarBg.sprite = white;
+                }
+
                 healthBarBg.type = Image.Type.Simple;
-                healthBarBg.color = HealthTrackColor;
+                healthBarBg.color = UsesModularChrome() || !IsEnemyCard()
+                    ? Color.white
+                    : HealthTrackColor;
                 healthBarBg.raycastTarget = false;
             }
 
@@ -1057,7 +1458,9 @@ namespace FracturedChorus.UI
             {
                 healthBarFill.sprite = white;
                 healthBarFill.type = Image.Type.Simple;
-                healthBarFill.color = HealthFillColor;
+                healthBarFill.color = UsesModularChrome()
+                    ? (IsEnemyCard() ? FcColorTokens.Brand.RedSelection : FcColorTokens.Brand.CyanNeonCore)
+                    : (IsEnemyCard() ? HealthFillColor : FcColorTokens.Brand.CyanNeonCore);
                 healthBarFill.raycastTarget = false;
             }
 

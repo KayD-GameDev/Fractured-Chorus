@@ -52,6 +52,10 @@
 ## Combat icon ref
 - `Art/UI/Combat/Characters/coda_character_icon_bars_white_v1.png` — Cadence face/outfit cue
 
+## Combat party card
+- Portrait: `Art/UI/Combat/Characters/Avatars/coda_party_avatar_v1.png` (bust only; Cadence headphones + visor)
+- Wired via `UnitPreset_Mage.combatCardSprite` → Avatar on party CardTemplate
+
 ## Chibi
 - School fullbody: `Art/Characters/Coda/Chibi/coda_chibi_fullbody_v1.png`
 - Cadence bust (tutorial coach): `Art/Characters/Coda/Chibi/coda_cadence_chibi_bust_v1.png` — chest-up, headphones + forehead goggles, transparent PNG, canvas 1024×1536

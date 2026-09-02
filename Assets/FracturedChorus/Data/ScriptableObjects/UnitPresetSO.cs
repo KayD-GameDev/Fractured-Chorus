@@ -22,7 +22,7 @@ namespace FracturedChorus.Data
         public Sprite battleSprite;
         [Tooltip("Circular chibi bust for timeline LaneAvatar gutter. Falls back to timeline lane color when null.")]
         public Sprite timelineAvatarSprite;
-        [Tooltip("Full tilted combat card art (name + HP/Prep slots). Party/enemy card UI displays this on CardArt.")]
+        [Tooltip("Party card portrait (bust only). Modular Avatar Image; enemy CardArt may still use a composite.")]
         public Sprite combatCardSprite;
         [Tooltip("Khi load: chỉ ghi đè BarStack.anchoredPosition.y (Hierarchy). < 0 = giữ Y CardTemplate.")]
         public float barStackAnchoredY = -1f;

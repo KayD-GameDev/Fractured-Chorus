@@ -187,7 +187,7 @@ namespace FracturedChorus.Editor
             var preset = CreatePreset(
                 "UnitPreset_Boss_Despair",
                 "boss_despair",
-                "Knight of Despair",
+                "Astra",
                 UnitRole.Boss,
                 bossBlock,
                 new[] { coreStrike },

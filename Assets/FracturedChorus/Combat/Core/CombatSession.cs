@@ -9,6 +9,7 @@ using FracturedChorus.Combat.Damage;
 using FracturedChorus.Combat.Difficulty;
 using FracturedChorus.Combat.Formation;
 using FracturedChorus.Combat.Grid;
+using FracturedChorus.Combat.Qte;
 using FracturedChorus.Combat.Timeline;
 using FracturedChorus.Combat.Units;
 using FracturedChorus.Data;
@@ -105,6 +106,7 @@ namespace FracturedChorus.Combat.Core
                 unit.OnDied += HandleUnitDied;
             }
 
+            CombatQteModifiers.Clear();
             BeginPlanningRound();
         }
 
@@ -929,7 +931,8 @@ namespace FracturedChorus.Combat.Core
                 ? telegraph.HitsRequired
                 : System.Math.Max(1, (int)telegraph.NoteTier);
 
-            if (CombatCounterResolver.IsTelegraphFullyCountered(telegraph, Timeline))
+            if (CombatCounterResolver.IsTelegraphFullyCountered(telegraph, Timeline)
+                && CombatQteModifiers.AllowsCancel)
             {
                 Debug.Log(
                     $"[Counter] Cancelled {telegraph.Unit.DisplayName} @ beat {beatIndex} ({telegraph.NoteTier}, need {telegraph.HitsRequired})");
@@ -960,6 +963,11 @@ namespace FracturedChorus.Combat.Core
                 : DifficultyRuntime.Cadence;
             var difficultyMult = DifficultyRuntime.Get(difficulty);
             var finalDamage = damageResult.FinalDamage * difficultyMult.EnemyDamage;
+            if (CombatQteModifiers.HasActive
+                && !Mathf.Approximately(CombatQteModifiers.IncomingEnemyMult, 1f))
+            {
+                finalDamage *= CombatQteModifiers.IncomingEnemyMult;
+            }
             var blockTiming = BlockBarriers.TryGetBlockTiming(beatIndex, Timeline);
             if (blockTiming.HasValue)
             {
@@ -1158,7 +1166,8 @@ namespace FracturedChorus.Combat.Core
                     BeatTiming = timing,
                     IsEmpowered = entry.IsEmpowered,
                     Entry = entry,
-                    CoverOutgoingMultiplier = Cover.OutgoingDamageMultiplier
+                    CoverOutgoingMultiplier = Cover.OutgoingDamageMultiplier,
+                    QteOutgoingMultiplier = CombatQteModifiers.OutgoingMult
                 };
 
                 if (pulseIndex == 0 || entry.PendingHitDamage < 0f)
@@ -1198,7 +1207,8 @@ namespace FracturedChorus.Combat.Core
                 BeatTiming = timing,
                 IsEmpowered = entry.IsEmpowered,
                 Entry = entry,
-                CoverOutgoingMultiplier = Cover.OutgoingDamageMultiplier
+                CoverOutgoingMultiplier = Cover.OutgoingDamageMultiplier,
+                QteOutgoingMultiplier = CombatQteModifiers.OutgoingMult
             };
 
             var command = new SkillActionCommand(entry.Skill);
