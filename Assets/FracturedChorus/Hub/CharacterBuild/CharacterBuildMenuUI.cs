@@ -32,19 +32,24 @@ namespace FracturedChorus.Hub.CharacterBuild
         private const int DevUnspentSeed = 14;
 
         [Header("Header")]
+        [SerializeField] private Text indexLabel;
         [SerializeField] private Text nameLabel;
         [SerializeField] private Text elementLabel;
+        [SerializeField] private Text battleStyleNameLabel;
+        [SerializeField] private Text battleStyleDescLine1;
+        [SerializeField] private Text battleStyleDescLine2;
         [SerializeField] private Text levelLabel;
         [SerializeField] private Text nextExpLabel;
         [SerializeField] private Image[] elementIcons;
         [SerializeField] private GameObject[] elementHighlightRings;
+        [SerializeField] private CharacterBuildPortraitChipView[] portraitChips;
 
         [Header("Navigation")]
         [SerializeField] private Button prevButton;
         [SerializeField] private Button nextButton;
 
         [Header("Skills")]
-        [SerializeField] private CharacterBuildSkillRowView[] skillRows = new CharacterBuildSkillRowView[5];
+        [SerializeField] private CharacterBuildSkillRowView[] skillRows = new CharacterBuildSkillRowView[3];
 
         [Header("Stats")]
         [SerializeField] private CharacterBuildStatRowView strengthRow;
@@ -57,25 +62,35 @@ namespace FracturedChorus.Hub.CharacterBuild
         [SerializeField] private Text remainingPointsLabel;
 
         [Header("Portrait")]
+        [SerializeField] private CharacterBuildPortraitLayersView portraitLayers;
         [SerializeField] private Image portraitImage;
-        [SerializeField] private Sprite renMenuPortrait;
+        [SerializeField] private Sprite[] menuPortraits;
+        [SerializeField] private Sprite[] chipFaces;
 
         [Header("Footer / Equip")]
         [SerializeField] private Button backButton;
         [SerializeField] private Button viewSkillsButton;
+        [SerializeField] private GameObject skillEquipHost;
         [SerializeField] private GameObject skillEquipOverlay;
+        [SerializeField] private GameObject skillEquipDimmer;
         [SerializeField] private Text skillEquipTitleLabel;
-        [SerializeField] private Transform skillEquipSlotRow;
-        [SerializeField] private Transform skillEquipPoolRow;
+        [SerializeField] private CharacterBuildEquipSlotView[] equipPoolViews;
         [SerializeField] private Button skillEquipCloseButton;
+        [SerializeField] private Sprite skillSlotUnlocked;
+        [SerializeField] private Sprite skillSlotLocked;
+
+        [Header("Stat Details")]
+        [SerializeField] private Button detailsButton;
+        [SerializeField] private GameObject statDetailsHost;
+        [SerializeField] private GameObject statDetailsOverlay;
+        [SerializeField] private GameObject statDetailsDimmer;
+        [SerializeField] private Text statDetailsBodyLabel;
 
         [Header("Dev")]
         [SerializeField] private bool seedUnspentWhenEmpty = true;
         [SerializeField] private int stubLevel = 15;
         [SerializeField] private int stubNextExp = 3600;
 
-        private readonly List<Button> _equipSlotButtons = new List<Button>();
-        private readonly List<Button> _equipPoolButtons = new List<Button>();
         private int _memberIndex;
         private GameMetaState _state;
         private int _equipFocusSlot;
@@ -92,12 +107,24 @@ namespace FracturedChorus.Hub.CharacterBuild
                 CombatInputSetup.EnsureEventSystem();
             }
 
+            ResolveSkillEquipHost();
+            ResolveStatDetailsHost();
+            EnsureDetailsUi();
+            ApplyLockedSkillSlotDecor();
             WireButtons();
             WireStatCallbacks();
+            HideSkillEquip();
+            HideStatDetails();
         }
 
         private void Start()
         {
+            if (indexLabel == null && (portraitChips == null || portraitChips.Length == 0))
+            {
+                Debug.LogWarning(
+                    "[CharacterBuild] Layout chips not bound. Sandbox: Fractured Chorus → Heal CharacterBuild Layout Sandbox Hierarchy.");
+            }
+
             _state = GameMetaSession.Current;
             EnsureDefaults();
             Refresh();
@@ -105,7 +132,17 @@ namespace FracturedChorus.Hub.CharacterBuild
 
         private void Update()
         {
-            if (skillEquipOverlay != null && skillEquipOverlay.activeSelf)
+            if (IsStatDetailsOpen())
+            {
+                if (TownMapInput.CancelPressed())
+                {
+                    HideStatDetails();
+                }
+
+                return;
+            }
+
+            if (IsSkillEquipOpen())
             {
                 if (TownMapInput.CancelPressed())
                 {
@@ -161,9 +198,29 @@ namespace FracturedChorus.Hub.CharacterBuild
                 viewSkillsButton.onClick.AddListener(() => OpenSkillEquip(0));
             }
 
+            if (portraitChips != null)
+            {
+                for (var i = 0; i < portraitChips.Length; i++)
+                {
+                    var index = i;
+                    var chip = portraitChips[i];
+                    if (chip == null || chip.Button == null)
+                    {
+                        continue;
+                    }
+
+                    chip.Button.onClick.AddListener(() => SelectMember(index));
+                }
+            }
+
             if (skillEquipCloseButton != null)
             {
                 skillEquipCloseButton.onClick.AddListener(HideSkillEquip);
+            }
+
+            if (detailsButton != null)
+            {
+                detailsButton.onClick.AddListener(ToggleStatDetails);
             }
 
             if (skillRows != null)
@@ -177,13 +234,7 @@ namespace FracturedChorus.Hub.CharacterBuild
                         continue;
                     }
 
-                    row.Button.onClick.AddListener(() =>
-                    {
-                        if (index < 3)
-                        {
-                            OpenSkillEquip(index);
-                        }
-                    });
+                    row.Button.onClick.AddListener(() => OpenSkillEquip(index));
                 }
             }
         }
@@ -216,10 +267,7 @@ namespace FracturedChorus.Hub.CharacterBuild
             foreach (var id in Roster)
             {
                 var entry = _state.Loadout.GetOrCreate(id);
-                if (entry.EquippedSkillIds == null || entry.EquippedSkillIds.Length != 3)
-                {
-                    entry.EquippedSkillIds = new string[3];
-                }
+                entry.EquippedSkillIds = PartyLoadoutState.NormalizeSkillSlots(entry.EquippedSkillIds);
 
                 var any = false;
                 for (var i = 0; i < entry.EquippedSkillIds.Length; i++)
@@ -235,9 +283,12 @@ namespace FracturedChorus.Hub.CharacterBuild
                 {
                     entry.EquippedSkillIds = id switch
                     {
-                        PartyCharacterIds.Charlotte => new[] { "Charlott_basic", "tank_skill", "tank_ult" },
-                        PartyCharacterIds.Coda => new[] { "mage_basic", "mage_skill", "mage_ult" },
-                        _ => new[] { "ren_basic", "ren_skill", "ren_ult" }
+                        PartyCharacterIds.Charlotte => PartyLoadoutState.NormalizeSkillSlots(
+                            new[] { "Charlott_basic", "tank_skill", "tank_ult" }),
+                        PartyCharacterIds.Coda => PartyLoadoutState.NormalizeSkillSlots(
+                            new[] { "mage_basic", "mage_skill", "mage_ult" }),
+                        _ => PartyLoadoutState.NormalizeSkillSlots(
+                            new[] { "ren_basic", "ren_skill", "ren_ult" })
                     };
                 }
 
@@ -255,8 +306,19 @@ namespace FracturedChorus.Hub.CharacterBuild
 
         private void CycleMember(int delta)
         {
-            _memberIndex = (_memberIndex + delta + Roster.Length) % Roster.Length;
+            SelectMember((_memberIndex + delta + Roster.Length) % Roster.Length);
+        }
+
+        private void SelectMember(int index)
+        {
+            if (index < 0 || index >= Roster.Length || index == _memberIndex)
+            {
+                return;
+            }
+
+            _memberIndex = index;
             HideSkillEquip();
+            HideStatDetails();
             Refresh();
         }
 
@@ -312,6 +374,11 @@ namespace FracturedChorus.Hub.CharacterBuild
                 return;
             }
 
+            if (indexLabel != null)
+            {
+                indexLabel.text = (_memberIndex + 1).ToString("00");
+            }
+
             if (nameLabel != null)
             {
                 nameLabel.text = DisplayName(characterId);
@@ -320,6 +387,22 @@ namespace FracturedChorus.Hub.CharacterBuild
             if (elementLabel != null)
             {
                 elementLabel.text = bases.Element.ToString();
+            }
+
+            var battleStyle = CharacterBuildBattleStyleCatalog.For(characterId);
+            if (battleStyleNameLabel != null)
+            {
+                battleStyleNameLabel.text = battleStyle.Title;
+            }
+
+            if (battleStyleDescLine1 != null)
+            {
+                battleStyleDescLine1.text = battleStyle.Line1;
+            }
+
+            if (battleStyleDescLine2 != null)
+            {
+                battleStyleDescLine2.text = battleStyle.Line2;
             }
 
             if (levelLabel != null)
@@ -333,7 +416,8 @@ namespace FracturedChorus.Hub.CharacterBuild
             }
 
             RefreshElementHighlights(bases.Element);
-            RefreshPortrait(characterId);
+            RefreshPortrait();
+            RefreshPortraitChips();
             RefreshSkills(entry);
             RefreshStats(characterId, entry, bases);
 
@@ -355,48 +439,90 @@ namespace FracturedChorus.Hub.CharacterBuild
                 return;
             }
 
+            var active = (int)element;
             for (var i = 0; i < elementHighlightRings.Length; i++)
             {
-                if (elementHighlightRings[i] == null)
+                if (elementHighlightRings[i] != null)
+                {
+                    elementHighlightRings[i].SetActive(i == active);
+                }
+
+                if (elementIcons != null && i < elementIcons.Length && elementIcons[i] != null)
+                {
+                    elementIcons[i].color = i == active ? Color.white : new Color(1f, 1f, 1f, 0.45f);
+                }
+            }
+        }
+
+        private void RefreshPortraitChips()
+        {
+            if (portraitChips == null)
+            {
+                return;
+            }
+
+            for (var i = 0; i < portraitChips.Length; i++)
+            {
+                var chip = portraitChips[i];
+                if (chip == null)
                 {
                     continue;
                 }
 
-                // Order: Rhythm=0, Melody=1, Harmony=2
-                elementHighlightRings[i].SetActive(i == (int)element);
+                chip.BindFace(ResolveChipFace(i));
+                chip.SetSelected(i == _memberIndex);
             }
         }
 
-        private void RefreshPortrait(string characterId)
+        private Sprite ResolveChipFace(int index)
         {
+            if (chipFaces != null && index >= 0 && index < chipFaces.Length && chipFaces[index] != null)
+            {
+                return chipFaces[index];
+            }
+
+            return ResolveMenuPortrait(index);
+        }
+
+        private void RefreshPortrait()
+        {
+            if (portraitLayers != null)
+            {
+                portraitLayers.SetActiveIndex(_memberIndex);
+                return;
+            }
+
             if (portraitImage == null)
             {
                 return;
             }
 
-            Sprite sprite = null;
-            if (characterId == PartyCharacterIds.Ren)
-            {
-                sprite = renMenuPortrait;
-                if (sprite == null)
-                {
-                    sprite = Resources.Load<Sprite>("UI/StatusMenu/ren_hima_uniform_menu_fullbody_v1");
-                }
-            }
-
-            if (sprite == null)
-            {
-                var preset = LoadPreset(characterId);
-                if (preset != null)
-                {
-                    sprite = preset.battleSprite != null ? preset.battleSprite : preset.combatCardSprite;
-                }
-            }
-
+            var sprite = ResolveMenuPortrait(_memberIndex);
             portraitImage.enabled = sprite != null;
             portraitImage.sprite = sprite;
             portraitImage.color = Color.white;
             portraitImage.preserveAspect = true;
+        }
+
+        private Sprite ResolveMenuPortrait(int index)
+        {
+            if (menuPortraits != null && index >= 0 && index < menuPortraits.Length && menuPortraits[index] != null)
+            {
+                return menuPortraits[index];
+            }
+
+            if (index < 0 || index >= Roster.Length)
+            {
+                return null;
+            }
+
+            var preset = LoadPreset(Roster[index]);
+            if (preset == null)
+            {
+                return null;
+            }
+
+            return preset.battleSprite != null ? preset.battleSprite : preset.combatCardSprite;
         }
 
         private void RefreshSkills(CharacterLoadoutEntry entry)
@@ -406,7 +532,7 @@ namespace FracturedChorus.Hub.CharacterBuild
                 return;
             }
 
-            var slots = entry.EquippedSkillIds ?? Array.Empty<string>();
+            var slots = NormalizeSlots(entry.EquippedSkillIds);
             for (var i = 0; i < skillRows.Length; i++)
             {
                 var row = skillRows[i];
@@ -415,10 +541,9 @@ namespace FracturedChorus.Hub.CharacterBuild
                     continue;
                 }
 
-                var combatSlot = i < 3;
-                if (!combatSlot || i >= slots.Length || string.IsNullOrEmpty(slots[i]))
+                if (i >= slots.Length || string.IsNullOrEmpty(slots[i]))
                 {
-                    row.BindEmpty(combatSlot);
+                    row.BindEmpty(true);
                     continue;
                 }
 
@@ -437,11 +562,11 @@ namespace FracturedChorus.Hub.CharacterBuild
             var luck = bases.BaseLuck;
             var canPlus = entry.UnspentStatPoints > 0;
 
-            strengthRow?.Refresh("Strength", strength, BarVisualMax, entry.StrPoints, true);
-            magicRow?.Refresh("Magic", magic, BarVisualMax, entry.MaPoints, true);
-            enduranceRow?.Refresh("Endurance", endurance, BarVisualMax, entry.EnPoints, true);
-            heartBeatRow?.Refresh("HeartBeat", heartBeat, BarVisualMax, entry.HbPoints, true);
-            luckRow?.Refresh("Luck", luck, BarVisualMax, 0, false);
+            strengthRow?.Refresh("STR", strength, BarVisualMax, entry.StrPoints, true);
+            magicRow?.Refresh("MA", magic, BarVisualMax, entry.MaPoints, true);
+            enduranceRow?.Refresh("EN", endurance, BarVisualMax, entry.EnPoints, true);
+            heartBeatRow?.Refresh("HB", heartBeat, BarVisualMax, entry.HbPoints, true);
+            luckRow?.Refresh("LUCK", luck, BarVisualMax, 0, false);
 
             strengthRow?.SetPlusInteractable(canPlus && entry.StrPoints < MaxPointsPerStat);
             magicRow?.SetPlusInteractable(canPlus && entry.MaPoints < MaxPointsPerStat);
@@ -451,21 +576,289 @@ namespace FracturedChorus.Hub.CharacterBuild
 
         private void OpenSkillEquip(int focusSlot)
         {
-            _equipFocusSlot = Mathf.Clamp(focusSlot, 0, 2);
-            if (skillEquipOverlay != null)
-            {
-                skillEquipOverlay.SetActive(true);
-            }
-
+            HideStatDetails();
+            _equipFocusSlot = Mathf.Clamp(focusSlot, 0, CharacterLoadoutEntry.EquippedSkillSlotCount - 1);
+            SetSkillEquipVisible(true);
             RefreshSkillEquip(CurrentEntry());
         }
 
         private void HideSkillEquip()
         {
+            SetSkillEquipVisible(false);
+        }
+
+        private bool IsSkillEquipOpen()
+        {
+            var host = ResolveSkillEquipHost();
+            return host != null && host.activeSelf;
+        }
+
+        private GameObject ResolveSkillEquipHost()
+        {
+            if (skillEquipHost != null)
+            {
+                return skillEquipHost;
+            }
+
+            if (skillEquipOverlay != null && skillEquipOverlay.transform.parent != null)
+            {
+                skillEquipHost = skillEquipOverlay.transform.parent.gameObject;
+            }
+
+            return skillEquipHost;
+        }
+
+        private void SetSkillEquipVisible(bool visible)
+        {
+            var host = ResolveSkillEquipHost();
+            if (host != null)
+            {
+                if (visible)
+                {
+                    var rt = host.GetComponent<RectTransform>();
+                    if (rt != null && (rt.localScale.x < 0.01f || rt.localScale.y < 0.01f))
+                    {
+                        rt.localScale = Vector3.one;
+                    }
+                }
+
+                host.SetActive(visible);
+            }
+
             if (skillEquipOverlay != null)
             {
-                skillEquipOverlay.SetActive(false);
+                skillEquipOverlay.SetActive(visible);
             }
+
+            if (skillEquipDimmer != null)
+            {
+                skillEquipDimmer.SetActive(visible);
+            }
+        }
+
+        private void ApplyLockedSkillSlotDecor()
+        {
+            if (skillSlotLocked == null)
+            {
+                return;
+            }
+
+            var skillsPanel = transform.Find("SkillsPanel");
+            if (skillsPanel == null)
+            {
+                return;
+            }
+
+            for (var i = 4; i <= 10; i++)
+            {
+                var slot = skillsPanel.Find($"SkillSlot_{i}");
+                if (slot == null)
+                {
+                    continue;
+                }
+
+                var frame = slot.GetComponent<Image>();
+                if (frame != null)
+                {
+                    frame.sprite = skillSlotLocked;
+                    frame.preserveAspect = true;
+                    frame.color = new Color(0.78f, 0.82f, 0.9f, 1f);
+                }
+
+                var note = slot.Find("NoteCircle");
+                if (note != null)
+                {
+                    note.gameObject.SetActive(false);
+                }
+            }
+        }
+
+        private void EnsureDetailsUi()
+        {
+            if (detailsButton == null)
+            {
+                var detailsPanel = transform.Find("DetailsPanel");
+                if (detailsPanel != null)
+                {
+                    detailsButton = detailsPanel.GetComponent<Button>();
+                    if (detailsButton == null)
+                    {
+                        detailsButton = detailsPanel.gameObject.AddComponent<Button>();
+                    }
+
+                    var graphic = detailsPanel.GetComponent<Image>();
+                    if (graphic != null)
+                    {
+                        graphic.raycastTarget = true;
+                        detailsButton.targetGraphic = graphic;
+                    }
+                }
+            }
+
+            ResolveStatDetailsHost();
+            if (statDetailsOverlay == null)
+            {
+                var host = ResolveStatDetailsHost();
+                Transform existing = null;
+                if (host != null)
+                {
+                    existing = host.transform.Find("StatDetailsOverlay");
+                }
+
+                if (existing == null)
+                {
+                    existing = transform.Find("StatDetailsOverlay");
+                }
+
+                if (existing == null)
+                {
+                    var found = GameObject.Find("StatDetailsOverlay");
+                    existing = found != null ? found.transform : null;
+                }
+
+                if (existing != null)
+                {
+                    statDetailsOverlay = existing.gameObject;
+                }
+            }
+
+            WireExistingStatDetailsOverlay();
+        }
+
+        private void WireExistingStatDetailsOverlay()
+        {
+            if (statDetailsOverlay == null)
+            {
+                return;
+            }
+
+            if (statDetailsBodyLabel == null)
+            {
+                var body = statDetailsOverlay.transform.Find("Body")
+                           ?? statDetailsOverlay.transform.Find("Panel/Body");
+                if (body != null)
+                {
+                    statDetailsBodyLabel = body.GetComponent<Text>();
+                }
+            }
+
+            BindStatDetailsClose(statDetailsOverlay.transform.Find("Panel/Close"));
+            BindStatDetailsClose(statDetailsOverlay.transform.Find("Close"));
+            BindStatDetailsClose(statDetailsOverlay.transform.Find("CloseButton"));
+            if (statDetailsDimmer != null)
+            {
+                BindStatDetailsClose(statDetailsDimmer.transform);
+            }
+        }
+
+        private void BindStatDetailsClose(Transform target)
+        {
+            if (target == null)
+            {
+                return;
+            }
+
+            var button = target.GetComponent<Button>();
+            if (button == null)
+            {
+                return;
+            }
+
+            button.onClick.RemoveListener(HideStatDetails);
+            button.onClick.AddListener(HideStatDetails);
+        }
+
+        private GameObject ResolveStatDetailsHost()
+        {
+            if (statDetailsHost != null)
+            {
+                return statDetailsHost;
+            }
+
+            if (statDetailsOverlay != null && statDetailsOverlay.transform.parent != null)
+            {
+                statDetailsHost = statDetailsOverlay.transform.parent.gameObject;
+            }
+
+            return statDetailsHost;
+        }
+
+        private void SetStatDetailsVisible(bool visible)
+        {
+            var host = ResolveStatDetailsHost();
+            if (host != null)
+            {
+                host.SetActive(visible);
+            }
+
+            if (statDetailsOverlay != null)
+            {
+                statDetailsOverlay.SetActive(visible);
+            }
+
+            if (statDetailsDimmer != null)
+            {
+                statDetailsDimmer.SetActive(visible);
+            }
+        }
+
+        private void ToggleStatDetails()
+        {
+            if (IsStatDetailsOpen())
+            {
+                HideStatDetails();
+                return;
+            }
+
+            ShowStatDetails();
+        }
+
+        private bool IsStatDetailsOpen()
+        {
+            var host = ResolveStatDetailsHost();
+            if (host != null)
+            {
+                return host.activeSelf;
+            }
+
+            return statDetailsOverlay != null && statDetailsOverlay.activeSelf;
+        }
+
+        private void ShowStatDetails()
+        {
+            HideSkillEquip();
+            EnsureDetailsUi();
+            if (statDetailsBodyLabel != null)
+            {
+                statDetailsBodyLabel.text = BuildStatDetailsText(Roster[_memberIndex]);
+            }
+
+            SetStatDetailsVisible(true);
+        }
+
+        private void HideStatDetails()
+        {
+            SetStatDetailsVisible(false);
+        }
+
+        private static string BuildStatDetailsText(string characterId)
+        {
+            var hp = characterId switch
+            {
+                PartyCharacterIds.Charlotte => "STR×6 + 50",
+                PartyCharacterIds.Coda => "STR×2 + MA×0.35 + 15",
+                _ => "STR×2 + 30"
+            };
+            var ma = characterId == PartyCharacterIds.Coda
+                ? "MA   Magical power · HP"
+                : "MA   Magical power";
+
+            return
+                $"STR  Physical power · HP ({hp})\n" +
+                $"{ma}\n" +
+                "EN   Guard / incoming damage\n" +
+                "HB   +5 · action priority\n" +
+                "LUCK Crit % · locked";
         }
 
         private void RefreshSkillEquip(CharacterLoadoutEntry entry)
@@ -475,43 +868,95 @@ namespace FracturedChorus.Hub.CharacterBuild
                 return;
             }
 
+            var slots = NormalizeSlots(entry.EquippedSkillIds);
             if (skillEquipTitleLabel != null)
             {
-                skillEquipTitleLabel.text = $"Skill Equip — {DisplayName(Roster[_memberIndex])}";
+                skillEquipTitleLabel.text =
+                    $"Choose skill for Slot {_equipFocusSlot + 1} — {DisplayName(Roster[_memberIndex])}";
             }
 
-            ClearButtonList(_equipSlotButtons, skillEquipSlotRow);
-            ClearButtonList(_equipPoolButtons, skillEquipPoolRow);
-
-            var slots = entry.EquippedSkillIds ?? new[] { string.Empty, string.Empty, string.Empty };
-            for (var i = 0; i < 3; i++)
+            SkillUnlockCatalog.PartyLevel = stubLevel;
+            var kit = new List<(string SkillId, string DisplayName, int UnlockLevel, bool Unlocked)>();
+            foreach (var unlock in SkillUnlockCatalog.KitFor(Roster[_memberIndex]))
             {
-                var slotIndex = i;
-                var skillId = i < slots.Length ? slots[i] : string.Empty;
-                var label = string.IsNullOrEmpty(skillId)
-                    ? $"Slot {i + 1}: (empty)"
-                    : $"Slot {i + 1}: {SkillUnlockCatalog.DisplayName(skillId)}";
-                var button = CreateEquipButton(skillEquipSlotRow, label, () =>
+                kit.Add(unlock);
+            }
+
+            if (equipPoolViews == null)
+            {
+                return;
+            }
+
+            for (var i = 0; i < equipPoolViews.Length; i++)
+            {
+                var view = equipPoolViews[i];
+                if (view == null)
                 {
-                    UnequipSlot(entry, slotIndex);
-                });
-                _equipSlotButtons.Add(button);
-            }
+                    continue;
+                }
 
-            foreach (var unlock in SkillUnlockCatalog.UnlockedFor(Roster[_memberIndex]))
-            {
-                var skillId = unlock.SkillId;
-                var button = CreateEquipButton(
-                    skillEquipPoolRow,
-                    unlock.DisplayName,
-                    () => EquipIntoFocus(entry, skillId));
-                _equipPoolButtons.Add(button);
+                if (i >= kit.Count)
+                {
+                    view.Bind(string.Empty, true, true);
+                    view.ApplyFrame(skillSlotUnlocked, skillSlotLocked, true, false);
+                    if (view.Button != null)
+                    {
+                        view.Button.onClick.RemoveAllListeners();
+                    }
+
+                    continue;
+                }
+
+                var entryKit = kit[i];
+                var skillId = entryKit.SkillId;
+                if (!entryKit.Unlocked)
+                {
+                    view.Bind($"Lv {entryKit.UnlockLevel}", true, true);
+                    view.ApplyFrame(skillSlotUnlocked, skillSlotLocked, true, false);
+                    if (view.Button != null)
+                    {
+                        view.Button.onClick.RemoveAllListeners();
+                    }
+
+                    continue;
+                }
+
+                var equippedSlot = IndexOfSkill(slots, skillId);
+                var poolLabel = equippedSlot < 0
+                    ? entryKit.DisplayName
+                    : equippedSlot == _equipFocusSlot
+                        ? $"▶ {entryKit.DisplayName}"
+                        : $"{entryKit.DisplayName}  [{equippedSlot + 1}]";
+                view.Bind(poolLabel, true, false);
+                view.ApplyFrame(
+                    skillSlotUnlocked,
+                    skillSlotLocked,
+                    false,
+                    equippedSlot == _equipFocusSlot);
+                if (view.Button == null)
+                {
+                    continue;
+                }
+
+                view.Button.onClick.RemoveAllListeners();
+                view.Button.onClick.AddListener(() => EquipIntoFocus(CurrentEntry(), skillId));
             }
         }
 
         private void EquipIntoFocus(CharacterLoadoutEntry entry, string skillId)
         {
             var slots = NormalizeSlots(entry.EquippedSkillIds);
+            if (_equipFocusSlot >= 0
+                && _equipFocusSlot < slots.Length
+                && string.Equals(slots[_equipFocusSlot], skillId, StringComparison.Ordinal))
+            {
+                slots[_equipFocusSlot] = string.Empty;
+                entry.EquippedSkillIds = slots;
+                GameMetaSession.Save();
+                Refresh();
+                return;
+            }
+
             for (var i = 0; i < slots.Length; i++)
             {
                 if (string.Equals(slots[i], skillId, StringComparison.Ordinal))
@@ -524,104 +969,33 @@ namespace FracturedChorus.Hub.CharacterBuild
             {
                 slots[_equipFocusSlot] = skillId;
             }
-            else
-            {
-                for (var i = 0; i < slots.Length; i++)
-                {
-                    if (string.IsNullOrEmpty(slots[i]))
-                    {
-                        slots[i] = skillId;
-                        break;
-                    }
-                }
-            }
 
             entry.EquippedSkillIds = slots;
             GameMetaSession.Save();
             Refresh();
         }
 
-        private void UnequipSlot(CharacterLoadoutEntry entry, int slotIndex)
+        private static int IndexOfSkill(string[] slots, string skillId)
         {
-            var slots = NormalizeSlots(entry.EquippedSkillIds);
-            if (slotIndex >= 0 && slotIndex < slots.Length)
+            if (slots == null || string.IsNullOrEmpty(skillId))
             {
-                slots[slotIndex] = string.Empty;
-            }
-
-            entry.EquippedSkillIds = slots;
-            GameMetaSession.Save();
-            Refresh();
-        }
-
-        private static string[] NormalizeSlots(string[] source)
-        {
-            var slots = new string[3];
-            if (source == null)
-            {
-                return slots;
+                return -1;
             }
 
             for (var i = 0; i < slots.Length; i++)
             {
-                slots[i] = i < source.Length ? source[i] ?? string.Empty : string.Empty;
-            }
-
-            return slots;
-        }
-
-        private static void ClearButtonList(List<Button> buttons, Transform row)
-        {
-            foreach (var button in buttons)
-            {
-                if (button != null)
+                if (string.Equals(slots[i], skillId, StringComparison.Ordinal))
                 {
-                    Destroy(button.gameObject);
+                    return i;
                 }
             }
 
-            buttons.Clear();
-            if (row == null)
-            {
-                return;
-            }
-
-            for (var i = row.childCount - 1; i >= 0; i--)
-            {
-                Destroy(row.GetChild(i).gameObject);
-            }
+            return -1;
         }
 
-        private static Button CreateEquipButton(Transform parent, string label, Action onClick)
+        private static string[] NormalizeSlots(string[] source)
         {
-            if (parent == null)
-            {
-                return null;
-            }
-
-            var go = new GameObject("SkillButton", typeof(RectTransform), typeof(Image), typeof(Button));
-            go.transform.SetParent(parent, false);
-            var rect = go.GetComponent<RectTransform>();
-            rect.sizeDelta = new Vector2(320f, 40f);
-            var image = go.GetComponent<Image>();
-            image.color = new Color(0.1f, 0.16f, 0.28f, 0.95f);
-            var button = go.GetComponent<Button>();
-            button.targetGraphic = image;
-            button.onClick.AddListener(() => onClick?.Invoke());
-
-            var textGo = new GameObject("Label", typeof(RectTransform), typeof(Text));
-            textGo.transform.SetParent(go.transform, false);
-            var text = textGo.GetComponent<Text>();
-            UiFontCatalog.Apply(text, UiFontRole.Body, 16);
-            text.text = label;
-            text.alignment = TextAnchor.MiddleCenter;
-            text.color = Color.white;
-            var textRect = text.rectTransform;
-            textRect.anchorMin = Vector2.zero;
-            textRect.anchorMax = Vector2.one;
-            textRect.offsetMin = Vector2.zero;
-            textRect.offsetMax = Vector2.zero;
-            return button;
+            return PartyLoadoutState.NormalizeSkillSlots(source);
         }
 
         private static UnitStats ResolveBaseStats(string characterId)

@@ -8,6 +8,8 @@ namespace FracturedChorus.Hub.CharacterBuild
     {
         private static readonly Color Gold = new Color(1f, 0.84f, 0.2f, 1f);
 
+        [SerializeField] private Image noteSlot;
+        [SerializeField] private Image iconFrame;
         [SerializeField] private Image icon;
         [SerializeField] private Text nameLabel;
         [SerializeField] private GameObject goldFrame;
@@ -40,11 +42,8 @@ namespace FracturedChorus.Hub.CharacterBuild
                 nameLabel.text = "—";
             }
 
-            if (icon != null)
-            {
-                icon.enabled = false;
-            }
-
+            ApplySkillIcon(null);
+            ApplySlotChrome(combatSlot, false);
             SetGoldFrame(combatSlot);
         }
 
@@ -56,13 +55,35 @@ namespace FracturedChorus.Hub.CharacterBuild
                 nameLabel.text = string.IsNullOrEmpty(displayName) ? "—" : displayName;
             }
 
-            if (icon != null)
+            ApplySkillIcon(skillIcon);
+            ApplySlotChrome(combatSlot, skillIcon != null);
+            SetGoldFrame(combatSlot);
+        }
+
+        private void ApplySkillIcon(Sprite skillIcon)
+        {
+            if (icon == null)
             {
-                icon.enabled = skillIcon != null;
-                icon.sprite = skillIcon;
+                return;
             }
 
-            SetGoldFrame(combatSlot);
+            icon.enabled = skillIcon != null;
+            icon.sprite = skillIcon;
+            icon.preserveAspect = true;
+            icon.color = Color.white;
+        }
+
+        private void ApplySlotChrome(bool combatSlot, bool hasIcon)
+        {
+            if (iconFrame != null)
+            {
+                iconFrame.enabled = combatSlot && !hasIcon;
+            }
+
+            if (noteSlot != null)
+            {
+                noteSlot.enabled = !hasIcon;
+            }
         }
 
         public void SetGoldFrame(bool visible)
