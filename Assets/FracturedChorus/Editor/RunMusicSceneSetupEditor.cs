@@ -13,7 +13,6 @@ namespace FracturedChorus.Editor
         private const string ResourcesBeatMapPath = "Assets/FracturedChorus/Resources/Music/EternalSpark_Candence_BeatMap.asset";
         private const float CandenceBpm = 152f;
 
-        [MenuItem("Fractured Chorus/Import Run Candence Music")]
         public static void ImportRunCandenceMusic()
         {
             if (System.IO.File.Exists(SourcePath))

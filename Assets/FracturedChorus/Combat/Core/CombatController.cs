@@ -9,6 +9,7 @@ using FracturedChorus.Combat.Presentation;
 using FracturedChorus.Combat.Timeline;
 using FracturedChorus.Combat.Units;
 using FracturedChorus.Data;
+using FracturedChorus.Meta;
 using FracturedChorus.RunMap;
 using FracturedChorus.Tutorial;
 using FracturedChorus.UI;
@@ -525,7 +526,7 @@ namespace FracturedChorus.Combat.Core
                 return false;
             }
 
-            timelineView?.SoftHideFootprintsForRelocate(unit);
+            timelineView?.SoftHideFootprintsForRelocate(unit, entry.Skill, beatIndex);
             return true;
         }
 
@@ -559,18 +560,54 @@ namespace FracturedChorus.Combat.Core
             var fromBeat = _relocateFromBeat;
 
             timelineView?.HideDropGhost();
-            timelineView?.ClearLaneMarkerRelocatePrepare();
 
-            // Thả trong viewport + beat hợp lệ → đặt lại vị trí mới.
+            // Giữ relocate pending trong lúc resolve để OnAgendaChanged không RefreshAll
+            // (phá GameObject đang OnEndDrag).
+
+            // Thả trong viewport: đặt chỗ trống, swap pha Active, hoặc eat skill đích rồi đặt.
             if (timelineView != null && timelineView.IsScreenPointInViewport(screenPos)
-                && timelineView.TryGetPlacementBeatAtScreenPoint(screenPos, skill, out var beat)
-                && _session.TryAssignPlayerAction(unit, skill, beat))
+                && timelineView.TryGetPlacementBeatAtScreenPoint(screenPos, skill, out var beat))
             {
-                PlaySkillPlaceSfx();
-                ClearRelocateState();
-                RefreshBeatsForSkillFootprint(unit, skill, beat);
-                timelineView.RefreshLaneMarkers();
-                return;
+                var hoverBeat = beat;
+                if (!timelineView.TryGetBeatAtScreenPoint(screenPos, out hoverBeat))
+                {
+                    hoverBeat = beat;
+                }
+
+                timelineView.SetSuppressAgendaRefresh(true);
+                bool placed;
+                AgendaEntry partner;
+                SkillDefinitionSO displacedSkill;
+                int displacedBeat;
+                try
+                {
+                    placed = _session.TryResolveSkillDrop(
+                        unit, skill, beat, hoverBeat, fromBeat,
+                        out partner, out displacedSkill, out displacedBeat);
+                }
+                finally
+                {
+                    timelineView.SetSuppressAgendaRefresh(false);
+                }
+
+                if (placed)
+                {
+                    PlaySkillPlaceSfx();
+                    ClearRelocateState();
+                    RefreshBeatsForSkillFootprint(unit, skill, beat);
+                    if (displacedSkill != null && displacedBeat >= 0)
+                    {
+                        RefreshBeatsForSkillFootprint(unit, displacedSkill, displacedBeat);
+                    }
+
+                    if (partner != null)
+                    {
+                        RefreshBeatsForSkillFootprint(partner.Unit, partner.Skill, partner.BeatIndex);
+                    }
+
+                    timelineView.RefreshLaneMarkers();
+                    return;
+                }
             }
 
             // Kéo ra ngoài timeline → xóa skill (đã remove lúc BeginRelocate).
@@ -905,20 +942,48 @@ namespace FracturedChorus.Combat.Core
             }
 
             if (timelineView == null || !timelineView.TryGetPlacementBeatAtScreenPoint(screenPos, skill, out var beat))
-
             {
-
                 return false;
-
             }
 
-            if (!_session.TryAssignPlayerAction(unit, skill, beat))
+            var hoverBeat = beat;
+            if (!timelineView.TryGetBeatAtScreenPoint(screenPos, out hoverBeat))
             {
+                hoverBeat = beat;
+            }
+
+            timelineView.SetSuppressAgendaRefresh(true);
+            bool placed;
+            SkillDefinitionSO displacedSkill;
+            int displacedBeat;
+            try
+            {
+                placed = _session.TryResolveSkillDrop(
+                    unit, skill, beat, hoverBeat, relocateFromBeat: -1,
+                    out _, out displacedSkill, out displacedBeat);
+            }
+            finally
+            {
+                timelineView.SetSuppressAgendaRefresh(false);
+            }
+
+            if (!placed)
+            {
+                if (displacedSkill != null && displacedBeat >= 0)
+                {
+                    RefreshBeatsForSkillFootprint(unit, displacedSkill, displacedBeat);
+                    timelineView.RefreshLaneMarkers();
+                }
+
                 return false;
             }
 
             PlaySkillPlaceSfx();
             RefreshBeatsForSkillFootprint(unit, skill, beat);
+            if (displacedSkill != null && displacedBeat >= 0)
+            {
+                RefreshBeatsForSkillFootprint(unit, displacedSkill, displacedBeat);
+            }
 
             timelineView?.RefreshLaneMarkers();
 
@@ -1037,11 +1102,6 @@ namespace FracturedChorus.Combat.Core
             }
 
             if (EnemyStrikeChoreographer.TryDeferHpFeedback(unit, unit.LastHpChange))
-            {
-                return;
-            }
-
-            if (EncounterDirector.IsPresenting)
             {
                 return;
             }
@@ -1336,6 +1396,24 @@ namespace FracturedChorus.Combat.Core
             }
 
             TutorialDirector.Ensure().StartCombatTrack();
+        }
+
+        private void OnEnable()
+        {
+            GameMetaSession.Saving += FlushHpToSession;
+        }
+
+        private void OnDisable()
+        {
+            GameMetaSession.Saving -= FlushHpToSession;
+        }
+
+        private void FlushHpToSession()
+        {
+            if (_session != null)
+            {
+                PartyRunHpStore.CaptureFromSession(_session);
+            }
         }
 
         private void OnDestroy()

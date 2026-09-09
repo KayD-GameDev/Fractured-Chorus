@@ -15,7 +15,6 @@ namespace FracturedChorus.Editor
         private const string ContinuePath = "Assets/FracturedChorus/Art/UI/Combat/Result/combat_btn_continue_v1.png";
         private const string RetryPath = "Assets/FracturedChorus/Art/UI/Combat/Result/combat_btn_retry_v1.png";
 
-        [MenuItem("Fractured Chorus/Setup Combat Result Overlay (Current Scene)")]
         public static void SetupResultOverlay()
         {
             var canvas = CombatUiHierarchy.ResolveCombatCanvasTransform();
@@ -69,7 +68,6 @@ namespace FracturedChorus.Editor
                 "Tắt GameObject trước khi Play nếu muốn ẩn mặc định (runtime sẽ bật khi hết trận).");
         }
 
-        [MenuItem("Fractured Chorus/Hide Combat Result Overlay")]
         public static void HideResultOverlay()
         {
             var view = Object.FindAnyObjectByType<CombatResultOverlayUIView>(FindObjectsInactive.Include);
@@ -85,7 +83,6 @@ namespace FracturedChorus.Editor
             EditorSceneManager.MarkSceneDirty(view.gameObject.scene);
         }
 
-        [MenuItem("Fractured Chorus/Bring Combat Result Overlay To Front")]
         public static void BringResultOverlayToFront()
         {
             var view = Object.FindAnyObjectByType<CombatResultOverlayUIView>(FindObjectsInactive.Include);

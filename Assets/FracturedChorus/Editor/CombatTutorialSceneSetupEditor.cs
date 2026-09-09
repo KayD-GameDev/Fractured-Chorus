@@ -25,7 +25,6 @@ namespace FracturedChorus.Editor
         private const string KikiControllerPath = "Assets/FracturedChorus/Art/Characters/KikiUeda/Unit_Kiki_Ueda.controller";
         private const string KikiPresetPath = "Assets/FracturedChorus/Resources/UnitPresets/UnitPreset_Kiki_Ueda.asset";
 
-        [MenuItem("Fractured Chorus/Open Combat Tutorial Scene")]
         public static void OpenCombatTutorialScene()
         {
             EnsureSceneExists();
@@ -41,7 +40,6 @@ namespace FracturedChorus.Editor
             }
         }
 
-        [MenuItem("Fractured Chorus/Prepare Combat Tutorial Scene (BG + party)")]
         public static void PrepareCombatTutorialScene()
         {
             EnsureSceneExists();
@@ -561,6 +559,7 @@ namespace FracturedChorus.Editor
 
             var sim = UnitSpriteSimulator.EnsureOn(view);
             sim?.AuthorCurrentAsState(UnitCombatVisualState.Idle);
+            SkillVfxSimulator.EnsureOn(view);
 
             EditorUtility.SetDirty(view);
             EditorUtility.SetDirty(view.gameObject);

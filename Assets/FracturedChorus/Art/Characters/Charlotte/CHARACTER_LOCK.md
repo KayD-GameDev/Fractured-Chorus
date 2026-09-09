@@ -42,5 +42,9 @@
 - Stat chip icon: `Art/UI/Combat/Timeline/LeftRail/Avatars/charlotte_chibi_avatar_v1.png`
 - Combat icon ref: `Art/UI/Combat/Characters/charlotte_character_icon_bars_white_v1.png`
 
+## Combat party card
+- Portrait: `Art/UI/Combat/Characters/Avatars/charlotte_party_avatar_v1.png` (bust only)
+- Wired via `UnitPreset_Tank.combatCardSprite` → Avatar on party CardTemplate
+
 ## Tone
 - Steady, composed tank presence — restrained face acting, no cartoon exaggeration

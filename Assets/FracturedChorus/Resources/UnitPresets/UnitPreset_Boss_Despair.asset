@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: UnitPreset_Boss_Despair
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.UnitPresetSO
   unitId: boss_despair
-  displayName: Knight of Despair
+  displayName: Astra
   role: 4
   statBlock: {fileID: 11400000, guid: f7e8d9c0b1a2436586970a1b2c3d4e5f, type: 2}
   stats:
@@ -30,7 +30,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: d5c6b7a890e12345678970a1b2c3d4eb, type: 2}
   placeholderColor: {r: 0.7803922, g: 0.79215693, b: 0.86666673, a: 1}
   battleSprite: {fileID: 4943192094725736257, guid: 2a25fb408a665924ea76caefa300424e, type: 3}
-  combatCardSprite: {fileID: -3835068961708805114, guid: 2de692e4734855845bca3f078c935118, type: 3}
+  combatCardSprite: {fileID: 21300000, guid: 8e2c1a9f4b6d47c0a3e5f7192d8b40c1, type: 3}
   barStackAnchoredY: -1
   healthSlotTop: 2.65
   telegraphAttacksPerPhase: 3

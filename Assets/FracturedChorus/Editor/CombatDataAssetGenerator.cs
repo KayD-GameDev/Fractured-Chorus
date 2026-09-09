@@ -13,8 +13,8 @@ namespace FracturedChorus.Editor
         private const string StatBlockFolder = "Assets/FracturedChorus/Resources/StatBlocks";
         private const string PresetFolder = "Assets/FracturedChorus/Resources/UnitPresets";
         private const string SkillFolder = "Assets/FracturedChorus/Resources/Skills";
+        private const string SkillVfxFolder = "Assets/FracturedChorus/Resources/Skills/Vfx";
 
-        [MenuItem("Fractured Chorus/Create Default Stat Blocks & Presets")]
         public static void CreateDefaultAssets()
         {
             EnsureFolder(StatBlockFolder);
@@ -50,7 +50,6 @@ namespace FracturedChorus.Editor
             Debug.Log("[Fractured Chorus] Stat blocks + presets in Resources/StatBlocks and Resources/UnitPresets.");
         }
 
-        [MenuItem("Fractured Chorus/Create Boss — Knight of Despair Assets")]
         public static void CreateBossDespairAssetsMenu()
         {
             CreateBossDespairAssets();
@@ -59,7 +58,6 @@ namespace FracturedChorus.Editor
             Debug.Log("[Fractured Chorus] Boss assets: StatBlock_Boss_Despair, UnitPreset_Boss_Despair, boss_despair_core.");
         }
 
-        [MenuItem("Fractured Chorus/Create Elite — Kiki Ueda (Lv1) Assets")]
         public static void CreateKikiUedaAssetsMenu()
         {
             CreateKikiUedaAssets();
@@ -182,12 +180,14 @@ namespace FracturedChorus.Editor
                 1,
                 ActionGlowType.Attack,
                 0);
+            coreStrike.vfxProfile = CreateDespairCoreVfxProfile();
+            EditorUtility.SetDirty(coreStrike);
 
             var battleSprite = LoadKnightOfDespairSprite();
             var preset = CreatePreset(
                 "UnitPreset_Boss_Despair",
                 "boss_despair",
-                "Knight of Despair",
+                "Astra",
                 UnitRole.Boss,
                 bossBlock,
                 new[] { coreStrike },
@@ -195,6 +195,66 @@ namespace FracturedChorus.Editor
             preset.battleSprite = battleSprite;
             preset.telegraphAttacksPerPhase = 3;
             EditorUtility.SetDirty(preset);
+        }
+
+        private static SkillVfxProfileSO CreateDespairCoreVfxProfile()
+        {
+            EnsureFolder(SkillVfxFolder);
+            var path = $"{SkillVfxFolder}/SkillVfx_boss_despair_core.asset";
+            var existed = AssetDatabase.LoadAssetAtPath<SkillVfxProfileSO>(path) != null;
+            var profile = LoadOrCreate<SkillVfxProfileSO>(path);
+            if (profile.projectileSprite == null)
+            {
+                profile.projectileSprite = LoadSprite(
+                    "Assets/FracturedChorus/Resources/VFX/Combat/Boss/boss_sword_projectile_v1.png");
+            }
+
+            if (profile.impactSprite == null)
+            {
+                profile.impactSprite = LoadSprite(
+                    "Assets/FracturedChorus/Resources/VFX/Combat/Boss/boss_sword_impact_v1.png");
+            }
+
+            if (!existed)
+            {
+                profile.kind = SkillVfxKind.Projectile;
+                profile.fromAnchor = SkillVfxAnchor.CasterHead;
+                profile.toAnchor = SkillVfxAnchor.TargetBody;
+                profile.projectileWorldSize = 1.9f;
+                profile.impactWorldSize = 1.7f;
+                profile.spawnHoldSeconds = 0.08f;
+                profile.travelSeconds = 0.32f;
+                profile.impactSeconds = 0.18f;
+                profile.deflectSeconds = 0.22f;
+                profile.deflectTravel = 2.4f;
+                profile.verticalSpread = 0.22f;
+                profile.shotGapSeconds = 0.08f;
+                profile.facingOffsetDegrees = 135f;
+                profile.counteredShotMode = SkillVfxCounterBehavior.Deflect;
+                profile.sortingOrder = 42;
+            }
+
+            EditorUtility.SetDirty(profile);
+            return profile;
+        }
+
+        private static Sprite LoadSprite(string assetPath)
+        {
+            var assets = AssetDatabase.LoadAllAssetsAtPath(assetPath);
+            if (assets == null)
+            {
+                return null;
+            }
+
+            foreach (var asset in assets)
+            {
+                if (asset is Sprite sprite)
+                {
+                    return sprite;
+                }
+            }
+
+            return AssetDatabase.LoadAssetAtPath<Sprite>(assetPath);
         }
 
         private static Sprite LoadKnightOfDespairSprite()

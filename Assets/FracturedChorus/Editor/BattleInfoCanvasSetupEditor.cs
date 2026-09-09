@@ -15,7 +15,6 @@ namespace FracturedChorus.Editor
         private const string BattleStartPath =
             "Assets/FracturedChorus/Resources/UI/Combat/Banners/combat_banner_battle_start_v1.png";
 
-        [MenuItem("Fractured Chorus/Ensure Battle Info Canvas")]
         public static void EnsureBattleInfoCanvas()
         {
             var view = Object.FindAnyObjectByType<CombatPhaseBannerView>(FindObjectsInactive.Include);

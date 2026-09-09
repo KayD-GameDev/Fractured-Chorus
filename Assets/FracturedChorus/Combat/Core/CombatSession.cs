@@ -9,6 +9,7 @@ using FracturedChorus.Combat.Damage;
 using FracturedChorus.Combat.Difficulty;
 using FracturedChorus.Combat.Formation;
 using FracturedChorus.Combat.Grid;
+using FracturedChorus.Combat.Qte;
 using FracturedChorus.Combat.Timeline;
 using FracturedChorus.Combat.Units;
 using FracturedChorus.Data;
@@ -105,6 +106,7 @@ namespace FracturedChorus.Combat.Core
                 unit.OnDied += HandleUnitDied;
             }
 
+            CombatQteModifiers.Clear();
             BeginPlanningRound();
         }
 
@@ -304,6 +306,146 @@ namespace FracturedChorus.Combat.Core
 
             Debug.Log($"[Combat] {unit.DisplayName} → {skill.displayName} @ beat {beatIndex}");
             return true;
+        }
+
+        /// <summary>
+        /// Relocate drop onto another same-unit skill-phase (Active/S): partner moves to
+        /// <paramref name="fromBeat"/>, dragged skill is assigned at <paramref name="toBeat"/>.
+        /// Partner is the skill under the cursor's Active beat, or the unique skill whose
+        /// Active overlaps the ghost Active. Both footprints must still fit.
+        /// </summary>
+        public bool TrySwapRelocatePlayerAction(
+            CombatUnit unit,
+            SkillDefinitionSO skill,
+            int fromBeat,
+            int toBeat,
+            int hoverBeat,
+            out AgendaEntry partner)
+        {
+            partner = null;
+            if (unit == null
+                || unit.Side != GridSide.Player
+                || !IsPlanningWindowOpen
+                || skill == null
+                || Timeline == null)
+            {
+                return false;
+            }
+
+            if (!Timeline.CanSwapRelocate(unit, skill, fromBeat, toBeat, hoverBeat))
+            {
+                return false;
+            }
+
+            if (!Timeline.TryGetSwapPartner(unit, skill, toBeat, hoverBeat, out partner)
+                || partner?.Skill == null)
+            {
+                partner = null;
+                return false;
+            }
+
+            var destBeat = partner.BeatIndex;
+            var partnerOldBeat = destBeat;
+            if (fromBeat == destBeat)
+            {
+                partner = null;
+                return false;
+            }
+
+            RevertPlanningUtilityEffects(partner);
+            partner.BeatIndex = fromBeat;
+
+            if (!TryAssignPlayerAction(unit, skill, destBeat))
+            {
+                partner.BeatIndex = partnerOldBeat;
+                ApplyPlanningUtilityEffects(partner);
+                partner = null;
+                return false;
+            }
+
+            ApplyPlanningUtilityEffects(partner);
+            Debug.Log(
+                $"[Combat] Swap {unit.DisplayName} {skill.displayName} @{fromBeat} ↔ {partner.Skill.displayName} @{partnerOldBeat}");
+            return true;
+        }
+
+        /// <summary>
+        /// Remove <paramref name="victim"/> from the line, then try to place <paramref name="skill"/>.
+        /// Victim is not restored if assign fails.
+        /// </summary>
+        public bool TryEatThenAssign(
+            CombatUnit unit,
+            SkillDefinitionSO skill,
+            int placementBeat,
+            AgendaEntry victim)
+        {
+            if (unit == null || skill == null || victim?.Skill == null || Timeline == null)
+            {
+                return false;
+            }
+
+            if (!TryRemovePlayerAction(victim.Unit, victim.BeatIndex))
+            {
+                return false;
+            }
+
+            return TryAssignPlayerAction(unit, skill, placementBeat);
+        }
+
+        /// <summary>
+        /// Relocate: overlapping Active phases swap placement beats if both footprints still fit.
+        /// Failed S-on-S swap does not eat. Hover Standing with no Active overlap → eat then assign.
+        /// New skill from radial does not swap. Empty beat → assign.
+        /// </summary>
+        public bool TryResolveSkillDrop(
+            CombatUnit unit,
+            SkillDefinitionSO skill,
+            int placementBeat,
+            int hoverBeat,
+            int relocateFromBeat,
+            out AgendaEntry swapPartner,
+            out SkillDefinitionSO displacedSkill,
+            out int displacedBeat)
+        {
+            swapPartner = null;
+            displacedSkill = null;
+            displacedBeat = -1;
+
+            if (unit == null || skill == null || Timeline == null)
+            {
+                return false;
+            }
+
+            AgendaEntry phasePartner = null;
+            var phasePartnerOldBeat = -1;
+            if (relocateFromBeat >= 0
+                && Timeline.TryGetSwapPartner(unit, skill, placementBeat, hoverBeat, out phasePartner)
+                && phasePartner?.Skill != null)
+            {
+                phasePartnerOldBeat = phasePartner.BeatIndex;
+                if (TrySwapRelocatePlayerAction(
+                        unit, skill, relocateFromBeat, placementBeat, hoverBeat, out swapPartner)
+                    && swapPartner != null)
+                {
+                    displacedSkill = swapPartner.Skill;
+                    displacedBeat = phasePartnerOldBeat;
+                    return true;
+                }
+
+                swapPartner = null;
+                return false;
+            }
+
+            if (!SkillFootprintUtil.TryGetEntryAtBeat(
+                    Timeline.Agenda, unit, hoverBeat, out var victim, out _)
+                || victim?.Skill == null)
+            {
+                return TryAssignPlayerAction(unit, skill, placementBeat);
+            }
+
+            displacedSkill = victim.Skill;
+            displacedBeat = victim.BeatIndex;
+            return TryEatThenAssign(unit, skill, placementBeat, victim);
         }
 
         public bool TryRemovePlayerAction(CombatUnit unit, int beatIndex)
@@ -789,7 +931,8 @@ namespace FracturedChorus.Combat.Core
                 ? telegraph.HitsRequired
                 : System.Math.Max(1, (int)telegraph.NoteTier);
 
-            if (CombatCounterResolver.IsTelegraphFullyCountered(telegraph, Timeline))
+            if (CombatCounterResolver.IsTelegraphFullyCountered(telegraph, Timeline)
+                && CombatQteModifiers.AllowsCancel)
             {
                 Debug.Log(
                     $"[Counter] Cancelled {telegraph.Unit.DisplayName} @ beat {beatIndex} ({telegraph.NoteTier}, need {telegraph.HitsRequired})");
@@ -820,6 +963,11 @@ namespace FracturedChorus.Combat.Core
                 : DifficultyRuntime.Cadence;
             var difficultyMult = DifficultyRuntime.Get(difficulty);
             var finalDamage = damageResult.FinalDamage * difficultyMult.EnemyDamage;
+            if (CombatQteModifiers.HasActive
+                && !Mathf.Approximately(CombatQteModifiers.IncomingEnemyMult, 1f))
+            {
+                finalDamage *= CombatQteModifiers.IncomingEnemyMult;
+            }
             var blockTiming = BlockBarriers.TryGetBlockTiming(beatIndex, Timeline);
             if (blockTiming.HasValue)
             {
@@ -1018,7 +1166,8 @@ namespace FracturedChorus.Combat.Core
                     BeatTiming = timing,
                     IsEmpowered = entry.IsEmpowered,
                     Entry = entry,
-                    CoverOutgoingMultiplier = Cover.OutgoingDamageMultiplier
+                    CoverOutgoingMultiplier = Cover.OutgoingDamageMultiplier,
+                    QteOutgoingMultiplier = CombatQteModifiers.OutgoingMult
                 };
 
                 if (pulseIndex == 0 || entry.PendingHitDamage < 0f)
@@ -1058,7 +1207,8 @@ namespace FracturedChorus.Combat.Core
                 BeatTiming = timing,
                 IsEmpowered = entry.IsEmpowered,
                 Entry = entry,
-                CoverOutgoingMultiplier = Cover.OutgoingDamageMultiplier
+                CoverOutgoingMultiplier = Cover.OutgoingDamageMultiplier,
+                QteOutgoingMultiplier = CombatQteModifiers.OutgoingMult
             };
 
             var command = new SkillActionCommand(entry.Skill);

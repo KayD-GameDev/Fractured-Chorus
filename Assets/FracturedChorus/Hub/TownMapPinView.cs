@@ -20,6 +20,8 @@ namespace FracturedChorus.Hub
 
         public string LocationId => _definition != null ? _definition.Id : string.Empty;
 
+        public TownLocationDefinition Definition => _definition;
+
         public void Bind(
             TownLocationDefinition definition,
             Sprite icon,

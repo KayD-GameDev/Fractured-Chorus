@@ -143,7 +143,6 @@ namespace FracturedChorus.Editor
             entry.FindPropertyRelative("clip").objectReferenceValue = clip;
         }
 
-        [MenuItem("Fractured Chorus/Create OpeningInvestigation Scene")]
         public static void CreateScene()
         {
             PopulateScriptAsset();
@@ -160,7 +159,6 @@ namespace FracturedChorus.Editor
             Debug.Log($"[Fractured Chorus] Saved {ScenePath}");
         }
 
-        [MenuItem("Fractured Chorus/Setup OpeningInvestigation Scene Hierarchy")]
         public static void SetupHierarchy()
         {
             PopulateScriptAsset();

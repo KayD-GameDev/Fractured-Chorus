@@ -96,11 +96,12 @@ namespace FracturedChorus.Hub
                 return;
             }
 
-            if (TownMapInput.CancelPressed())
+            if (partyStatusMenu != null && partyStatusMenu.IsOpen)
             {
-                Hide();
+                return;
             }
 
+            // ESC do StatusMenuRuntime làm chủ để mọi scene đóng/mở menu theo cùng một luật.
             if (_tab == Tab.System && WasHealHotkeyPressed())
             {
                 var hub = Object.FindAnyObjectByType<CampusHubController>();
@@ -512,11 +513,20 @@ namespace FracturedChorus.Hub
 
         private void OpenSaveSlots()
         {
-            var host = transform.parent != null ? transform.parent : transform;
+            var canvas = GetComponentInParent<Canvas>();
+            var host = canvas != null
+                ? canvas.transform
+                : transform.parent != null ? transform.parent : transform;
+            var state = _state ?? GameMetaSession.Current;
+
+            // Mở panel save trước rồi mới ẩn status menu — một lần ESC đóng slot list,
+            // lần sau đóng status. Session đang chơi nên tab SAVE luôn bật.
             SaveLoadSlotListView.Show(
                 host,
                 SaveLoadSlotListView.Mode.Save,
-                onSave: slot => GameMetaSession.SaveToSlot(slot));
+                onSave: GameMetaSession.SaveToSlot,
+                onClosed: () => Show(state),
+                sessionActive: true);
             Hide();
         }
 

@@ -11,7 +11,6 @@ namespace FracturedChorus.Editor
     {
         private const string Folder = "Assets/FracturedChorus/Resources/Encounters";
 
-        [MenuItem("Fractured Chorus/Create Encounter Assets (Battle / Elite / Boss)")]
         public static void CreateEncounterAssets()
         {
             EnsureFolder(Folder);

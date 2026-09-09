@@ -13,7 +13,6 @@ namespace FracturedChorus.Editor
     {
         private const string RootName = "UI_EditPreview";
 
-        [MenuItem("Fractured Chorus/Create UI Edit Preview (Layered)")]
         public static void CreateUiEditPreview()
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode)

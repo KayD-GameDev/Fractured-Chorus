@@ -1,6 +1,7 @@
 using System;
 using FracturedChorus.Menu;
 using FracturedChorus.Narrative;
+using FracturedChorus.UI;
 using UnityEngine;
 
 namespace FracturedChorus.Narrative.Vn
@@ -109,8 +110,13 @@ namespace FracturedChorus.Narrative.Vn
         {
             if (LogOpen)
             {
-                if (PrologueInput.WasCancelPressedThisFrame() ||
-                    PrologueInput.WasKeyboardAdvancePressedThisFrame())
+                if (PrologueInput.WasCancelPressedThisFrame() && UiEscapeGate.TryConsumeBackground())
+                {
+                    CloseLog();
+                    return;
+                }
+
+                if (PrologueInput.WasKeyboardAdvancePressedThisFrame())
                 {
                     CloseLog();
                 }

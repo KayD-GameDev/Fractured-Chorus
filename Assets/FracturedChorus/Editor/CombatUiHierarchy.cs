@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using FracturedChorus.Combat.Bootstrap;
+using FracturedChorus.Data;
 using FracturedChorus.UI;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -150,7 +151,7 @@ namespace FracturedChorus.Editor
 
             foreach (var card in cards)
             {
-                UpgradePartyCardTemplate(card, forceRestoreClearCard: true);
+                UpgradePartyCardTemplate(card);
             }
 
             var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
@@ -164,7 +165,81 @@ namespace FracturedChorus.Editor
                 "Save scene (Ctrl+S).");
         }
 
-        private static void UpgradePartyCardTemplate(PartyMemberCardView card, bool forceRestoreClearCard = false)
+        /// <summary>
+        /// Party CardTemplate modular (CardBg / Avatar / HP-Prep numbers). Không đụng enemy.
+        /// Node đã author Rect thì giữ nguyên.
+        /// </summary>
+        public static void RebuildModularPartyCardTemplateInScene()
+        {
+            var partyBar = Object.FindAnyObjectByType<PartyStatusBarUIView>(FindObjectsInactive.Include);
+            if (partyBar == null)
+            {
+                Debug.LogWarning("[Fractured Chorus] PartyStatusBarUI not found.");
+                return;
+            }
+
+            var templateTransform = partyBar.transform.Find("CardTemplate");
+            PartyMemberCardView template;
+            if (templateTransform == null || templateTransform.Find("CardBg") == null)
+            {
+                if (templateTransform != null)
+                {
+                    Undo.DestroyObjectImmediate(templateTransform.gameObject);
+                }
+
+                template = TimelineHierarchyBuilder.CreateModularPartyCardTemplate(partyBar.transform);
+                template.gameObject.SetActive(true);
+                EnsurePrepPipsSegmentStrip(template.transform);
+            }
+            else
+            {
+                template = templateTransform.GetComponent<PartyMemberCardView>();
+                EnsureModularPartyCardNodes(templateTransform, overwriteAuthored: false);
+            }
+
+            SetPartyBarField(partyBar, "cardTemplate", template);
+            if (template != null)
+            {
+                template.WireReferences();
+                WireCardViewFields(template);
+                AssignPartyCardPreviewPresets(template);
+                template.ApplyInspectorPreview();
+                EditorUtility.SetDirty(template);
+            }
+
+            EditorUtility.SetDirty(partyBar);
+
+            var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+            if (scene.IsValid() && scene.isLoaded)
+            {
+                EditorSceneManager.MarkSceneDirty(scene);
+            }
+
+            Debug.Log("[Fractured Chorus] Party CardTemplate modular ready. Save scene (Ctrl+S).");
+        }
+
+        private static void EnsureModularPartyCardNodes(Transform cardRoot, bool overwriteAuthored)
+        {
+            if (cardRoot == null)
+            {
+                return;
+            }
+
+            var cardView = cardRoot.GetComponent<PartyMemberCardView>();
+            cardView?.WireReferences();
+            if (overwriteAuthored)
+            {
+                var rt = cardRoot as RectTransform;
+                if (rt != null)
+                {
+                    Undo.RecordObject(rt, "Modular card size");
+                    rt.sizeDelta = new Vector2(PartyCardLayout.CardWidth, PartyCardLayout.CardHeight);
+                    rt.localRotation = Quaternion.Euler(0f, 0f, PartyCardLayout.ModularCardRotationZ);
+                }
+            }
+        }
+
+        private static void UpgradePartyCardTemplate(PartyMemberCardView card)
         {
             if (card == null)
             {
@@ -179,18 +254,22 @@ namespace FracturedChorus.Editor
                 Undo.DestroyObjectImmediate(roleBadge.gameObject);
             }
 
-            // Clear-card: không dùng Border/Avatar — chỉ CardArt.
             DisableLegacyChrome(card.transform.Find("Border")?.gameObject);
-            DisableLegacyChrome(card.transform.Find("Avatar")?.gameObject);
+            if (card.transform.Find("Avatar") != null)
+            {
+                DisableLegacyChrome(card.transform.Find("CardArt")?.gameObject);
+            }
 
             EnsureElementBadge(card.transform, IsEnemyCardTemplate(card));
             UpgradeHealthBar(card.transform);
-            EnsureEmbeddedCardHierarchy(card.transform, forceRestoreClearCard);
+            EnsureModularPartyCardNodes(card.transform, overwriteAuthored: false);
+            if (IsEnemyCardTemplate(card))
+            {
+                ApplyClearCardRootSize(card.transform as RectTransform);
+            }
 
-            ApplyClearCardRootSize(card.transform as RectTransform);
             ReparentHealthAndPrepIntoBarStack(card.transform);
             EnsurePrepPipsSegmentStrip(card.transform);
-            RestoreCardSiblingOrder(card.transform);
             WireCardViewFields(card);
 
             card.WireReferences();
@@ -221,7 +300,7 @@ namespace FracturedChorus.Editor
             }
 
             Undo.RecordObject(cardRt, "Clear card size");
-            cardRt.sizeDelta = new Vector2(PartyCardLayout.CardWidth, PartyCardLayout.CardHeight);
+            cardRt.sizeDelta = new Vector2(TimelineHierarchyBuilder.EnemyCardWidth, TimelineHierarchyBuilder.EnemyCardHeight);
 
             var layout = cardRt.GetComponent<LayoutElement>();
             if (layout == null)
@@ -230,8 +309,8 @@ namespace FracturedChorus.Editor
             }
 
             Undo.RecordObject(layout, "Clear card LayoutElement");
-            layout.preferredWidth = PartyCardLayout.CardWidth;
-            layout.preferredHeight = PartyCardLayout.CardHeight;
+            layout.preferredWidth = TimelineHierarchyBuilder.EnemyCardWidth;
+            layout.preferredHeight = TimelineHierarchyBuilder.EnemyCardHeight;
         }
 
         private static void EnsureElementBadge(Transform cardRoot, bool enemySide)
@@ -246,22 +325,7 @@ namespace FracturedChorus.Editor
             }
 
             Undo.RecordObject(badgeTransform, "ElementBadge rect");
-            badgeTransform.sizeDelta = new Vector2(PartyCardLayout.EmbeddedBadgeSize, PartyCardLayout.EmbeddedBadgeSize);
-            badgeTransform.pivot = new Vector2(0.5f, 0.5f);
-            if (enemySide)
-            {
-                // Góc trên-phải (mép ngoài bar quái).
-                badgeTransform.anchorMin = new Vector2(1f, 1f);
-                badgeTransform.anchorMax = new Vector2(1f, 1f);
-                badgeTransform.anchoredPosition = new Vector2(-18f, -18f);
-            }
-            else
-            {
-                // Góc trên-trái (mép ngoài bar party) — khớp author gần nhất.
-                badgeTransform.anchorMin = new Vector2(0f, 1f);
-                badgeTransform.anchorMax = new Vector2(0f, 1f);
-                badgeTransform.anchoredPosition = new Vector2(25f, -25f);
-            }
+            PartyCardLayout.ApplyElementBadgeRect(badgeTransform, enemySide);
 
             var ring = badgeTransform.GetComponent<Image>();
             if (ring == null)
@@ -548,6 +612,14 @@ namespace FracturedChorus.Editor
         {
             var so = new SerializedObject(card);
             SetObjectRef(so, "cardArtImage", card.transform.Find("CardArt")?.GetComponent<Image>());
+            SetObjectRef(so, "cardBg", card.transform.Find("CardBg")?.GetComponent<Image>());
+            SetObjectRef(so, "accentShard", card.transform.Find("AccentShard")?.GetComponent<Image>());
+            SetObjectRef(so, "avatarImage", card.transform.Find("Avatar")?.GetComponent<Image>());
+            SetObjectRef(so, "nameLabel", card.transform.Find("NameLabel")?.GetComponent<Text>());
+            SetObjectRef(so, "hpLabel", card.transform.Find("BarStack/HealthSlot/HpLabel")?.GetComponent<Text>());
+            SetObjectRef(so, "hpValue", card.transform.Find("BarStack/HealthSlot/HpValue")?.GetComponent<Text>());
+            SetObjectRef(so, "prepLabel", card.transform.Find("BarStack/GaugeSlot/PrepLabel")?.GetComponent<Text>());
+            SetObjectRef(so, "prepValue", card.transform.Find("BarStack/GaugeSlot/PrepValue")?.GetComponent<Text>());
             SetObjectRef(so, "barStack", card.transform.Find("BarStack") as RectTransform);
             SetObjectRef(so, "healthSlot", card.transform.Find("BarStack/HealthSlot") as RectTransform);
             SetObjectRef(so, "gaugeSlot", card.transform.Find("BarStack/GaugeSlot") as RectTransform);
@@ -560,6 +632,60 @@ namespace FracturedChorus.Editor
                        ?? card.transform.Find("HealthBarBg/HealthBarFill")?.GetComponent<Image>();
             SetObjectRef(so, "healthBarFill", fill);
             SetObjectRef(so, "healthBarFillRect", fill != null ? fill.rectTransform : null);
+            so.ApplyModifiedPropertiesWithoutUndo();
+            AssignPartyCardPreviewPresets(card);
+        }
+
+        public static void AssignPartyCardPreviewPresets(PartyMemberCardView card)
+        {
+            if (card == null)
+            {
+                return;
+            }
+
+            if (card.GetComponentInParent<EnemyStatusBarUIView>(true) != null)
+            {
+                AssignPresetArray(
+                    card,
+                    "Assets/FracturedChorus/Resources/UnitPresets/UnitPreset_Boss_Despair.asset",
+                    "Assets/FracturedChorus/Resources/UnitPresets/UnitPreset_Kiki_Ueda.asset",
+                    "Assets/FracturedChorus/Resources/UnitPresets/UnitPreset_Grunt.asset",
+                    "Assets/FracturedChorus/Resources/UnitPresets/UnitPreset_Grunt_Eye.asset");
+                return;
+            }
+
+            AssignPresetArray(
+                card,
+                "Assets/FracturedChorus/Resources/UnitPresets/UnitPreset_Ren.asset",
+                "Assets/FracturedChorus/Resources/UnitPresets/UnitPreset_Mage.asset",
+                "Assets/FracturedChorus/Resources/UnitPresets/UnitPreset_Tank.asset");
+        }
+
+        private static void AssignPresetArray(PartyMemberCardView card, params string[] paths)
+        {
+            var so = new SerializedObject(card);
+            var presets = so.FindProperty("characterCardPresets");
+            if (presets == null)
+            {
+                return;
+            }
+
+            if (presets.arraySize == 0)
+            {
+                presets.arraySize = paths.Length;
+                for (var i = 0; i < paths.Length; i++)
+                {
+                    presets.GetArrayElementAtIndex(i).objectReferenceValue =
+                        AssetDatabase.LoadAssetAtPath<UnitPresetSO>(paths[i]);
+                }
+            }
+
+            var index = so.FindProperty("previewCharacterIndex");
+            if (index != null && index.intValue < 0)
+            {
+                index.intValue = 0;
+            }
+
             so.ApplyModifiedPropertiesWithoutUndo();
         }
 
@@ -834,7 +960,7 @@ namespace FracturedChorus.Editor
             var template = partyBar.transform.Find("CardTemplate")?.GetComponent<PartyMemberCardView>();
             if (template != null)
             {
-                UpgradePartyCardTemplate(template, forceRestoreClearCard: true);
+                UpgradePartyCardTemplate(template);
                 template.gameObject.SetActive(false);
             }
 
@@ -880,8 +1006,8 @@ namespace FracturedChorus.Editor
             var template = enemyBar.transform.Find("CardTemplate")?.GetComponent<PartyMemberCardView>();
             if (template != null)
             {
-                UpgradePartyCardTemplate(template, forceRestoreClearCard: true);
-                template.gameObject.SetActive(false);
+                UpgradePartyCardTemplate(template);
+                template.gameObject.SetActive(true);
             }
 
             EditorUtility.SetDirty(enemyBar);
@@ -1058,12 +1184,14 @@ namespace FracturedChorus.Editor
                 case float floatValue:
                     prop.floatValue = floatValue;
                     break;
+                case Object objectValue:
+                    prop.objectReferenceValue = objectValue;
+                    break;
             }
 
             so.ApplyModifiedPropertiesWithoutUndo();
         }
 
-        [MenuItem("Fractured Chorus/Setup Skill Panel in Hierarchy")]
         public static void EnsureSkillPanelInHierarchy()
         {
             var canvas = ResolveCombatCanvasTransform();
@@ -1097,7 +1225,6 @@ namespace FracturedChorus.Editor
         /// <summary>
         /// Batch/menu: mở CombatPrototype, thêm SkillSlot_Template + Frame trên art, save scene.
         /// </summary>
-        [MenuItem("Fractured Chorus/Migrate Skill Slot Template (CombatPrototype)")]
         public static void MigrateSkillSlotTemplateCombatPrototype()
         {
             const string scenePath = "Assets/FracturedChorus/Scenes/CombatPrototype.unity";

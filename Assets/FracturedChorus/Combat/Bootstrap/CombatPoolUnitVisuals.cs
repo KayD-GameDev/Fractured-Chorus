@@ -1,3 +1,4 @@
+using FracturedChorus.Combat.Presentation;
 using FracturedChorus.UI;
 using UnityEngine;
 
@@ -67,6 +68,7 @@ namespace FracturedChorus.Combat.Bootstrap
             }
 
             UnitSpriteSimulator.EnsureOn(view);
+            SkillVfxSimulator.EnsureOn(view);
             return view;
         }
 

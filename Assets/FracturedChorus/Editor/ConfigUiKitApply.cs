@@ -30,7 +30,6 @@ namespace FracturedChorus.Editor
         private const string CrystalShardB = "Assets/FracturedChorus/Art/UI/TitleScreen/SheetV1/ui_crystal_shard_b_v1.png";
         private const string CrystalShardC = "Assets/FracturedChorus/Art/UI/TitleScreen/SheetV1/ui_crystal_shard_c_v1.png";
 
-        [MenuItem("Fractured Chorus/Apply Config UI Kit")]
         public static void ApplyToOpenScene()
         {
             if (!Apply(setPreview: true))

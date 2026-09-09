@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using FracturedChorus.UI;
 
 namespace FracturedChorus.UI
 {
@@ -29,6 +28,10 @@ namespace FracturedChorus.UI
         private Text _label;
         private Outline _outline;
         private Shadow _shadow;
+        private RectTransform _digitRow;
+        private readonly List<Image> _digits = new();
+        private Image _critBadge;
+        private bool _useSprites;
         private Coroutine _playRoutine;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -106,7 +109,13 @@ namespace FracturedChorus.UI
 
             go.GetComponent<GraphicRaycaster>().enabled = false;
             _canvasRoot = go.GetComponent<RectTransform>();
+            _canvasRoot.anchorMin = Vector2.zero;
+            _canvasRoot.anchorMax = Vector2.one;
+            _canvasRoot.offsetMin = Vector2.zero;
+            _canvasRoot.offsetMax = Vector2.zero;
+            _canvasRoot.pivot = new Vector2(0.5f, 0.5f);
             _worldCamera = Camera.main;
+            Canvas.ForceUpdateCanvases();
         }
 
         private static Font ResolveFont()
@@ -138,6 +147,37 @@ namespace FracturedChorus.UI
             _group.blocksRaycasts = false;
             _group.interactable = false;
 
+            _useSprites = DamageNumberDigitAtlas.HasDigits(false);
+            if (_useSprites)
+            {
+                BuildDigitRow();
+                return;
+            }
+
+            BuildTextFallback();
+        }
+
+        private void BuildDigitRow()
+        {
+            var rowGo = new GameObject("Digits", typeof(RectTransform));
+            _digitRow = rowGo.GetComponent<RectTransform>();
+            _digitRow.SetParent(_rect, false);
+            _digitRow.anchorMin = new Vector2(0.5f, 0.5f);
+            _digitRow.anchorMax = new Vector2(0.5f, 0.5f);
+            _digitRow.pivot = new Vector2(0.5f, 0.5f);
+            _digitRow.anchoredPosition = Vector2.zero;
+
+            _critBadge = DamageNumberDigitStrip.CreateImage("CritBadge", _digitRow);
+            _critBadge.gameObject.SetActive(false);
+            _digits.Clear();
+            for (var i = 0; i < DamageNumberDigitStrip.MaxDigits; i++)
+            {
+                _digits.Add(DamageNumberDigitStrip.CreateImage("Digit_" + i, _digitRow));
+            }
+        }
+
+        private void BuildTextFallback()
+        {
             var labelGo = new GameObject(
                 "Amount",
                 typeof(RectTransform),
@@ -184,15 +224,37 @@ namespace FracturedChorus.UI
                 _worldCamera = Camera.main;
             }
 
+            if (!_useSprites && DamageNumberDigitAtlas.HasDigits(false))
+            {
+                if (_label != null)
+                {
+                    _label.gameObject.SetActive(false);
+                }
+
+                BuildDigitRow();
+                _useSprites = true;
+            }
+
             gameObject.SetActive(true);
             _rect.SetAsLastSibling();
             _group.alpha = 1f;
             _rect.anchoredPosition = WorldToCanvas(worldPosition);
 
-            _label.text = Mathf.Abs(amount).ToString();
-            _label.fontSize = isCritical ? 86 : 70;
-            _label.color = isCritical && !heal ? CritColor : heal ? HealColor : DamageColor;
-            _outline.effectDistance = isCritical ? new Vector2(5f, -5f) : new Vector2(4f, -4f);
+            if (_useSprites && _digitRow != null)
+            {
+                var size = DamageNumberDigitStrip.Apply(_digitRow, _digits, _critBadge, amount, heal, isCritical);
+                _rect.sizeDelta = size + new Vector2(24f, 16f);
+            }
+            else if (_label != null)
+            {
+                _label.text = Mathf.Abs(amount).ToString();
+                _label.fontSize = isCritical ? 86 : 70;
+                _label.color = isCritical && !heal ? CritColor : heal ? HealColor : DamageColor;
+                if (_outline != null)
+                {
+                    _outline.effectDistance = isCritical ? new Vector2(5f, -5f) : new Vector2(4f, -4f);
+                }
+            }
 
             _playRoutine = StartCoroutine(AnimateRoutine(_rect.anchoredPosition, isCritical));
         }
@@ -200,7 +262,7 @@ namespace FracturedChorus.UI
         private Vector2 WorldToCanvas(Vector3 worldPosition)
         {
             _worldCamera = Camera.main;
-            if (_worldCamera == null)
+            if (_worldCamera == null || _canvasRoot == null)
             {
                 return Vector2.zero;
             }
@@ -211,6 +273,17 @@ namespace FracturedChorus.UI
                 screen,
                 null,
                 out var local);
+
+            // Letterbox bars cover ~18% top/bottom at sort 520. Keep numbers in the open band.
+            var h = _canvasRoot.rect.height;
+            if (h > 8f)
+            {
+                var pad = h * 0.22f;
+                var minY = -h * 0.5f + pad;
+                var maxY = h * 0.5f - pad;
+                local.y = Mathf.Clamp(local.y, minY, maxY);
+            }
+
             return local;
         }
 

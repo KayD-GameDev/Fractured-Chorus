@@ -2,6 +2,7 @@
 using FracturedChorus.Audio;
 using FracturedChorus.Combat.Bootstrap;
 using FracturedChorus.Combat.Presentation;
+using FracturedChorus.Combat.Qte;
 using FracturedChorus.UI;
 using UnityEditor;
 using UnityEngine;
@@ -24,6 +25,7 @@ namespace FracturedChorus.Editor
         private static bool _foldPartyEnemy = false;
         private static bool _foldAudio = false;
         private static bool _foldRenSkillVfx = true;
+        private static bool _foldQte = true;
 
         public override void OnInspectorGUI()
         {
@@ -39,6 +41,7 @@ namespace FracturedChorus.Editor
 
             DrawDeployExecute(bootstrap);
             DrawPerfect(bootstrap);
+            DrawQte(bootstrap);
             DrawCounterFeel(bootstrap);
             DrawTimeline(bootstrap);
             DrawSkillPanel(bootstrap);
@@ -130,6 +133,54 @@ namespace FracturedChorus.Editor
             }
 
             EditorGUILayout.LabelField("Sprite", "Resources/UI/Combat/combat_perfect_popup_v1");
+            EditorGUI.indentLevel--;
+            serializedObject.ApplyModifiedProperties();
+        }
+
+        private void DrawQte(CombatPrototypeBootstrap bootstrap)
+        {
+            _foldQte = EditorGUILayout.Foldout(_foldQte, "Counter QTE", true);
+            if (!_foldQte)
+            {
+                return;
+            }
+
+            EditorGUI.indentLevel++;
+            var chanceProp = serializedObject.FindProperty("qteDefaultChance");
+            EditorGUILayout.Slider(chanceProp, 0f, 1f, new GUIContent("Default chance", "Tỷ lệ QTE phase 1–2. Chỉ cần đổi ô này."));
+            var missProp = serializedObject.FindProperty("qteMissDamageReduction");
+            EditorGUILayout.Slider(
+                missProp,
+                0f,
+                1f,
+                new GUIContent("Miss dmg reduction", "Miss không hủy đòn. Phase 1–2 giảm dmg bấy nhiêu (0.25 = −25%)."));
+            EditorGUILayout.HelpBox(
+                "Chance: phase 1–2 dùng số trên, mỗi 2 phase +10% (cap profile).\n" +
+                "Miss: đòn vẫn trúng, giảm dmg hai phía. Mỗi 2 phase +5%, cap 35% trên CombatQteProfile.",
+                MessageType.None);
+
+            var overlay = Object.FindAnyObjectByType<CombatQteOverlayView>(FindObjectsInactive.Include);
+            DrawPingRow(overlay != null ? overlay.gameObject : null, "Select CombatQteOverlay");
+
+            var controller = Object.FindAnyObjectByType<CombatQteController>(FindObjectsInactive.Include);
+            DrawPingRow(controller != null ? controller.gameObject : null, "Select CombatQteController");
+
+            var profile = AssetDatabase.LoadAssetAtPath<CombatQteProfileSO>(
+                CombatQteOverlaySetupEditor.ProfileAssetPath);
+            if (profile != null)
+            {
+                EditorGUILayout.ObjectField("Profile", profile, typeof(CombatQteProfileSO), false);
+            }
+            else
+            {
+                EditorGUILayout.HelpBox("Chưa có CombatQteProfile.asset — menu Fractured Chorus/Combat/Setup QTE Overlay.", MessageType.Warning);
+            }
+
+            if (GUILayout.Button("Setup QTE Overlay"))
+            {
+                CombatQteOverlaySetupEditor.SetupQteOverlay();
+            }
+
             EditorGUI.indentLevel--;
             serializedObject.ApplyModifiedProperties();
         }

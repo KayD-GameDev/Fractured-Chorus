@@ -388,6 +388,12 @@ namespace FracturedChorus.Combat.Actions
                 finalDamage *= ctx.CoverOutgoingMultiplier;
             }
 
+            if (ctx.QteOutgoingMultiplier > 0f &&
+                !Mathf.Approximately(ctx.QteOutgoingMultiplier, 1f))
+            {
+                finalDamage *= ctx.QteOutgoingMultiplier;
+            }
+
             finalDamage = RunEventCombatMods.ModifyOutgoing(ctx.Source.Side, finalDamage);
             finalDamage = RunEventCombatMods.ModifyIncoming(target.Side, finalDamage);
             return finalDamage;

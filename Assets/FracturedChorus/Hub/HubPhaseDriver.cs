@@ -159,27 +159,46 @@ namespace FracturedChorus.Hub
         }
     }
 
+    /// <summary>
+    /// Activity đã chọn nhưng chưa hoàn tất (vd đang ở scene Flower Shop). Ghi thẳng vào save khi có
+    /// session, nên tắt game giữa chừng vẫn quay lại đúng việc đang làm dở; field static chỉ là
+    /// đường lùi cho các scene chạy độc lập không có session.
+    /// </summary>
     public static class HubPendingActivity
     {
-        public static string ActivityId { get; private set; }
+        private static string s_detachedActivityId;
+
+        public static string ActivityId
+        {
+            get
+            {
+                var hubLocation = SessionHubLocation;
+                return hubLocation != null ? hubLocation.PendingActivityId : s_detachedActivityId;
+            }
+        }
 
         public static bool HasPending => !string.IsNullOrWhiteSpace(ActivityId);
 
         public static void Set(string activityId)
         {
-            ActivityId = activityId;
+            s_detachedActivityId = activityId;
+            SessionHubLocation?.SetPendingActivity(activityId);
         }
 
         public static string Consume()
         {
             var id = ActivityId;
-            ActivityId = null;
+            Clear();
             return id;
         }
 
         public static void Clear()
         {
-            ActivityId = null;
+            s_detachedActivityId = null;
+            SessionHubLocation?.ClearPendingActivity();
         }
+
+        private static HubLocationState SessionHubLocation =>
+            GameMetaSession.HasSession ? GameMetaSession.Current.HubLocation : null;
     }
 }

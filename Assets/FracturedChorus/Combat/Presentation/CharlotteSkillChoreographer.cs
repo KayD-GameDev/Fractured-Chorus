@@ -162,7 +162,10 @@ namespace FracturedChorus.Combat.Presentation
             charlotte.ArriveAtCombatCell();
             charlotte.PlayAttackAnimationHold(skill);
             var clip = Mathf.Max(0.2f, charlotte.EstimateSkillClipLength(skill));
-            var impactAt = clip * norHitImpactNormalized;
+            var contactNorm = skill.vfxProfile != null
+                ? skill.vfxProfile.ResolveContactNormalized(norHitImpactNormalized)
+                : norHitImpactNormalized;
+            var impactAt = clip * contactNorm;
             if (impactAt > 0f)
             {
                 yield return new WaitForSeconds(impactAt);
@@ -173,7 +176,7 @@ namespace FracturedChorus.Combat.Presentation
             onImpact?.Invoke();
             SpawnPersonalShield(charlotte, skill);
 
-            var tail = clip * (1f - norHitImpactNormalized);
+            var tail = clip * (1f - contactNorm);
             if (tail > 0f)
             {
                 yield return new WaitForSeconds(tail);
@@ -219,6 +222,7 @@ namespace FracturedChorus.Combat.Presentation
             }
 
             charlotte.ArriveAtCombatCell();
+            yield return EncounterDirector.PresentArmedCaster();
             FindAnyObjectByType<CombatSfxController>()?.PlayCharlotteSkill2Dash();
             charlotte.PlayAttackAnimationHold(skill);
             var slideSeconds = Mathf.Max(
@@ -298,6 +302,10 @@ namespace FracturedChorus.Combat.Presentation
             }
 
             yield return EncounterDirector.WaitArmedVictimFocus();
+            if (ultImpactHoldSeconds > 0f)
+            {
+                yield return new WaitForSeconds(ultImpactHoldSeconds);
+            }
 
             var holdSeconds = Mathf.Max(ResolveShieldHoldSeconds(skill), ultDomeHoldSeconds);
             if (EncounterDirector.IsPresenting)
@@ -326,7 +334,11 @@ namespace FracturedChorus.Combat.Presentation
                 yield break;
             }
 
-            yield return new WaitForSeconds(1f);
+            if (ultAftermathHoldSeconds > 0f)
+            {
+                yield return new WaitForSeconds(ultAftermathHoldSeconds);
+            }
+
             yield return ReturnHome(charlotte, home, norHitRetreatSeconds);
             yield return boss.MoveFeetToRoutine(
                 bossHome,
@@ -386,7 +398,28 @@ namespace FracturedChorus.Combat.Presentation
                 sfx?.PlaySkillSfxImmediate(skill);
             }
 
-            if (hitSprite == null || charlotte == null || boss == null)
+            if (charlotte == null || boss == null)
+            {
+                return;
+            }
+
+            var profile = skill != null ? skill.vfxProfile : null;
+            if (SkillVfxShotView.HasRenderableProfile(profile))
+            {
+                SkillVfxShotView.ResolveShotEnds(
+                    profile, charlotte, boss, 0, 1, out var shotFrom, out var shotTo);
+                SkillVfxShotView.Spawn(
+                    profile,
+                    shotFrom,
+                    shotTo,
+                    BossSwordShotMode.Hit,
+                    ResolveAdditive(),
+                    vfxParent != null ? vfxParent : transform,
+                    null);
+                return;
+            }
+
+            if (hitSprite == null)
             {
                 return;
             }

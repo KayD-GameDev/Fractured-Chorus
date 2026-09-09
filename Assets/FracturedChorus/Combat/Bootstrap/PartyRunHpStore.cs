@@ -2,17 +2,86 @@ using System.Collections.Generic;
 using FracturedChorus.Combat.Core;
 using FracturedChorus.Combat.Grid;
 using FracturedChorus.Combat.Units;
+using FracturedChorus.Meta;
 using UnityEngine;
 
 namespace FracturedChorus.Combat.Bootstrap
 {
+    /// <summary>
+    /// HP party giữa các trận. Vẫn là cache trong RAM cho nhanh, nhưng mọi thay đổi đều được
+    /// ghi thẳng sang GameMetaState.PartyVitals nên save file luôn có số mới nhất
+    /// mà không cần ai nhớ gọi "chụp trước khi save".
+    /// </summary>
     public static class PartyRunHpStore
     {
         private static readonly List<string> Order = new List<string>();
         private static readonly Dictionary<string, int> HpByUnitId = new();
         private static readonly Dictionary<string, int> MaxHpByUnitId = new();
 
+        private static bool s_hooked;
+
         public static bool HasData => HpByUnitId.Count > 0;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void HookSession()
+        {
+            if (s_hooked)
+            {
+                return;
+            }
+
+            s_hooked = true;
+            GameMetaSession.SessionStateChanged += OnSessionStateChanged;
+        }
+
+        private static void OnSessionStateChanged(GameMetaState state)
+        {
+            Order.Clear();
+            HpByUnitId.Clear();
+            MaxHpByUnitId.Clear();
+
+            if (state?.PartyVitals == null)
+            {
+                return;
+            }
+
+            foreach (var entry in state.PartyVitals.Entries)
+            {
+                if (string.IsNullOrEmpty(entry.UnitId))
+                {
+                    continue;
+                }
+
+                var max = Mathf.Max(1, entry.MaxHp);
+                Order.Add(entry.UnitId);
+                MaxHpByUnitId[entry.UnitId] = max;
+                HpByUnitId[entry.UnitId] = Mathf.Clamp(entry.Hp, 0, max);
+            }
+        }
+
+        /// <summary>Đẩy toàn bộ cache sang state đang mở để lần ghi file kế tiếp có số đúng.</summary>
+        private static void SyncToSession()
+        {
+            if (!GameMetaSession.HasSession)
+            {
+                return;
+            }
+
+            var vitals = GameMetaSession.Current.PartyVitals;
+            vitals.Clear();
+
+            for (var i = 0; i < Order.Count; i++)
+            {
+                var id = Order[i];
+                if (!HpByUnitId.TryGetValue(id, out var hp))
+                {
+                    continue;
+                }
+
+                MaxHpByUnitId.TryGetValue(id, out var max);
+                vitals.Set(id, hp, max);
+            }
+        }
 
         public static void CaptureFromSession(CombatSession session)
         {
@@ -47,6 +116,7 @@ namespace FracturedChorus.Combat.Bootstrap
 
             MaxHpByUnitId[unitId] = max;
             HpByUnitId[unitId] = Mathf.Clamp(hp, 0, max);
+            SyncToSession();
         }
 
         public static bool TryGet(string unitId, out int hp, out int maxHp)
@@ -121,6 +191,11 @@ namespace FracturedChorus.Combat.Bootstrap
                 healed++;
             }
 
+            if (healed > 0)
+            {
+                SyncToSession();
+            }
+
             return healed;
         }
 
@@ -137,6 +212,7 @@ namespace FracturedChorus.Combat.Bootstrap
 
                 var max = MaxHpByUnitId.TryGetValue(id, out var storedMax) ? storedMax : reviveHp;
                 HpByUnitId[id] = Mathf.Min(reviveHp, max);
+                SyncToSession();
                 return true;
             }
 
@@ -180,6 +256,7 @@ namespace FracturedChorus.Combat.Bootstrap
             Order.Clear();
             HpByUnitId.Clear();
             MaxHpByUnitId.Clear();
+            SyncToSession();
         }
     }
 }

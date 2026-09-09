@@ -22,7 +22,9 @@ namespace FracturedChorus.Editor
             EditorGUILayout.HelpBox(
                 "Hierarchy:\n" +
                 "  Unit (SpriteRenderer)  ← đổi sprite / scale trên root\n" +
-                "  └ FeetAnchor           ← kéo để neo chân xuống honeycomb\n\n" +
+                "  └ FeetAnchor           ← kéo để neo chân xuống honeycomb\n" +
+                "  └ Projectile           ← điểm A spawn VFX\n" +
+                "  └ ReceiveDmg           ← điểm B đích VFX / nhận damage\n\n" +
                 "Mỗi slot = 1 state UnitView (Idle, Moving, Skill, Guard=Counter, Hurt, Death, NormalHit, SkillHit, UltHit).\n" +
                 "Idle: gán cả Animation Clip (Play / hết phase) và Sprite tĩnh (đi vào ô chiến đấu).\n" +
                 "Party hit clips (Normal/Skill/Ult) chạy Animator. Guard dùng sprite Counter.\n" +
@@ -46,6 +48,36 @@ namespace FracturedChorus.Editor
                 SceneView.RepaintAll();
             }
 
+            if (GUILayout.Button("Ensure ReceiveDmg"))
+            {
+                Undo.RecordObject(sim, "Ensure ReceiveDmg");
+                sim.EnsureHandles();
+                var view = sim.GetComponent<UnitView>();
+                view?.EnsureReceiveDmg();
+                EditorUtility.SetDirty(sim);
+                if (view != null)
+                {
+                    EditorUtility.SetDirty(view);
+                }
+
+                SceneView.RepaintAll();
+            }
+
+            if (GUILayout.Button("Ensure Projectile"))
+            {
+                Undo.RecordObject(sim, "Ensure Projectile");
+                sim.EnsureHandles();
+                var view = sim.GetComponent<UnitView>();
+                view?.EnsureProjectile();
+                EditorUtility.SetDirty(sim);
+                if (view != null)
+                {
+                    EditorUtility.SetDirty(view);
+                }
+
+                SceneView.RepaintAll();
+            }
+
             if (GUILayout.Button("Save Layout For This Sprite"))
             {
                 Undo.RecordObject(sim, "Save Unit Sprite Layout");
@@ -58,6 +90,22 @@ namespace FracturedChorus.Editor
             {
                 Undo.RecordObject(sim, "Snap Unit FeetAnchor");
                 sim.SnapFeetToSpriteBottom();
+                EditorUtility.SetDirty(sim);
+                SceneView.RepaintAll();
+            }
+
+            if (GUILayout.Button("Snap ReceiveDmg → Body Center"))
+            {
+                Undo.RecordObject(sim, "Snap ReceiveDmg");
+                sim.SnapReceiveDmgToBody();
+                EditorUtility.SetDirty(sim);
+                SceneView.RepaintAll();
+            }
+
+            if (GUILayout.Button("Snap Projectile → Head"))
+            {
+                Undo.RecordObject(sim, "Snap Projectile");
+                sim.SnapProjectileToHead();
                 EditorUtility.SetDirty(sim);
                 SceneView.RepaintAll();
             }
@@ -83,6 +131,7 @@ namespace FracturedChorus.Editor
             var px = sim.SpritePixelSize;
             var scale = sim.CurrentScale;
             var feet = sim.FeetAnchorLocal;
+            var receive = sim.ReceiveDmgLocal;
             var body = sim.GetComponent<BoxCollider2D>();
             var colText = body != null
                 ? $"Collider size ({body.size.x:0.###}, {body.size.y:0.###})  offset ({body.offset.x:0.###}, {body.offset.y:0.###})"
@@ -91,6 +140,7 @@ namespace FracturedChorus.Editor
                 $"Editing {sim.SpriteTabLabel(sim.SpritePreview)}  ({sim.SpritePreview + 1}/{sim.SpriteCount})  |  Sprite {px.x:0.##}×{px.y:0.##}\n" +
                 $"Scale ({scale.x:0.###}, {scale.y:0.###}, {scale.z:0.###})\n" +
                 $"FeetAnchor ({feet.x:0.##}, {feet.y:0.##}, {feet.z:0.##})\n" +
+                $"ReceiveDmg ({receive.x:0.##}, {receive.y:0.##}, {receive.z:0.##})\n" +
                 colText,
                 MessageType.None);
         }
@@ -287,6 +337,48 @@ namespace FracturedChorus.Editor
             {
                 serializedObject.ApplyModifiedProperties();
                 sim.ApplyPreviewFeet();
+                EditorUtility.SetDirty(sim);
+                SceneView.RepaintAll();
+            }
+            else
+            {
+                serializedObject.ApplyModifiedProperties();
+            }
+
+            EditorGUILayout.Space(4f);
+            EditorGUILayout.LabelField("Projectile (slot này)", EditorStyles.boldLabel);
+            EditorGUI.BeginChangeCheck();
+            var spawnProp = slot.FindPropertyRelative("projectileLocal");
+            if (spawnProp != null)
+            {
+                EditorGUILayout.PropertyField(spawnProp, new GUIContent("Projectile Local"));
+            }
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                serializedObject.ApplyModifiedProperties();
+                sim.ApplyPreviewProjectile();
+                EditorUtility.SetDirty(sim);
+                SceneView.RepaintAll();
+            }
+            else
+            {
+                serializedObject.ApplyModifiedProperties();
+            }
+
+            EditorGUILayout.Space(4f);
+            EditorGUILayout.LabelField("ReceiveDmg (slot này)", EditorStyles.boldLabel);
+            EditorGUI.BeginChangeCheck();
+            var dmgProp = slot.FindPropertyRelative("receiveDmgLocal");
+            if (dmgProp != null)
+            {
+                EditorGUILayout.PropertyField(dmgProp, new GUIContent("ReceiveDmg Local"));
+            }
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                serializedObject.ApplyModifiedProperties();
+                sim.ApplyPreviewReceiveDmg();
                 EditorUtility.SetDirty(sim);
                 SceneView.RepaintAll();
             }

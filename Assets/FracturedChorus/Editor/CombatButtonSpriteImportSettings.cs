@@ -24,7 +24,6 @@ namespace FracturedChorus.Editor
             EditorApplication.delayCall += EnsureImportSettings;
         }
 
-        [MenuItem("Fractured Chorus/Ensure Combat Button Sprites Readable")]
         public static void EnsureImportSettingsMenu()
         {
             EnsureImportSettings();

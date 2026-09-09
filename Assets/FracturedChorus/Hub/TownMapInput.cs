@@ -1,3 +1,4 @@
+using FracturedChorus.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -49,13 +50,13 @@ namespace FracturedChorus.Hub
             if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
             {
                 CurrentScheme = TownMapPromptScheme.Keyboard;
-                return true;
+                return UiEscapeGate.TryConsumeBackground();
             }
 
             if (Gamepad.current != null && Gamepad.current.buttonEast.wasPressedThisFrame)
             {
                 CurrentScheme = TownMapPromptScheme.Gamepad;
-                return true;
+                return UiEscapeGate.TryConsumeBackground();
             }
 
             return false;

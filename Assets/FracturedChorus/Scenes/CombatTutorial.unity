@@ -133,6 +133,7 @@ GameObject:
   - component: {fileID: 7695633}
   - component: {fileID: 7695634}
   - component: {fileID: 7695635}
+  - component: {fileID: 7695636}
   m_Layer: 0
   m_Name: Unit_Kiki_Ueda
   m_TagString: Untagged
@@ -155,6 +156,8 @@ Transform:
   m_Children:
   - {fileID: 243897081}
   - {fileID: 1026443470}
+  - {fileID: 393322540}
+  - {fileID: 767482526}
   m_Father: {fileID: 1783593214}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &7695631
@@ -237,6 +240,8 @@ MonoBehaviour:
   hpLabel: {fileID: 0}
   bodyCollider: {fileID: 7695633}
   feetAnchor: {fileID: 1026443471}
+  receiveDmg: {fileID: 393322541}
+  projectile: {fileID: 767482525}
   animator: {fileID: 7695634}
   counterStateName: Kiki-Counter
   guardStateName: 
@@ -244,28 +249,13 @@ MonoBehaviour:
   idleStateName: Kiki-Idle
   movingStateName: Kiki-Moving
   deathStateName: Kiki-Death
+  normalHitStateName: 
   skillStateName: 
+  ultStateName: 
   hitRetriggerNormalizedTime: 0.35
   preserveSceneVisuals: 1
   preserveSceneCollider: 1
   showWorldHpLabel: 0
---- !u!114 &7695635
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7695628}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 57801d1152c33644e8e44afe45bba9f7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitSpriteSimulator
-  spritePreview: 0
-  spriteLayouts:
-  - sprite: {fileID: 0}
-    localScale: {x: 0, y: 0, z: 0}
-    feetAnchorLocal: {x: 0, y: 0, z: 0}
 --- !u!61 &7695633
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -334,6 +324,57 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &7695635
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7695628}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57801d1152c33644e8e44afe45bba9f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitSpriteSimulator
+  spritePreview: 0
+  spriteLayouts:
+  - displayName: 
+    kind: 0
+    sprite: {fileID: 21300000, guid: b1c2d3e4f5a64789b0c1d2e3f4a50607, type: 3}
+    animationClip: {fileID: 0}
+    linkedState: 1
+    localScale: {x: 0.2, y: 0.2, z: 0.2}
+    feetAnchorLocal: {x: 0.79, y: -1.24, z: 0}
+    receiveDmgLocal: {x: 0, y: 0, z: 0}
+    projectileLocal: {x: 0, y: 0, z: 0}
+    colliderSize: {x: 0.9, y: 0.9}
+    colliderOffset: {x: 0, y: 0}
+--- !u!114 &7695636
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7695628}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2a8f5d1e6b04739a4c7d9e0b3f18655, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Combat.Presentation.SkillVfxSimulator
+  skill: {fileID: 11400000, guid: e4f5a6b7c8d94a12e3f4a5060718293a, type: 2}
+  profileOverride: {fileID: 0}
+  caster: {fileID: 7695632}
+  projectileA: {fileID: 767482525}
+  targets:
+  - {fileID: 487667175}
+  - {fileID: 1144376353}
+  previewLive: 0
+  previewPaused: 0
+  hideSprite: 0
+  hidePattern: 0
+  loopSlide: 1
+  previewSpeed: 1
+  showImpact: 1
 --- !u!1 &9683624
 GameObject:
   m_ObjectHideFlags: 0
@@ -2945,6 +2986,54 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 385751156}
   m_CullTransparentMesh: 1
+--- !u!1 &393322539
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 393322540}
+  - component: {fileID: 393322541}
+  m_Layer: 0
+  m_Name: ReceiveDmg
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &393322540
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 393322539}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -0.000000055879354, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7695629}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &393322541
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 393322539}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7c3e19d4b8f62e01c5d9a4e7b2f8013, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitReceiveDmgAnchor
+  gizmoShape: 4
+  gizmoColor: {r: 1, g: 0.28, b: 0.32, a: 0.95}
+  gizmoSize: 0.16
+  gizmoAlwaysVisible: 1
 --- !u!1 &404302628
 GameObject:
   m_ObjectHideFlags: 0
@@ -3655,6 +3744,7 @@ GameObject:
   - component: {fileID: 487667176}
   - component: {fileID: 487667177}
   - component: {fileID: 487667178}
+  - component: {fileID: 487667179}
   m_Layer: 0
   m_Name: Unit_Ren
   m_TagString: Untagged
@@ -3677,6 +3767,8 @@ Transform:
   m_Children:
   - {fileID: 102216512}
   - {fileID: 1279832176}
+  - {fileID: 874633867}
+  - {fileID: 1940826339}
   m_Father: {fileID: 1783593214}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &487667174
@@ -3759,6 +3851,8 @@ MonoBehaviour:
   hpLabel: {fileID: 0}
   bodyCollider: {fileID: 487667176}
   feetAnchor: {fileID: 1279832177}
+  receiveDmg: {fileID: 874633868}
+  projectile: {fileID: 1940826338}
   animator: {fileID: 487667177}
   counterStateName: Ren Counter
   guardStateName: 
@@ -3768,53 +3862,11 @@ MonoBehaviour:
   deathStateName: Ren Death
   normalHitStateName: Ren Skill 1
   skillStateName: Ren - Skill 2
-  ultStateName: Ren - Skill 3 
+  ultStateName: Ren - Skill 3
   hitRetriggerNormalizedTime: 0.35
   preserveSceneVisuals: 1
   preserveSceneCollider: 1
   showWorldHpLabel: 0
---- !u!114 &487667178
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 487667171}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 57801d1152c33644e8e44afe45bba9f7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitSpriteSimulator
-  spritePreview: 0
-  spriteLayouts:
-  - displayName: Idle Sprite
-    kind: 0
-    sprite: {fileID: 7369638930748108147, guid: 9a437a3dfde73224686f2d2a81ee930e, type: 3}
-    animationClip: {fileID: 7400000, guid: d196d390a1b52234ea48ebf6deccfdda, type: 2}
-    linkedState: 1
-    localScale: {x: 0.2, y: 0.2, z: 0}
-    feetAnchorLocal: {x: 1.07, y: -3.72, z: 0}
-  - displayName: NormalHit
-    kind: 1
-    sprite: {fileID: 7369638930748108147, guid: 9a437a3dfde73224686f2d2a81ee930e, type: 3}
-    animationClip: {fileID: 7400000, guid: a33391cad1009b540aa01ba8031868a1, type: 2}
-    linkedState: 8
-    localScale: {x: 0.2, y: 0.2, z: 0}
-    feetAnchorLocal: {x: 1.07, y: -3.72, z: 0}
-  - displayName: SkillHit
-    kind: 1
-    sprite: {fileID: 7369638930748108147, guid: 9a437a3dfde73224686f2d2a81ee930e, type: 3}
-    animationClip: {fileID: 7400000, guid: 8a448ee907f49b2468cbc83b73c8b58c, type: 2}
-    linkedState: 9
-    localScale: {x: 0.2, y: 0.2, z: 0}
-    feetAnchorLocal: {x: 1.07, y: -3.72, z: 0}
-  - displayName: UltHit
-    kind: 1
-    sprite: {fileID: 7369638930748108147, guid: 9a437a3dfde73224686f2d2a81ee930e, type: 3}
-    animationClip: {fileID: 7400000, guid: 8f0816f5325864a45abf4b37b8969f82, type: 2}
-    linkedState: 10
-    localScale: {x: 0.2, y: 0.2, z: 0}
-    feetAnchorLocal: {x: 1.07, y: -3.72, z: 0}
 --- !u!61 &487667176
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -3883,6 +3935,89 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &487667178
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 487667171}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57801d1152c33644e8e44afe45bba9f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitSpriteSimulator
+  spritePreview: 0
+  spriteLayouts:
+  - displayName: Idle Sprite
+    kind: 0
+    sprite: {fileID: 7369638930748108147, guid: 9a437a3dfde73224686f2d2a81ee930e, type: 3}
+    animationClip: {fileID: 7400000, guid: d196d390a1b52234ea48ebf6deccfdda, type: 2}
+    linkedState: 1
+    localScale: {x: 0.2, y: 0.2, z: 0}
+    feetAnchorLocal: {x: 1.07, y: -3.72, z: 0}
+    receiveDmgLocal: {x: 0, y: 0, z: 0}
+    projectileLocal: {x: 0, y: 0, z: 0}
+    colliderSize: {x: 0, y: 0}
+    colliderOffset: {x: 0, y: 0}
+  - displayName: NormalHit
+    kind: 1
+    sprite: {fileID: 7369638930748108147, guid: 9a437a3dfde73224686f2d2a81ee930e, type: 3}
+    animationClip: {fileID: 7400000, guid: a33391cad1009b540aa01ba8031868a1, type: 2}
+    linkedState: 8
+    localScale: {x: 0.2, y: 0.2, z: 0}
+    feetAnchorLocal: {x: 1.07, y: -3.72, z: 0}
+    receiveDmgLocal: {x: 0, y: 0, z: 0}
+    projectileLocal: {x: 0, y: 0, z: 0}
+    colliderSize: {x: 0, y: 0}
+    colliderOffset: {x: 0, y: 0}
+  - displayName: SkillHit
+    kind: 1
+    sprite: {fileID: 7369638930748108147, guid: 9a437a3dfde73224686f2d2a81ee930e, type: 3}
+    animationClip: {fileID: 7400000, guid: 8a448ee907f49b2468cbc83b73c8b58c, type: 2}
+    linkedState: 9
+    localScale: {x: 0.2, y: 0.2, z: 0}
+    feetAnchorLocal: {x: 1.07, y: -3.72, z: 0}
+    receiveDmgLocal: {x: 0, y: 0, z: 0}
+    projectileLocal: {x: 0, y: 0, z: 0}
+    colliderSize: {x: 0, y: 0}
+    colliderOffset: {x: 0, y: 0}
+  - displayName: UltHit
+    kind: 1
+    sprite: {fileID: 7369638930748108147, guid: 9a437a3dfde73224686f2d2a81ee930e, type: 3}
+    animationClip: {fileID: 7400000, guid: 8f0816f5325864a45abf4b37b8969f82, type: 2}
+    linkedState: 10
+    localScale: {x: 0.2, y: 0.2, z: 0}
+    feetAnchorLocal: {x: 1.07, y: -3.72, z: 0}
+    receiveDmgLocal: {x: 0, y: 0, z: 0}
+    projectileLocal: {x: 0, y: 0, z: 0}
+    colliderSize: {x: 0, y: 0}
+    colliderOffset: {x: 0, y: 0}
+--- !u!114 &487667179
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 487667171}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2a8f5d1e6b04739a4c7d9e0b3f18655, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Combat.Presentation.SkillVfxSimulator
+  skill: {fileID: 11400000, guid: d290998a860c53d4794580a0ecd18147, type: 2}
+  profileOverride: {fileID: 0}
+  caster: {fileID: 487667175}
+  projectileA: {fileID: 1940826338}
+  targets:
+  - {fileID: 7695632}
+  previewLive: 0
+  previewPaused: 0
+  hideSprite: 0
+  hidePattern: 0
+  loopSlide: 1
+  previewSpeed: 1
+  showImpact: 1
 --- !u!1 &504853132
 GameObject:
   m_ObjectHideFlags: 0
@@ -5269,6 +5404,7 @@ MonoBehaviour:
   encounterAnimSpeed: 0.7
   ultimateEncounterAnimSpeed: 0.42
   ultimateAftermathHoldSeconds: 0.55
+  ultimateReturnDelaySeconds: 1
   hideOtherUnits: 1
   hideUiDuringEncounter: 1
   focusDimFactor: 0.12
@@ -5276,6 +5412,9 @@ MonoBehaviour:
   moveCamera: 1
   cameraZoomOrtho: 5.2
   cameraMoveSeconds: 0.16
+  ultimateCasterZoomOrtho: 3.15
+  ultimateVictimZoomOrtho: 3.25
+  ultimateFocusSeconds: 0.18
   swordCastHoldSeconds: 0.14
 --- !u!1 &715640726
 GameObject:
@@ -5511,6 +5650,54 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 726065663}
   m_CullTransparentMesh: 1
+--- !u!1 &726767287
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 726767288}
+  - component: {fileID: 726767289}
+  m_Layer: 0
+  m_Name: ReceiveDmg
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &726767288
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 726767287}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.26253292, y: -1.4966844, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1144376350}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &726767289
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 726767287}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7c3e19d4b8f62e01c5d9a4e7b2f8013, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitReceiveDmgAnchor
+  gizmoShape: 4
+  gizmoColor: {r: 1, g: 0.28, b: 0.32, a: 0.95}
+  gizmoSize: 0.16
+  gizmoAlwaysVisible: 1
 --- !u!1 &732193267
 GameObject:
   m_ObjectHideFlags: 0
@@ -5636,6 +5823,54 @@ Texture2D:
     offset: 0
     size: 0
     path: 
+--- !u!1 &767482524
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 767482526}
+  - component: {fileID: 767482525}
+  m_Layer: 0
+  m_Name: Projectile
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &767482525
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 767482524}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1a8c4e27b6f4a19b3e5d0c8f2a74690, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitProjectileAnchor
+  gizmoShape: 1
+  gizmoColor: {r: 0.35, g: 0.85, b: 1, a: 0.95}
+  gizmoSize: 0.16
+  gizmoAlwaysVisible: 1
+--- !u!4 &767482526
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 767482524}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 5.5458207, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7695629}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &777863441
 GameObject:
   m_ObjectHideFlags: 0
@@ -6125,6 +6360,54 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.5, y: 1.3499999, z: 0.2}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &874633866
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 874633867}
+  - component: {fileID: 874633868}
+  m_Layer: 0
+  m_Name: ReceiveDmg
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &874633867
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 874633866}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.93898535, y: -1.6998882, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 487667172}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &874633868
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 874633866}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7c3e19d4b8f62e01c5d9a4e7b2f8013, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitReceiveDmgAnchor
+  gizmoShape: 4
+  gizmoColor: {r: 1, g: 0.28, b: 0.32, a: 0.95}
+  gizmoSize: 0.16
+  gizmoAlwaysVisible: 1
 --- !u!1 &885950104
 GameObject:
   m_ObjectHideFlags: 0
@@ -6402,6 +6685,7 @@ MonoBehaviour:
   codaSkill23Clip: {fileID: 0}
   charlotteSkill1Clip: {fileID: 0}
   charlotteSkill2Clip: {fileID: 0}
+  charlotteSkill2DashClip: {fileID: 0}
   charlotteSkill3Clip: {fileID: 0}
   renSkillVolume: 1
   renSkillCueNormalizedTime: 0.45
@@ -6887,7 +7171,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf84e4915f50f7e44b496aa958caf118, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitFeetAnchor
-  gizmoSize: {x: 0.2, y: 0.1}
+  gizmoShape: 2
+  gizmoColor: {r: 1, g: 0.85, b: 0.2, a: 0.95}
+  gizmoSize: 0.2
+  gizmoAlwaysVisible: 1
 --- !u!1 &979236146
 GameObject:
   m_ObjectHideFlags: 0
@@ -7413,7 +7700,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf84e4915f50f7e44b496aa958caf118, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitFeetAnchor
-  gizmoSize: {x: 0.2, y: 0.1}
+  gizmoShape: 2
+  gizmoColor: {r: 1, g: 0.85, b: 0.2, a: 0.95}
+  gizmoSize: 0.2
+  gizmoAlwaysVisible: 1
 --- !u!1 &1026455019
 GameObject:
   m_ObjectHideFlags: 0
@@ -8062,6 +8352,7 @@ GameObject:
   - component: {fileID: 1144376354}
   - component: {fileID: 1144376355}
   - component: {fileID: 1144376356}
+  - component: {fileID: 1144376357}
   m_Layer: 0
   m_Name: Unit_Mage
   m_TagString: Untagged
@@ -8084,6 +8375,8 @@ Transform:
   m_Children:
   - {fileID: 1870909933}
   - {fileID: 956599415}
+  - {fileID: 726767288}
+  - {fileID: 1478827446}
   m_Father: {fileID: 1783593214}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &1144376352
@@ -8166,6 +8459,8 @@ MonoBehaviour:
   hpLabel: {fileID: 0}
   bodyCollider: {fileID: 1144376354}
   feetAnchor: {fileID: 956599416}
+  receiveDmg: {fileID: 726767289}
+  projectile: {fileID: 1478827445}
   animator: {fileID: 1144376355}
   counterStateName: Coda - Counter
   guardStateName: 
@@ -8175,97 +8470,11 @@ MonoBehaviour:
   deathStateName: Coda - Death
   normalHitStateName: Coda Skill 1
   skillStateName: Coda Skill 2
-  ultStateName: Coda Skill 3 
+  ultStateName: Coda Skill 3
   hitRetriggerNormalizedTime: 0.35
   preserveSceneVisuals: 1
   preserveSceneCollider: 1
   showWorldHpLabel: 0
---- !u!114 &1144376356
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1144376349}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 57801d1152c33644e8e44afe45bba9f7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitSpriteSimulator
-  spritePreview: 0
-  spriteLayouts:
-  - displayName: idle
-    kind: 0
-    sprite: {fileID: 814772617763461771, guid: 54a2056b8027f1b4a85eb6beb11ab96f, type: 3}
-    animationClip: {fileID: 7400000, guid: 7315c62fdbb9fef4aa488d961bfa9423, type: 2}
-    linkedState: 1
-    localScale: {x: 0.21, y: 0.2, z: 0}
-    feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
-    colliderSize: {x: 3.52535, y: 8.456403}
-    colliderOffset: {x: -0.26253343, y: -1.4966847}
-  - displayName: moving
-    kind: 0
-    sprite: {fileID: 7815266141663936681, guid: 3b8d35aedda14264faf880bd7b60f298, type: 3}
-    animationClip: {fileID: 0}
-    linkedState: 2
-    localScale: {x: 0.21, y: 0.2, z: 0}
-    feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
-    colliderSize: {x: 3.52535, y: 8.456403}
-    colliderOffset: {x: -0.26253343, y: -1.4966847}
-  - displayName: die
-    kind: 0
-    sprite: {fileID: -3118977898244780662, guid: 4888604a12456d641a9b0acd72775a7a, type: 3}
-    animationClip: {fileID: 0}
-    linkedState: 7
-    localScale: {x: 0.21, y: 0.2, z: 0}
-    feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
-    colliderSize: {x: 3.52535, y: 8.456403}
-    colliderOffset: {x: -0.26253343, y: -1.4966847}
-  - displayName: hurt
-    kind: 0
-    sprite: {fileID: 467594992153417426, guid: a4cf850a1777a2b4c9697e58abeef1ba, type: 3}
-    animationClip: {fileID: 0}
-    linkedState: 6
-    localScale: {x: 0.21, y: 0.2, z: 0}
-    feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
-    colliderSize: {x: 3.52535, y: 8.456403}
-    colliderOffset: {x: -0.26253343, y: -1.4966847}
-  - displayName: counter
-    kind: 0
-    sprite: {fileID: -6260322492774810837, guid: f4776a6344b81794596e94af138a7ca6, type: 3}
-    animationClip: {fileID: 0}
-    linkedState: 5
-    localScale: {x: 0.21, y: 0.2, z: 0}
-    feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
-    colliderSize: {x: 3.52535, y: 8.456403}
-    colliderOffset: {x: -0.26253343, y: -1.4966847}
-  - displayName: NormalHit
-    kind: 1
-    sprite: {fileID: 814772617763461771, guid: 54a2056b8027f1b4a85eb6beb11ab96f, type: 3}
-    animationClip: {fileID: 7400000, guid: 5e4dac420261be740b72eaa46a49730d, type: 2}
-    linkedState: 8
-    localScale: {x: 0.21, y: 0.2, z: 0}
-    feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
-    colliderSize: {x: 3.52535, y: 8.456403}
-    colliderOffset: {x: -0.26253343, y: -1.4966847}
-  - displayName: SkillHit
-    kind: 1
-    sprite: {fileID: 814772617763461771, guid: 54a2056b8027f1b4a85eb6beb11ab96f, type: 3}
-    animationClip: {fileID: 7400000, guid: dc0f753cbb7121f43b3852d67ee7f1b7, type: 2}
-    linkedState: 9
-    localScale: {x: 0.21, y: 0.2, z: 0}
-    feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
-    colliderSize: {x: 3.52535, y: 8.456403}
-    colliderOffset: {x: -0.26253343, y: -1.4966847}
-  - displayName: UltHit
-    kind: 1
-    sprite: {fileID: 814772617763461771, guid: 54a2056b8027f1b4a85eb6beb11ab96f, type: 3}
-    animationClip: {fileID: 7400000, guid: f417e4bb075cfc0449a314d65142c597, type: 2}
-    linkedState: 10
-    localScale: {x: 0.21, y: 0.2, z: 0}
-    feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
-    colliderSize: {x: 3.52535, y: 8.456403}
-    colliderOffset: {x: -0.26253343, y: -1.4966847}
 --- !u!61 &1144376354
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -8303,7 +8512,7 @@ BoxCollider2D:
   m_Offset: {x: -0.26253343, y: -1.4966847}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.77916324, y: 0.5689823}
+    pivot: {x: 0.78, y: 0.5}
     oldSize: {x: 7.62, y: 10.04}
     newSize: {x: 7.62, y: 10.04}
     adaptiveTilingThreshold: 0.5
@@ -8334,6 +8543,133 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &1144376356
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1144376349}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57801d1152c33644e8e44afe45bba9f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitSpriteSimulator
+  spritePreview: 0
+  spriteLayouts:
+  - displayName: idle
+    kind: 0
+    sprite: {fileID: 814772617763461771, guid: 54a2056b8027f1b4a85eb6beb11ab96f, type: 3}
+    animationClip: {fileID: 7400000, guid: 7315c62fdbb9fef4aa488d961bfa9423, type: 2}
+    linkedState: 1
+    localScale: {x: 0.21, y: 0.2, z: 0}
+    feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
+    receiveDmgLocal: {x: 0, y: 0, z: 0}
+    projectileLocal: {x: 0, y: 0, z: 0}
+    colliderSize: {x: 3.52535, y: 8.456403}
+    colliderOffset: {x: -0.26253343, y: -1.4966847}
+  - displayName: moving
+    kind: 0
+    sprite: {fileID: 7815266141663936681, guid: 3b8d35aedda14264faf880bd7b60f298, type: 3}
+    animationClip: {fileID: 0}
+    linkedState: 2
+    localScale: {x: 0.21, y: 0.2, z: 0}
+    feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
+    receiveDmgLocal: {x: 0, y: 0, z: 0}
+    projectileLocal: {x: 0, y: 0, z: 0}
+    colliderSize: {x: 3.52535, y: 8.456403}
+    colliderOffset: {x: -0.26253343, y: -1.4966847}
+  - displayName: die
+    kind: 0
+    sprite: {fileID: -3118977898244780662, guid: 4888604a12456d641a9b0acd72775a7a, type: 3}
+    animationClip: {fileID: 0}
+    linkedState: 7
+    localScale: {x: 0.21, y: 0.2, z: 0}
+    feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
+    receiveDmgLocal: {x: 0, y: 0, z: 0}
+    projectileLocal: {x: 0, y: 0, z: 0}
+    colliderSize: {x: 3.52535, y: 8.456403}
+    colliderOffset: {x: -0.26253343, y: -1.4966847}
+  - displayName: hurt
+    kind: 0
+    sprite: {fileID: 467594992153417426, guid: a4cf850a1777a2b4c9697e58abeef1ba, type: 3}
+    animationClip: {fileID: 0}
+    linkedState: 6
+    localScale: {x: 0.21, y: 0.2, z: 0}
+    feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
+    receiveDmgLocal: {x: 0, y: 0, z: 0}
+    projectileLocal: {x: 0, y: 0, z: 0}
+    colliderSize: {x: 3.52535, y: 8.456403}
+    colliderOffset: {x: -0.26253343, y: -1.4966847}
+  - displayName: counter
+    kind: 0
+    sprite: {fileID: -6260322492774810837, guid: f4776a6344b81794596e94af138a7ca6, type: 3}
+    animationClip: {fileID: 0}
+    linkedState: 5
+    localScale: {x: 0.21, y: 0.2, z: 0}
+    feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
+    receiveDmgLocal: {x: 0, y: 0, z: 0}
+    projectileLocal: {x: 0, y: 0, z: 0}
+    colliderSize: {x: 3.52535, y: 8.456403}
+    colliderOffset: {x: -0.26253343, y: -1.4966847}
+  - displayName: NormalHit
+    kind: 1
+    sprite: {fileID: 814772617763461771, guid: 54a2056b8027f1b4a85eb6beb11ab96f, type: 3}
+    animationClip: {fileID: 7400000, guid: 5e4dac420261be740b72eaa46a49730d, type: 2}
+    linkedState: 8
+    localScale: {x: 0.21, y: 0.2, z: 0}
+    feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
+    receiveDmgLocal: {x: 0, y: 0, z: 0}
+    projectileLocal: {x: 0, y: 0, z: 0}
+    colliderSize: {x: 3.52535, y: 8.456403}
+    colliderOffset: {x: -0.26253343, y: -1.4966847}
+  - displayName: SkillHit
+    kind: 1
+    sprite: {fileID: 814772617763461771, guid: 54a2056b8027f1b4a85eb6beb11ab96f, type: 3}
+    animationClip: {fileID: 7400000, guid: dc0f753cbb7121f43b3852d67ee7f1b7, type: 2}
+    linkedState: 9
+    localScale: {x: 0.21, y: 0.2, z: 0}
+    feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
+    receiveDmgLocal: {x: 0, y: 0, z: 0}
+    projectileLocal: {x: 0, y: 0, z: 0}
+    colliderSize: {x: 3.52535, y: 8.456403}
+    colliderOffset: {x: -0.26253343, y: -1.4966847}
+  - displayName: UltHit
+    kind: 1
+    sprite: {fileID: 814772617763461771, guid: 54a2056b8027f1b4a85eb6beb11ab96f, type: 3}
+    animationClip: {fileID: 7400000, guid: f417e4bb075cfc0449a314d65142c597, type: 2}
+    linkedState: 10
+    localScale: {x: 0.21, y: 0.2, z: 0}
+    feetAnchorLocal: {x: -0.55, y: -3.49, z: 0}
+    receiveDmgLocal: {x: 0, y: 0, z: 0}
+    projectileLocal: {x: 0, y: 0, z: 0}
+    colliderSize: {x: 3.52535, y: 8.456403}
+    colliderOffset: {x: -0.26253343, y: -1.4966847}
+--- !u!114 &1144376357
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1144376349}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2a8f5d1e6b04739a4c7d9e0b3f18655, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Combat.Presentation.SkillVfxSimulator
+  skill: {fileID: 11400000, guid: 5da094b42c443ac4b92bd19f906704dc, type: 2}
+  profileOverride: {fileID: 0}
+  caster: {fileID: 1144376353}
+  projectileA: {fileID: 1478827445}
+  targets:
+  - {fileID: 7695632}
+  previewLive: 0
+  previewPaused: 0
+  hideSprite: 0
+  hidePattern: 0
+  loopSlide: 1
+  previewSpeed: 1
+  showImpact: 1
 --- !u!1 &1153346078
 GameObject:
   m_ObjectHideFlags: 0
@@ -8756,7 +9092,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf84e4915f50f7e44b496aa958caf118, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitFeetAnchor
-  gizmoSize: {x: 0.2, y: 0.1}
+  gizmoShape: 2
+  gizmoColor: {r: 1, g: 0.85, b: 0.2, a: 0.95}
+  gizmoSize: 0.2
+  gizmoAlwaysVisible: 1
 --- !u!1 &1285816819
 GameObject:
   m_ObjectHideFlags: 0
@@ -9610,6 +9949,54 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!1 &1478827444
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1478827446}
+  - component: {fileID: 1478827445}
+  m_Layer: 0
+  m_Name: Projectile
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1478827445
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1478827444}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1a8c4e27b6f4a19b3e5d0c8f2a74690, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitProjectileAnchor
+  gizmoShape: 1
+  gizmoColor: {r: 0.35, g: 0.85, b: 1, a: 0.95}
+  gizmoSize: 0.16
+  gizmoAlwaysVisible: 1
+--- !u!4 &1478827446
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1478827444}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -2.1335988, y: 5.0200005, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1144376350}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1525339789
 GameObject:
   m_ObjectHideFlags: 0
@@ -12916,6 +13303,54 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!1 &1940826337
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1940826339}
+  - component: {fileID: 1940826338}
+  m_Layer: 0
+  m_Name: Projectile
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1940826338
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1940826337}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1a8c4e27b6f4a19b3e5d0c8f2a74690, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.UI.UnitProjectileAnchor
+  gizmoShape: 1
+  gizmoColor: {r: 0.35, g: 0.85, b: 1, a: 0.95}
+  gizmoSize: 0.16
+  gizmoAlwaysVisible: 1
+--- !u!4 &1940826339
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1940826337}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 6.22, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 487667172}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1944951638
 GameObject:
   m_ObjectHideFlags: 0

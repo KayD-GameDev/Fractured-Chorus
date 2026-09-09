@@ -186,6 +186,7 @@ namespace FracturedChorus.Combat.Presentation
                 coda.CaptureAnchor();
             }
 
+            yield return EncounterDirector.PresentArmedCaster();
             coda.PlayAttackAnimationHold(skill);
 
             var chargeSeconds = ResolveSkill2ChargeSeconds();
@@ -476,10 +477,7 @@ namespace FracturedChorus.Combat.Presentation
 
             if (returnHome)
             {
-                yield return new WaitForSeconds(1f);
-                coda.SnapFeetTo(home, coda.transform.position.z);
-                coda.CaptureAnchor();
-                coda.PlayIdleState();
+                yield return ReturnHome(coda, home, skill3RetreatSeconds);
             }
         }
 

@@ -18,7 +18,6 @@ namespace FracturedChorus.Editor
         private const string SkillAsset = "Assets/FracturedChorus/Resources/Skills/ren_skill.asset";
         private const string UltAsset = "Assets/FracturedChorus/Resources/Skills/ren_ult.asset";
 
-        [MenuItem("Fractured Chorus/Rebind Ren Timeline Skill Notes")]
         public static void Rebind()
         {
             SyncArtToResources();

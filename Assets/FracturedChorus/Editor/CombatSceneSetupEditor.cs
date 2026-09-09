@@ -4,6 +4,8 @@ using System.Linq;
 using FracturedChorus.Combat.Bootstrap;
 using FracturedChorus.Combat.Core;
 using FracturedChorus.Combat.Grid;
+using FracturedChorus.Combat.Presentation;
+using FracturedChorus.Combat.Qte;
 using FracturedChorus.Combat.Timeline;
 using FracturedChorus.Data;
 using FracturedChorus.UI;
@@ -86,7 +88,6 @@ namespace FracturedChorus.Editor
 
         private const float SideGap = HexBoardLayout.DefaultSideGap;
 
-        [MenuItem("Fractured Chorus/Fix Input System (EventSystem)")]
         public static void FixInputSystemInScene()
         {
             CombatInputSetup.EnsureEventSystem();
@@ -101,7 +102,6 @@ namespace FracturedChorus.Editor
             Debug.Log("[Fractured Chorus] EventSystem + Physics2DRaycaster on Main Camera. Save scene.");
         }
 
-        [MenuItem("Fractured Chorus/Apply All Play-Ready Updates")]
         public static void ApplyAllPlayReadyUpdates()
         {
             FixInputSystemInScene();
@@ -126,6 +126,7 @@ namespace FracturedChorus.Editor
 
             CombatUiHierarchy.EnsurePartyCardsInHierarchy();
             CombatUiHierarchy.EnsureSkillPanelInHierarchy();
+            CombatQteOverlaySetupEditor.SetupQteOverlay();
             if (Object.FindAnyObjectByType<EnemyStatusBarUIView>(FindObjectsInactive.Include) == null)
             {
                 CombatUiHierarchy.AddEnemyStatusBarToScene();
@@ -318,7 +319,6 @@ namespace FracturedChorus.Editor
                     : $"[Fractured Chorus] Restored scene from {sourceAssetPath}. Save scene (Ctrl+S).");
         }
 
-        [MenuItem("Fractured Chorus/Fix Combat Scene Errors (Missing Scripts + Timeline Clones)")]
         public static void FixCombatSceneErrorsMenu()
         {
             FixCombatSceneErrors(silent: false);
@@ -379,7 +379,6 @@ namespace FracturedChorus.Editor
             return removed;
         }
 
-        [MenuItem("Fractured Chorus/Migrate Unit Colliders (2D + Feet)")]
         public static void MigrateUnitCollidersTo2D()
         {
             var views = Object.FindObjectsByType<UnitView>(FindObjectsInactive.Include);
@@ -395,7 +394,6 @@ namespace FracturedChorus.Editor
                 $"[Fractured Chorus] Migrated {views.Length} UnitView(s) to BoxCollider2D + FeetAnchor (keeps scene collider when Preserve Scene Collider is enabled). Save scene.");
         }
 
-        [MenuItem("Fractured Chorus/Fit Unit Colliders To Sprite (override scene)")]
         public static void FitUnitCollidersToSprite()
         {
             var views = Object.FindObjectsByType<UnitView>(FindObjectsInactive.Include);
@@ -409,7 +407,6 @@ namespace FracturedChorus.Editor
             Debug.Log($"[Fractured Chorus] Refit BoxCollider2D to sprite on {views.Length} unit(s). Save scene (Ctrl+S).");
         }
 
-        [MenuItem("Fractured Chorus/Restore Unit Sprites from Presets")]
         public static void RestoreUnitSpritesFromPresets()
         {
             var views = Object.FindObjectsByType<UnitView>(FindObjectsInactive.Include);
@@ -444,7 +441,6 @@ namespace FracturedChorus.Editor
             Debug.Log($"[Fractured Chorus] Restored battleSprite on {restored} unit(s). Save scene.");
         }
 
-        [MenuItem("Fractured Chorus/Setup Combat Scene Hierarchy")]
         public static void SetupCombatSceneHierarchy()
         {
             var existing = GameObject.Find("CombatRoot");
@@ -654,6 +650,7 @@ namespace FracturedChorus.Editor
         {
             var sim = UnitSpriteSimulator.EnsureOn(view);
             sim?.AuthorCurrentAsState(UnitCombatVisualState.Idle);
+            SkillVfxSimulator.EnsureOn(view);
         }
 
         private static BeatTimelineUIView CreateTimelineUi(Canvas canvas)
@@ -897,7 +894,6 @@ namespace FracturedChorus.Editor
             return HexBoardLayout.GetWorldPosition(position, SideGap);
         }
 
-        [MenuItem("Fractured Chorus/Rebuild Hex Board Grid (scene)")]
         public static void RebuildHexBoardInScene()
         {
             var gridRoot = GameObject.Find("CombatRoot/World/Grid") ?? GameObject.Find("World/Grid") ?? GameObject.Find("Grid");
@@ -970,7 +966,6 @@ namespace FracturedChorus.Editor
             Debug.Log($"[Fractured Chorus] Hex board rebuilt 2×3. Removed {deleted} bottom-row cell(s), kept top 2 rows (units + top), re-indexed to R0(top)/R1(units) + snapped saved coordinates. Save scene.");
         }
 
-        [MenuItem("Fractured Chorus/Add Knight of Despair (Boss) to Scene")]
         public static void AddKnightOfDespairToScene()
         {
             RunBossSceneSetup(saveScene: true, log: true);
@@ -1164,6 +1159,245 @@ namespace FracturedChorus.Editor
             }
 
             so.ApplyModifiedPropertiesWithoutUndo();
+        }
+    }
+
+    public static class CombatQteOverlaySetupEditor
+    {
+        public const string ProfileAssetPath = "Assets/FracturedChorus/Data/ScriptableObjects/CombatQteProfile.asset";
+
+        public const string ArtDir = "Assets/FracturedChorus/Art/UI/Combat/Qte";
+        public const string ResourcesDir = "Assets/FracturedChorus/Resources/UI/Combat/Qte";
+
+        public const string InnerRingPath = ArtDir + "/qte_ring_inner_v1.png";
+        public const string OuterRingPath = ArtDir + "/qte_ring_outer_v1.png";
+        public const string PromptPath = ArtDir + "/qte_prompt_space_v1.png";
+        public const string PerfectPath = ArtDir + "/qte_grade_perfect_v1.png";
+        public const string GoodPath = ArtDir + "/qte_grade_good_v1.png";
+        public const string MissPath = ArtDir + "/qte_grade_miss_v1.png";
+
+        [MenuItem("Fractured Chorus/Combat/Setup QTE Overlay")]
+        public static void SetupQteOverlayMenu()
+        {
+            SetupQteOverlay();
+        }
+
+        public static void SetupQteOverlay()
+        {
+            EnsureSpriteImportSettings();
+            var profile = EnsureProfile();
+            AssignProfileSprites(profile);
+
+            var overlay = Object.FindAnyObjectByType<CombatQteOverlayView>(FindObjectsInactive.Include);
+            if (overlay == null)
+            {
+                var go = new GameObject(
+                    "CombatQteOverlay",
+                    typeof(RectTransform),
+                    typeof(Canvas),
+                    typeof(CanvasGroup),
+                    typeof(GraphicRaycaster),
+                    typeof(CombatQteOverlayView));
+                Undo.RegisterCreatedObjectUndo(go, "Create Combat QTE Overlay");
+                overlay = go.GetComponent<CombatQteOverlayView>();
+                overlay.BuildDefaultHierarchy();
+            }
+            else
+            {
+                Undo.RecordObject(overlay, "Refresh Combat QTE Overlay");
+                overlay.WireSceneReferences();
+            }
+
+            overlay.ApplyProfile(profile);
+            overlay.Hide();
+
+            var director = Object.FindAnyObjectByType<EncounterDirector>(FindObjectsInactive.Include);
+            CombatQteController controller = null;
+            if (director != null)
+            {
+                controller = director.GetComponent<CombatQteController>();
+                if (controller == null)
+                {
+                    controller = Undo.AddComponent<CombatQteController>(director.gameObject);
+                }
+            }
+            else
+            {
+                controller = Object.FindAnyObjectByType<CombatQteController>(FindObjectsInactive.Include);
+            }
+
+            if (controller != null)
+            {
+                var cso = new SerializedObject(controller);
+                cso.FindProperty("profile").objectReferenceValue = profile;
+                cso.FindProperty("overlay").objectReferenceValue = overlay;
+                cso.ApplyModifiedPropertiesWithoutUndo();
+                controller.Configure(profile, overlay);
+                EditorUtility.SetDirty(controller);
+            }
+
+            if (director != null)
+            {
+                var so = new SerializedObject(director);
+                var qteProp = so.FindProperty("qteController");
+                if (qteProp != null)
+                {
+                    qteProp.objectReferenceValue = controller;
+                    so.ApplyModifiedPropertiesWithoutUndo();
+                }
+
+                EditorUtility.SetDirty(director);
+            }
+
+            EditorUtility.SetDirty(overlay);
+            EditorSceneManager.MarkSceneDirty(overlay.gameObject.scene);
+            Selection.activeGameObject = overlay.gameObject;
+            Debug.Log(
+                "[Fractured Chorus] CombatQteOverlay + CombatQteProfile sẵn sàng. " +
+                "Đổi sprite/số trên asset CombatQteProfile. Save scene.");
+        }
+
+        public static CombatQteProfileSO EnsureProfile()
+        {
+            var existing = AssetDatabase.LoadAssetAtPath<CombatQteProfileSO>(ProfileAssetPath);
+            if (existing != null)
+            {
+                return existing;
+            }
+
+            var folder = "Assets/FracturedChorus/Data/ScriptableObjects";
+            if (!AssetDatabase.IsValidFolder(folder))
+            {
+                AssetDatabase.CreateFolder("Assets/FracturedChorus/Data", "ScriptableObjects");
+            }
+
+            var profile = ScriptableObject.CreateInstance<CombatQteProfileSO>();
+            AssetDatabase.CreateAsset(profile, ProfileAssetPath);
+            AssetDatabase.SaveAssets();
+            return profile;
+        }
+
+        public static void AssignProfileSprites(CombatQteProfileSO profile)
+        {
+            if (profile == null)
+            {
+                return;
+            }
+
+            Undo.RecordObject(profile, "Assign QTE Sprites");
+            profile.innerRing = LoadSprite(InnerRingPath);
+            profile.outerRing = LoadSprite(OuterRingPath);
+            profile.prompt = LoadSprite(PromptPath);
+
+            var perfect = profile.perfect;
+            perfect.gradeSprite = LoadSprite(PerfectPath);
+            profile.perfect = perfect;
+
+            var good = profile.good;
+            good.gradeSprite = LoadSprite(GoodPath);
+            profile.good = good;
+
+            var miss = profile.miss;
+            miss.gradeSprite = LoadSprite(MissPath);
+            profile.miss = miss;
+
+            EditorUtility.SetDirty(profile);
+            AssetDatabase.SaveAssets();
+        }
+
+        public static void EnsureSpriteImportSettings()
+        {
+            var paths = new[]
+            {
+                InnerRingPath, OuterRingPath, PromptPath, PerfectPath, GoodPath, MissPath,
+                ResourcesDir + "/qte_ring_inner_v1.png",
+                ResourcesDir + "/qte_ring_outer_v1.png",
+                ResourcesDir + "/qte_prompt_space_v1.png",
+                ResourcesDir + "/qte_grade_perfect_v1.png",
+                ResourcesDir + "/qte_grade_good_v1.png",
+                ResourcesDir + "/qte_grade_miss_v1.png"
+            };
+
+            foreach (var path in paths)
+            {
+                var importer = AssetImporter.GetAtPath(path) as TextureImporter;
+                if (importer == null)
+                {
+                    continue;
+                }
+
+                var dirty = false;
+                if (importer.textureType != TextureImporterType.Sprite)
+                {
+                    importer.textureType = TextureImporterType.Sprite;
+                    dirty = true;
+                }
+
+                if (importer.spriteImportMode != SpriteImportMode.Single)
+                {
+                    importer.spriteImportMode = SpriteImportMode.Single;
+                    dirty = true;
+                }
+
+                if (importer.mipmapEnabled)
+                {
+                    importer.mipmapEnabled = false;
+                    dirty = true;
+                }
+
+                if (importer.wrapMode != TextureWrapMode.Clamp)
+                {
+                    importer.wrapMode = TextureWrapMode.Clamp;
+                    dirty = true;
+                }
+
+                if (importer.textureCompression != TextureImporterCompression.Uncompressed)
+                {
+                    importer.textureCompression = TextureImporterCompression.Uncompressed;
+                    dirty = true;
+                }
+
+                if (importer.maxTextureSize > 512)
+                {
+                    importer.maxTextureSize = 512;
+                    dirty = true;
+                }
+
+                if (importer.filterMode != FilterMode.Bilinear)
+                {
+                    importer.filterMode = FilterMode.Bilinear;
+                    dirty = true;
+                }
+
+                if (!importer.alphaIsTransparency)
+                {
+                    importer.alphaIsTransparency = true;
+                    dirty = true;
+                }
+
+                if (dirty)
+                {
+                    importer.SaveAndReimport();
+                }
+            }
+        }
+
+        private static Sprite LoadSprite(string assetPath)
+        {
+            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(assetPath);
+            if (sprite != null)
+            {
+                return sprite;
+            }
+
+            var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
+            if (tex != null)
+            {
+                Debug.LogWarning(
+                    $"[Fractured Chorus] '{assetPath}' chưa import Sprite. Texture Type = Sprite (2D and UI).");
+            }
+
+            return null;
         }
     }
 }

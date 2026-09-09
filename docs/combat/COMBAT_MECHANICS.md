@@ -104,6 +104,30 @@ Kết quả: trễ tối đa **~1 beat** (~0.39s @ 152 BPM) — snap beat kế, 
 - **Planning visual:** mỗi counter Active giảm 1 hit hiển thị (Tím→Xanh→Đỏ→`cover_perfect`); resolve vẫn so `CountCountersAtBeat >= HitsRequired`.
 - **Portrait / NoteTier** → glyph nốt nhạc Neon Cadence (`BossNoteClusterBuilder`): số = remaining; màu Tím/Xanh/Đỏ; **hai nốt spawn HitsRequired=1 kề nhau** → nốt đôi span 2 cột; nốt 2/3 luôn đơn (5 variant hash theo beat). Đủ hit → `cover_perfect` (size ≈ ô số ×1.35, cap `0.72 ×` khoảng beat kề; hold preview ×1.1). Spawn: Grunt luôn **Đỏ**; Elite **70% Đỏ / 30% Xanh**; Boss roll đủ 3 màu theo phase.
 
+### Counter QTE (Execute encounter)
+
+Ref visual: Expedition 33 shrinking ring, restyle Neon Cadence. Chỉ roll khi **Execute** đã chạy và beat là **counter** (Active S trùng telegraph quái).
+
+**Data:** [`CombatQteProfile.asset`](../Assets/FracturedChorus/Data/ScriptableObjects/CombatQteProfile.asset) (`CombatQteProfileSO`) — chance, cửa Perfect/Good, hệ số dmg, sprite, phím. Overlay scene `CombatQteOverlay` (Canvas sort 560, **không** nằm dưới CombatCanvas để vẫn hiện khi encounter ẩn HUD). Menu **Fractured Chorus → Combat → Setup QTE Overlay**.
+
+**Default trên SO (đổi Inspector):**
+
+| | Perfect | Good | Miss | Không roll |
+|--|---------|------|------|------------|
+| Hủy nốt quái | có | có | **không** (đòn vẫn đánh) | như counter đủ hit |
+| Player dmg | ×1.50 | ×1.20 | ×(1 − reduction) | ×1.0 |
+| Enemy dmg | — | — | ×(1 − reduction), đòn vẫn trúng | — |
+
+**Miss reduction:** `min(missReductionCap, missReductionBase + missReductionStep × floor(phaseIndex / phasesPerStep))` — default **−25%** dmg, +5% mỗi 2 phase, **cap −35%** (giữ ×0.75 → ×0.70 → ×0.65). Không hủy telegraph.
+
+**Chance:** `min(chanceCap, baseChance + chanceStep × floor(phaseIndex / phasesPerStep))` — default 30% +10% mỗi 2 phase, cap 80%.
+
+**Input:** Space (hoặc click) khi vòng ngoài co vào vòng trong. Block Space vẫn khóa trên beat counter; encounter pause → Space rảnh cho QTE.
+
+**Tune trên CombatRoot** (foldout **Counter QTE**): `Default chance` (`qteDefaultChance`) · `Miss dmg reduction` (`qteMissDamageReduction`). Không cần mở `.asset`.
+
+**Code:** `CombatQteController` · `CombatQteModifiers` · hook `EncounterDirector.PlayDuelAndResolve` trước choreo / `ResolveImpactHp`.
+
 ### Resolve đòn quái
 
 - Counter đủ → cancel · không counter → block (nếu hợp lệ) → dmg.
@@ -113,9 +137,11 @@ Kết quả: trễ tối đa **~1 beat** (~0.39s @ 152 BPM) — snap beat kế, 
 ### Planning UX
 
 - Gán hết skill **không** auto-resume — bắt buộc bấm **Execute**.
-- Kéo marker skill → **xóa ngay** khi bắt đầu kéo (dots footprint biến mất cùng lúc).
+- Kéo marker skill trên lane → skill đó rời agenda (ghost theo chuột); **các nốt khác cùng line và line nhân vật khác vẫn hiện**. Chỉ ẩn footprint của skill đang cầm.
+- **Relocate swap:** hai pha **Active (S)** chồng nhau (cùng unit) → **đổi BeatIndex** (skill đang kéo lấy beat của đích, đích lấy beat cũ). Cả hai S1/S/S2 phải vẫn vừa. Không swap được → **giữ nguyên**, không xóa. Thả lên **Standing (S1/S2) không chồng S** → **xóa skill đang trên line** rồi đặt skill đang kéo. Kéo skill mới từ radial lên S/standing của skill khác: không swap, cùng luật xóa skill đích rồi đặt. Ghost đụng **S1/S2** (không chồng S) → nhuộm skill đích `#AF2C42`. **Hai pha S chạm nhau** = swap, không nháy đỏ.
+- Kéo ra ngoài timeline → xóa skill đang relocate.
 - **Skill radial (W/A/D):** chỉ hiện phím + tên skill — không cost AV (placement không tốn AV).
-- Đặt skill: bao nhiêu cũng được miễn **không overlap S1/S/S2** trên cùng unit (`SkillFootprintUtil.CanPlace`).
+- Đặt skill: bao nhiêu cũng được miễn **không overlap S1/S/S2** trên cùng unit (`SkillFootprintUtil.CanPlace`), trừ swap pha S / eat skill đích khi thả lên standing hoặc S không swap được.
 - **Hex floor (ô vị trí):** hiện hex **Player** suốt mọi cửa sổ planning (`IsPlanningWindowOpen`), ẩn khi timeline chạy. Hex **Enemy** luôn ẩn — `CombatController.ApplySlotFloorVisibilityForCurrentPhase` → `BoardDragController.SetSlotFloorsVisible` / `GridCellMarker.SetFloorVisible`.
 - **Nút Execute:** `CombatExecuteOverlayUIView.ApplyAlphaHitTest` — `alphaHitTestMinimumThreshold = 0.1` **chỉ khi** `texture.isReadable` (tránh Console error); nếu chưa Readable thì tạm full-rect. Sprites `combat_btn_deploy_v1` / `combat_btn_execute_v1` cần Read/Write + Uncompressed — menu **Fractured Chorus → Ensure Combat Button Sprites Readable** (`CombatButtonSpriteImportSettings`).
 
@@ -140,7 +166,7 @@ Timeline giữ **một hàng cột beat duy nhất**. Trên đó overlay **N dò
 
 ### Đặt skill — kéo-thả + highlight phím
 
-1. **Kéo-thả:** kéo từ `SkillSlot_{Top,Left,Right}` → preview footprint S1/S/S2 trên lane → thả → `TryAssignPlayerAction` (chặn overlap qua `SkillFootprintUtil`).
+1. **Kéo-thả:** kéo từ `SkillSlot_{Top,Left,Right}` → preview footprint S1/S/S2 trên lane (nốt đã đặt **vẫn hiện**, gồm line nhân vật khác) → thả → `TryResolveSkillDrop`. Kéo lại marker trên lane → relocate; **hai pha S chồng nhau** cùng unit thì **swap beat**; không vừa thì trả skill đang kéo về chỗ cũ (không eat). Thả lên **S1/S2** (không chồng S) → xóa skill đích rồi đặt.
 2. **Click:** highlight ô radial.
 3. **W / A / D:** gắn skill ô tương ứng vào chuột (ghost bám con trỏ); có thể **đổi W/A/D** khi đang kéo → **click / thả** lên lane timeline để gán.
 
@@ -510,7 +536,7 @@ Window 12 beat → party outgoing dmg ×1.25; Early/Late → OnBeat (player + Gu
 | Ren Cycle Shift | 🔲 P0 | Fixed element |
 | Mini pressure (no HP leak) | 🔲 P0 | N/A |
 | Note HP degrade (tím/xanh/đỏ) | 🔲 P0 | 1-hit telegraph |
-| Enforce footprint overlap | ✅ MVP | `SkillFootprintUtil`, `CanAssignAction(unit, skill, beat)` |
+| Enforce footprint overlap | ✅ MVP | `SkillFootprintUtil`, `CanAssignAction`; relocate swap đổi BeatIndex khi hai pha S chồng; fail → restore; S1/S2 không chồng S → eat `TryEatThenAssign` |
 | Round segment 1 phase × 22 beat · lookahead 3 | ✅ MVP | `EnsureTelegraphLookahead`, Charlotte delay cascade |
 | Skill panel circular scene-only | ✅ MVP | `ApplyCircularPanelStyle`, `UpgradeRadialSlotStyle` |
 | W/A/D swap while keyboard drag | ✅ MVP | `TryGetDirectionKeyPressedThisFrame` |
@@ -526,6 +552,7 @@ Window 12 beat → party outgoing dmg ×1.25; Early/Late → OnBeat (player + Gu
 | DelayBossNote @ Planning | ✅ MVP | `DelayImpactTelegraphsAfterBeat` · slide VFX |
 | ReduceS2 + buff icon | ✅ MVP | `PendingReduceS2` · `PartyMemberCardView` BuffReduceS2 |
 | Counter presentation feel | ✅ MVP | `CounterPresentationDriver` · Perfect chip · MULTI |
+| Counter QTE (encounter) | ✅ | `CombatQteProfileSO` · overlay sort 560 · Perfect/Good/Miss |
 | Elite note roll 70/30 | ✅ MVP | `BossTelegraphPlanner.RollEliteNoteTier` |
 | Intro-pause @ beat 6 | (removed) | Thừa khi planning mở từ đầu trận |
 | Segment handoff no jump | ✅ MVP | `continueFromHold`, `RefreshTelegraphsAndSlots` |
@@ -542,6 +569,8 @@ Window 12 beat → party outgoing dmg ×1.25; Early/Late → OnBeat (player + Gu
 
 | Ngày | Nội dung |
 |------|----------|
+| 2026-09-02 | **Counter QTE** Miss: không hủy đòn, giảm dmg −25% (cap −35%, +5%/2 phase) hai phía |
+| 2026-09-02 | **Counter QTE** trong encounter: `CombatQteProfileSO` (chance/grade/sprite Inspector) · Perfect/Good hủy + bonus dmg · Miss không hủy, giảm dmg hai phía · overlay Canvas 560 |
 | 2026-08-02 | Phase **22 beat**; lookahead 3 phase; nốt ≥ beat 3; mật độ ×1.25; Charlotte delay cascade giữ nốt qua phase |
 | 2026-08-01 | **Uniform beat + nhạc liên tục.** Boss track → Eternal Spark Boss Remix (152 BPM · 677 beat · 169 bar); `MusicBeatMapSO` sang model `bpm + offset`, bỏ pipeline CSV. Nhạc chạy từ lúc vào trận và **không bao giờ pause** — planning chỉ duck 0.7× + lowpass 900 Hz; Execute re-anchor scan vào mốc bar kế (Beat Offset Anchor). Deploy gộp vào Planning (`IsPlanningWindowOpen`), một nút **Execute**; bỏ intro-pause @ beat 6, bỏ planning BGM / transition stinger / lớp Ren Cover |
 | 2026-07-17 | Bỏ Phase AV budget gate; assign = footprint only; BaseAv = order + dmg target |

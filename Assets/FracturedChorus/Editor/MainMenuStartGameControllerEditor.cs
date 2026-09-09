@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using FracturedChorus.Menu;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 
 namespace FracturedChorus.Editor
@@ -54,10 +55,65 @@ namespace FracturedChorus.Editor
                 SceneView.RepaintAll();
             }
 
+            if (GUILayout.Button("Load"))
+            {
+                // Dựng sẵn layer trước khi bật preview, không thì bấm xong chẳng thấy gì.
+                EnsureLoadLayerBound(controller);
+                Undo.RecordObject(controller, "Preview Load Game");
+                controller.SetEditorPreview(MainMenuStartGameController.MainMenuEditorPreview.LoadGame);
+                EditorUtility.SetDirty(controller);
+                SceneView.RepaintAll();
+            }
+
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.HelpBox(
                 "Off-Beat: chỉnh ArchivePanel / CatalogScroll / PlayerRoot trên MainMenuCanvas.",
                 MessageType.None);
+
+            DrawLoadLayerSection(controller);
+        }
+
+        /// <summary>
+        /// LoadLayer là GameObject dựng sẵn trong scene chứ không sinh runtime, nên nếu thiếu
+        /// thì cho cắm lại ngay tại đây thay vì phải nhớ menu nằm ở đâu.
+        /// </summary>
+        private void DrawLoadLayerSection(MainMenuStartGameController controller)
+        {
+            if (controller.ResolveLoadLayer() != null)
+            {
+                return;
+            }
+
+            EditorGUILayout.Space(4f);
+            EditorGUILayout.HelpBox(
+                "Chưa có Load Layer. Bấm nút dưới để dựng panel Save/Load vào scene rồi save lại.",
+                MessageType.Info);
+
+            if (GUILayout.Button("Build Load Layer"))
+            {
+                EnsureLoadLayerBound(controller);
+            }
+        }
+
+        /// <summary>
+        /// Tìm LoadLayer có sẵn trong scene (giữ nguyên layout đã chỉnh), chỉ dựng mới khi thật sự
+        /// chưa có, rồi trỏ field loadLayer vào đó.
+        /// </summary>
+        private static void EnsureLoadLayerBound(MainMenuStartGameController controller)
+        {
+            if (controller.ResolveLoadLayer() != null)
+            {
+                return;
+            }
+
+            var layer = SaveLoadLayerBuilder.EnsureLoadLayer(controller.transform.root);
+            if (layer == null)
+            {
+                return;
+            }
+
+            SaveLoadLayerBuilder.BindToController(controller.transform.root, layer);
+            EditorSceneManager.MarkSceneDirty(controller.gameObject.scene);
         }
     }
 }

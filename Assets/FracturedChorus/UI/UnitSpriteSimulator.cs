@@ -61,6 +61,24 @@ namespace FracturedChorus.UI
             }
         }
 
+        public Vector3 ReceiveDmgLocal
+        {
+            get
+            {
+                var dmg = ResolveReceiveDmg();
+                return dmg != null ? dmg.localPosition : Vector3.zero;
+            }
+        }
+
+        public Vector3 ProjectileLocal
+        {
+            get
+            {
+                var spawn = ResolveProjectile();
+                return spawn != null ? spawn.localPosition : Vector3.zero;
+            }
+        }
+
         public Sprite CurrentSprite
         {
             get
@@ -100,6 +118,8 @@ namespace FracturedChorus.UI
 
             sim.EnsureLayouts();
             sim.EnsureHandles();
+            view.EnsureReceiveDmg();
+            view.EnsureProjectile();
             return sim;
         }
 
@@ -303,6 +323,16 @@ namespace FracturedChorus.UI
                     layout.feetAnchorLocal = idle.feetAnchorLocal;
                 }
 
+                if (layout.receiveDmgLocal.sqrMagnitude < 0.0001f)
+                {
+                    layout.receiveDmgLocal = idle.receiveDmgLocal;
+                }
+
+                if (layout.projectileLocal.sqrMagnitude < 0.0001f)
+                {
+                    layout.projectileLocal = idle.projectileLocal;
+                }
+
                 if (!layout.HasCollider && idle.HasCollider)
                 {
                     layout.colliderSize = idle.colliderSize;
@@ -330,6 +360,8 @@ namespace FracturedChorus.UI
                 linkedState = state,
                 localScale = idle.localScale.sqrMagnitude > 0.0001f ? idle.localScale : transform.localScale,
                 feetAnchorLocal = idle.feetAnchorLocal,
+                receiveDmgLocal = idle.receiveDmgLocal,
+                projectileLocal = idle.projectileLocal,
                 colliderSize = idle.colliderSize,
                 colliderOffset = idle.colliderOffset
             };
@@ -475,6 +507,24 @@ namespace FracturedChorus.UI
             MarkDirty();
         }
 
+        public void ApplyPreviewReceiveDmg()
+        {
+            EnsureLayouts();
+            EnsureHandles();
+            var layout = spriteLayouts[ClampPreview(spritePreview)];
+            var dmgTf = ResolveReceiveDmg();
+            if (dmgTf == null || !layout.HasReceiveDmg)
+            {
+                return;
+            }
+
+#if UNITY_EDITOR
+            Undo.RecordObject(dmgTf, "Set Sprite ReceiveDmg");
+#endif
+            dmgTf.localPosition = layout.receiveDmgLocal;
+            MarkDirty();
+        }
+
         public void ApplyPreviewClip(AnimationClip clip)
         {
             EnsureLayouts();
@@ -543,6 +593,62 @@ namespace FracturedChorus.UI
             var view = ResolveView();
             view?.RefreshFeetAnchor();
             KeepFeetWorld();
+            MarkDirty();
+        }
+
+        public void SnapReceiveDmgToBody()
+        {
+            EnsureHandles();
+            var view = ResolveView();
+            view?.EnsureReceiveDmg();
+            var dmgTf = ResolveReceiveDmg();
+            if (dmgTf == null || view == null)
+            {
+                return;
+            }
+
+#if UNITY_EDITOR
+            Undo.RecordObject(dmgTf, "Snap ReceiveDmg To Body");
+#endif
+            dmgTf.position = view.GetVisualBounds().center;
+            SaveCurrentLayout();
+            MarkDirty();
+        }
+
+        public void ApplyPreviewProjectile()
+        {
+            EnsureLayouts();
+            EnsureHandles();
+            var layout = spriteLayouts[ClampPreview(spritePreview)];
+            var spawnTf = ResolveProjectile();
+            if (spawnTf == null || !layout.HasProjectile)
+            {
+                return;
+            }
+
+#if UNITY_EDITOR
+            Undo.RecordObject(spawnTf, "Set Sprite Projectile");
+#endif
+            spawnTf.localPosition = layout.projectileLocal;
+            MarkDirty();
+        }
+
+        public void SnapProjectileToHead()
+        {
+            EnsureHandles();
+            var view = ResolveView();
+            view?.EnsureProjectile();
+            var spawnTf = ResolveProjectile();
+            if (spawnTf == null || view == null)
+            {
+                return;
+            }
+
+#if UNITY_EDITOR
+            Undo.RecordObject(spawnTf, "Snap Projectile To Head");
+#endif
+            spawnTf.position = view.GetSkillPanelAboveAnchorWorld();
+            SaveCurrentLayout();
             MarkDirty();
         }
 
@@ -642,6 +748,18 @@ namespace FracturedChorus.UI
                 feetTf.localPosition = layout.feetAnchorLocal;
             }
 
+            var dmgTf = ResolveReceiveDmg();
+            if (dmgTf != null && layout.HasReceiveDmg)
+            {
+                dmgTf.localPosition = layout.receiveDmgLocal;
+            }
+
+            var spawnTf = ResolveProjectile();
+            if (spawnTf != null && layout.HasProjectile)
+            {
+                spawnTf.localPosition = layout.projectileLocal;
+            }
+
             if (keepWorldFeet)
             {
                 view?.PlaceFeetAt(feet);
@@ -708,6 +826,8 @@ namespace FracturedChorus.UI
                 linkedState = linkedState,
                 localScale = scale,
                 feetAnchorLocal = FeetAnchorLocal,
+                receiveDmgLocal = ReceiveDmgLocal,
+                projectileLocal = ProjectileLocal,
                 colliderSize = colliderSize,
                 colliderOffset = colliderOffset
             };
@@ -826,6 +946,8 @@ namespace FracturedChorus.UI
         {
             var view = ResolveView();
             view?.EnsureInteractionColliders();
+            view?.EnsureReceiveDmg();
+            view?.EnsureProjectile();
         }
 
         private void HoldAnimator()
@@ -916,6 +1038,30 @@ namespace FracturedChorus.UI
 
             var existing = transform.Find("FeetAnchor");
             return existing;
+        }
+
+        private Transform ResolveReceiveDmg()
+        {
+            var view = ResolveView();
+            view?.EnsureReceiveDmg();
+            if (view != null && view.ReceiveDmg != null)
+            {
+                return view.ReceiveDmg.transform;
+            }
+
+            return transform.Find(UnitView.ReceiveDmgObjectName);
+        }
+
+        private Transform ResolveProjectile()
+        {
+            var view = ResolveView();
+            view?.EnsureProjectile();
+            if (view != null && view.Projectile != null)
+            {
+                return view.Projectile.transform;
+            }
+
+            return transform.Find(UnitView.ProjectileObjectName);
         }
 
         private int ClampPreview(int preview)

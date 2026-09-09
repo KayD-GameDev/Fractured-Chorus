@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce73a71ac68f23f48a5aad627d27478a, type: 3}
   m_Name: UnitPreset_Ren
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.UnitPresetSO
-  unitId: DPS
+  unitId: ren
   displayName: Ren
   role: 1
   statBlock: {fileID: 11400000, guid: b5b6bcbfbbe8aae43bfbf63bb565f5d5, type: 2}
@@ -34,7 +34,7 @@ MonoBehaviour:
   timelineLaneColor: {r: 0.04705883, g: 0.2392157, b: 0.33333334, a: 1}
   battleSprite: {fileID: 7369638930748108147, guid: 9a437a3dfde73224686f2d2a81ee930e, type: 3}
   timelineAvatarSprite: {fileID: 21300000, guid: 424a93ede08c4c48a1dedc407c30abd7, type: 3}
-  combatCardSprite: {fileID: -3077632730411130755, guid: d78403423dceda24ab0eddbe5088a71f, type: 3}
+  combatCardSprite: {fileID: 21300000, guid: 49c43eca443e44feb00fcc6da6283366, type: 3}
   barStackAnchoredY: -1
   healthSlotTop: -1
   telegraphAttacksPerPhase: 1

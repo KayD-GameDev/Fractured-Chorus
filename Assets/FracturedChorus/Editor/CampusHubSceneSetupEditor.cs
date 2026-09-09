@@ -16,7 +16,6 @@ namespace FracturedChorus.Editor
         private const string NightBgPath = "Assets/FracturedChorus/Art/Backgrounds/lumina-city-town-map-bg_night_v1.png";
         private const string UiRoot = "Assets/FracturedChorus/Art/UI/TownMap/";
 
-        [MenuItem("Fractured Chorus/Create CampusHub Scene")]
         public static void CreateCampusHubScene()
         {
             var scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
@@ -35,7 +34,6 @@ namespace FracturedChorus.Editor
             Debug.Log($"[Fractured Chorus] Saved {ScenePath}");
         }
 
-        [MenuItem("Fractured Chorus/Setup CampusHub Scene Hierarchy")]
         public static void SetupCampusHubSceneHierarchy()
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode)
@@ -69,7 +67,6 @@ namespace FracturedChorus.Editor
             Debug.Log("[Fractured Chorus] CampusHub hierarchy rebuilt. Save the scene.");
         }
 
-        [MenuItem("Fractured Chorus/Wire Town Map Status Menu")]
         public static void WireTownMapStatusMenu()
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode)
@@ -111,7 +108,6 @@ namespace FracturedChorus.Editor
             Debug.Log("[Fractured Chorus] Wired Town Map MENU button + Status panel (v6 art). Save the scene.");
         }
 
-        [MenuItem("Fractured Chorus/Wire Run Map Hotkey")]
         public static void WireRunMapHotkey()
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode)
@@ -182,7 +178,6 @@ namespace FracturedChorus.Editor
             return runMapHotkey != null;
         }
 
-        [MenuItem("Fractured Chorus/Wire Social Stats Overlay")]
         public static void WireSocialStatsOverlay()
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode)

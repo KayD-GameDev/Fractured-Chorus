@@ -5,7 +5,11 @@ namespace FracturedChorus.Meta
     [Serializable]
     public sealed class GameMetaState
     {
-        public const int SaveVersion = 2;
+        /// <summary>
+        /// 3 = thêm playtime, vị trí Campus, node đã đi, HP/level party. Save version 2 vẫn đọc được:
+        /// các trường mới nhận giá trị mặc định khi thiếu.
+        /// </summary>
+        public const int SaveVersion = 3;
 
         public int SaveVersionId = SaveVersion;
         public CalendarState Calendar = new CalendarState();
@@ -15,6 +19,9 @@ namespace FracturedChorus.Meta
         public RunSnapshot RunSnapshot = new RunSnapshot();
         public WalletState Wallet = new WalletState();
         public PartyLoadoutState Loadout = new PartyLoadoutState();
+        public PlaytimeState Playtime = new PlaytimeState();
+        public HubLocationState HubLocation = new HubLocationState();
+        public PartyVitalsState PartyVitals = new PartyVitalsState();
         public int Difficulty;
 
         public static GameMetaState CreateNew()

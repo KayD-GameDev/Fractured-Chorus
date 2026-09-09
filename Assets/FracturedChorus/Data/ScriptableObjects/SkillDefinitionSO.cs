@@ -88,6 +88,10 @@ namespace FracturedChorus.Data
         public bool empowerGiftPrepToTarget;
         public bool empowerGuardChargeOnPerfect;
 
+        [Header("Presentation")]
+        [Tooltip("SkillVfxProfileSO. Runtime chỉ hiện VFX khi profile có projectileSprite hoặc impactSprite. Null = choreographer kit cũ.")]
+        public SkillVfxProfileSO vfxProfile;
+
         public int TotalFootprintBeats => standingBeatsBefore + Mathf.Max(1, activeBeats) + standingBeatsAfter;
 
         public int GetAvCost()

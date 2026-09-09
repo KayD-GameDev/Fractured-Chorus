@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -74,6 +75,7 @@ namespace FracturedChorus.Combat.Presentation
         private readonly List<UnitView> _focusScratch = new();
         private readonly List<CombatUnit> _counterPlayersScratch = new();
         private readonly List<(UnitView View, AgendaEntry Entry)> _counterEntriesScratch = new();
+        private readonly List<UnitView> _volleyReceiversScratch = new();
         private readonly Dictionary<CombatUnit, Vector3> _homePositions = new();
         private CombatSession _session;
         private Coroutine _routine;
@@ -335,7 +337,8 @@ namespace FracturedChorus.Combat.Presentation
                 receiverView,
                 swordCount,
                 report.WasCountered,
-                report.BeatIndex);
+                report.BeatIndex,
+                report.Skill);
 
             if (report.WasCountered)
             {
@@ -360,8 +363,18 @@ namespace FracturedChorus.Combat.Presentation
             focusDimmer?.Release();
         }
 
-        public float GetProjectileContactDelaySeconds()
+        public float GetProjectileContactDelaySeconds(
+            SkillDefinitionSO skill = null,
+            UnitView attackerView = null)
         {
+            var profile = SkillVfxShotView.ResolveProfile(
+                skill,
+                attackerView != null ? attackerView.Unit : null);
+            if (SkillVfxShotView.HasRenderableProfile(profile))
+            {
+                return profile.ContactDelaySeconds;
+            }
+
             return Mathf.Max(0.01f, swordTravelSeconds) * 0.55f;
         }
 
@@ -370,25 +383,162 @@ namespace FracturedChorus.Combat.Presentation
             UnitView receiverView,
             int projectileCount,
             bool countered,
-            int beatIndex = -1)
+            int beatIndex = -1,
+            SkillDefinitionSO skill = null)
         {
+            skill ??= ResolveUnitSkill(attackerView);
+            var profile = SkillVfxShotView.ResolveProfile(
+                skill,
+                attackerView != null ? attackerView.Unit : null);
+            var travelForShield = SkillVfxShotView.HasRenderableProfile(profile)
+                ? Mathf.Max(0.01f, profile.travelSeconds)
+                : Mathf.Max(0.01f, swordTravelSeconds);
+
             if (countered)
             {
-                var shieldHold = Mathf.Max(0.01f, swordTravelSeconds) + 1.2f;
+                var shieldHold = travelForShield + 1.2f;
                 SpawnCharlotteCounterShields(beatIndex, receiverView, attackerView, shieldHold);
             }
 
-            var kit = ResolveProjectileKit(attackerView != null ? attackerView.Unit : null);
-            var mode = !countered
-                ? BossSwordShotMode.Hit
-                : kit == EnemyProjectileKit.DespairSword
-                    ? BossSwordShotMode.Deflect
-                    : BossSwordShotMode.Vanish;
-            yield return PlayEnemyVolley(attackerView, receiverView, projectileCount, mode, kit);
+            if (SkillVfxShotView.HasRenderableProfile(profile))
+            {
+                var profileMode = SkillVfxShotView.ResolveMode(profile, countered);
+                yield return PlayProfileVolley(
+                    attackerView, receiverView, projectileCount, profileMode, profile, skill, null);
+            }
+            else
+            {
+                var kit = ResolveProjectileKit(attackerView != null ? attackerView.Unit : null);
+                var mode = !countered
+                    ? BossSwordShotMode.Hit
+                    : kit == EnemyProjectileKit.DespairSword
+                        ? BossSwordShotMode.Deflect
+                        : BossSwordShotMode.Vanish;
+                yield return PlayEnemyVolley(attackerView, receiverView, projectileCount, mode, kit);
+            }
 
             if (countered)
             {
                 yield return CharlotteCounterShieldView.DismissAllAndWait();
+            }
+        }
+
+        public IEnumerator PresentSkillProfile(
+            UnitView casterView,
+            UnitView receiverView,
+            SkillDefinitionSO skill,
+            bool countered,
+            Action onImpact = null)
+        {
+            var profile = SkillVfxShotView.ResolveProfile(
+                skill,
+                casterView != null ? casterView.Unit : null);
+            if (!SkillVfxShotView.HasRenderableProfile(profile))
+            {
+                yield break;
+            }
+
+            var mode = SkillVfxShotView.ResolveMode(profile, countered);
+            yield return PlayProfileVolley(
+                casterView,
+                receiverView,
+                profile.ResolveShotCount(1),
+                mode,
+                profile,
+                skill,
+                onImpact);
+        }
+
+        private IEnumerator PlayProfileVolley(
+            UnitView attackerView,
+            UnitView receiverView,
+            int projectileCount,
+            BossSwordShotMode mode,
+            SkillVfxProfileSO profile,
+            SkillDefinitionSO skill = null,
+            Action extraOnImpact = null)
+        {
+            if (EncounterDirector.IsPresenting
+                && skill != null
+                && skill.slotKind is SkillSlotKind.Skill or SkillSlotKind.Ultimate)
+            {
+                yield return EncounterDirector.PresentArmedCaster();
+            }
+
+            var cameraFired = false;
+            Action onImpact = () =>
+            {
+                extraOnImpact?.Invoke();
+                if (mode == BossSwordShotMode.Hit)
+                {
+                    FindAnyObjectByType<CombatSfxController>()?.PlayDamageHitFallback();
+                }
+
+                if (cameraFired)
+                {
+                    return;
+                }
+
+                cameraFired = true;
+                EncounterDirector.NotifySkillImpactCamera(skill);
+            };
+
+            var parent = swordShotParent != null ? swordShotParent : transform;
+            var count = profile.ResolveShotCount(projectileCount);
+            var gap = Mathf.Max(0f, profile.shotGapSeconds);
+            CollectVolleyReceivers(receiverView, skill, attackerView);
+            for (var r = 0; r < _volleyReceiversScratch.Count; r++)
+            {
+                var dest = _volleyReceiversScratch[r];
+                dest?.EnsureReceiveDmg();
+                for (var i = 0; i < count; i++)
+                {
+                    SkillVfxShotView.ResolveShotEnds(
+                        profile, attackerView, dest, i, count, out var shotFrom, out var shotTo);
+                    SkillVfxShotView.Spawn(
+                        profile,
+                        shotFrom,
+                        shotTo,
+                        mode,
+                        ResolveSwordAdditive(),
+                        parent,
+                        onImpact);
+                    if (gap > 0f && i < count - 1)
+                    {
+                        yield return new WaitForSeconds(gap);
+                    }
+                }
+            }
+
+            var travel = SkillVfxShotView.EstimateVolleySeconds(profile, mode, 1);
+            if (travel > 0f)
+            {
+                yield return new WaitForSeconds(travel);
+            }
+        }
+
+        private void CollectVolleyReceivers(
+            UnitView receiverView,
+            SkillDefinitionSO skill,
+            UnitView attackerView)
+        {
+            _volleyReceiversScratch.Clear();
+            if (skill != null && skill.targetType == SkillTargetType.AllEnemies && attackerView != null)
+            {
+                var views = FindObjectsByType<UnitView>(FindObjectsInactive.Exclude);
+                for (var i = 0; i < views.Length; i++)
+                {
+                    var other = views[i];
+                    if (other != null && other != attackerView && other.Side != attackerView.Side)
+                    {
+                        _volleyReceiversScratch.Add(other);
+                    }
+                }
+            }
+
+            if (_volleyReceiversScratch.Count == 0 && receiverView != null)
+            {
+                _volleyReceiversScratch.Add(receiverView);
             }
         }
 
@@ -428,8 +578,28 @@ namespace FracturedChorus.Combat.Presentation
             int swordCount,
             BossSwordShotMode mode)
         {
+            var profile = SkillVfxShotView.ResolveProfile(
+                ResolveUnitSkill(attackerView),
+                attackerView != null ? attackerView.Unit : null);
+            if (SkillVfxShotView.HasRenderableProfile(profile))
+            {
+                yield return PlayProfileVolley(attackerView, receiverView, swordCount, mode, profile, null, null);
+                yield break;
+            }
+
             var kit = ResolveProjectileKit(attackerView != null ? attackerView.Unit : null);
             yield return PlayEnemyVolley(attackerView, receiverView, swordCount, mode, kit);
+        }
+
+        public static SkillDefinitionSO ResolveUnitSkill(UnitView view)
+        {
+            var skills = view != null && view.Unit != null ? view.Unit.Skills : null;
+            if (skills == null || skills.Length == 0)
+            {
+                return null;
+            }
+
+            return skills[0];
         }
 
         private enum EnemyProjectileKit

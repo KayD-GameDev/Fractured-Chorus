@@ -32,7 +32,7 @@ MonoBehaviour:
   placeholderColor: {r: 0.55, g: 0.12, b: 0.14, a: 1}
   battleSprite: {fileID: 21300000, guid: b1c2d3e4f5a64789b0c1d2e3f4a50607, type: 3}
   timelineAvatarSprite: {fileID: 0}
-  combatCardSprite: {fileID: 2354350885672035966, guid: 5490bd145ed941e42a74ee778693952b, type: 3}
+  combatCardSprite: {fileID: 21300000, guid: 6b4d2e8a1c5f4093b7e0a2d4c6f81935, type: 3}
   barStackAnchoredY: -1
   healthSlotTop: 2.9
   telegraphAttacksPerPhase: 2

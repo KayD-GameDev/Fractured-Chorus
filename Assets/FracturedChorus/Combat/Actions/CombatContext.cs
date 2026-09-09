@@ -18,5 +18,6 @@ namespace FracturedChorus.Combat.Actions
         public bool IsEmpowered { get; set; }
         public AgendaEntry Entry { get; set; }
         public float CoverOutgoingMultiplier { get; set; } = 1f;
+        public float QteOutgoingMultiplier { get; set; } = 1f;
     }
 }

@@ -12,7 +12,24 @@ namespace FracturedChorus.Editor
         private const BindingFlags InstanceFlags =
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-        [MenuItem("Fractured Chorus/Repair Animator Graphs (close stale window)")]
+        private static bool _repairQueued;
+
+        static AnimatorGraphRepairEditor()
+        {
+            AssemblyReloadEvents.beforeAssemblyReload -= OnBeforeAssemblyReload;
+            AssemblyReloadEvents.beforeAssemblyReload += OnBeforeAssemblyReload;
+            CompilationPipeline.compilationStarted -= OnCompilationStarted;
+            CompilationPipeline.compilationStarted += OnCompilationStarted;
+            Application.logMessageReceived -= OnEditorLog;
+            Application.logMessageReceived += OnEditorLog;
+
+            var stale = SanitizeGraphEdges();
+            if (stale > 0)
+            {
+                CloseAnimatorWindows();
+            }
+        }
+
         public static void RepairFromMenu()
         {
             var stale = SanitizeGraphEdges();

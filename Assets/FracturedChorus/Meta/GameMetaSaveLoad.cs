@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using UnityEngine;
 
 namespace FracturedChorus.Meta
@@ -10,6 +11,8 @@ namespace FracturedChorus.Meta
         public const int SlotCount = 10;
         public const string LegacySaveFileName = "fc_meta_save.json";
         public const string SavesFolderName = "saves";
+        public const string LegacyBackupFolderName = "_legacy_v2";
+        public const string MigrationNoteFileName = "MIGRATION.txt";
 
         private static bool s_legacyMigrated;
 
@@ -19,8 +22,17 @@ namespace FracturedChorus.Meta
 
         public static string SavesDirectory => Path.Combine(Application.persistentDataPath, SavesFolderName);
 
+        /// <summary>Nơi cất save JSON đời cũ sau khi đã chuyển sang bản mã hóa.</summary>
+        public static string LegacyBackupDirectory => Path.Combine(SavesDirectory, LegacyBackupFolderName);
+
         public static string GetSlotPath(int slot) =>
-            Path.Combine(SavesDirectory, $"slot_{slot:00}.json");
+            Path.Combine(SavesDirectory, $"slot_{slot:00}{SaveCrypto.EncryptedExtension}");
+
+        public static string GetPlaintextSlotPath(int slot) =>
+            Path.Combine(SavesDirectory, $"slot_{slot:00}{SaveCrypto.PlaintextExtension}");
+
+        public static string GetLegacyBackupSlotPath(int slot) =>
+            Path.Combine(LegacyBackupDirectory, $"slot_{slot:00}{SaveCrypto.PlaintextExtension}");
 
         public static bool TrySave(GameMetaState state) => TrySave(state, ActiveSlot);
 
@@ -44,7 +56,7 @@ namespace FracturedChorus.Meta
                     data = GameMetaSaveData.FromState(state)
                 };
                 var json = JsonUtility.ToJson(file, prettyPrint: true);
-                File.WriteAllText(GetSlotPath(slot), json);
+                File.WriteAllBytes(GetSlotPath(slot), SaveCrypto.Encrypt(json));
                 ActiveSlot = slot;
                 return true;
             }
@@ -65,29 +77,69 @@ namespace FracturedChorus.Meta
         public static GameMetaState TryLoad(int slot)
         {
             slot = ClampSlot(slot);
+            MigrateLegacySaveOnce();
+
+            var json = ReadSlotJson(slot, out var status);
+            if (json == null)
+            {
+                if (status != SaveBlobStatus.Empty)
+                {
+                    Debug.LogError($"[Fractured Chorus] Meta save slot {slot} không đọc được ({status}).");
+                }
+
+                return null;
+            }
+
+            var state = ParseSaveJson(json);
+            if (state == null)
+            {
+                Debug.LogError($"[Fractured Chorus] Meta save slot {slot} corrupt.");
+                return null;
+            }
+
+            ActiveSlot = slot;
+            return state;
+        }
+
+        /// <summary>
+        /// Đọc và giải mã nội dung một slot. Chấp nhận cả file mã hóa lẫn JSON thuần đời cũ
+        /// để save copy tay từ bản build trước vẫn dùng được.
+        /// </summary>
+        private static string ReadSlotJson(int slot, out SaveBlobStatus status)
+        {
+            status = SaveBlobStatus.Empty;
 
             try
             {
                 var path = GetSlotPath(slot);
                 if (!File.Exists(path))
                 {
-                    return null;
+                    path = GetPlaintextSlotPath(slot);
+                    if (!File.Exists(path))
+                    {
+                        return null;
+                    }
                 }
 
-                var json = File.ReadAllText(path);
-                var state = ParseSaveJson(json);
-                if (state == null)
+                var blob = File.ReadAllBytes(path);
+                status = SaveCrypto.TryDecrypt(blob, out var json);
+                if (status == SaveBlobStatus.Success || status == SaveBlobStatus.Plaintext)
                 {
-                    Debug.LogError($"[Fractured Chorus] Meta save slot {slot} corrupt.");
-                    return null;
+                    return json;
                 }
 
-                ActiveSlot = slot;
-                return state;
+                if (status == SaveBlobStatus.Tampered)
+                {
+                    Debug.LogError(
+                        $"[Fractured Chorus] Slot {slot}: chữ ký HMAC không khớp — file đã bị sửa hoặc hỏng.");
+                }
+
+                return null;
             }
             catch (Exception error)
             {
-                Debug.LogError($"[Fractured Chorus] Failed to load meta save slot {slot}: {error}");
+                Debug.LogError($"[Fractured Chorus] Failed to read meta save slot {slot}: {error}");
+                status = SaveBlobStatus.Failed;
                 return null;
             }
         }
@@ -98,13 +150,8 @@ namespace FracturedChorus.Meta
 
             try
             {
-                var path = GetSlotPath(slot);
-                if (!File.Exists(path))
-                {
-                    return true;
-                }
-
-                File.Delete(path);
+                DeleteIfExists(GetSlotPath(slot));
+                DeleteIfExists(GetPlaintextSlotPath(slot));
                 return true;
             }
             catch (Exception error)
@@ -112,6 +159,20 @@ namespace FracturedChorus.Meta
                 Debug.LogError($"[Fractured Chorus] Failed to delete meta save slot {slot}: {error}");
                 return false;
             }
+        }
+
+        private static void DeleteIfExists(string path)
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+
+        public static bool SlotExists(int slot)
+        {
+            slot = ClampSlot(slot);
+            return File.Exists(GetSlotPath(slot)) || File.Exists(GetPlaintextSlotPath(slot));
         }
 
         public static SaveSlotHeader[] ListHeaders()
@@ -131,7 +192,7 @@ namespace FracturedChorus.Meta
             MigrateLegacySaveOnce();
             for (var slot = 0; slot < SlotCount; slot++)
             {
-                if (File.Exists(GetSlotPath(slot)))
+                if (SlotExists(slot))
                 {
                     return true;
                 }
@@ -149,35 +210,167 @@ namespace FracturedChorus.Meta
 
             s_legacyMigrated = true;
 
+            // ActiveSlot bị TrySave ghi đè, mà migration chạy ngầm nên phải trả lại nguyên trạng.
+            var previousActiveSlot = ActiveSlot;
             try
             {
-                if (!File.Exists(LegacySavePath))
-                {
-                    return;
-                }
-
-                var slotZeroPath = GetSlotPath(0);
-                if (File.Exists(slotZeroPath))
-                {
-                    return;
-                }
-
                 Directory.CreateDirectory(SavesDirectory);
-                var json = File.ReadAllText(LegacySavePath);
-                var state = ParseSaveJson(json);
-                if (state == null)
-                {
-                    Debug.LogError("[Fractured Chorus] Legacy meta save corrupt — skipping migration.");
-                    return;
-                }
-
-                TrySave(state, 0);
-                Debug.Log("[Fractured Chorus] Migrated legacy fc_meta_save.json to slot 0.");
+                MigrateRootLegacyFile();
+                MigratePlaintextSlots();
             }
             catch (Exception error)
             {
                 Debug.LogError($"[Fractured Chorus] Legacy save migration failed: {error}");
             }
+            finally
+            {
+                ActiveSlot = previousActiveSlot;
+            }
+        }
+
+        /// <summary>Save một-slot đời đầu (fc_meta_save.json ở gốc persistentDataPath) chuyển vào slot 0.</summary>
+        private static void MigrateRootLegacyFile()
+        {
+            if (!File.Exists(LegacySavePath) || SlotExists(0))
+            {
+                return;
+            }
+
+            var state = ParseSaveJson(File.ReadAllText(LegacySavePath));
+            if (state == null)
+            {
+                Debug.LogError("[Fractured Chorus] Legacy meta save corrupt — skipping migration.");
+                return;
+            }
+
+            if (TrySave(state, 0))
+            {
+                Debug.Log("[Fractured Chorus] Migrated legacy fc_meta_save.json to slot 0.");
+            }
+        }
+
+        /// <summary>
+        /// Chuyển các slot JSON thuần sang bản mã hóa, rồi dời file gốc vào _legacy_v2/
+        /// thay vì xóa — người chơi vẫn còn đường lùi nếu cần quay lại bản build cũ.
+        /// </summary>
+        private static void MigratePlaintextSlots()
+        {
+            var migrated = new List<int>();
+
+            for (var slot = 0; slot < SlotCount; slot++)
+            {
+                var plaintextPath = GetPlaintextSlotPath(slot);
+                if (!File.Exists(plaintextPath) || File.Exists(GetSlotPath(slot)))
+                {
+                    continue;
+                }
+
+                var state = ParseSaveJson(File.ReadAllText(plaintextPath));
+                if (state == null)
+                {
+                    Debug.LogError($"[Fractured Chorus] Slot {slot}: save JSON cũ hỏng — bỏ qua migration.");
+                    continue;
+                }
+
+                if (!TrySave(state, slot))
+                {
+                    continue;
+                }
+
+                Directory.CreateDirectory(LegacyBackupDirectory);
+                var backupPath = GetLegacyBackupSlotPath(slot);
+                DeleteIfExists(backupPath);
+                File.Move(plaintextPath, backupPath);
+                migrated.Add(slot);
+            }
+
+            if (migrated.Count == 0)
+            {
+                return;
+            }
+
+            WriteMigrationNote(migrated);
+            Debug.Log(
+                $"[Fractured Chorus] Đã mã hóa {migrated.Count} slot save. " +
+                $"Bản JSON cũ nằm ở {LegacyBackupDirectory}");
+        }
+
+        private static void WriteMigrationNote(List<int> migratedSlots)
+        {
+            try
+            {
+                var builder = new StringBuilder();
+                builder.AppendLine("Fractured Chorus — save migration log");
+                builder.AppendLine($"Thoi diem: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+                builder.AppendLine($"Save version dich: {GameMetaState.SaveVersion}");
+                builder.AppendLine($"Slot da chuyen: {string.Join(", ", migratedSlots)}");
+                builder.AppendLine();
+                builder.AppendLine("Cac file .json trong thu muc nay la ban goc truoc khi ma hoa.");
+                builder.AppendLine("Dung menu Editor 'Fractured Chorus/Save/Restore From Legacy Backup' de khoi phuc.");
+
+                File.WriteAllText(Path.Combine(LegacyBackupDirectory, MigrationNoteFileName), builder.ToString());
+            }
+            catch (Exception error)
+            {
+                Debug.LogError($"[Fractured Chorus] Không ghi được migration note: {error}");
+            }
+        }
+
+        /// <summary>Giải mã một slot ra JSON đọc được (phục vụ debug / backup thủ công).</summary>
+        public static string ExportSlotJson(int slot)
+        {
+            MigrateLegacySaveOnce();
+            return ReadSlotJson(ClampSlot(slot), out _);
+        }
+
+        /// <summary>Ghi JSON đã chỉnh tay ngược vào slot, có kiểm tra parse trước khi ghi đè.</summary>
+        public static bool ImportSlotJson(int slot, string json)
+        {
+            var state = ParseSaveJson(json);
+            if (state == null)
+            {
+                Debug.LogError($"[Fractured Chorus] Import slot {slot} thất bại: JSON không hợp lệ.");
+                return false;
+            }
+
+            return TrySave(state, ClampSlot(slot));
+        }
+
+        /// <summary>Kéo các save JSON trong _legacy_v2/ về lại slot dưới dạng mã hóa. Trả về số slot khôi phục được.</summary>
+        public static int RestoreFromLegacyBackup()
+        {
+            if (!Directory.Exists(LegacyBackupDirectory))
+            {
+                return 0;
+            }
+
+            var restored = 0;
+            var previousActiveSlot = ActiveSlot;
+
+            for (var slot = 0; slot < SlotCount; slot++)
+            {
+                var backupPath = GetLegacyBackupSlotPath(slot);
+                if (!File.Exists(backupPath))
+                {
+                    continue;
+                }
+
+                try
+                {
+                    var state = ParseSaveJson(File.ReadAllText(backupPath));
+                    if (state != null && TrySave(state, slot))
+                    {
+                        restored++;
+                    }
+                }
+                catch (Exception error)
+                {
+                    Debug.LogError($"[Fractured Chorus] Khôi phục slot {slot} từ backup thất bại: {error}");
+                }
+            }
+
+            ActiveSlot = previousActiveSlot;
+            return restored;
         }
 
         public static string Serialize(GameMetaState state)
@@ -229,15 +422,23 @@ namespace FracturedChorus.Meta
         private static SaveSlotHeader ReadHeader(int slot)
         {
             slot = ClampSlot(slot);
-            var path = GetSlotPath(slot);
-            if (!File.Exists(path))
+            if (!SlotExists(slot))
             {
                 return SaveSlotHeader.Empty(slot);
             }
 
+            var json = ReadSlotJson(slot, out var status);
+            if (json == null)
+            {
+                // File có tồn tại nhưng không giải mã nổi — báo hỏng thay vì giả vờ slot trống,
+                // để người chơi không vô tình ghi đè lên save còn cứu được.
+                return status == SaveBlobStatus.Empty
+                    ? SaveSlotHeader.Empty(slot)
+                    : SaveSlotHeader.Corrupted(slot);
+            }
+
             try
             {
-                var json = File.ReadAllText(path);
                 var wrapped = JsonUtility.FromJson<SaveSlotFile>(json);
                 if (wrapped?.header != null && !wrapped.header.isEmpty)
                 {
@@ -248,16 +449,15 @@ namespace FracturedChorus.Meta
                 var legacy = JsonUtility.FromJson<GameMetaSaveData>(json);
                 if (legacy == null)
                 {
-                    return SaveSlotHeader.Empty(slot);
+                    return SaveSlotHeader.Corrupted(slot);
                 }
 
-                var state = legacy.ToState();
-                return BuildHeader(state, slot);
+                return BuildHeader(legacy.ToState(), slot);
             }
             catch (Exception error)
             {
                 Debug.LogError($"[Fractured Chorus] Failed to read save header slot {slot}: {error}");
-                return SaveSlotHeader.Empty(slot);
+                return SaveSlotHeader.Corrupted(slot);
             }
         }
 
@@ -273,7 +473,7 @@ namespace FracturedChorus.Meta
                 locationLabel = ResolveLocationLabel(state),
                 difficulty = state.Difficulty,
                 notes = state.Wallet.Notes,
-                playTimeSeconds = 0
+                playTimeSeconds = state.Playtime.TotalSecondsRounded
             };
         }
 
@@ -295,6 +495,7 @@ namespace FracturedChorus.Meta
     {
         public int slotIndex;
         public bool isEmpty;
+        public bool isCorrupted;
         public int dateMonth;
         public int dateDay;
         public int phase;
@@ -311,6 +512,24 @@ namespace FracturedChorus.Meta
                 isEmpty = true,
                 locationLabel = string.Empty
             };
+        }
+
+        /// <summary>Slot có file nhưng giải mã hỏng hoặc sai chữ ký — không load, cũng không nên ghi đè mù.</summary>
+        public static SaveSlotHeader Corrupted(int slot)
+        {
+            return new SaveSlotHeader
+            {
+                slotIndex = slot,
+                isEmpty = false,
+                isCorrupted = true,
+                locationLabel = string.Empty
+            };
+        }
+
+        public string FormatPlayTime()
+        {
+            var total = Mathf.Max(0, playTimeSeconds);
+            return $"{total / 3600}:{total % 3600 / 60:00}";
         }
     }
 
@@ -343,6 +562,17 @@ namespace FracturedChorus.Meta
         public int runSector;
         public bool runActive;
         public int[] runClearedNodeIds = Array.Empty<int>();
+
+        // --- Save version 3 ---
+        public double playtimeSeconds;
+        public string hubLocationId = string.Empty;
+        public string hubSubLocationId = string.Empty;
+        public string hubPendingActivityId = string.Empty;
+        public int[] runVisitedNodeIds = Array.Empty<int>();
+        public bool runPulseCleared;
+        public bool runEchoCleared;
+        public bool runCanticleCleared;
+        public PartyVitalsEntry[] partyVitals = Array.Empty<PartyVitalsEntry>();
 
         public static GameMetaSaveData FromState(GameMetaState state)
         {
@@ -390,6 +620,17 @@ namespace FracturedChorus.Meta
                 loadouts.Add(LoadoutEntry.FromCharacter(entry));
             }
 
+            var vitals = new List<PartyVitalsEntry>();
+            foreach (var entry in state.PartyVitals.Entries)
+            {
+                vitals.Add(new PartyVitalsEntry
+                {
+                    unitId = entry.UnitId,
+                    hp = entry.Hp,
+                    maxHp = entry.MaxHp
+                });
+            }
+
             return new GameMetaSaveData
             {
                 saveVersion = GameMetaState.SaveVersion,
@@ -410,7 +651,16 @@ namespace FracturedChorus.Meta
                 runNodeId = state.RunSnapshot.CurrentNodeId,
                 runSector = state.RunSnapshot.ActiveSector,
                 runActive = state.RunSnapshot.HasActiveRun,
-                runClearedNodeIds = state.RunSnapshot.ClearedNodeIds ?? Array.Empty<int>()
+                runClearedNodeIds = state.RunSnapshot.ClearedNodeIds ?? Array.Empty<int>(),
+                playtimeSeconds = state.Playtime.TotalSeconds,
+                hubLocationId = state.HubLocation.LastLocationId ?? string.Empty,
+                hubSubLocationId = state.HubLocation.LastSubLocationId ?? string.Empty,
+                hubPendingActivityId = state.HubLocation.PendingActivityId ?? string.Empty,
+                runVisitedNodeIds = state.RunSnapshot.VisitedNodeIds ?? Array.Empty<int>(),
+                runPulseCleared = state.RunSnapshot.PulseCleared,
+                runEchoCleared = state.RunSnapshot.EchoCleared,
+                runCanticleCleared = state.RunSnapshot.CanticleCleared,
+                partyVitals = vitals.ToArray()
             };
         }
 
@@ -491,6 +741,23 @@ namespace FracturedChorus.Meta
             state.RunSnapshot.ActiveSector = runSector;
             state.RunSnapshot.HasActiveRun = runActive;
             state.RunSnapshot.ClearedNodeIds = runClearedNodeIds ?? Array.Empty<int>();
+            state.RunSnapshot.VisitedNodeIds = runVisitedNodeIds ?? Array.Empty<int>();
+            state.RunSnapshot.PulseCleared = runPulseCleared;
+            state.RunSnapshot.EchoCleared = runEchoCleared;
+            state.RunSnapshot.CanticleCleared = runCanticleCleared;
+
+            state.Playtime.TotalSeconds = playtimeSeconds > 0d ? playtimeSeconds : 0d;
+            state.HubLocation.SetLocation(hubLocationId, hubSubLocationId);
+            state.HubLocation.SetPendingActivity(hubPendingActivityId);
+
+            state.PartyVitals.Clear();
+            if (partyVitals != null)
+            {
+                foreach (var entry in partyVitals)
+                {
+                    state.PartyVitals.Set(entry.unitId, entry.hp, entry.maxHp);
+                }
+            }
 
             return state;
         }
@@ -510,6 +777,8 @@ namespace FracturedChorus.Meta
         public int ma;
         public int en;
         public int hb;
+        public int level;
+        public int exp;
 
         public static LoadoutEntry FromCharacter(CharacterLoadoutEntry entry)
         {
@@ -526,7 +795,9 @@ namespace FracturedChorus.Meta
                 str = entry.StrPoints,
                 ma = entry.MaPoints,
                 en = entry.EnPoints,
-                hb = entry.HbPoints
+                hb = entry.HbPoints,
+                level = entry.Level,
+                exp = entry.Exp
             };
         }
 
@@ -547,9 +818,20 @@ namespace FracturedChorus.Meta
                 StrPoints = str,
                 MaPoints = ma,
                 EnPoints = en,
-                HbPoints = hb
+                HbPoints = hb,
+                // level = 0 nghĩa là save version 2 chưa có trường này.
+                Level = level > 0 ? level : CharacterLoadoutEntry.DefaultLevel,
+                Exp = exp
             };
         }
+    }
+
+    [Serializable]
+    public struct PartyVitalsEntry
+    {
+        public string unitId;
+        public int hp;
+        public int maxHp;
     }
 
     [Serializable]

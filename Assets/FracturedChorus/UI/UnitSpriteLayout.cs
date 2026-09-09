@@ -46,6 +46,8 @@ namespace FracturedChorus.UI
         public UnitCombatVisualState linkedState;
         public Vector3 localScale;
         public Vector3 feetAnchorLocal;
+        public Vector3 receiveDmgLocal;
+        public Vector3 projectileLocal;
         public Vector2 colliderSize;
         public Vector2 colliderOffset;
 
@@ -54,6 +56,10 @@ namespace FracturedChorus.UI
         public bool HasCollider => colliderSize.x > 0.001f && colliderSize.y > 0.001f;
 
         public bool HasFeetAnchor => !Mathf.Approximately(feetAnchorLocal.sqrMagnitude, 0f);
+
+        public bool HasReceiveDmg => !Mathf.Approximately(receiveDmgLocal.sqrMagnitude, 0f);
+
+        public bool HasProjectile => !Mathf.Approximately(projectileLocal.sqrMagnitude, 0f);
 
         public bool HasStillSprite => sprite != null;
 
@@ -95,7 +101,9 @@ namespace FracturedChorus.UI
             sprite != null
             || animationClip != null
             || !Mathf.Approximately(localScale.sqrMagnitude, 0f)
-            || !Mathf.Approximately(feetAnchorLocal.sqrMagnitude, 0f);
+            || !Mathf.Approximately(feetAnchorLocal.sqrMagnitude, 0f)
+            || !Mathf.Approximately(receiveDmgLocal.sqrMagnitude, 0f)
+            || !Mathf.Approximately(projectileLocal.sqrMagnitude, 0f);
 
         public bool Matches(Sprite other)
         {

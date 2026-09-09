@@ -37,7 +37,6 @@ namespace FracturedChorus.Editor
         private const string UiClickResourcePath = "Assets/FracturedChorus/Resources/Audio/SFX/Combat_UiClick.wav";
         private const string SkillPlaceResourcePath = "Assets/FracturedChorus/Resources/Audio/SFX/Combat_SkillPlace.wav";
 
-        [MenuItem("Fractured Chorus/Import Combat Audio From Downloads")]
         public static void ImportCombatAudioFromDownloads()
         {
             ImportAudio(PerfectCounterSourceDownload, PerfectCounterPath);
@@ -77,7 +76,6 @@ namespace FracturedChorus.Editor
             System.IO.File.Copy(sourcePath, destFull, true);
         }
 
-        [MenuItem("Fractured Chorus/Wire Combat Music (Current Scene)")]
         public static void WireCurrentScene()
         {
             ImportCombatAudioFromDownloads();

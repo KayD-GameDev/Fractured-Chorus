@@ -17,6 +17,7 @@ namespace FracturedChorus.Combat.Presentation
         public Sprite Impact;
         public Material AdditiveMaterial;
         public float TravelSeconds = 0.32f;
+        public float SpawnHoldSeconds;
         public float ImpactSeconds = 0.18f;
         public float DeflectSeconds = 0.22f;
         public float SwordWorldLength = 1.9f;
@@ -102,6 +103,12 @@ namespace FracturedChorus.Combat.Presentation
                         + _settings.SpriteFacingOffsetDegrees;
             transform.SetPositionAndRotation(from, Quaternion.Euler(0f, 0f, angle));
             FitSword();
+
+            var hold = Mathf.Max(0f, _settings.SpawnHoldSeconds);
+            if (hold > 0f)
+            {
+                yield return new WaitForSeconds(hold);
+            }
 
             var travel = Mathf.Max(0.01f, _settings.TravelSeconds);
             if (_mode == BossSwordShotMode.Deflect)
@@ -252,10 +259,7 @@ namespace FracturedChorus.Combat.Presentation
                 return;
             }
 
-            var sprite = _sword.sprite;
-            var worldLen = Mathf.Max(sprite.bounds.size.x, sprite.bounds.size.y);
-            var scale = worldLen > 0.001f ? _settings.SwordWorldLength / worldLen : 1f;
-            _sword.transform.localScale = new Vector3(scale, scale, 1f);
+            SkillVfxShotView.FitSpriteToWorldSize(_sword, _settings.SwordWorldLength);
             _sword.transform.localPosition = Vector3.zero;
             _sword.sortingOrder = _settings.SortingOrder;
         }
@@ -267,10 +271,7 @@ namespace FracturedChorus.Combat.Presentation
                 return;
             }
 
-            var sprite = _impact.sprite;
-            var worldH = sprite.bounds.size.y;
-            var scale = worldH > 0.001f ? _settings.ImpactWorldSize / worldH : 1f;
-            _impact.transform.localScale = Vector3.one * scale;
+            SkillVfxShotView.FitSpriteToWorldSize(_impact, _settings.ImpactWorldSize);
             _impact.sortingOrder = _settings.SortingOrder + 2;
         }
     }
