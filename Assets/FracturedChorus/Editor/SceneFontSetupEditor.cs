@@ -14,6 +14,7 @@ namespace FracturedChorus.Editor
         {
             "Assets/FracturedChorus/Scenes/MainMenuStartGame.unity",
             "Assets/FracturedChorus/Scenes/MainMenuLayoutSandbox.unity",
+            "Assets/FracturedChorus/Scenes/CharacterBuildLayoutSandbox.unity",
             "Assets/FracturedChorus/Scenes/PrologueVN.unity",
             "Assets/FracturedChorus/Scenes/OpeningInvestigation.unity",
             "Assets/FracturedChorus/Scenes/CampusHub.unity",

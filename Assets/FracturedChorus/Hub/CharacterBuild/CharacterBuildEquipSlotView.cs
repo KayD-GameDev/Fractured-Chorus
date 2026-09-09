@@ -6,10 +6,6 @@ namespace FracturedChorus.Hub.CharacterBuild
     public sealed class CharacterBuildEquipSlotView : MonoBehaviour
     {
         private static readonly Color SelectedOutline = new Color(1f, 0.84f, 0.2f, 1f);
-        private static readonly Color UnlockedTint = Color.white;
-        private static readonly Color LockedTint = new Color(0.78f, 0.82f, 0.9f, 1f);
-        private static readonly Color LabelUnlocked = Color.white;
-        private static readonly Color LabelLocked = new Color(0.72f, 0.82f, 0.92f, 0.85f);
 
         [SerializeField] private Button button;
         [SerializeField] private Text label;
@@ -23,16 +19,13 @@ namespace FracturedChorus.Hub.CharacterBuild
             if (label != null)
             {
                 label.text = text ?? string.Empty;
-                label.color = locked ? LabelLocked : LabelUnlocked;
+                var ink = CharacterBuildStatTheme.LabelColor;
+                label.color = locked ? new Color(ink.r, ink.g, ink.b, 0.55f) : ink;
             }
 
             if (labelBackground != null)
             {
-                labelBackground.enabled = visible && !locked;
-                if (!locked)
-                {
-                    labelBackground.color = new Color(0.04f, 0.06f, 0.16f, 0.55f);
-                }
+                labelBackground.enabled = false;
             }
 
             if (gameObject.activeSelf != visible)
@@ -56,15 +49,15 @@ namespace FracturedChorus.Hub.CharacterBuild
                 return;
             }
 
-            var sprite = locked ? lockedSprite : unlocked;
+            var sprite = unlocked != null ? unlocked : lockedSprite;
             if (sprite != null)
             {
                 graphic.sprite = sprite;
                 graphic.type = Image.Type.Simple;
-                graphic.preserveAspect = locked;
+                graphic.preserveAspect = false;
             }
 
-            graphic.color = locked ? LockedTint : UnlockedTint;
+            graphic.color = Color.white;
             ApplySelectedOutline(graphic.gameObject, !locked && selected);
         }
 

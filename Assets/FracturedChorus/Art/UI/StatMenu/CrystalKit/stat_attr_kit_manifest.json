@@ -1,0 +1,42 @@
+{
+  "generated": "2026-08-26",
+  "icons": [
+    "ui_stat_icon_strength_v2.png",
+    "ui_stat_icon_magic_v2.png",
+    "ui_stat_icon_endurance_v2.png",
+    "ui_stat_icon_heartbeat_v2.png",
+    "ui_stat_icon_luck_v2.png"
+  ],
+  "labels": [
+    "ui_stat_label_str_v2.png",
+    "ui_stat_label_ma_v2.png",
+    "ui_stat_label_en_v2.png",
+    "ui_stat_label_hb_v2.png",
+    "ui_stat_label_luck_v2.png"
+  ],
+  "slider": [
+    "ui_stat_attr_slider_track_v2.png",
+    "ui_stat_attr_slider_fill_v2.png",
+    "ui_stat_attr_slider_handle_v2.png"
+  ],
+  "sizes": {
+    "icons": [
+      [264, 361],
+      [307, 363],
+      [284, 361],
+      [307, 362],
+      [265, 361]
+    ],
+    "labels": [
+      [211, 107],
+      [182, 103],
+      [146, 103],
+      [288, 103],
+      [252, 107]
+    ],
+    "track": [1226, 50],
+    "fill": [1443, 151],
+    "handle": [540, 540]
+  },
+  "apply_menu": "Fractured Chorus/Apply Stat Attr Kit Sprites"
+}

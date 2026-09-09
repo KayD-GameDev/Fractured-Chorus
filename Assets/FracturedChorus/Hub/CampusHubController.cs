@@ -56,6 +56,7 @@ namespace FracturedChorus.Hub
 
                 _phaseDriver.BeginCurrentPhase();
                 TutorialDirector.Ensure().StartHubTrack();
+                CampusBgmPlayer.Play();
                 var canvas = Object.FindAnyObjectByType<Canvas>();
                 if (canvas != null)
                 {

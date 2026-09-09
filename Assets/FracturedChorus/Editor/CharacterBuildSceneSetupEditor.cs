@@ -1230,11 +1230,20 @@ namespace FracturedChorus.Editor
             var noteImg = noteTf.GetComponent<Image>();
             if (noteImg != null)
             {
-                ApplySprite(
-                    noteImg,
-                    LoadSprite(CrystalDir + "ui_stat_btn_note_circle_v2.png"),
-                    Image.Type.Simple,
-                    false);
+                if (combatSlot)
+                {
+                    ApplySprite(
+                        noteImg,
+                        LoadSprite(CrystalDir + "ui_stat_btn_note_circle_v2.png"),
+                        Image.Type.Simple,
+                        false);
+                    noteImg.enabled = true;
+                }
+                else
+                {
+                    noteImg.enabled = false;
+                }
+
                 noteImg.preserveAspect = true;
                 noteImg.raycastTarget = false;
             }
@@ -1278,8 +1287,46 @@ namespace FracturedChorus.Editor
 
             if (frameImg != null)
             {
-                frameImg.transform.SetAsLastSibling();
                 frameImg.enabled = combatSlot;
+                if (combatSlot)
+                {
+                    frameImg.transform.SetAsLastSibling();
+                }
+                else
+                {
+                    frameImg.gameObject.SetActive(false);
+                }
+            }
+
+            if (!combatSlot)
+            {
+                if (skillIcon != null)
+                {
+                    skillIcon.gameObject.SetActive(false);
+                }
+
+                var lockSprite = LoadSprite(CrystalDir + "ui_stat_skill_lock_circle_v1.png");
+                var lockTf = noteTf.Find("LockIcon");
+                Image lockImg;
+                if (lockTf == null)
+                {
+                    lockImg = CreateImage(noteTf, "LockIcon", Color.white);
+                    Stretch(lockImg.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+                }
+                else
+                {
+                    lockImg = lockTf.GetComponent<Image>();
+                }
+
+                if (lockImg != null)
+                {
+                    ApplySprite(lockImg, lockSprite, Image.Type.Simple, false);
+                    lockImg.preserveAspect = true;
+                    lockImg.raycastTarget = false;
+                    lockImg.enabled = true;
+                    lockImg.gameObject.SetActive(true);
+                    lockImg.transform.SetAsLastSibling();
+                }
             }
 
             var view = slot.GetComponent<CharacterBuildSkillRowView>() ?? slot.gameObject.AddComponent<CharacterBuildSkillRowView>();
@@ -1310,7 +1357,8 @@ namespace FracturedChorus.Editor
             var nameTf = slot.Find("SkillName");
             if (nameTf == null)
             {
-                nameText = CreateText(slot, "SkillName", "—", 12, TextAnchor.LowerCenter, FontStyle.Normal);
+                nameText = CreateText(slot, "SkillName", "—", 26, TextAnchor.LowerCenter, FontStyle.Normal);
+                nameText.color = CharacterBuildStatTheme.LabelColor;
                 Stretch(nameText.rectTransform, new Vector2(0.04f, 0f), new Vector2(0.96f, 0.32f), Vector2.zero, Vector2.zero);
                 nameText.raycastTarget = false;
             }
@@ -1359,9 +1407,9 @@ namespace FracturedChorus.Editor
                 overlayGo = overlay.gameObject;
                 overlayGo.SetActive(false);
 
-                title = CreateText(overlay.transform, "Title", "Skill Equip", 22, TextAnchor.MiddleCenter, FontStyle.Normal);
+                title = CreateText(overlay.transform, "Title", "Skill Equip", 26, TextAnchor.MiddleCenter, FontStyle.Normal);
                 title.color = new Color(0.227451f, 0.258824f, 0.4f, 1f);
-                UiFontCatalog.Apply(title, UiFontRole.Display, 22);
+                UiFontCatalog.Apply(title, UiFontRole.Display, 26);
                 Stretch(title.rectTransform, new Vector2(0.05f, 0.90f), new Vector2(0.95f, 0.98f), Vector2.zero, Vector2.zero);
 
                 var slotSprite = LoadSprite(CrystalDir + "ui_stat_slot_skill_v2.png")
@@ -1479,11 +1527,11 @@ namespace FracturedChorus.Editor
             UiFontCatalog.Apply(title, UiFontRole.Display, 26, FontStyle.Bold);
             Stretch(title.rectTransform, new Vector2(0.10f, 0.80f), new Vector2(0.90f, 0.93f), Vector2.zero, Vector2.zero);
 
-            body = CreateText(overlay.transform, "Body", string.Empty, 20, TextAnchor.UpperLeft, FontStyle.Normal);
+            body = CreateText(overlay.transform, "Body", string.Empty, 26, TextAnchor.UpperLeft, FontStyle.Normal);
             body.color = ink;
             body.horizontalOverflow = HorizontalWrapMode.Wrap;
             body.verticalOverflow = VerticalWrapMode.Overflow;
-            UiFontCatalog.Apply(body, UiFontRole.Body, 20);
+            UiFontCatalog.Apply(body, UiFontRole.Body, 26);
             Stretch(body.rectTransform, new Vector2(0.12f, 0.18f), new Vector2(0.88f, 0.76f), Vector2.zero, Vector2.zero);
 
             var close = CreateImage(overlay.transform, "CloseButton", Color.white);
@@ -2369,7 +2417,7 @@ namespace FracturedChorus.Editor
             added += EnsureBattleStyleLabel(
                 battle,
                 "BalanceDescLine1",
-                "DPS · Melody · sát thương vật lý.",
+                "DPS · Melody",
                 UiFontRole.Body,
                 11,
                 TextAnchor.UpperLeft,
@@ -3209,9 +3257,9 @@ namespace FracturedChorus.Editor
             overlay.raycastTarget = true;
             overlay.gameObject.SetActive(false);
 
-            var equipTitle = CreateText(overlay.transform, "Title", "Skill Equip", 22, TextAnchor.MiddleCenter, FontStyle.Normal);
+            var equipTitle = CreateText(overlay.transform, "Title", "Skill Equip", 26, TextAnchor.MiddleCenter, FontStyle.Normal);
             equipTitle.color = new Color(0.227451f, 0.258824f, 0.4f, 1f);
-            UiFontCatalog.Apply(equipTitle, UiFontRole.Display, 22);
+            UiFontCatalog.Apply(equipTitle, UiFontRole.Display, 26);
             Stretch(equipTitle.rectTransform, new Vector2(0.05f, 0.88f), new Vector2(0.95f, 0.98f), Vector2.zero, Vector2.zero);
 
             var slotSprite = LoadSprite(CrystalDir + "ui_stat_slot_skill_v2.png") ?? rowSprite;
@@ -3953,13 +4001,9 @@ namespace FracturedChorus.Editor
             var button = go.GetComponent<Button>();
             button.targetGraphic = image;
 
-            var labelBg = CreateImage(go.transform, "LabelBg", new Color(0.04f, 0.06f, 0.16f, 0.55f));
-            Stretch(labelBg.rectTransform, new Vector2(0.06f, 0.18f), new Vector2(0.94f, 0.82f), Vector2.zero, Vector2.zero);
-            labelBg.raycastTarget = false;
-
-            var label = CreateText(go.transform, "Label", string.Empty, 18, TextAnchor.MiddleCenter, FontStyle.Normal);
-            label.color = Color.white;
-            UiFontCatalog.Apply(label, UiFontRole.Body, 18, FontStyle.Normal);
+            var label = CreateText(go.transform, "Label", string.Empty, 26, TextAnchor.MiddleCenter, FontStyle.Normal);
+            label.color = CharacterBuildStatTheme.LabelColor;
+            UiFontCatalog.Apply(label, UiFontRole.Body, 26, FontStyle.Normal);
             Stretch(label.rectTransform, new Vector2(0.08f, 0.2f), new Vector2(0.92f, 0.8f), Vector2.zero, Vector2.zero);
             label.raycastTarget = false;
 
@@ -3968,7 +4012,7 @@ namespace FracturedChorus.Editor
             so.FindProperty("button").objectReferenceValue = button;
             so.FindProperty("label").objectReferenceValue = label;
             so.FindProperty("frame").objectReferenceValue = image;
-            so.FindProperty("labelBackground").objectReferenceValue = labelBg;
+            so.FindProperty("labelBackground").objectReferenceValue = null;
             so.ApplyModifiedPropertiesWithoutUndo();
             return view;
         }
@@ -3998,15 +4042,9 @@ namespace FracturedChorus.Editor
 
             var labelBg = so.FindProperty("labelBackground").objectReferenceValue as Image
                           ?? view.transform.Find("LabelBg")?.GetComponent<Image>();
-            if (labelBg == null)
+            if (labelBg != null)
             {
-                labelBg = CreateImage(view.transform, "LabelBg", new Color(0.04f, 0.06f, 0.16f, 0.55f));
-                Stretch(labelBg.rectTransform, new Vector2(0.06f, 0.18f), new Vector2(0.94f, 0.82f), Vector2.zero, Vector2.zero);
-                labelBg.raycastTarget = false;
-                if (label != null)
-                {
-                    labelBg.transform.SetSiblingIndex(label.transform.GetSiblingIndex());
-                }
+                labelBg.enabled = false;
             }
 
             so.FindProperty("labelBackground").objectReferenceValue = labelBg;

@@ -66,5 +66,38 @@ Tone: keep **ngầu** — restrained face acting, no cartoon exaggeration.
 - Card size follows scene CardTemplate height × art aspect (no squash)
 - Bar stack rotation: −18° (matches art slots slanting down left→right)
 
+## Combat weapon — Violin Rifle (Súng Trường Violin)
+
+> Sheet: `Art/Characters/Ren/Combat/ren_weapon_violin_rifle_concept_v1.jpg`  
+> Tagline: *Music breaks the silence* · *Every shot is a note*
+
+**Do not** draw a concert violin, a pistol, or a generic black fiddle. Combat art uses this hybrid only.
+
+| Part | Lock |
+|------|------|
+| Silhouette | Long **sniper / marksman rifle** — stock, receiver, long barrel, muzzle |
+| Body | Violin waist as receiver; circular glowing **sound-hole core** with a **treble clef** |
+| Barrel | Violin neck as barrel; **4 glowing strings** run stock→muzzle |
+| Bridge | Mechanical violin-bridge at the trigger / projectile gate |
+| Stock | Lower violin bout, segmented futuristic shoulder stock |
+| Scope | Slim high-tech optic on the top rail |
+| Finish (Basic) | Matte **white plates** + charcoal/black frame |
+| Energy | **Violet / purple** glow (not cyan, not orange) |
+
+**Modes (icons / VFX)**
+- **Normal:** sharp triangular violet note-darts from the muzzle
+- **Skill:** weapon wrapped in swirling purple aura + translucent **music-stave rings** + particles
+
+**Forbidden:** over-ear headphones on combat Ren (school lock = SyncPod only). Sheet extra colorways (Black / Pastel) are variants — default combat = **Basic**.
+
+## Combat skill icons
+| Skill | Id | Icon |
+|-------|-----|------|
+| Strike | `ren_basic` | `Art/UI/Skills/Ren/ren_skill_icon_strike_v2.png` |
+| Crosscut | `ren_skill` | `Art/UI/Skills/Ren/ren_skill_icon_crosscut_v2.png` |
+| Finale | `ren_ult` | `Art/UI/Skills/Ren/ren_skill_icon_finale_v2.png` |
+
+Style: circular crystal-glass emblem (cyan–lavender rim), matte cel, bright interior, **heavy purple aura framing**; weapon = Violin Rifle lock; Ren = faint silhouette only (face not required).
+
 ## Speaker
 - `Speaker_Ren.asset` — id `ren` — `IsProtagonist` / right-slot preference in dual portrait

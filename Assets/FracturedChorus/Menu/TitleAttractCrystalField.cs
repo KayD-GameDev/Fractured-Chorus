@@ -48,6 +48,12 @@ namespace FracturedChorus.Menu
         {
             if (_items == null || _items.Length == 0)
             {
+                if (transform.childCount > 0)
+                {
+                    CaptureExistingChildren();
+                    return;
+                }
+
                 Rebuild();
             }
         }
@@ -97,6 +103,48 @@ namespace FracturedChorus.Menu
                 }
 
                 _items[i] = item;
+            }
+        }
+
+        private void CaptureExistingChildren()
+        {
+            _root = transform as RectTransform;
+            var n = transform.childCount;
+            _items = new Shard[n];
+            for (var i = 0; i < n; i++)
+            {
+                var rect = transform.GetChild(i) as RectTransform;
+                if (rect == null)
+                {
+                    continue;
+                }
+
+                var group = rect.GetComponent<CanvasGroup>();
+                if (group == null)
+                {
+                    group = rect.gameObject.AddComponent<CanvasGroup>();
+                    group.blocksRaycasts = false;
+                    group.interactable = false;
+                }
+
+                var image = rect.GetComponent<Image>();
+                if (image != null)
+                {
+                    image.raycastTarget = false;
+                }
+
+                var angle = Random.Range(20f, 160f) * Mathf.Deg2Rad;
+                var speed = Random.Range(speedRange.x, speedRange.y);
+                _items[i] = new Shard
+                {
+                    Rect = rect,
+                    Group = group,
+                    Velocity = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * speed,
+                    Spin = Random.Range(spinRange.x, spinRange.y),
+                    Phase = Random.Range(0f, Mathf.PI * 2f),
+                    MinAlpha = Random.Range(0.22f, 0.4f),
+                    MaxAlpha = Random.Range(0.55f, 0.88f)
+                };
             }
         }
 

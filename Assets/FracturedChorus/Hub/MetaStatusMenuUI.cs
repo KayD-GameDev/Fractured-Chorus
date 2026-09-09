@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.Text;
+using FracturedChorus.Hub.CharacterBuild;
 using FracturedChorus.Menu;
 using FracturedChorus.Meta;
+using FracturedChorus.RunMap;
 using FracturedChorus.Meta.Economy;
 using FracturedChorus.UI;
 using UnityEngine;
@@ -62,7 +64,6 @@ namespace FracturedChorus.Hub
         [SerializeField] private Sprite systemSelected;
         [SerializeField] private CalendarOverlayUI calendarOverlay;
         [SerializeField] private SocialStatsOverlayUI socialStatsOverlay;
-        [SerializeField] private PartyStatusMenuUI partyStatusMenu;
         [SerializeField] private TownMapSfxController sfx;
 
         private Tab _tab = Tab.Stats;
@@ -91,11 +92,6 @@ namespace FracturedChorus.Hub
             }
 
             if (socialStatsOverlay != null && socialStatsOverlay.IsOpen)
-            {
-                return;
-            }
-
-            if (partyStatusMenu != null && partyStatusMenu.IsOpen)
             {
                 return;
             }
@@ -130,8 +126,6 @@ namespace FracturedChorus.Hub
 
         public bool IsSocialStatsOpen => socialStatsOverlay != null && socialStatsOverlay.IsOpen;
 
-        public bool IsPartyStatusOpen => partyStatusMenu != null && partyStatusMenu.IsOpen;
-
         public void BindSfx(TownMapSfxController controller)
         {
             sfx = controller;
@@ -164,11 +158,6 @@ namespace FracturedChorus.Hub
             if (socialStatsOverlay != null && socialStatsOverlay.IsOpen)
             {
                 socialStatsOverlay.Hide();
-            }
-
-            if (partyStatusMenu != null && partyStatusMenu.IsOpen)
-            {
-                partyStatusMenu.Hide();
             }
 
             if (IsOpen)
@@ -243,7 +232,6 @@ namespace FracturedChorus.Hub
                 menu.EnsureSpritesAssigned();
                 menu.EnsureCalendarOverlay(parent);
                 menu.EnsureSocialStatsOverlay(parent);
-                menu.EnsurePartyStatusMenu(parent);
                 menu.Rewire();
                 return new BuildResult(menuButton, menu);
             }
@@ -260,7 +248,6 @@ namespace FracturedChorus.Hub
 
             menu.EnsureCalendarOverlay(parent);
             menu.EnsureSocialStatsOverlay(parent);
-            menu.EnsurePartyStatusMenu(parent);
             return new BuildResult(menuButton, menu);
         }
 
@@ -274,16 +261,6 @@ namespace FracturedChorus.Hub
 
             calendarOverlay = CalendarOverlayUI.Build(townMapRoot).Overlay;
             calendarOverlay.BindSfx(sfx);
-        }
-
-        public void EnsurePartyStatusMenu(Transform townMapRoot)
-        {
-            if (partyStatusMenu != null)
-            {
-                return;
-            }
-
-            partyStatusMenu = PartyStatusMenuUI.Ensure(townMapRoot);
         }
 
         public void EnsureSocialStatsOverlay(Transform townMapRoot)
@@ -421,15 +398,16 @@ namespace FracturedChorus.Hub
 
         public void EnsureSpritesAssigned()
         {
-            if (statsSelected != null && backgroundImage != null && backgroundImage.sprite != null)
-            {
-                return;
-            }
-
             var sprites = LoadSpritePack();
-            if (backgroundImage != null && backgroundImage.sprite == null)
+            if (backgroundImage != null && sprites.Background != null)
             {
                 backgroundImage.sprite = sprites.Background;
+            }
+
+            if (statsSelected != null && backgroundImage != null && backgroundImage.sprite != null
+                && statsNormal != null)
+            {
+                return;
             }
 
             statsNormal ??= sprites.StatsNormal;
@@ -468,7 +446,7 @@ namespace FracturedChorus.Hub
                 return;
             }
 
-            BindTab(statsButton, Tab.Stats, openPartyStatus: true);
+            BindTab(statsButton, Tab.Stats, openCharacterBuild: true);
             BindTab(bondsButton, Tab.Bonds, openSocialStats: true);
             BindTab(calendarButton, Tab.Calendar, openCalendar: true);
             BindTab(systemButton, Tab.System, openSaveSlots: true);
@@ -481,8 +459,8 @@ namespace FracturedChorus.Hub
             Tab tab,
             bool openCalendar = false,
             bool openSocialStats = false,
-            bool openPartyStatus = false,
-            bool openSaveSlots = false)
+            bool openSaveSlots = false,
+            bool openCharacterBuild = false)
         {
             if (button == null)
             {
@@ -499,9 +477,9 @@ namespace FracturedChorus.Hub
                 {
                     OpenCalendarOverlay();
                 }
-                else if (openPartyStatus)
+                else if (openCharacterBuild)
                 {
-                    OpenPartyStatusMenu();
+                    OpenCharacterBuild();
                 }
                 else if (openSocialStats)
                 {
@@ -514,17 +492,22 @@ namespace FracturedChorus.Hub
             });
         }
 
-        private void OpenPartyStatusMenu()
+        private void OpenCharacterBuild()
         {
-            var host = transform.parent != null ? transform.parent : transform;
-            EnsurePartyStatusMenu(host);
-            if (partyStatusMenu == null)
+            try
             {
-                return;
+                GameMetaSession.Save();
+            }
+            catch (System.Exception error)
+            {
+                Debug.LogError($"[StatusMenu] Failed to save before Character Build: {error}");
             }
 
-            partyStatusMenu.transform.SetAsLastSibling();
-            partyStatusMenu.Show(_state ?? GameMetaSession.Current);
+            CharacterBuildMenuUI.SetReturnScene(RunMapSceneCatalog.CampusHub);
+            if (!RunMapSceneLoader.LoadByName(RunMapSceneCatalog.CharacterBuild))
+            {
+                Debug.LogError("[StatusMenu] Failed to open Character Build.");
+            }
         }
 
         private void OpenSaveSlots()
@@ -576,7 +559,7 @@ namespace FracturedChorus.Hub
             {
                 tooltipLabel.text = _tab switch
                 {
-                    Tab.Stats => "View Party Status",
+                    Tab.Stats => "Open Character Build",
                     Tab.Bonds => "View Social Stats",
                     Tab.Calendar => "Open Calendar",
                     Tab.System => "Save Game",
@@ -589,10 +572,6 @@ namespace FracturedChorus.Hub
                 if (_tab == Tab.Calendar)
                 {
                     detailBodyLabel.text = "Opening calendar…";
-                }
-                else if (_tab == Tab.Stats && partyStatusMenu != null && partyStatusMenu.IsOpen)
-                {
-                    detailBodyLabel.text = "Opening party status…";
                 }
                 else if (_tab == Tab.Bonds && socialStatsOverlay != null && socialStatsOverlay.IsOpen)
                 {
@@ -799,7 +778,7 @@ namespace FracturedChorus.Hub
         {
             return new SpritePack
             {
-                Background = LoadSprite("statusmenu_ren_bg_v6"),
+                Background = LoadSprite("statusmenu_hima_city_bg_v1"),
                 StatsNormal = LoadSprite("statusmenu_btn_stats_normal"),
                 StatsSelected = LoadSprite("statusmenu_btn_stats_selected"),
                 BondsNormal = LoadSprite("statusmenu_btn_bonds_normal"),
@@ -829,6 +808,12 @@ namespace FracturedChorus.Hub
 
 #if UNITY_EDITOR
             var artPath = $"Assets/FracturedChorus/Art/UI/StatusMenu/{fileNameNoExt}.png";
+            var jpgPath = $"Assets/FracturedChorus/Art/UI/StatusMenu/{fileNameNoExt}.jpg";
+            if (!System.IO.File.Exists(artPath) && System.IO.File.Exists(jpgPath))
+            {
+                artPath = jpgPath;
+            }
+
             EnsureSpriteImporter(artPath);
             var editorSprite = AssetDatabase.LoadAssetAtPath<Sprite>(artPath);
             if (editorSprite != null)

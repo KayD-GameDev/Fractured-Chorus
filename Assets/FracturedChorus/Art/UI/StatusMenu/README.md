@@ -7,7 +7,8 @@
 
 | File | Notes |
 |------|--------|
-| `statusmenu_ren_bg_v6.png` | 1920×1080 plate (inverted Ren + MAIN MENU) |
+| `statusmenu_hima_city_bg_v1.jpg` | Current status menu plate — Hima city terrace |
+| `statusmenu_ren_bg_v6.png` | Previous plate (inverted Ren + MAIN MENU) |
 | `statusmenu_ren_bg_v5.png` … `v1` | Iterations / backup |
 | `ren_hima_uniform_menu_fullbody_v1.png` | Ren fullbody menu portrait (transparent BG) — CharacterBuild |
 
@@ -39,7 +40,7 @@ Play Mode cũng auto-rebuild StatusMenu nếu thiếu layout v6 (Resources path)
 
 ## Runtime
 
-- MENU / Tab / M → mở overlay full-screen (`statusmenu_ren_bg_v6`)  
+- MENU / Tab / M → mở overlay full-screen (`statusmenu_hima_city_bg_v1`)  
 - List phải: STATS · BONDS · CALENDAR · SYSTEM  
 - Selected/normal sprites swap  
 - SYSTEM / Esc → đóng  

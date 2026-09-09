@@ -1,3 +1,4 @@
+using FracturedChorus.UI;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -40,6 +41,7 @@ namespace FracturedChorus.Hub.CharacterBuild
             if (nameLabel != null)
             {
                 nameLabel.text = "—";
+                nameLabel.color = CharacterBuildStatTheme.LabelColor;
             }
 
             ApplySkillIcon(null);
@@ -53,6 +55,7 @@ namespace FracturedChorus.Hub.CharacterBuild
             if (nameLabel != null)
             {
                 nameLabel.text = string.IsNullOrEmpty(displayName) ? "—" : displayName;
+                nameLabel.color = CharacterBuildStatTheme.LabelColor;
             }
 
             ApplySkillIcon(skillIcon);
@@ -62,15 +65,67 @@ namespace FracturedChorus.Hub.CharacterBuild
 
         private void ApplySkillIcon(Sprite skillIcon)
         {
-            if (icon == null)
+            var art = EnsureCircularArt();
+            if (art == null)
             {
                 return;
             }
 
-            icon.enabled = skillIcon != null;
-            icon.sprite = skillIcon;
+            art.enabled = skillIcon != null;
+            art.sprite = skillIcon;
+            art.preserveAspect = true;
+            art.color = Color.white;
+            if (icon != null)
+            {
+                icon.enabled = skillIcon != null;
+            }
+        }
+
+        private Image EnsureCircularArt()
+        {
+            if (icon == null)
+            {
+                return null;
+            }
+
+            icon.sprite = UiCircleSpriteUtil.Circle;
+            icon.type = Image.Type.Simple;
             icon.preserveAspect = true;
             icon.color = Color.white;
+            icon.raycastTarget = false;
+
+            var mask = icon.GetComponent<Mask>();
+            if (mask == null)
+            {
+                mask = icon.gameObject.AddComponent<Mask>();
+            }
+
+            mask.showMaskGraphic = false;
+
+            var artTf = icon.transform.Find("Art");
+            Image art;
+            if (artTf == null)
+            {
+                var artGo = new GameObject("Art", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                artGo.transform.SetParent(icon.transform, false);
+                var rect = artGo.GetComponent<RectTransform>();
+                rect.anchorMin = Vector2.zero;
+                rect.anchorMax = Vector2.one;
+                rect.offsetMin = Vector2.zero;
+                rect.offsetMax = Vector2.zero;
+                art = artGo.GetComponent<Image>();
+            }
+            else
+            {
+                art = artTf.GetComponent<Image>();
+            }
+
+            if (art != null)
+            {
+                art.raycastTarget = false;
+            }
+
+            return art;
         }
 
         private void ApplySlotChrome(bool combatSlot, bool hasIcon)
@@ -92,6 +147,73 @@ namespace FracturedChorus.Hub.CharacterBuild
             if (goldOutline != null)
             {
                 goldOutline.enabled = visible;
+            }
+        }
+
+        public void SetFixed(bool fixedSlot, Sprite pinSprite)
+        {
+            if (button != null)
+            {
+                button.interactable = true;
+                button.transition = fixedSlot
+                    ? Selectable.Transition.None
+                    : Selectable.Transition.ColorTint;
+
+                var graphic = button.targetGraphic as Graphic;
+                if (graphic != null)
+                {
+                    graphic.color = Color.white;
+                }
+            }
+
+            if (nameLabel != null)
+            {
+                nameLabel.color = CharacterBuildStatTheme.LabelColor;
+            }
+
+            var pin = transform.Find("BasicPin");
+            if (!fixedSlot)
+            {
+                if (pin != null)
+                {
+                    pin.gameObject.SetActive(false);
+                }
+
+                return;
+            }
+
+            if (pinSprite == null)
+            {
+                return;
+            }
+
+            if (pin == null)
+            {
+                var go = new GameObject("BasicPin", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                go.transform.SetParent(transform, false);
+                var rect = go.GetComponent<RectTransform>();
+                rect.anchorMin = new Vector2(1f, 1f);
+                rect.anchorMax = new Vector2(1f, 1f);
+                rect.pivot = new Vector2(1f, 1f);
+                rect.sizeDelta = new Vector2(52f, 52f);
+                rect.anchoredPosition = new Vector2(-8f, -8f);
+                pin = go.transform;
+            }
+
+            pin.SetAsLastSibling();
+            pin.gameObject.SetActive(true);
+            var image = pin.GetComponent<Image>();
+            if (image == null)
+            {
+                return;
+            }
+
+            image.raycastTarget = false;
+            image.preserveAspect = true;
+            image.color = Color.white;
+            if (pinSprite != null)
+            {
+                image.sprite = pinSprite;
             }
         }
 

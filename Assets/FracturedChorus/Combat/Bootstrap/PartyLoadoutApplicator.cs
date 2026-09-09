@@ -124,9 +124,10 @@ namespace FracturedChorus.Combat.Bootstrap
 
         private static void EnsureDefaultEquipped(CharacterLoadoutEntry entry, string characterId)
         {
-            if (entry.EquippedSkillIds == null || entry.EquippedSkillIds.Length != 3)
+            if (entry.EquippedSkillIds == null
+                || entry.EquippedSkillIds.Length != CharacterLoadoutEntry.EquippedSkillSlotCount)
             {
-                entry.EquippedSkillIds = new string[3];
+                entry.EquippedSkillIds = PartyLoadoutState.NormalizeSkillSlots(entry.EquippedSkillIds);
             }
 
             var any = false;
@@ -147,13 +148,16 @@ namespace FracturedChorus.Combat.Bootstrap
             switch (characterId)
             {
                 case PartyCharacterIds.Ren:
-                    entry.EquippedSkillIds = new[] { "ren_basic", "ren_skill", "ren_ult" };
+                    entry.EquippedSkillIds = PartyLoadoutState.NormalizeSkillSlots(
+                        new[] { "ren_basic", "ren_skill", "ren_ult" });
                     break;
                 case PartyCharacterIds.Charlotte:
-                    entry.EquippedSkillIds = new[] { "Charlott_basic", "tank_skill", "tank_ult" };
+                    entry.EquippedSkillIds = PartyLoadoutState.NormalizeSkillSlots(
+                        new[] { "Charlott_basic", "tank_skill", "tank_ult" });
                     break;
                 case PartyCharacterIds.Coda:
-                    entry.EquippedSkillIds = new[] { "mage_basic", "mage_skill", "mage_ult" };
+                    entry.EquippedSkillIds = PartyLoadoutState.NormalizeSkillSlots(
+                        new[] { "mage_basic", "mage_skill", "mage_ult" });
                     break;
             }
         }

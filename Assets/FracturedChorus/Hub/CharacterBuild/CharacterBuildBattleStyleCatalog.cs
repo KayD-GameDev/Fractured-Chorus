@@ -24,16 +24,16 @@ namespace FracturedChorus.Hub.CharacterBuild
             {
                 PartyCharacterIds.Ren => new CharacterBuildBattleStyle(
                     "Chủ lực sát thương",
-                    "DPS · Melody · sát thương vật lý.",
-                    string.Empty),
+                    "DPS · Melody",
+                    "Counter nhiều nốt, gây sát thương chính, hồi skill lâu"),
                 PartyCharacterIds.Charlotte => new CharacterBuildBattleStyle(
                     "Đỡ đòn",
-                    "Tank · Rhythm · HP cao, nhận đòn thay đội.",
-                    "Counter nhiều nốt, thời gian hồi lâu."),
+                    "Tank · Rhythm",
+                    "Tạo khiên chặn sát thương địch, đẩy lùi các nốt nhạc của địch"),
                 PartyCharacterIds.Coda => new CharacterBuildBattleStyle(
                     "Hỗ trợ",
-                    "Support · Harmony · sát thương phép.",
-                    "Mend hồi máu. Encore giảm S2."),
+                    "Support · Harmony",
+                    "Hồi máu và giảm thời gian hồi chiêu của đồng đội"),
                 _ => new CharacterBuildBattleStyle(string.Empty, string.Empty, string.Empty)
             };
         }

@@ -6,6 +6,7 @@ using FracturedChorus.Combat.Units;
 using FracturedChorus.Data;
 using FracturedChorus.Hub;
 using FracturedChorus.Meta;
+using FracturedChorus.RunMap;
 using FracturedChorus.UI;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -30,6 +31,10 @@ namespace FracturedChorus.Hub.CharacterBuild
         private const int MaxPointsPerStat = 10;
         private const float BarVisualMax = 300f;
         private const int DevUnspentSeed = 14;
+        private const int BasicSkillSlot = 0;
+        private const int FirstSwappableSkillSlot = 1;
+
+        private static string _returnScene = RunMapSceneCatalog.CampusHub;
 
         [Header("Header")]
         [SerializeField] private Text indexLabel;
@@ -42,6 +47,9 @@ namespace FracturedChorus.Hub.CharacterBuild
         [SerializeField] private Text nextExpLabel;
         [SerializeField] private Image[] elementIcons;
         [SerializeField] private GameObject[] elementHighlightRings;
+        [SerializeField] private Image[] resistIcons;
+        [SerializeField] private Sprite[] resistOpenedIcons;
+        [SerializeField] private Sprite resistLockedIcon;
         [SerializeField] private CharacterBuildPortraitChipView[] portraitChips;
 
         [Header("Navigation")]
@@ -78,6 +86,8 @@ namespace FracturedChorus.Hub.CharacterBuild
         [SerializeField] private Button skillEquipCloseButton;
         [SerializeField] private Sprite skillSlotUnlocked;
         [SerializeField] private Sprite skillSlotLocked;
+        [SerializeField] private Sprite skillLockIcon;
+        [SerializeField] private Sprite skillBasicPin;
 
         [Header("Stat Details")]
         [SerializeField] private Button detailsButton;
@@ -128,6 +138,7 @@ namespace FracturedChorus.Hub.CharacterBuild
             _state = GameMetaSession.Current;
             EnsureDefaults();
             Refresh();
+            CampusBgmPlayer.Play();
         }
 
         private void Update()
@@ -162,11 +173,11 @@ namespace FracturedChorus.Hub.CharacterBuild
             }
             else if (TownMapInput.CancelPressed())
             {
-                // Standalone scene — no hub to return to.
+                ReturnToPreviousMenu();
             }
             else if (WasPressed(Key.V))
             {
-                OpenSkillEquip(0);
+                OpenSkillEquip(FirstSwappableSkillSlot);
             }
         }
 
@@ -190,12 +201,12 @@ namespace FracturedChorus.Hub.CharacterBuild
 
             if (backButton != null)
             {
-                backButton.onClick.AddListener(() => Debug.Log("[CharacterBuild] Esc/Back — standalone scene."));
+                backButton.onClick.AddListener(ReturnToPreviousMenu);
             }
 
             if (viewSkillsButton != null)
             {
-                viewSkillsButton.onClick.AddListener(() => OpenSkillEquip(0));
+                viewSkillsButton.onClick.AddListener(() => OpenSkillEquip(FirstSwappableSkillSlot));
             }
 
             if (portraitChips != null)
@@ -234,8 +245,48 @@ namespace FracturedChorus.Hub.CharacterBuild
                         continue;
                     }
 
+                    if (index == BasicSkillSlot)
+                    {
+                        continue;
+                    }
+
+                    row.Button.interactable = true;
                     row.Button.onClick.AddListener(() => OpenSkillEquip(index));
                 }
+            }
+        }
+
+        public static void SetReturnScene(string sceneName)
+        {
+            if (!string.IsNullOrWhiteSpace(sceneName))
+            {
+                _returnScene = sceneName;
+            }
+        }
+
+        private void ReturnToPreviousMenu()
+        {
+            try
+            {
+                GameMetaSession.Save();
+            }
+            catch (Exception error)
+            {
+                Debug.LogError($"[CharacterBuild] Failed to save before close: {error}");
+            }
+
+            var sceneName = string.IsNullOrWhiteSpace(_returnScene)
+                ? RunMapSceneCatalog.CampusHub
+                : _returnScene;
+            if (sceneName == RunMapSceneCatalog.CampusHub)
+            {
+                TownMapView.OpenStatusMenuOnNextShow = true;
+            }
+
+            if (!RunMapSceneLoader.LoadByName(sceneName))
+            {
+                TownMapView.OpenStatusMenuOnNextShow = false;
+                Debug.LogError($"[CharacterBuild] Failed to return to '{sceneName}'.");
             }
         }
 
@@ -291,6 +342,8 @@ namespace FracturedChorus.Hub.CharacterBuild
                             new[] { "ren_basic", "ren_skill", "ren_ult" })
                     };
                 }
+
+                PinBasicSkill(id, entry);
 
                 if (seedUnspentWhenEmpty
                     && entry.UnspentStatPoints <= 0
@@ -416,6 +469,7 @@ namespace FracturedChorus.Hub.CharacterBuild
             }
 
             RefreshElementHighlights(bases.Element);
+            RefreshResistIcons(bases.Element);
             RefreshPortrait();
             RefreshPortraitChips();
             RefreshSkills(entry);
@@ -423,7 +477,7 @@ namespace FracturedChorus.Hub.CharacterBuild
 
             if (remainingPointsLabel != null)
             {
-                remainingPointsLabel.text = $"Remaining Points: {entry.UnspentStatPoints}";
+                remainingPointsLabel.text = entry.UnspentStatPoints.ToString();
             }
 
             if (skillEquipOverlay != null && skillEquipOverlay.activeSelf)
@@ -451,6 +505,69 @@ namespace FracturedChorus.Hub.CharacterBuild
                 {
                     elementIcons[i].color = i == active ? Color.white : new Color(1f, 1f, 1f, 0.45f);
                 }
+            }
+        }
+
+        private void RefreshResistIcons(HarmonyElement mine)
+        {
+            if (resistIcons == null)
+            {
+                return;
+            }
+
+            var opened = resistOpenedIcons != null ? resistOpenedIcons.Length : 0;
+            for (var i = 0; i < resistIcons.Length; i++)
+            {
+                var icon = resistIcons[i];
+                if (icon == null)
+                {
+                    continue;
+                }
+
+                var open = i < opened && resistOpenedIcons[i] != null;
+                var sprite = open ? resistOpenedIcons[i] : resistLockedIcon;
+                if (sprite != null)
+                {
+                    icon.sprite = sprite;
+                    icon.preserveAspect = true;
+                    icon.color = Color.white;
+                }
+
+                var label = icon.transform.parent != null
+                    ? icon.transform.parent.GetComponent<Text>()
+                    : null;
+                if (label == null)
+                {
+                    continue;
+                }
+
+                label.enabled = true;
+                if (!open || i >= Enum.GetValues(typeof(HarmonyElement)).Length)
+                {
+                    label.text = "—";
+                    label.color = CharacterBuildStatTheme.SubLabelColor;
+                    continue;
+                }
+
+                var incoming = HarmonyElementResolver.GetRelation((HarmonyElement)i, mine);
+                var resist = incoming switch
+                {
+                    HarmonyRelation.Advantage => -50,
+                    HarmonyRelation.Disadvantage => 50,
+                    _ => 0
+                };
+                label.text = resist switch
+                {
+                    > 0 => $"+{resist}%",
+                    < 0 => $"{resist}%",
+                    _ => "0%"
+                };
+                label.color = resist switch
+                {
+                    > 0 => CharacterBuildStatTheme.AccentColor,
+                    < 0 => CharacterBuildStatTheme.LabelColor,
+                    _ => CharacterBuildStatTheme.SubLabelColor
+                };
             }
         }
 
@@ -544,12 +661,14 @@ namespace FracturedChorus.Hub.CharacterBuild
                 if (i >= slots.Length || string.IsNullOrEmpty(slots[i]))
                 {
                     row.BindEmpty(true);
+                    row.SetFixed(false, null);
                     continue;
                 }
 
                 var skill = FindSkill(slots[i]);
                 var display = SkillUnlockCatalog.DisplayName(slots[i]);
                 row.Bind(display, skill != null ? skill.icon : null, true);
+                row.SetFixed(i == BasicSkillSlot, skillBasicPin);
             }
         }
 
@@ -576,8 +695,13 @@ namespace FracturedChorus.Hub.CharacterBuild
 
         private void OpenSkillEquip(int focusSlot)
         {
+            if (focusSlot == BasicSkillSlot)
+            {
+                return;
+            }
+
             HideStatDetails();
-            _equipFocusSlot = Mathf.Clamp(focusSlot, 0, CharacterLoadoutEntry.EquippedSkillSlotCount - 1);
+            _equipFocusSlot = Mathf.Clamp(focusSlot, FirstSwappableSkillSlot, CharacterLoadoutEntry.EquippedSkillSlotCount - 1);
             SetSkillEquipVisible(true);
             RefreshSkillEquip(CurrentEntry());
         }
@@ -638,11 +762,6 @@ namespace FracturedChorus.Hub.CharacterBuild
 
         private void ApplyLockedSkillSlotDecor()
         {
-            if (skillSlotLocked == null)
-            {
-                return;
-            }
-
             var skillsPanel = transform.Find("SkillsPanel");
             if (skillsPanel == null)
             {
@@ -660,17 +779,77 @@ namespace FracturedChorus.Hub.CharacterBuild
                 var frame = slot.GetComponent<Image>();
                 if (frame != null)
                 {
-                    frame.sprite = skillSlotLocked;
+                    var crystal = skillSlotUnlocked != null ? skillSlotUnlocked : skillSlotLocked;
+                    if (crystal != null)
+                    {
+                        frame.sprite = crystal;
+                    }
+
                     frame.preserveAspect = true;
-                    frame.color = new Color(0.78f, 0.82f, 0.9f, 1f);
+                    frame.color = Color.white;
                 }
 
                 var note = slot.Find("NoteCircle");
-                if (note != null)
+                if (note == null)
                 {
-                    note.gameObject.SetActive(false);
+                    continue;
+                }
+
+                note.gameObject.SetActive(true);
+                var noteImage = note.GetComponent<Image>();
+                if (noteImage != null)
+                {
+                    noteImage.enabled = false;
+                }
+
+                for (var c = 0; c < note.childCount; c++)
+                {
+                    var child = note.GetChild(c);
+                    if (child.name == "LockIcon")
+                    {
+                        continue;
+                    }
+
+                    child.gameObject.SetActive(false);
+                }
+
+                var lockIcon = EnsureLockIcon(note);
+                if (lockIcon != null)
+                {
+                    lockIcon.SetAsLastSibling();
+                    lockIcon.gameObject.SetActive(true);
+                    var image = lockIcon.GetComponent<Image>();
+                    if (image != null && skillLockIcon != null)
+                    {
+                        image.sprite = skillLockIcon;
+                        image.preserveAspect = true;
+                        image.color = Color.white;
+                        image.enabled = true;
+                    }
                 }
             }
+        }
+
+        private Transform EnsureLockIcon(Transform note)
+        {
+            var existing = note.Find("LockIcon");
+            if (existing != null)
+            {
+                return existing;
+            }
+
+            var go = new GameObject("LockIcon", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            go.transform.SetParent(note, false);
+            var rect = go.GetComponent<RectTransform>();
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            var image = go.GetComponent<Image>();
+            image.raycastTarget = false;
+            image.preserveAspect = true;
+            return go.transform;
         }
 
         private void EnsureDetailsUi()
@@ -879,6 +1058,11 @@ namespace FracturedChorus.Hub.CharacterBuild
             var kit = new List<(string SkillId, string DisplayName, int UnlockLevel, bool Unlocked)>();
             foreach (var unlock in SkillUnlockCatalog.KitFor(Roster[_memberIndex]))
             {
+                if (IsBasicSkill(Roster[_memberIndex], unlock.SkillId))
+                {
+                    continue;
+                }
+
                 kit.Add(unlock);
             }
 
@@ -939,40 +1123,99 @@ namespace FracturedChorus.Hub.CharacterBuild
                 }
 
                 view.Button.onClick.RemoveAllListeners();
+                view.Button.interactable = true;
                 view.Button.onClick.AddListener(() => EquipIntoFocus(CurrentEntry(), skillId));
             }
         }
 
         private void EquipIntoFocus(CharacterLoadoutEntry entry, string skillId)
         {
-            var slots = NormalizeSlots(entry.EquippedSkillIds);
-            if (_equipFocusSlot >= 0
-                && _equipFocusSlot < slots.Length
-                && string.Equals(slots[_equipFocusSlot], skillId, StringComparison.Ordinal))
+            if (entry == null
+                || _equipFocusSlot == BasicSkillSlot
+                || IsBasicSkill(entry.CharacterId, skillId))
             {
-                slots[_equipFocusSlot] = string.Empty;
-                entry.EquippedSkillIds = slots;
-                GameMetaSession.Save();
-                Refresh();
                 return;
             }
 
-            for (var i = 0; i < slots.Length; i++)
+            var slots = NormalizeSlots(entry.EquippedSkillIds);
+            if (_equipFocusSlot < 0 || _equipFocusSlot >= slots.Length)
             {
-                if (string.Equals(slots[i], skillId, StringComparison.Ordinal))
-                {
-                    slots[i] = string.Empty;
-                }
+                return;
             }
 
-            if (_equipFocusSlot >= 0 && _equipFocusSlot < slots.Length)
+            if (string.Equals(slots[_equipFocusSlot], skillId, StringComparison.Ordinal))
+            {
+                slots[_equipFocusSlot] = string.Empty;
+                CommitSkillSlots(entry, slots);
+                return;
+            }
+
+            var equippedSlot = IndexOfSkill(slots, skillId);
+            if (equippedSlot == BasicSkillSlot)
+            {
+                return;
+            }
+
+            if (equippedSlot >= 0)
+            {
+                var displaced = slots[_equipFocusSlot];
+                slots[_equipFocusSlot] = slots[equippedSlot];
+                slots[equippedSlot] = displaced;
+            }
+            else
             {
                 slots[_equipFocusSlot] = skillId;
             }
 
+            CommitSkillSlots(entry, slots);
+        }
+
+        private void CommitSkillSlots(CharacterLoadoutEntry entry, string[] slots)
+        {
             entry.EquippedSkillIds = slots;
+            PinBasicSkill(entry.CharacterId, entry);
             GameMetaSession.Save();
             Refresh();
+        }
+
+        private static void PinBasicSkill(string characterId, CharacterLoadoutEntry entry)
+        {
+            if (entry == null)
+            {
+                return;
+            }
+
+            var slots = PartyLoadoutState.NormalizeSkillSlots(entry.EquippedSkillIds);
+            var basicId = ResolveBasicSkillId(characterId);
+            if (!string.IsNullOrEmpty(basicId))
+            {
+                slots[BasicSkillSlot] = basicId;
+                for (var i = FirstSwappableSkillSlot; i < slots.Length; i++)
+                {
+                    if (string.Equals(slots[i], basicId, StringComparison.Ordinal))
+                    {
+                        slots[i] = string.Empty;
+                    }
+                }
+            }
+
+            entry.EquippedSkillIds = slots;
+        }
+
+        private static bool IsBasicSkill(string characterId, string skillId)
+        {
+            return !string.IsNullOrEmpty(skillId)
+                && string.Equals(skillId, ResolveBasicSkillId(characterId), StringComparison.Ordinal);
+        }
+
+        private static string ResolveBasicSkillId(string characterId)
+        {
+            return characterId switch
+            {
+                PartyCharacterIds.Charlotte => "Charlott_basic",
+                PartyCharacterIds.Coda => "mage_basic",
+                _ => "ren_basic"
+            };
         }
 
         private static int IndexOfSkill(string[] slots, string skillId)
