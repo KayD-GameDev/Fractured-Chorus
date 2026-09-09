@@ -3,16 +3,10 @@ using System;
 using System.Collections;
 using System.Reflection;
 using UnityEditor;
-using UnityEditor.Compilation;
 using UnityEngine;
 
 namespace FracturedChorus.Editor
 {
-    /// <summary>
-    /// UnityEditor.Graphs.Edge.WakeUp NRE is a Unity Animator-window bug (stale edges), not Play Mode.
-    /// Edge is not a UnityEngine.Object — never FindObjectsOfTypeAll(Edge).
-    /// </summary>
-    [InitializeOnLoad]
     internal static class AnimatorGraphRepairEditor
     {
         private const BindingFlags InstanceFlags =
@@ -46,47 +40,6 @@ namespace FracturedChorus.Editor
                 $"closed {closed} Animator window(s), destroyed {destroyed} Graph object(s). " +
                 "Edge.WakeUp is editor-only. Reopen Animator, or Window → Layouts → Default. " +
                 "Clear Console to dismiss the old exception.");
-        }
-
-        private static void OnCompilationStarted(object _)
-        {
-            SanitizeGraphEdges();
-        }
-
-        private static void OnBeforeAssemblyReload()
-        {
-            var stale = SanitizeGraphEdges();
-            if (stale > 0)
-            {
-                CloseAnimatorWindows();
-            }
-        }
-
-        private static void OnEditorLog(string message, string stackTrace, LogType type)
-        {
-            if (type != LogType.Exception && type != LogType.Error)
-            {
-                return;
-            }
-
-            if (string.IsNullOrEmpty(stackTrace)
-                || stackTrace.IndexOf("UnityEditor.Graphs.Edge.WakeUp", StringComparison.Ordinal) < 0)
-            {
-                return;
-            }
-
-            if (_repairQueued)
-            {
-                return;
-            }
-
-            _repairQueued = true;
-            EditorApplication.delayCall += () =>
-            {
-                _repairQueued = false;
-                SanitizeGraphEdges();
-                CloseAnimatorWindows();
-            };
         }
 
         private static int SanitizeGraphEdges()
@@ -217,43 +170,15 @@ namespace FracturedChorus.Editor
         private static int CloseAnimatorWindows()
         {
             var closed = 0;
-            var toolType = Type.GetType("UnityEditor.Graphs.AnimatorControllerTool, UnityEditor.Graphs");
-            if (toolType != null)
-            {
-                UnityEngine.Object[] tools;
-                try
-                {
-                    tools = Resources.FindObjectsOfTypeAll(toolType);
-                }
-                catch (Exception)
-                {
-                    tools = null;
-                }
-
-                if (tools != null)
-                {
-                    foreach (var obj in tools)
-                    {
-                        if (obj is not EditorWindow window || window == null)
-                        {
-                            continue;
-                        }
-
-                        window.Close();
-                        closed++;
-                    }
-                }
-            }
-
             var windows = Resources.FindObjectsOfTypeAll<EditorWindow>();
             if (windows == null)
             {
-                return closed;
+                return 0;
             }
 
             foreach (var window in windows)
             {
-                if (window == null)
+                if (!window)
                 {
                     continue;
                 }
@@ -264,8 +189,14 @@ namespace FracturedChorus.Editor
                     continue;
                 }
 
-                window.Close();
-                closed++;
+                try
+                {
+                    window.Close();
+                    closed++;
+                }
+                catch (Exception)
+                {
+                }
             }
 
             return closed;

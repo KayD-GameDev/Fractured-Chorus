@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Data.SkillDefinitionSO
   skillId: ren_basic
   displayName: Strike
-  icon: {fileID: 5244487998027061712, guid: 84c28b32f692c594396d4e065f864069, type: 3}
+  icon: {fileID: 1758091737259792074, guid: a0637abc3427eb84fb3a8796342063d7, type: 3}
   frame: {fileID: -2708821283215212421, guid: 2ac120cba63f0ad478e6c3eace7c938b, type: 3}
   description: Damage
   slotKind: 0

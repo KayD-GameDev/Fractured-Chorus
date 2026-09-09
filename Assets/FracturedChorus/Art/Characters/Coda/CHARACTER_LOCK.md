@@ -60,5 +60,9 @@
 - School fullbody: `Art/Characters/Coda/Chibi/coda_chibi_fullbody_v1.png`
 - Cadence bust (tutorial coach): `Art/Characters/Coda/Chibi/coda_cadence_chibi_bust_v1.png` — chest-up, headphones + forehead goggles, transparent PNG, canvas 1024×1536
 
+## VN bust (school)
+- Neutral: `Art/Characters/Coda/VnBust/coda_bust_neutral_v1.png` (PortraitPanel)
+- Stat chip icon: `Art/UI/Combat/Timeline/LeftRail/Avatars/coda_chibi_avatar_v1.png`
+
 ## Tone
 - Curious, light support presence — younger energy than Ren/Charlotte, not cool stoic
