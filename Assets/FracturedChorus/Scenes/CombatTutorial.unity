@@ -5217,6 +5217,8 @@ MonoBehaviour:
   enemyStrikeChoreographer: {fileID: 707156463}
   playerSkillShotChoreographer: {fileID: 707156464}
   encounterDirector: {fileID: 707156465}
+  qteDefaultChance: 0.3
+  qteMissDamageReduction: 0.25
   sideGap: 3.5
   applyStartResourcesOnPlay: 1
   startCoverGauge: 8
@@ -5391,6 +5393,7 @@ MonoBehaviour:
   hideUiRoot: {fileID: 0}
   letterboxOverlay: {fileID: 0}
   musicController: {fileID: 888001004}
+  qteController: {fileID: 0}
   stageRow: 1
   stageColumn: 0
   sideGap: 3.5
@@ -12129,9 +12132,19 @@ MonoBehaviour:
   elementBadgeRing: {fileID: 1791716011}
   elementIcon: {fileID: 1153346080}
   cardArtImage: {fileID: 1910074877}
+  cardBg: {fileID: 0}
+  accentShard: {fileID: 0}
+  avatarImage: {fileID: 0}
+  nameLabel: {fileID: 0}
+  hpLabel: {fileID: 0}
+  hpValue: {fileID: 0}
+  prepLabel: {fileID: 0}
+  prepValue: {fileID: 0}
   barStack: {fileID: 979236147}
   healthSlot: {fileID: 777863442}
   gaugeSlot: {fileID: 2060846931}
+  characterCardPresets: []
+  previewCharacterIndex: 0
 --- !u!114 &1830421417
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12863,9 +12876,19 @@ MonoBehaviour:
   elementBadgeRing: {fileID: 1923000023}
   elementIcon: {fileID: 1923000027}
   cardArtImage: {fileID: 1944951640}
+  cardBg: {fileID: 0}
+  accentShard: {fileID: 0}
+  avatarImage: {fileID: 0}
+  nameLabel: {fileID: 0}
+  hpLabel: {fileID: 0}
+  hpValue: {fileID: 0}
+  prepLabel: {fileID: 0}
+  prepValue: {fileID: 0}
   barStack: {fileID: 1727946078}
   healthSlot: {fileID: 254508704}
   gaugeSlot: {fileID: 268656867}
+  characterCardPresets: []
+  previewCharacterIndex: 0
 --- !u!114 &1923000004
 MonoBehaviour:
   m_ObjectHideFlags: 0

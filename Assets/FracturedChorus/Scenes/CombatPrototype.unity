@@ -5279,7 +5279,7 @@ Transform:
   m_GameObject: {fileID: 487667171}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -4.15, y: 0.42, z: -0.05}
+  m_LocalPosition: {x: -4.15, y: 0.42000002, z: -0.05}
   m_LocalScale: {x: 0.2, y: 0.2, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -5337,7 +5337,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 10
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 7369638930748108147, guid: 9a437a3dfde73224686f2d2a81ee930e, type: 3}
+  m_Sprite: {fileID: 1293543643333717377, guid: 2491d90e038f6a94e8e25e56b821621b, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -5421,8 +5421,8 @@ BoxCollider2D:
   m_Offset: {x: 0.6842146, y: -1.6745038}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 5.54, y: 12.44}
+    pivot: {x: 0.33, y: 0.55}
+    oldSize: {x: 14.244898, y: 11.67347}
     newSize: {x: 2.69, y: 1.71}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -5566,7 +5566,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c2a8f5d1e6b04739a4c7d9e0b3f18655, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Combat.Presentation.SkillVfxSimulator
-  skill: {fileID: 11400000, guid: d290998a860c53d4794580a0ecd18147, type: 2}
+  skill: {fileID: 11400000, guid: 176f90a046cefbd478cd7fa62b23b107, type: 2}
   profileOverride: {fileID: 0}
   caster: {fileID: 487667175}
   projectileA: {fileID: 935398311}
@@ -5574,8 +5574,8 @@ MonoBehaviour:
   - {fileID: 7695632}
   - {fileID: 335934018}
   - {fileID: 1164589710}
-  previewLive: 0
-  previewPaused: 0
+  previewLive: 1
+  previewPaused: 1
   hideSprite: 0
   hidePattern: 0
   loopSlide: 1
@@ -9678,9 +9678,13 @@ MonoBehaviour:
   ringRoot: {fileID: 1225068594}
   innerRing: {fileID: 268561182}
   outerRing: {fileID: 267126362}
+  perfectZone: {fileID: 0}
   prompt: {fileID: 667498709}
   gradeChip: {fileID: 914224153}
   dimmer: {fileID: 575125176}
+  perfectZoneIdle: {r: 0.137, g: 0.827, b: 0.933, a: 0.62}
+  perfectZoneGood: {r: 0.549, g: 0.953, b: 1, a: 0.88}
+  perfectZoneActive: {r: 0.918, g: 0.984, b: 1, a: 1}
 --- !u!114 &905162693
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20976,7 +20980,7 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2140000100}
   m_Enabled: 1
-  m_Alpha: 0
+  m_Alpha: 1
   m_Interactable: 0
   m_BlocksRaycasts: 0
   m_IgnoreParentGroups: 1

@@ -680,8 +680,24 @@ namespace FracturedChorus.Combat.Core
             }
 
             var telegraphs = Timeline.GetImpactTelegraphsAtBeat(beatIndex);
-            var playerEntries = GetPlayerEntriesActiveAtBeat(beatIndex);
-            if ((telegraphs == null || telegraphs.Count == 0) && (playerEntries == null || playerEntries.Count == 0))
+            var hasTelegraph = telegraphs != null && telegraphs.Count > 0;
+            if (CombatCounterResolver.HasCounterOverlapAtBeat(Timeline, beatIndex))
+            {
+                // Stacked note: intercept now; include planning-applied Active (Anchor).
+                var counters = GetPlayerEntriesActiveAtBeat(beatIndex);
+                player = CombatCounterResolver.SelectCounterBody(
+                    counters.Select(e => e.Unit).Where(u => u != null && u.IsAlive).ToList());
+                if (player == null && counters.Count > 0)
+                {
+                    player = counters[0].Unit;
+                }
+
+                enemy = PickAliveTelegraphUnit(telegraphs);
+                return player != null && enemy != null && player.IsAlive && enemy.IsAlive;
+            }
+
+            var playerEntries = GetPlayerEntriesForEncounter(beatIndex, hasTelegraph);
+            if (!hasTelegraph && (playerEntries == null || playerEntries.Count == 0))
             {
                 return false;
             }
@@ -696,17 +712,9 @@ namespace FracturedChorus.Combat.Core
                 }
             }
 
-            if (telegraphs != null && telegraphs.Count > 0)
+            if (hasTelegraph)
             {
-                for (var i = 0; i < telegraphs.Count; i++)
-                {
-                    var telegraph = telegraphs[i];
-                    if (telegraph?.Unit != null && telegraph.Unit.IsAlive)
-                    {
-                        enemy = telegraph.Unit;
-                        break;
-                    }
-                }
+                enemy = PickAliveTelegraphUnit(telegraphs);
             }
 
             if (player == null && enemy != null)
@@ -751,6 +759,7 @@ namespace FracturedChorus.Combat.Core
 
             var telegraphs = Timeline.GetImpactTelegraphsAtBeat(beatIndex);
             var playerEntries = GetPlayerEntriesActiveAtBeat(beatIndex);
+            var playerAttacks = GetPlayerEntriesToResolveAttacks(beatIndex, playerEntries);
 
             TickTimedShields(beatIndex);
 
@@ -760,7 +769,10 @@ namespace FracturedChorus.Combat.Core
 
             TryResolveEmpowerAtBeat(beatIndex, playerEntries);
             TryChannelPrepAtBeat(beatIndex, playerEntries, telegraphs);
-            ResolvePlayerAttacksAtBeat(beatIndex, playerEntries, telegraphs);
+            ResolvePlayerAttacksAtBeat(
+                beatIndex,
+                GetPlayerEntriesToResolveAttacks(beatIndex, playerEntries),
+                telegraphs);
 
             foreach (var telegraph in telegraphs)
             {
@@ -807,6 +819,69 @@ namespace FracturedChorus.Combat.Core
                         break;
                     }
                 }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Telegraph beat: keep every Active skill on the note (including planning-applied
+        /// DelayBossNote) so stacked counters still form a pair. Leading Active without a
+        /// telegraph still skips applied / later-overlap entries.
+        /// </summary>
+        private List<AgendaEntry> GetPlayerEntriesForEncounter(int beatIndex, bool hasTelegraph)
+        {
+            var active = GetPlayerEntriesActiveAtBeat(beatIndex);
+            var result = new List<AgendaEntry>();
+            for (var i = 0; i < active.Count; i++)
+            {
+                var entry = active[i];
+                if (entry == null)
+                {
+                    continue;
+                }
+
+                if (!hasTelegraph && entry.EffectPayloadApplied)
+                {
+                    continue;
+                }
+
+                if (!hasTelegraph
+                    && CombatCounterResolver.EntryHasLaterCounterOverlap(entry, Timeline, beatIndex))
+                {
+                    continue;
+                }
+
+                result.Add(entry);
+            }
+
+            return result;
+        }
+
+        private List<AgendaEntry> GetPlayerEntriesToResolveAttacks(
+            int beatIndex,
+            IReadOnlyList<AgendaEntry> activeEntries)
+        {
+            var result = new List<AgendaEntry>();
+            if (activeEntries == null)
+            {
+                return result;
+            }
+
+            for (var i = 0; i < activeEntries.Count; i++)
+            {
+                var entry = activeEntries[i];
+                if (entry == null || entry.EffectPayloadApplied)
+                {
+                    continue;
+                }
+
+                if (CombatCounterResolver.EntryHasLaterCounterOverlap(entry, Timeline, beatIndex))
+                {
+                    continue;
+                }
+
+                result.Add(entry);
             }
 
             return result;
@@ -1231,6 +1306,25 @@ namespace FracturedChorus.Combat.Core
             }
 
             return CombatTargetPicker.PickEnemyAttackTargetForBeat(Grid, Timeline, beatIndex);
+        }
+
+        private static CombatUnit PickAliveTelegraphUnit(IReadOnlyList<EnemyTelegraph> telegraphs)
+        {
+            if (telegraphs == null)
+            {
+                return null;
+            }
+
+            for (var i = 0; i < telegraphs.Count; i++)
+            {
+                var unit = telegraphs[i]?.Unit;
+                if (unit != null && unit.IsAlive)
+                {
+                    return unit;
+                }
+            }
+
+            return null;
         }
 
         private CombatUnit PickTarget(AgendaEntry entry)

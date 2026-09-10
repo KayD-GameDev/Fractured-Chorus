@@ -81,6 +81,8 @@ namespace FracturedChorus.Combat.Qte
         public Sprite innerRing;
         public Sprite outerRing;
         public Sprite prompt;
+        [Tooltip("Khung vùng Perfect — bấm Space khi vòng ngoài khớp khung này.")]
+        public Sprite perfectZone;
 
         public float GetChance(int phaseIndex) => GetChance(phaseIndex, baseChance);
 

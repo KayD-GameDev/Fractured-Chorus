@@ -74,7 +74,8 @@ namespace FracturedChorus.Combat.Qte
                 yield break;
             }
 
-            if (!CombatCounterResolver.HasCounterOverlapAtBeat(session.Timeline, beatIndex))
+            if (!CombatCounterResolver.HasCounterOverlapAtBeat(session.Timeline, beatIndex)
+                && !CombatCounterResolver.HasCounterOverlapForEncounter(session.Timeline, beatIndex))
             {
                 yield break;
             }
@@ -145,6 +146,7 @@ namespace FracturedChorus.Combat.Qte
                 if (overlay != null)
                 {
                     overlay.SetOuterScale(Mathf.Lerp(startScale, 1f, t));
+                    overlay.SetTimingPreview(profile.Evaluate(elapsed));
                 }
 
                 if (ReadConfirmPressed())

@@ -35,6 +35,7 @@ namespace FracturedChorus.Meta
         public static GameMetaState CreateHubStart()
         {
             var state = CreateNew();
+            state.Flags.SetBool(StoryFlagIds.ContractSigned, true);
             state.Flags.SetBool(StoryFlagIds.RenArrivedHima, true);
             return state;
         }

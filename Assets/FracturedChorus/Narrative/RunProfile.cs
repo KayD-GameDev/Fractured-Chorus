@@ -1,3 +1,4 @@
+using FracturedChorus.Meta;
 using UnityEngine;
 
 namespace FracturedChorus.Narrative
@@ -12,10 +13,50 @@ namespace FracturedChorus.Narrative
         public static string PlayerName { get; private set; } = DefaultNameSuggestion;
         public static bool HasSignedContract { get; private set; }
 
+        /// <summary>
+        /// ESC / status menu chỉ mở sau khi đã ký contract trong Prologue.
+        /// Save cũ không có flag này vẫn được tính là đã qua nếu đã tới Campus.
+        /// </summary>
+        public static bool CanOpenPauseMenu
+        {
+            get
+            {
+                if (HasSignedContract)
+                {
+                    return true;
+                }
+
+                if (!GameMetaSession.HasSession)
+                {
+                    return false;
+                }
+
+                var state = GameMetaSession.Current;
+                return state.HasFlag(StoryFlagIds.ContractSigned)
+                       || state.HasFlag(StoryFlagIds.OpeningInvestigationDone)
+                       || state.HasFlag(StoryFlagIds.RenArrivedHima);
+            }
+        }
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Bootstrap()
         {
             Load();
+            GameMetaSession.SessionStateChanged -= OnSessionStateChanged;
+            GameMetaSession.SessionStateChanged += OnSessionStateChanged;
+        }
+
+        private static void OnSessionStateChanged(GameMetaState state)
+        {
+            if (state == null)
+            {
+                return;
+            }
+
+            if (HasSignedContract)
+            {
+                state.SetFlag(StoryFlagIds.ContractSigned);
+            }
         }
 
         public static void Load()
@@ -42,6 +83,11 @@ namespace FracturedChorus.Narrative
             HasSignedContract = true;
             PlayerPrefs.SetInt(KeyContractSigned, 1);
             PlayerPrefs.Save();
+
+            if (GameMetaSession.HasSession)
+            {
+                GameMetaSession.Current.SetFlag(StoryFlagIds.ContractSigned);
+            }
         }
 
         public static void ResetForNewRun()
