@@ -162,6 +162,12 @@ namespace FracturedChorus.Hub.CharacterBuild
                 return;
             }
 
+            if (TownMapInput.CancelPressed())
+            {
+                ReturnToCampusHub(openStatusMenu: true);
+                return;
+            }
+
             if (TownMapInput.MonthPrevPressed())
             {
                 CycleMember(-1);
@@ -261,6 +267,11 @@ namespace FracturedChorus.Hub.CharacterBuild
 
         private void ReturnToPreviousMenu()
         {
+            ReturnToCampusHub(openStatusMenu: true);
+        }
+
+        public static void ReturnToCampusHub(bool openStatusMenu)
+        {
             try
             {
                 GameMetaSession.Save();
@@ -273,10 +284,7 @@ namespace FracturedChorus.Hub.CharacterBuild
             var sceneName = string.IsNullOrWhiteSpace(_returnScene)
                 ? RunMapSceneCatalog.CampusHub
                 : _returnScene;
-            if (sceneName == RunMapSceneCatalog.CampusHub)
-            {
-                TownMapView.OpenStatusMenuOnNextShow = true;
-            }
+            TownMapView.OpenStatusMenuOnNextShow = openStatusMenu && sceneName == RunMapSceneCatalog.CampusHub;
 
             if (!RunMapSceneLoader.LoadByName(sceneName))
             {
@@ -1049,9 +1057,8 @@ namespace FracturedChorus.Hub.CharacterBuild
                     $"Choose skill for Slot {_equipFocusSlot + 1} — {DisplayName(Roster[_memberIndex])}";
             }
 
-            SkillUnlockCatalog.PartyLevel = stubLevel;
             var kit = new List<(string SkillId, string DisplayName, int UnlockLevel, bool Unlocked)>();
-            foreach (var unlock in SkillUnlockCatalog.KitFor(Roster[_memberIndex]))
+            foreach (var unlock in SkillUnlockCatalog.KitFor(Roster[_memberIndex], entry.Level))
             {
                 if (IsBasicSkill(Roster[_memberIndex], unlock.SkillId))
                 {
@@ -1059,11 +1066,6 @@ namespace FracturedChorus.Hub.CharacterBuild
                 }
 
                 kit.Add(unlock);
-            }
-
-            foreach (var unlock in SkillUnlockCatalog.UnlockedFor(Roster[_memberIndex], entry.Level))
-            {
-                return;
             }
 
             for (var i = 0; i < equipPoolViews.Length; i++)

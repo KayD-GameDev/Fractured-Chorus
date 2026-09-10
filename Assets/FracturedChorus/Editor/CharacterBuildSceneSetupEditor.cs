@@ -423,11 +423,29 @@ namespace FracturedChorus.Editor
                 LoadSprite(CrystalDir + "ui_stat_slot_skill_v2.png");
             so.FindProperty("skillSlotLocked").objectReferenceValue =
                 LoadSprite(CrystalDir + "ui_stat_slot_skill_locked_v2.png");
-            EnsureStatDetailsOverlay(canvasGo.transform, out var detailsOverlay, out var detailsBody);
-            WireStatDetailsMenuRefs(menu, canvasGo.transform, detailsOverlay, detailsBody);
+            AssignStatDetailsRefs(so, canvasGo.transform);
             so.FindProperty("seedUnspentWhenEmpty").boolValue = true;
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(menu);
+        }
+
+        private static void AssignStatDetailsRefs(SerializedObject menu, Transform canvas)
+        {
+            var overlay = FindStatDetailsOverlay(canvas);
+            var detailsButton = canvas != null ? canvas.Find("DetailsPanel")?.GetComponent<Button>() : null;
+            var body = overlay != null
+                ? overlay.transform.Find("Body") ?? overlay.transform.Find("Panel/Body")
+                : null;
+            menu.FindProperty("detailsButton").objectReferenceValue = detailsButton;
+            menu.FindProperty("statDetailsOverlay").objectReferenceValue = overlay;
+            menu.FindProperty("statDetailsHost").objectReferenceValue =
+                overlay != null && overlay.transform.parent != null
+                    ? overlay.transform.parent.gameObject
+                    : null;
+            menu.FindProperty("statDetailsDimmer").objectReferenceValue =
+                overlay != null ? overlay.transform.parent?.Find("L00_Dim")?.gameObject : null;
+            menu.FindProperty("statDetailsBodyLabel").objectReferenceValue =
+                body != null ? body.GetComponent<Text>() : null;
         }
 
         private static void PlaceDecor(Transform canvas, Sprite crystal)

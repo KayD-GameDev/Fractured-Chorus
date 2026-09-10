@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Reflection;
 using UnityEditor;
+using UnityEditor.Compilation;
 using UnityEngine;
 
 namespace FracturedChorus.Editor
@@ -28,6 +29,37 @@ namespace FracturedChorus.Editor
             {
                 CloseAnimatorWindows();
             }
+        }
+
+        private static void OnBeforeAssemblyReload()
+        {
+            CloseAnimatorWindows();
+        }
+
+        private static void OnCompilationStarted(object context)
+        {
+            CloseAnimatorWindows();
+        }
+
+        private static void OnEditorLog(string condition, string stackTrace, LogType type)
+        {
+            if (_repairQueued || type != LogType.Exception)
+            {
+                return;
+            }
+
+            if (string.IsNullOrEmpty(condition)
+                || condition.IndexOf("Edge.WakeUp", StringComparison.Ordinal) < 0)
+            {
+                return;
+            }
+
+            _repairQueued = true;
+            EditorApplication.delayCall += () =>
+            {
+                _repairQueued = false;
+                RepairFromMenu();
+            };
         }
 
         public static void RepairFromMenu()
