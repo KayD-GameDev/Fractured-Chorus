@@ -325,7 +325,6 @@ namespace FracturedChorus.Hub
             public string SkillId { get; }
             public string DisplayNameValue { get; }
             public int UnlockLevel { get; }
-            public bool Unlocked => PartyLevel >= UnlockLevel;
         }
 
         private static readonly Dictionary<string, UnlockEntry[]> Tables = new Dictionary<string, UnlockEntry[]>
@@ -388,7 +387,7 @@ namespace FracturedChorus.Hub
             {
                 if (characterLevel >= entry.UnlockLevel)
                 {
-                    yield return (entry.SkillId, entry.DisplayName);
+                    yield return (entry.SkillId, entry.DisplayNameValue);
                 }
             }
         }
@@ -412,6 +411,25 @@ namespace FracturedChorus.Hub
             }
 
             return skillId;
+        }
+
+        public static IEnumerable<(string SkillId, string DisplayName, int UnlockLevel, bool Unlocked)> KitFor(
+            string characterId,
+            int characterLevel)
+        {
+            if (!Tables.TryGetValue(characterId, out var entries))
+            {
+                yield break;
+            }
+
+            foreach (var entry in entries)
+            {
+                yield return (
+                    entry.SkillId,
+                    entry.DisplayNameValue,
+                    entry.UnlockLevel,
+                    characterLevel >= entry.UnlockLevel);
+            }
         }
     }
 }

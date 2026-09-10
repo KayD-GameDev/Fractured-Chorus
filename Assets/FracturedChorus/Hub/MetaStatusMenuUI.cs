@@ -7,6 +7,7 @@ using FracturedChorus.RunMap;
 using FracturedChorus.Meta.Economy;
 using FracturedChorus.UI;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
@@ -96,11 +97,6 @@ namespace FracturedChorus.Hub
                 return;
             }
 
-            if (partyStatusMenu != null && partyStatusMenu.IsOpen)
-            {
-                return;
-            }
-
             // ESC do StatusMenuRuntime làm chủ để mọi scene đóng/mở menu theo cùng một luật.
             if (_tab == Tab.System && WasHealHotkeyPressed())
             {
@@ -146,6 +142,11 @@ namespace FracturedChorus.Hub
             }
 
             sfx?.PlayOpenPanel();
+            if (EventSystem.current != null)
+            {
+                EventSystem.current.SetSelectedGameObject(null);
+            }
+
             Refresh();
         }
 
@@ -189,29 +190,9 @@ namespace FracturedChorus.Hub
             var existingMenuTf = parent.Find("StatusMenu");
             var existingButtonTf = parent.Find("MenuButton");
 
-            if (existingMenuTf != null)
+            if (existingMenuTf != null && existingMenuTf.Find("MenuList") == null)
             {
-                var needsRebuild = existingMenuTf.Find("MenuList") == null;
-                if (!needsRebuild)
-                {
-                    var bg = existingMenuTf.Find("Background")?.GetComponent<Image>();
-                    needsRebuild = bg == null || bg.sprite == null || !bg.sprite.name.Contains("v6");
-                }
-
-                if (needsRebuild)
-                {
-                    existingMenuTf.gameObject.name = "StatusMenu_OLD";
-                    if (Application.isPlaying)
-                    {
-                        UnityEngine.Object.Destroy(existingMenuTf.gameObject);
-                    }
-                    else
-                    {
-                        UnityEngine.Object.DestroyImmediate(existingMenuTf.gameObject);
-                    }
-
-                    existingMenuTf = null;
-                }
+                existingMenuTf = null;
             }
 
             MetaStatusMenuUI menu = null;
@@ -323,10 +304,10 @@ namespace FracturedChorus.Hub
             listRoot.transform.SetParent(rootGo.transform, false);
             Stretch(listRoot.GetComponent<RectTransform>(), new Vector2(0.52f, 0.18f), new Vector2(0.96f, 0.88f), Vector2.zero, Vector2.zero);
 
-            var stats = CreateMenuRow(listRoot.transform, "BtnStats", sprites.StatsNormal, 0);
-            var bonds = CreateMenuRow(listRoot.transform, "BtnBonds", sprites.BondsNormal, 1);
-            var calendar = CreateMenuRow(listRoot.transform, "BtnCalendar", sprites.CalendarNormal, 2);
-            var system = CreateMenuRow(listRoot.transform, "BtnSystem", sprites.SystemNormal, 3);
+            var stats = CreateMenuRow(listRoot.transform, "BtnStats", sprites.StatsNormal, "STATS", 0);
+            var bonds = CreateMenuRow(listRoot.transform, "BtnBonds", sprites.BondsNormal, "BONDS", 1);
+            var calendar = CreateMenuRow(listRoot.transform, "BtnCalendar", sprites.CalendarNormal, "CALENDAR", 2);
+            var system = CreateMenuRow(listRoot.transform, "BtnSystem", sprites.SystemNormal, "SYSTEM", 3);
 
             var detail = new GameObject("DetailPanel", typeof(RectTransform), typeof(Image));
             detail.transform.SetParent(rootGo.transform, false);
@@ -405,9 +386,21 @@ namespace FracturedChorus.Hub
                 backgroundImage.sprite = sprites.Background;
             }
 
+            ApplyHubButtonPlates(sprites);
+
             if (statsSelected != null && backgroundImage != null && backgroundImage.sprite != null
                 && statsNormal != null)
             {
+                if (confirmPromptIcon != null && confirmPromptIcon.sprite == null)
+                {
+                    confirmPromptIcon.sprite = sprites.ConfirmPrompt;
+                }
+
+                if (closePromptIcon != null && closePromptIcon.sprite == null)
+                {
+                    closePromptIcon.sprite = sprites.ClosePrompt;
+                }
+
                 return;
             }
 
@@ -471,6 +464,11 @@ namespace FracturedChorus.Hub
             button.onClick.RemoveAllListeners();
             button.onClick.AddListener(() =>
             {
+                if (UiCancelInput.WasPressed())
+                {
+                    return;
+                }
+
                 _tab = tab;
                 sfx?.PlaySelect();
                 Refresh();
@@ -597,6 +595,83 @@ namespace FracturedChorus.Hub
             ApplyRow(bondsImage, bondsNormal, bondsSelected, _tab == Tab.Bonds);
             ApplyRow(calendarImage, calendarNormal, calendarSelected, _tab == Tab.Calendar);
             ApplyRow(systemImage, systemNormal, systemSelected, _tab == Tab.System);
+            ApplyHubButtonPlates(null);
+        }
+
+        private void ApplyHubButtonPlates(SpritePack sprites)
+        {
+            var normal = LoadHubPlate("ui_hub_menu_btn_normal");
+            var hover = LoadHubPlate("ui_hub_menu_btn_hover");
+            if (normal == null && sprites != null)
+            {
+                normal = sprites.StatsNormal;
+            }
+
+            if (hover == null && sprites != null)
+            {
+                hover = sprites.StatsSelected;
+            }
+
+            if (normal == null || hover == null)
+            {
+                return;
+            }
+
+            statsNormal = normal;
+            statsSelected = hover;
+            bondsNormal = normal;
+            bondsSelected = hover;
+            calendarNormal = normal;
+            calendarSelected = hover;
+            systemNormal = normal;
+            systemSelected = hover;
+
+            BindRow(statsButton, statsImage, normal, hover, _tab == Tab.Stats);
+            BindRow(bondsButton, bondsImage, normal, hover, _tab == Tab.Bonds);
+            BindRow(calendarButton, calendarImage, normal, hover, _tab == Tab.Calendar);
+            BindRow(systemButton, systemImage, normal, hover, _tab == Tab.System);
+        }
+
+        private static void BindRow(Button button, Image image, Sprite normal, Sprite hover, bool isSelected)
+        {
+            if (image != null)
+            {
+                image.sprite = isSelected ? hover : normal;
+                image.color = Color.white;
+                image.preserveAspect = true;
+                image.type = Image.Type.Simple;
+            }
+
+            if (button != null)
+            {
+                button.transition = Selectable.Transition.SpriteSwap;
+                var state = button.spriteState;
+                state.highlightedSprite = hover;
+                state.pressedSprite = hover;
+                state.selectedSprite = hover;
+                button.spriteState = state;
+            }
+        }
+
+        private static void EnsureRowLabel(Transform row, string caption)
+        {
+            var existing = row.Find("Label");
+            if (existing != null)
+            {
+                var current = existing.GetComponent<Text>();
+                if (current != null)
+                {
+                    current.text = caption;
+                }
+
+                return;
+            }
+
+            var label = CreateText(row, "Label", caption, 28, TextAnchor.MiddleLeft);
+            label.fontStyle = FontStyle.Bold | FontStyle.Italic;
+            label.color = new Color(0.08f, 0.1f, 0.22f, 1f);
+            label.raycastTarget = false;
+            Stretch(label.rectTransform, new Vector2(0.22f, 0.16f), new Vector2(0.86f, 0.84f), Vector2.zero, Vector2.zero);
         }
 
         private static void ApplyRow(Image image, Sprite normal, Sprite selected, bool isSelected)
@@ -610,7 +685,7 @@ namespace FracturedChorus.Hub
             if (sprite != null)
             {
                 image.sprite = sprite;
-                image.color = isSelected ? FcColorTokens.Selection.TabIconTint : Color.white;
+                image.color = Color.white;
                 image.preserveAspect = true;
             }
         }
@@ -709,7 +784,7 @@ namespace FracturedChorus.Hub
             _ => npcId
         };
 
-        private static (Button Button, Image Image) CreateMenuRow(Transform parent, string name, Sprite sprite, int index)
+        private static (Button Button, Image Image) CreateMenuRow(Transform parent, string name, Sprite sprite, string caption, int index)
         {
             var go = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
             go.transform.SetParent(parent, false);
@@ -732,6 +807,21 @@ namespace FracturedChorus.Hub
             colors.highlightedColor = new Color(1f, 1f, 1f, 1f);
             colors.pressedColor = new Color(0.85f, 0.85f, 0.85f, 1f);
             button.colors = colors;
+            if (sprite != null)
+            {
+                var hover = LoadHubPlate("ui_hub_menu_btn_hover");
+                if (hover != null)
+                {
+                    button.transition = Selectable.Transition.SpriteSwap;
+                    var state = button.spriteState;
+                    state.highlightedSprite = hover;
+                    state.pressedSprite = hover;
+                    state.selectedSprite = hover;
+                    button.spriteState = state;
+                }
+            }
+
+            EnsureRowLabel(go.transform, caption);
             return (button, image);
         }
 
@@ -786,20 +876,57 @@ namespace FracturedChorus.Hub
 
         private static SpritePack LoadSpritePack()
         {
+            var plateNormal = LoadHubPlate("ui_hub_menu_btn_normal");
+            var plateHover = LoadHubPlate("ui_hub_menu_btn_hover");
             return new SpritePack
             {
                 Background = LoadSprite("statusmenu_hima_city_bg_v1"),
-                StatsNormal = LoadSprite("statusmenu_btn_stats_normal"),
-                StatsSelected = LoadSprite("statusmenu_btn_stats_selected"),
-                BondsNormal = LoadSprite("statusmenu_btn_bonds_normal"),
-                BondsSelected = LoadSprite("statusmenu_btn_bonds_selected"),
-                CalendarNormal = LoadSprite("statusmenu_btn_calendar_normal"),
-                CalendarSelected = LoadSprite("statusmenu_btn_calendar_selected"),
-                SystemNormal = LoadSprite("statusmenu_btn_system_normal"),
-                SystemSelected = LoadSprite("statusmenu_btn_system_selected"),
+                StatsNormal = plateNormal ?? LoadSprite("statusmenu_btn_stats_normal"),
+                StatsSelected = plateHover ?? LoadSprite("statusmenu_btn_stats_selected"),
+                BondsNormal = plateNormal ?? LoadSprite("statusmenu_btn_bonds_normal"),
+                BondsSelected = plateHover ?? LoadSprite("statusmenu_btn_bonds_selected"),
+                CalendarNormal = plateNormal ?? LoadSprite("statusmenu_btn_calendar_normal"),
+                CalendarSelected = plateHover ?? LoadSprite("statusmenu_btn_calendar_selected"),
+                SystemNormal = plateNormal ?? LoadSprite("statusmenu_btn_system_normal"),
+                SystemSelected = plateHover ?? LoadSprite("statusmenu_btn_system_selected"),
                 ConfirmPrompt = LoadSprite("statusmenu_prompt_confirm"),
                 ClosePrompt = LoadSprite("statusmenu_prompt_close")
             };
+        }
+
+        private static Sprite LoadHubPlate(string fileNameNoExt)
+        {
+            var fromResources = Resources.Load<Sprite>($"UI/HubMenu/{fileNameNoExt}");
+            if (fromResources != null)
+            {
+                return fromResources;
+            }
+
+            var all = Resources.LoadAll<Sprite>($"UI/HubMenu/{fileNameNoExt}");
+            if (all != null && all.Length > 0)
+            {
+                return all[0];
+            }
+
+#if UNITY_EDITOR
+            var artPath = $"Assets/FracturedChorus/Art/UI/HubMenu/{fileNameNoExt}.png";
+            EnsureSpriteImporter(artPath);
+            var editorSprite = AssetDatabase.LoadAssetAtPath<Sprite>(artPath);
+            if (editorSprite != null)
+            {
+                return editorSprite;
+            }
+
+            var assets = AssetDatabase.LoadAllAssetsAtPath(artPath);
+            foreach (var asset in assets)
+            {
+                if (asset is Sprite sprite)
+                {
+                    return sprite;
+                }
+            }
+#endif
+            return null;
         }
 
         private static Sprite LoadSprite(string fileNameNoExt)

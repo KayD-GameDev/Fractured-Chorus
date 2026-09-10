@@ -1,3 +1,4 @@
+using FracturedChorus.Hub.CharacterBuild;
 using FracturedChorus.Menu;
 using FracturedChorus.Meta;
 using FracturedChorus.Narrative;
@@ -79,10 +80,20 @@ namespace FracturedChorus.Hub
                 return;
             }
 
+            if (IsCharacterBuildActive())
+            {
+                if (UiEscapeGate.TryConsumeBackground())
+                {
+                    CharacterBuildMenuUI.ReturnToCampusHub(openStatusMenu: true);
+                }
+
+                return;
+            }
+
             var menu = ResolveMenu(createIfMissing: false);
 
-            // Calendar / social / party là overlay con của status menu và tự xử lý ESC của chúng.
-            if (menu != null && (menu.IsCalendarOpen || menu.IsSocialStatsOpen || menu.IsPartyStatusOpen))
+            // Calendar / social là overlay con của status menu và tự xử lý ESC của chúng.
+            if (menu != null && (menu.IsCalendarOpen || menu.IsSocialStatsOpen))
             {
                 return;
             }
@@ -168,7 +179,7 @@ namespace FracturedChorus.Hub
         /// <summary>Những ngữ cảnh mà ESC đã có nghĩa khác, mở status menu vào sẽ giẫm chân.</summary>
         private static bool IsSuppressed()
         {
-            if (UiEscapeGate.IsBlocked || LoadingScreenController.IsBusy)
+            if (UiEscapeGate.IsBlocked || LoadingScreenController.IsBusy || IsCharacterBuildActive())
             {
                 return true;
             }
@@ -194,6 +205,14 @@ namespace FracturedChorus.Hub
             // Backlog của visual novel cũng đóng bằng ESC.
             var log = FindAnyObjectByType<VnLogPanelView>();
             return log != null && log.IsOpen;
+        }
+
+        private static bool IsCharacterBuildActive()
+        {
+            var sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+            return sceneName == CampusBgmPlayer.CharacterBuildScene
+                || sceneName == CampusBgmPlayer.CharacterBuildSandboxScene
+                || FindAnyObjectByType<CharacterBuildMenuUI>() != null;
         }
     }
 }
