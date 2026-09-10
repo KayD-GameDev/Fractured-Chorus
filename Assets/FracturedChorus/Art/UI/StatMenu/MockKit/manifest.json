@@ -1,0 +1,502 @@
+[
+  {
+    "name": "header_hud",
+    "width": 266,
+    "height": 100,
+    "left": 4,
+    "top": 0
+  },
+  {
+    "name": "panel_portrait",
+    "width": 288,
+    "height": 339,
+    "left": 7,
+    "top": 90
+  },
+  {
+    "name": "panel_stats",
+    "width": 306,
+    "height": 354,
+    "left": 292,
+    "top": 80
+  },
+  {
+    "name": "panel_skills",
+    "width": 415,
+    "height": 334,
+    "left": 602,
+    "top": 80
+  },
+  {
+    "name": "slot_portrait_01",
+    "width": 82,
+    "height": 73,
+    "left": 258,
+    "top": 9
+  },
+  {
+    "name": "slot_portrait_02",
+    "width": 83,
+    "height": 72,
+    "left": 333,
+    "top": 10
+  },
+  {
+    "name": "slot_portrait_03",
+    "width": 84,
+    "height": 72,
+    "left": 410,
+    "top": 10
+  },
+  {
+    "name": "slot_portrait_04",
+    "width": 84,
+    "height": 72,
+    "left": 486,
+    "top": 10
+  },
+  {
+    "name": "slot_portrait_05",
+    "width": 84,
+    "height": 72,
+    "left": 565,
+    "top": 10
+  },
+  {
+    "name": "slot_portrait_06",
+    "width": 84,
+    "height": 72,
+    "left": 645,
+    "top": 10
+  },
+  {
+    "name": "slot_portrait_07",
+    "width": 83,
+    "height": 72,
+    "left": 723,
+    "top": 10
+  },
+  {
+    "name": "slot_portrait_08",
+    "width": 84,
+    "height": 72,
+    "left": 803,
+    "top": 10
+  },
+  {
+    "name": "btn_close",
+    "width": 74,
+    "height": 67,
+    "left": 936,
+    "top": 11
+  },
+  {
+    "name": "btn_nav_stat",
+    "width": 202,
+    "height": 42,
+    "left": 10,
+    "top": 426
+  },
+  {
+    "name": "btn_nav_bonds",
+    "width": 202,
+    "height": 42,
+    "left": 10,
+    "top": 463
+  },
+  {
+    "name": "btn_nav_calendar",
+    "width": 202,
+    "height": 45,
+    "left": 10,
+    "top": 499
+  },
+  {
+    "name": "btn_nav_system",
+    "width": 202,
+    "height": 44,
+    "left": 10,
+    "top": 537
+  },
+  {
+    "name": "btn_empty_sm_01",
+    "width": 137,
+    "height": 53,
+    "left": 12,
+    "top": 578
+  },
+  {
+    "name": "btn_empty_sm_02",
+    "width": 147,
+    "height": 51,
+    "left": 153,
+    "top": 580
+  },
+  {
+    "name": "btn_empty_wide",
+    "width": 285,
+    "height": 50,
+    "left": 10,
+    "top": 625
+  },
+  {
+    "name": "bar_progress",
+    "width": 231,
+    "height": 41,
+    "left": 218,
+    "top": 429
+  },
+  {
+    "name": "bar_fill",
+    "width": 144,
+    "height": 20,
+    "left": 234,
+    "top": 440
+  },
+  {
+    "name": "data_strip_01",
+    "width": 200,
+    "height": 70,
+    "left": 220,
+    "top": 468
+  },
+  {
+    "name": "data_strip_02",
+    "width": 204,
+    "height": 72,
+    "left": 420,
+    "top": 467
+  },
+  {
+    "name": "bar_elements",
+    "width": 288,
+    "height": 47,
+    "left": 219,
+    "top": 536
+  },
+  {
+    "name": "btn_tag",
+    "width": 119,
+    "height": 33,
+    "left": 504,
+    "top": 536
+  },
+  {
+    "name": "slider_01",
+    "width": 122,
+    "height": 27,
+    "left": 307,
+    "top": 606
+  },
+  {
+    "name": "slider_02",
+    "width": 123,
+    "height": 28,
+    "left": 307,
+    "top": 628
+  },
+  {
+    "name": "slider_03",
+    "width": 129,
+    "height": 28,
+    "left": 307,
+    "top": 650
+  },
+  {
+    "name": "waveform_line",
+    "width": 147,
+    "height": 32,
+    "left": 437,
+    "top": 598
+  },
+  {
+    "name": "node_line",
+    "width": 133,
+    "height": 17,
+    "left": 449,
+    "top": 631
+  },
+  {
+    "name": "node_line_02",
+    "width": 133,
+    "height": 30,
+    "left": 449,
+    "top": 647
+  },
+  {
+    "name": "icon_user",
+    "width": 58,
+    "height": 51,
+    "left": 637,
+    "top": 416
+  },
+  {
+    "name": "icon_party",
+    "width": 57,
+    "height": 50,
+    "left": 698,
+    "top": 417
+  },
+  {
+    "name": "icon_calendar",
+    "width": 57,
+    "height": 50,
+    "left": 756,
+    "top": 417
+  },
+  {
+    "name": "icon_system",
+    "width": 57,
+    "height": 50,
+    "left": 814,
+    "top": 417
+  },
+  {
+    "name": "icon_search",
+    "width": 81,
+    "height": 40,
+    "left": 873,
+    "top": 421
+  },
+  {
+    "name": "icon_close",
+    "width": 56,
+    "height": 51,
+    "left": 955,
+    "top": 416
+  },
+  {
+    "name": "bar_thin",
+    "width": 191,
+    "height": 28,
+    "left": 629,
+    "top": 473
+  },
+  {
+    "name": "icon_ff",
+    "width": 48,
+    "height": 39,
+    "left": 813,
+    "top": 480
+  },
+  {
+    "name": "icon_play",
+    "width": 45,
+    "height": 41,
+    "left": 853,
+    "top": 473
+  },
+  {
+    "name": "hud_ring",
+    "width": 116,
+    "height": 115,
+    "left": 894,
+    "top": 466
+  },
+  {
+    "name": "crystal_01",
+    "width": 66,
+    "height": 93,
+    "left": 693,
+    "top": 505
+  },
+  {
+    "name": "crystal_02",
+    "width": 48,
+    "height": 90,
+    "left": 748,
+    "top": 503
+  },
+  {
+    "name": "crystal_03",
+    "width": 89,
+    "height": 90,
+    "left": 764,
+    "top": 517
+  },
+  {
+    "name": "crystal_04",
+    "width": 60,
+    "height": 84,
+    "left": 796,
+    "top": 548
+  },
+  {
+    "name": "crystal_05",
+    "width": 80,
+    "height": 155,
+    "left": 860,
+    "top": 513
+  },
+  {
+    "name": "sparkle_01",
+    "width": 49,
+    "height": 49,
+    "left": 967,
+    "top": 569
+  },
+  {
+    "name": "sparkle_02",
+    "width": 65,
+    "height": 69,
+    "left": 922,
+    "top": 589
+  },
+  {
+    "name": "nav_chevrons",
+    "width": 188,
+    "height": 48,
+    "left": 599,
+    "top": 584
+  },
+  {
+    "name": "bar_gradient",
+    "width": 253,
+    "height": 42,
+    "left": 599,
+    "top": 631
+  },
+  {
+    "name": "icon_note",
+    "width": 24,
+    "height": 24,
+    "left": 257,
+    "top": 127
+  },
+  {
+    "name": "icon_waveform",
+    "width": 34,
+    "height": 34,
+    "left": 247,
+    "top": 374
+  },
+  {
+    "name": "icon_plus",
+    "width": 26,
+    "height": 26,
+    "left": 647,
+    "top": 231
+  },
+  {
+    "name": "slot_skill_01",
+    "width": 80,
+    "height": 132,
+    "left": 615,
+    "top": 129
+  },
+  {
+    "name": "slot_skill_02",
+    "width": 80,
+    "height": 132,
+    "left": 693,
+    "top": 129
+  },
+  {
+    "name": "slot_skill_03",
+    "width": 80,
+    "height": 132,
+    "left": 771,
+    "top": 129
+  },
+  {
+    "name": "slot_skill_04",
+    "width": 80,
+    "height": 132,
+    "left": 849,
+    "top": 129
+  },
+  {
+    "name": "slot_skill_05",
+    "width": 80,
+    "height": 132,
+    "left": 927,
+    "top": 129
+  },
+  {
+    "name": "slot_skill_06",
+    "width": 80,
+    "height": 132,
+    "left": 615,
+    "top": 261
+  },
+  {
+    "name": "slot_skill_07",
+    "width": 80,
+    "height": 132,
+    "left": 693,
+    "top": 261
+  },
+  {
+    "name": "slot_skill_08",
+    "width": 80,
+    "height": 132,
+    "left": 771,
+    "top": 261
+  },
+  {
+    "name": "slot_skill_09",
+    "width": 80,
+    "height": 132,
+    "left": 849,
+    "top": 261
+  },
+  {
+    "name": "slot_skill_10",
+    "width": 80,
+    "height": 132,
+    "left": 927,
+    "top": 261
+  },
+  {
+    "name": "icon_element_fire",
+    "width": 40,
+    "height": 34,
+    "left": 229,
+    "top": 543
+  },
+  {
+    "name": "icon_element_ice",
+    "width": 40,
+    "height": 34,
+    "left": 275,
+    "top": 543
+  },
+  {
+    "name": "icon_element_lightning",
+    "width": 40,
+    "height": 34,
+    "left": 321,
+    "top": 543
+  },
+  {
+    "name": "icon_element_wind",
+    "width": 40,
+    "height": 34,
+    "left": 367,
+    "top": 543
+  },
+  {
+    "name": "icon_element_sun",
+    "width": 40,
+    "height": 34,
+    "left": 413,
+    "top": 543
+  },
+  {
+    "name": "icon_element_void",
+    "width": 40,
+    "height": 34,
+    "left": 459,
+    "top": 543
+  },
+  {
+    "name": "icon_diamond",
+    "width": 26,
+    "height": 26
+  },
+  {
+    "name": "icon_minus",
+    "width": 26,
+    "height": 26
+  }
+]

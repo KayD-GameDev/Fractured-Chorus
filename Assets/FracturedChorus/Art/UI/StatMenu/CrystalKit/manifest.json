@@ -1,0 +1,238 @@
+{
+  "generated": "2026-08-24",
+  "source": "per-component gen (no slice)",
+  "items": [
+    {
+      "file": "ui_stat_bar_exp_v2.png",
+      "size": [
+        1343,
+        191
+      ],
+      "border": {
+        "x": 40,
+        "y": 18,
+        "z": 40,
+        "w": 18
+      }
+    },
+    {
+      "file": "ui_stat_bar_fill_v2.png",
+      "size": [
+        1262,
+        285
+      ],
+      "border": {
+        "x": 24,
+        "y": 12,
+        "z": 24,
+        "w": 12
+      }
+    },
+    {
+      "file": "ui_stat_bar_fill_v3.png",
+      "size": [
+        1280,
+        120
+      ],
+      "border": {
+        "x": 60,
+        "y": 14,
+        "z": 60,
+        "w": 14
+      }
+    },
+    {
+      "file": "ui_stat_bar_track_v2.png",
+      "size": [
+        1288,
+        239
+      ],
+      "border": {
+        "x": 32,
+        "y": 16,
+        "z": 32,
+        "w": 16
+      }
+    },
+    {
+      "file": "ui_stat_bar_track_v3.png",
+      "size": [
+        1280,
+        160
+      ],
+      "border": {
+        "x": 80,
+        "y": 18,
+        "z": 80,
+        "w": 18
+      }
+    },
+    {
+      "file": "ui_stat_btn_close_v2.png",
+      "size": [
+        672,
+        666
+      ],
+      "border": null
+    },
+    {
+      "file": "ui_stat_btn_nav_normal_v2.png",
+      "size": [
+        1452,
+        463
+      ],
+      "border": {
+        "x": 40,
+        "y": 24,
+        "z": 40,
+        "w": 24
+      }
+    },
+    {
+      "file": "ui_stat_btn_nav_selected_v2.png",
+      "size": [
+        1366,
+        412
+      ],
+      "border": {
+        "x": 40,
+        "y": 24,
+        "z": 40,
+        "w": 24
+      }
+    },
+    {
+      "file": "ui_stat_btn_note_circle_v2.png",
+      "size": [
+        683,
+        692
+      ],
+      "border": null
+    },
+    {
+      "file": "ui_stat_btn_orb_filled_v2.png",
+      "size": [
+        779,
+        790
+      ],
+      "border": null
+    },
+    {
+      "file": "ui_stat_crystal_shards_v2.png",
+      "size": [
+        640,
+        746
+      ],
+      "border": null
+    },
+    {
+      "file": "ui_stat_divider_glow_v2.png",
+      "size": [
+        1366,
+        203
+      ],
+      "border": null
+    },
+    {
+      "file": "ui_stat_header_bar_v2.png",
+      "size": [
+        1495,
+        402
+      ],
+      "border": {
+        "x": 48,
+        "y": 24,
+        "z": 48,
+        "w": 24
+      }
+    },
+    {
+      "file": "ui_stat_header_bar_v3.png",
+      "size": [
+        1288,
+        239
+      ],
+      "border": {
+        "x": 32,
+        "y": 16,
+        "z": 32,
+        "w": 16
+      },
+      "note": "alias of ui_stat_bar_track_v2 palette for slice-safe header strip"
+    },
+    {
+      "file": "ui_stat_hud_ring_v2.png",
+      "size": [
+        952,
+        937
+      ],
+      "border": null
+    },
+    {
+      "file": "ui_stat_panel_memory_v2.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "border": {
+        "x": 56,
+        "y": 64,
+        "z": 56,
+        "w": 64
+      }
+    },
+    {
+      "file": "ui_stat_panel_portrait_v2.png",
+      "size": [
+        806,
+        963
+      ],
+      "border": {
+        "x": 64,
+        "y": 64,
+        "z": 64,
+        "w": 64
+      }
+    },
+    {
+      "file": "ui_stat_slot_portrait_locked_v2.png",
+      "size": [
+        722,
+        742
+      ],
+      "border": null
+    },
+    {
+      "file": "ui_stat_slot_portrait_v2.png",
+      "size": [
+        943,
+        938
+      ],
+      "border": null
+    },
+    {
+      "file": "ui_stat_skill_equip_bg_v1.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "border": null
+    },
+    {
+      "file": "ui_stat_slot_skill_v2.png",
+      "size": [
+        1024,
+        1536
+      ],
+      "border": null
+    },
+    {
+      "file": "ui_stat_waveform_v2.png",
+      "size": [
+        1409,
+        453
+      ],
+      "border": null
+    }
+  ]
+}

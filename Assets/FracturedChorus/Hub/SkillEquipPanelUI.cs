@@ -218,7 +218,7 @@ namespace FracturedChorus.Hub
 
         private static string[] NormalizeSlots(string[] source)
         {
-            var slots = new string[3];
+            var slots = new string[CharacterLoadoutEntry.EquippedSkillSlotCount];
             if (source == null)
             {
                 return slots;
@@ -325,6 +325,7 @@ namespace FracturedChorus.Hub
             public string SkillId { get; }
             public string DisplayNameValue { get; }
             public int UnlockLevel { get; }
+            public bool Unlocked => PartyLevel >= UnlockLevel;
         }
 
         private static readonly Dictionary<string, UnlockEntry[]> Tables = new Dictionary<string, UnlockEntry[]>
@@ -334,7 +335,14 @@ namespace FracturedChorus.Hub
                 {
                     new UnlockEntry("ren_basic", "Strike", 1),
                     new UnlockEntry("ren_skill", "Crosscut", 4),
-                    new UnlockEntry("ren_ult", "Finale", 10)
+                    new UnlockEntry("ren_ult", "Finale", 10),
+                    new UnlockEntry("ren_kit_04", "Resonance", 20),
+                    new UnlockEntry("ren_kit_05", "Afterimage", 24),
+                    new UnlockEntry("ren_kit_06", "Interval", 28),
+                    new UnlockEntry("ren_kit_07", "Cadence", 32),
+                    new UnlockEntry("ren_kit_08", "Overture", 36),
+                    new UnlockEntry("ren_kit_09", "Coda Cut", 40),
+                    new UnlockEntry("ren_kit_10", "Chorus", 44)
                 }
             },
             {
@@ -342,7 +350,14 @@ namespace FracturedChorus.Hub
                 {
                     new UnlockEntry("Charlott_basic", "Ram", 1),
                     new UnlockEntry("tank_skill", "Anchor", 3),
-                    new UnlockEntry("tank_ult", "Bulwark", 9)
+                    new UnlockEntry("tank_ult", "Bulwark", 9),
+                    new UnlockEntry("tank_kit_04", "Rampart", 20),
+                    new UnlockEntry("tank_kit_05", "Aegis", 24),
+                    new UnlockEntry("tank_kit_06", "Ward", 28),
+                    new UnlockEntry("tank_kit_07", "Bastion", 32),
+                    new UnlockEntry("tank_kit_08", "Citadel", 36),
+                    new UnlockEntry("tank_kit_09", "Palisade", 40),
+                    new UnlockEntry("tank_kit_10", "Fortress", 44)
                 }
             },
             {
@@ -350,7 +365,14 @@ namespace FracturedChorus.Hub
                 {
                     new UnlockEntry("mage_basic", "Pulse", 1),
                     new UnlockEntry("mage_skill", "Mend", 5),
-                    new UnlockEntry("mage_ult", "Encore", 11)
+                    new UnlockEntry("mage_ult", "Encore", 11),
+                    new UnlockEntry("mage_kit_04", "Echo", 20),
+                    new UnlockEntry("mage_kit_05", "Lull", 24),
+                    new UnlockEntry("mage_kit_06", "Harmony", 28),
+                    new UnlockEntry("mage_kit_07", "Refrain", 32),
+                    new UnlockEntry("mage_kit_08", "Aria", 36),
+                    new UnlockEntry("mage_kit_09", "Vesper", 40),
+                    new UnlockEntry("mage_kit_10", "Requiem", 44)
                 }
             }
         };
@@ -366,7 +388,7 @@ namespace FracturedChorus.Hub
             {
                 if (characterLevel >= entry.UnlockLevel)
                 {
-                    yield return (entry.SkillId, entry.DisplayNameValue);
+                    yield return (entry.SkillId, entry.DisplayName);
                 }
             }
         }

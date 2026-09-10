@@ -770,6 +770,8 @@ namespace FracturedChorus.Meta
         public string skill0;
         public string skill1;
         public string skill2;
+        public string skill3;
+        public string skill4;
         public int unspentStatPoints;
         public int str;
         public int ma;
@@ -787,6 +789,8 @@ namespace FracturedChorus.Meta
                 skill0 = skills.Length > 0 ? skills[0] : string.Empty,
                 skill1 = skills.Length > 1 ? skills[1] : string.Empty,
                 skill2 = skills.Length > 2 ? skills[2] : string.Empty,
+                skill3 = skills.Length > 3 ? skills[3] : string.Empty,
+                skill4 = skills.Length > 4 ? skills[4] : string.Empty,
                 unspentStatPoints = entry.UnspentStatPoints,
                 str = entry.StrPoints,
                 ma = entry.MaPoints,
@@ -801,7 +805,15 @@ namespace FracturedChorus.Meta
         {
             return new CharacterLoadoutEntry(characterId)
             {
-                EquippedSkillIds = new[] { skill0 ?? string.Empty, skill1 ?? string.Empty, skill2 ?? string.Empty },
+                EquippedSkillIds = PartyLoadoutState.NormalizeSkillSlots(
+                    new[]
+                    {
+                        skill0 ?? string.Empty,
+                        skill1 ?? string.Empty,
+                        skill2 ?? string.Empty,
+                        skill3 ?? string.Empty,
+                        skill4 ?? string.Empty
+                    }),
                 UnspentStatPoints = unspentStatPoints,
                 StrPoints = str,
                 MaPoints = ma,

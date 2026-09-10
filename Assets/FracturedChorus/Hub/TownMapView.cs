@@ -98,6 +98,8 @@ namespace FracturedChorus.Hub
             }
         }
 
+        public static bool OpenStatusMenuOnNextShow { get; set; }
+
         public void Show(GameMetaState state, DayPhase phase, Action<string> onActivityChosen)
         {
             _state = state;
@@ -109,6 +111,11 @@ namespace FracturedChorus.Hub
             ApplyBackground(phase);
             slashBanner?.Refresh(state);
             statusMenu?.Hide();
+            if (OpenStatusMenuOnNextShow)
+            {
+                OpenStatusMenuOnNextShow = false;
+                statusMenu?.Show(state);
+            }
 
             if (selectMapTitle != null)
             {

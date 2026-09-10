@@ -17,7 +17,12 @@ namespace FracturedChorus.Meta
         public const int DefaultLevel = 15;
 
         public string CharacterId;
-        public string[] EquippedSkillIds = { string.Empty, string.Empty, string.Empty };
+        public const int EquippedSkillSlotCount = 5;
+
+        public string[] EquippedSkillIds =
+        {
+            string.Empty, string.Empty, string.Empty, string.Empty, string.Empty
+        };
         public int UnspentStatPoints;
         public int StrPoints;
         public int MaPoints;
@@ -112,9 +117,9 @@ namespace FracturedChorus.Meta
             _entries.Add(new CharacterLoadoutEntry(PartyCharacterIds.Coda));
         }
 
-        private static string[] NormalizeSkillSlots(string[] source)
+        public static string[] NormalizeSkillSlots(string[] source)
         {
-            var slots = new string[3];
+            var slots = new string[CharacterLoadoutEntry.EquippedSkillSlotCount];
             if (source == null)
             {
                 return slots;

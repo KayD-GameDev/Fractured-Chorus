@@ -31,17 +31,20 @@ namespace FracturedChorus.Menu
         {
             var dt = Time.unscaledDeltaTime;
             var extraZ = 0f;
-            _nextGlitch -= dt;
-            if (_nextGlitch <= 0f)
+            if (glitchEverySeconds > 0f)
             {
-                _glitchHold = glitchSeconds;
-                _nextGlitch = glitchEverySeconds + Random.Range(-0.7f, 0.7f);
-            }
+                _nextGlitch -= dt;
+                if (_nextGlitch <= 0f)
+                {
+                    _glitchHold = glitchSeconds;
+                    _nextGlitch = glitchEverySeconds + Random.Range(-0.7f, 0.7f);
+                }
 
-            if (_glitchHold > 0f)
-            {
-                _glitchHold -= dt;
-                extraZ = glitchDegrees * Mathf.Sign(degreesPerSecond);
+                if (_glitchHold > 0f)
+                {
+                    _glitchHold -= dt;
+                    extraZ = glitchDegrees * Mathf.Sign(degreesPerSecond);
+                }
             }
 
             transform.Rotate(0f, 0f, (degreesPerSecond * dt) + extraZ * dt * 18f, Space.Self);
