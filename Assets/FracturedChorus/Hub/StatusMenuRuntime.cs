@@ -1,6 +1,7 @@
 using FracturedChorus.Hub.CharacterBuild;
 using FracturedChorus.Menu;
 using FracturedChorus.Meta;
+using FracturedChorus.Narrative;
 using FracturedChorus.Narrative.Vn;
 using FracturedChorus.UI;
 using FracturedChorus.UI.Loading;
@@ -179,6 +180,12 @@ namespace FracturedChorus.Hub
         private static bool IsSuppressed()
         {
             if (UiEscapeGate.IsBlocked || LoadingScreenController.IsBusy || IsCharacterBuildActive())
+            {
+                return true;
+            }
+
+            // Disclaimer / VN / contract: ESC không được mở settings trước khi người chơi ký.
+            if (!RunProfile.CanOpenPauseMenu)
             {
                 return true;
             }

@@ -51,11 +51,12 @@ namespace FracturedChorus.Combat.Core
 
         private static int CompareCounterBodyPriority(CombatUnit a, CombatUnit b)
         {
-            var roleA = a.Role == UnitRole.Tank ? 0 : 1;
-            var roleB = b.Role == UnitRole.Tank ? 0 : 1;
-            if (roleA != roleB)
+            var hbA = a.Stats != null ? a.Stats.HeartBeat : 0;
+            var hbB = b.Stats != null ? b.Stats.HeartBeat : 0;
+            var heartBeat = hbB.CompareTo(hbA);
+            if (heartBeat != 0)
             {
-                return roleA.CompareTo(roleB);
+                return heartBeat;
             }
 
             var colA = a.GridPosition.IsValid() ? a.GridPosition.Column : int.MaxValue;
@@ -459,6 +460,98 @@ namespace FracturedChorus.Combat.Core
                     {
                         return true;
                     }
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// QTE / counter for the encounter: intercept beat, or any later Active beat
+        /// of a skill already Active on <paramref name="interceptBeat"/>.
+        /// </summary>
+        public static bool HasCounterOverlapForEncounter(BeatTimelineEngine timeline, int interceptBeat)
+        {
+            if (HasCounterOverlapAtBeat(timeline, interceptBeat))
+            {
+                return true;
+            }
+
+            if (timeline?.Agenda == null || interceptBeat < 0)
+            {
+                return false;
+            }
+
+            foreach (var entry in timeline.Agenda)
+            {
+                var actives = GetActiveBeatIndices(entry);
+                var spansIntercept = false;
+                foreach (var active in actives)
+                {
+                    if (active == interceptBeat)
+                    {
+                        spansIntercept = true;
+                        break;
+                    }
+                }
+
+                if (!spansIntercept)
+                {
+                    continue;
+                }
+
+                foreach (var active in actives)
+                {
+                    if (EntryCountersBeat(entry, timeline, active))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        public static bool EntryHasLaterCounterOverlap(
+            AgendaEntry entry,
+            BeatTimelineEngine timeline,
+            int currentBeat)
+        {
+            if (entry == null || timeline == null)
+            {
+                return false;
+            }
+
+            foreach (var active in GetActiveBeatIndices(entry))
+            {
+                if (active <= currentBeat)
+                {
+                    continue;
+                }
+
+                if (EntryCountersBeat(entry, timeline, active))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool EntryCountersBeat(AgendaEntry entry, BeatTimelineEngine timeline, int beatIndex)
+        {
+            var telegraphs = timeline.GetImpactTelegraphsAtBeat(beatIndex);
+            if (telegraphs == null || telegraphs.Count == 0)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < telegraphs.Count; i++)
+            {
+                var telegraph = telegraphs[i];
+                if (IsCounterEntry(entry, telegraph) && telegraph.BeatIndex == beatIndex)
+                {
+                    return true;
                 }
             }
 

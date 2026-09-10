@@ -106,7 +106,9 @@ Kết quả: trễ tối đa **~1 beat** (~0.39s @ 152 BPM) — snap beat kế, 
 
 ### Counter QTE (Execute encounter)
 
-Ref visual: Expedition 33 shrinking ring, restyle Neon Cadence. Chỉ roll khi **Execute** đã chạy và beat là **counter** (Active S trùng telegraph quái).
+Ref visual: Expedition 33 shrinking ring, restyle Neon Cadence. Chỉ roll khi **Execute** đã chạy và beat là **counter** (Active S trùng telegraph quái). Mọi skill ra trận (Basic/Skill/Ult, Ren/Coda/Charlotte) đều được QTE khi Active chồng nốt.
+
+**Chồng nốt (nhiều unit):** một QTE trên unit **HeartBeat cao hơn** (`SelectCounterBody` — hết ưu tiên Tank; hòa: cột gần hơn, rồi ActionPriority). Grade nhân **chung** mọi skill đang Active trên nốt đó (Miss giảm dmg cả hai). Perfect/Good hủy nốt một lần. Encounter mở đúng beat nốt (`HasCounterOverlapAtBeat` → luôn intercept), không mở sớm ở Active leading của skill dài. Skill đã planning-applied (vd. DelayBossNote / Anchor) **vẫn vào pair** — 1 QTE / nốt chồng.
 
 **Data:** [`CombatQteProfile.asset`](../Assets/FracturedChorus/Data/ScriptableObjects/CombatQteProfile.asset) (`CombatQteProfileSO`) — chance, cửa Perfect/Good, hệ số dmg, sprite, phím. Overlay scene `CombatQteOverlay` (Canvas sort 560, **không** nằm dưới CombatCanvas để vẫn hiện khi encounter ẩn HUD). Menu **Fractured Chorus → Combat → Setup QTE Overlay**.
 
@@ -122,7 +124,7 @@ Ref visual: Expedition 33 shrinking ring, restyle Neon Cadence. Chỉ roll khi *
 
 **Chance:** `min(chanceCap, baseChance + chanceStep × floor(phaseIndex / phasesPerStep))` — default 30% +10% mỗi 2 phase, cap 80%.
 
-**Input:** Space (hoặc click) khi vòng ngoài co vào vòng trong. Block Space vẫn khóa trên beat counter; encounter pause → Space rảnh cho QTE.
+**Input:** Space (hoặc click) khi vòng ngoài (hồng) khớp **khung Perfect** (cyan, 4 góc + vạch). Khung sáng mạnh trong cửa Perfect, sáng vừa trong Good. Block Space vẫn khóa trên beat counter; encounter pause → Space rảnh cho QTE.
 
 **Tune trên CombatRoot** (foldout **Counter QTE**): `Default chance` (`qteDefaultChance`) · `Miss dmg reduction` (`qteMissDamageReduction`). Không cần mở `.asset`.
 
@@ -569,6 +571,8 @@ Window 12 beat → party outgoing dmg ×1.25; Early/Late → OnBeat (player + Gu
 
 | Ngày | Nội dung |
 |------|----------|
+| 2026-09-10 | **Stacked counter QTE:** beat nốt luôn intercept + 1 QTE; pair gồm mọi Active (kể cả planning-applied Anchor); body = HeartBeat |
+| 2026-09-10 | **Counter QTE** mọi skill ra trận; duel đúng beat nốt (không Active leading); 1 QTE / nốt chồng, body = HeartBeat cao hơn; grade nhân chung mọi skill trên nốt |
 | 2026-09-02 | **Counter QTE** Miss: không hủy đòn, giảm dmg −25% (cap −35%, +5%/2 phase) hai phía |
 | 2026-09-02 | **Counter QTE** trong encounter: `CombatQteProfileSO` (chance/grade/sprite Inspector) · Perfect/Good hủy + bonus dmg · Miss không hủy, giảm dmg hai phía · overlay Canvas 560 |
 | 2026-08-02 | Phase **22 beat**; lookahead 3 phase; nốt ≥ beat 3; mật độ ×1.25; Charlotte delay cascade giữ nốt qua phase |

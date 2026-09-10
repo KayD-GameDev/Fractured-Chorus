@@ -47,3 +47,4 @@ MonoBehaviour:
   innerRing: {fileID: 21300000, guid: 19ad11261a304479b38cdb7c493fbb7e, type: 3}
   outerRing: {fileID: 21300000, guid: 086ae109bd3144b2869fea7a85897e96, type: 3}
   prompt: {fileID: 21300000, guid: 5737b577a793473282f684bff2cb6235, type: 3}
+  perfectZone: {fileID: 21300000, guid: 6b1e4c8a2f9d47e3b5c0a7d18e4f62b9, type: 3}

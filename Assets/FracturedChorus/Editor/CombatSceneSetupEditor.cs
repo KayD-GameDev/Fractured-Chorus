@@ -1172,6 +1172,7 @@ namespace FracturedChorus.Editor
         public const string InnerRingPath = ArtDir + "/qte_ring_inner_v1.png";
         public const string OuterRingPath = ArtDir + "/qte_ring_outer_v1.png";
         public const string PromptPath = ArtDir + "/qte_prompt_space_v1.png";
+        public const string PerfectZonePath = ArtDir + "/qte_zone_perfect_v1.png";
         public const string PerfectPath = ArtDir + "/qte_grade_perfect_v1.png";
         public const string GoodPath = ArtDir + "/qte_grade_good_v1.png";
         public const string MissPath = ArtDir + "/qte_grade_miss_v1.png";
@@ -1288,6 +1289,7 @@ namespace FracturedChorus.Editor
             profile.innerRing = LoadSprite(InnerRingPath);
             profile.outerRing = LoadSprite(OuterRingPath);
             profile.prompt = LoadSprite(PromptPath);
+            profile.perfectZone = LoadSprite(PerfectZonePath);
 
             var perfect = profile.perfect;
             perfect.gradeSprite = LoadSprite(PerfectPath);
@@ -1309,10 +1311,11 @@ namespace FracturedChorus.Editor
         {
             var paths = new[]
             {
-                InnerRingPath, OuterRingPath, PromptPath, PerfectPath, GoodPath, MissPath,
+                InnerRingPath, OuterRingPath, PromptPath, PerfectZonePath, PerfectPath, GoodPath, MissPath,
                 ResourcesDir + "/qte_ring_inner_v1.png",
                 ResourcesDir + "/qte_ring_outer_v1.png",
                 ResourcesDir + "/qte_prompt_space_v1.png",
+                ResourcesDir + "/qte_zone_perfect_v1.png",
                 ResourcesDir + "/qte_grade_perfect_v1.png",
                 ResourcesDir + "/qte_grade_good_v1.png",
                 ResourcesDir + "/qte_grade_miss_v1.png"

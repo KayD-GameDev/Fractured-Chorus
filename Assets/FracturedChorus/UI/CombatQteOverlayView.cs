@@ -14,9 +14,15 @@ namespace FracturedChorus.UI
         [SerializeField] private RectTransform ringRoot;
         [SerializeField] private Image innerRing;
         [SerializeField] private Image outerRing;
+        [SerializeField] private Image perfectZone;
         [SerializeField] private Image prompt;
         [SerializeField] private Image gradeChip;
         [SerializeField] private Image dimmer;
+
+        [Header("Perfect zone — Neon Cadence")]
+        [SerializeField] private Color perfectZoneIdle = new Color(0.137f, 0.827f, 0.933f, 0.62f);
+        [SerializeField] private Color perfectZoneGood = new Color(0.549f, 0.953f, 1f, 0.88f);
+        [SerializeField] private Color perfectZoneActive = new Color(0.918f, 0.984f, 1f, 1f);
 
         private Vector3 _outerBaseScale = Vector3.one;
 
@@ -80,10 +86,17 @@ namespace FracturedChorus.UI
                 outerRing = FindChildImage("OuterRing");
             }
 
+            if (perfectZone == null)
+            {
+                perfectZone = FindChildImage("PerfectZone");
+            }
+
             if (prompt == null)
             {
                 prompt = FindChildImage("Prompt");
             }
+
+            EnsurePerfectZone();
 
             if (gradeChip == null)
             {
@@ -134,6 +147,8 @@ namespace FracturedChorus.UI
             outerRing.raycastTarget = false;
             outerRing.color = Color.white;
 
+            EnsurePerfectZone();
+
             innerRing = EnsureImage("InnerRing", ringRoot, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             innerRing.preserveAspect = true;
             innerRing.raycastTarget = false;
@@ -142,6 +157,7 @@ namespace FracturedChorus.UI
             prompt = EnsureImage("Prompt", ringRoot, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(168f, 72f));
             prompt.preserveAspect = true;
             prompt.raycastTarget = false;
+            EnsurePerfectZone();
 
             gradeChip = EnsureImage("GradeChip", transform, new Vector2(0.5f, 0.72f), new Vector2(0.5f, 0.72f), Vector2.zero, new Vector2(320f, 96f));
             gradeChip.preserveAspect = true;
@@ -162,7 +178,9 @@ namespace FracturedChorus.UI
 
             Assign(innerRing, profile.innerRing);
             Assign(outerRing, profile.outerRing);
+            Assign(perfectZone, profile.perfectZone);
             Assign(prompt, profile.prompt);
+            SetTimingPreview(CombatQteGrade.None);
         }
 
         public void ShowPrompt(CombatQteProfileSO profile)
@@ -185,6 +203,7 @@ namespace FracturedChorus.UI
                 outerRing.rectTransform.localScale = Vector3.one * (profile != null ? profile.outerStartScale : 1.65f);
             }
 
+            SetTimingPreview(CombatQteGrade.None);
             SetVisible(true);
         }
 
@@ -196,6 +215,33 @@ namespace FracturedChorus.UI
             }
 
             outerRing.rectTransform.localScale = _outerBaseScale * scale;
+        }
+
+        public void SetTimingPreview(CombatQteGrade grade)
+        {
+            if (this == null || perfectZone == null)
+            {
+                return;
+            }
+
+            Color color;
+            var scale = 1f;
+            switch (grade)
+            {
+                case CombatQteGrade.Perfect:
+                    color = perfectZoneActive;
+                    scale = 1f + 0.03f * Mathf.Abs(Mathf.Sin(Time.unscaledTime * 16f));
+                    break;
+                case CombatQteGrade.Good:
+                    color = perfectZoneGood;
+                    break;
+                default:
+                    color = perfectZoneIdle;
+                    break;
+            }
+
+            perfectZone.color = color;
+            perfectZone.rectTransform.localScale = Vector3.one * scale;
         }
 
         public void ShowGrade(Sprite sprite)
@@ -272,6 +318,49 @@ namespace FracturedChorus.UI
             }
 
             return child != null ? child.GetComponent<Image>() : null;
+        }
+
+        private void EnsurePerfectZone()
+        {
+            if (this == null || ringRoot == null)
+            {
+                return;
+            }
+
+            if (perfectZone == null)
+            {
+                perfectZone = FindChildImage("PerfectZone");
+            }
+
+            if (perfectZone == null)
+            {
+                perfectZone = EnsureImage(
+                    "PerfectZone",
+                    ringRoot,
+                    Vector2.zero,
+                    Vector2.one,
+                    Vector2.zero,
+                    Vector2.zero);
+                perfectZone.preserveAspect = true;
+                perfectZone.raycastTarget = false;
+                perfectZone.color = perfectZoneIdle;
+            }
+
+            if (outerRing != null)
+            {
+                outerRing.transform.SetSiblingIndex(0);
+            }
+
+            perfectZone.transform.SetSiblingIndex(1);
+            if (innerRing != null)
+            {
+                innerRing.transform.SetSiblingIndex(2);
+            }
+
+            if (prompt != null)
+            {
+                prompt.transform.SetSiblingIndex(3);
+            }
         }
 
         private static RectTransform EnsureRect(string name, Transform parent)
