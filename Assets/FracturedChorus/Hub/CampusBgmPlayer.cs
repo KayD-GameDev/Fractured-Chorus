@@ -10,6 +10,7 @@ namespace FracturedChorus.Hub
         public const float Volume = 0.65f;
         public const string CharacterBuildScene = "CharacterBuild";
         public const string CharacterBuildSandboxScene = "CharacterBuildLayoutSandbox";
+        public const string BondsSandboxScene = "BondsLayoutSandbox";
 
         private static CampusBgmPlayer _instance;
         private AudioSource _source;
@@ -24,7 +25,8 @@ namespace FracturedChorus.Hub
         {
             return sceneName == RunMapSceneCatalog.CampusHub
                 || sceneName == CharacterBuildScene
-                || sceneName == CharacterBuildSandboxScene;
+                || sceneName == CharacterBuildSandboxScene
+                || sceneName == BondsSandboxScene;
         }
 
         private static CampusBgmPlayer Ensure()
