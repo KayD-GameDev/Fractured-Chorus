@@ -410,7 +410,6 @@ namespace FracturedChorus.Editor
                     false,
                     Color.white,
                     false);
-                StretchFull(expFill.rectTransform);
             }
 
             EnsureText(card.transform, "ExpLabel", "0 / 10", UiFontRole.Display);
