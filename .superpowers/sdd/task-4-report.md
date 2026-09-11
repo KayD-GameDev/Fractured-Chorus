@@ -1,26 +1,27 @@
-# Task 4 Report — LoadingScreenController + async load
+# Task 4 Report - View components + BondsMenuUI bind
 
 **Status:** DONE
 **Branch:** branch2
 
 ## Done
 
-- Added `Assets/FracturedChorus/UI/Loading/LoadingScreenController.cs` with `Ensure()`, singleton busy state, async `BeginLoad`, fade timing via `LoadingProgress`, and `Resources.Load("UI/LoadingScreen")` fallback to a root `GameObject`.
-- Updated `Assets/FracturedChorus/RunMap/RunMapSceneLoader.cs` so `LoadByName` now checks whitespace, busy state, `CanLoad`, then delegates to `LoadingScreenController.Ensure().BeginLoad(sceneName, mode)`.
-- Added `Assets/FracturedChorus/Editor/LoadingScreenControllerBusyTests.cs` with the required EditMode coverage for empty and unknown scene names plus `TearDown` cleanup via `DestroyImmediate(Instance.gameObject)`.
-- Kept `EnsureView()` scoped to root `CanvasGroup` + `LoadingScreenView` only; no random child `Image` binding and no prefab/art builder work in this task.
-- Confirmed `Assets/FracturedChorus/RunMap/RunMapSceneLoader.cs` contains zero `SceneManager.LoadScene(` calls after the change.
+- Replaced the stub in `Assets/FracturedChorus/Hub/BondsMenuUI.cs` with sandbox-only bind logic for social stats, roster selection wrap/skip, detail card refresh, episode list refresh, `Show`, `Hide`, `SelectedNpcId`, and pure `WrapRosterIndex`.
+- Added `Assets/FracturedChorus/Hub/BondRosterChipView.cs`, `Assets/FracturedChorus/Hub/BondDetailCardView.cs`, and `Assets/FracturedChorus/Hub/BondEpisodeRowView.cs` as bind-only view components.
+- Updated `Assets/FracturedChorus/Editor/BondsSceneSetupEditor.cs` so `AttachMissing` now wires `SerializeField` references by hierarchy name and adds missing components without writing any RectTransform layout values.
+- Added the wrap regression test to `Assets/FracturedChorus/Editor/BondPresentationTests.cs`.
 
 ## Not Done
 
-- Did not execute EditMode tests because `Unity.exe` is unavailable in this environment and the task explicitly forbids searching for it.
-- Did not create prefab/art slice work reserved for Task 5-6.
+- Did not run EditMode tests because `Unity.exe` is unavailable in this environment.
+- Did not run the manual Play Mode walkthrough on `BondsLayoutSandbox.unity` for the same reason.
+- Did not modify `CampusHub.unity`.
 
 ## Verification
 
 - `ReadLints` returned no diagnostics for the edited C# files.
-- Static check confirmed no sync load call remains in `RunMapSceneLoader.cs`.
+- `git diff --check` passed on the Task 4 code changes.
+- Static search confirmed the new `BondsMenuUI` runtime code contains zero `anchoredPosition`, `sizeDelta`, `Stretch`, or `SetSiblingIndex` usage.
 
 ## Concerns
 
-- The fallback instance supports async scene loading flow and busy checks, but without the future prefab/resources from Task 6 it does not provide a fully wired visible bar hierarchy.
+- `AttachMissing` can only bind scene children that already exist by the expected names; the current sandbox scene snapshot still shows the five stat node roots without named child labels/images, so those subfields stay null until the scene objects are added manually.

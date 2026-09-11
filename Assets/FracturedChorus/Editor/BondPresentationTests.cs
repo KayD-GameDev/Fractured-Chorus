@@ -89,5 +89,13 @@ namespace FracturedChorus.Tests
             Assert.IsTrue(BondLinkEpisodeCatalog.IsUnlocked(5, 5));
             Assert.IsFalse(BondLinkEpisodeCatalog.IsUnlocked(0, 1));
         }
+
+        [Test]
+        public void WrapRosterIndex_Cycles()
+        {
+            Assert.AreEqual(1, BondsMenuUI.WrapRosterIndex(0, 1, 7));
+            Assert.AreEqual(0, BondsMenuUI.WrapRosterIndex(6, 1, 7));
+            Assert.AreEqual(6, BondsMenuUI.WrapRosterIndex(0, -1, 7));
+        }
     }
 }

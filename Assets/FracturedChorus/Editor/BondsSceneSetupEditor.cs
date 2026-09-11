@@ -19,6 +19,10 @@ namespace FracturedChorus.Editor
         private const string BackgroundPath = "Assets/FracturedChorus/Art/UI/StatusMenu/statusmenu_hima_city_bg_v1.jpg";
         private const string MockGuidePath = "Assets/FracturedChorus/Art/UI/Bonds/_ref/_ref_bonds_menu_v1.jpg";
         private const string BondsRoot = "Assets/FracturedChorus/Art/UI/Bonds/";
+        private const string RenPortraitPath = "Assets/FracturedChorus/Art/Characters/Ren/VnBust/ren_bust_neutral_v1.png";
+        private const string CharlottePortraitPath = "Assets/FracturedChorus/Art/Characters/Charlotte/VnBust/charlotte_bust_neutral_v1.png";
+        private const string CodaPortraitPath = "Assets/FracturedChorus/Art/Characters/Coda/VnBust/coda_bust_neutral_v1.png";
+        private const string AstraPortraitPath = "Assets/FracturedChorus/Art/Characters/_Reference/LuxeConcert/astra_ref.png";
         private const float MockGuideAlpha = 0.4f;
 
         [MenuItem("Fractured Chorus/Bonds/Create Layout Sandbox Scene")]
@@ -81,7 +85,17 @@ namespace FracturedChorus.Editor
                 return;
             }
 
-            BuildHierarchy();
+            var canvas = GameObject.Find("BondsCanvas")?.transform;
+            if (canvas == null)
+            {
+                EditorUtility.DisplayDialog(
+                    "Attach Missing Bonds Objects",
+                    "BondsCanvas was not found in the open scene. Restore the sandbox hierarchy first, then run this menu again.",
+                    "OK");
+                return;
+            }
+
+            AttachMissingComponents(canvas);
             EditorSceneManager.MarkSceneDirty(activeScene);
             Debug.Log("[Fractured Chorus] Attached missing Bonds sandbox objects. Save the scene.");
         }
@@ -691,6 +705,287 @@ namespace FracturedChorus.Editor
             rect.anchorMax = Vector2.one;
             rect.offsetMin = Vector2.zero;
             rect.offsetMax = Vector2.zero;
+        }
+
+        private static void AttachMissingComponents(Transform canvas)
+        {
+            var menu = EnsureComponent<BondsMenuUI>(canvas.gameObject);
+            var cornerHud = AttachCornerHud(canvas);
+            var radar = AttachRadar(canvas);
+            var detail = AttachDetailCard(canvas);
+            var chips = AttachChipViews(canvas);
+            var rows = AttachEpisodeRows(canvas);
+            var nodes = AttachStatNodes(canvas);
+
+            var so = new SerializedObject(menu);
+            SetObjectRef(so, "root", canvas.gameObject);
+            SetObjectRef(so, "cornerHud", cornerHud);
+            SetObjectRef(so, "radar", radar);
+            SetObjectArray(so.FindProperty("nodes"), nodes);
+            SetSpriteArray(
+                so.FindProperty("statIcons"),
+                new[]
+                {
+                    LoadSprite(BondsRoot + "Icons/ui_bonds_icon_stat_resonance_v1.png"),
+                    LoadSprite(BondsRoot + "Icons/ui_bonds_icon_stat_cadence_v1.png"),
+                    LoadSprite(BondsRoot + "Icons/ui_bonds_icon_stat_pulse_v1.png"),
+                    LoadSprite(BondsRoot + "Icons/ui_bonds_icon_stat_harmony_v1.png"),
+                    LoadSprite(BondsRoot + "Icons/ui_bonds_icon_stat_rhythm_v1.png")
+                });
+            SetObjectArray(so.FindProperty("chips"), chips);
+            SetObjectRef(so, "chipFrameNormal", LoadSprite(BondsRoot + "Kit/ui_bonds_chip_frame_normal_v1.png"));
+            SetObjectRef(so, "chipFrameSelected", LoadSprite(BondsRoot + "Kit/ui_bonds_chip_frame_selected_v1.png"));
+            SetObjectRef(so, "chipFrameLocked", LoadSprite(BondsRoot + "Kit/ui_bonds_chip_locked_v1.png"));
+            SetObjectRef(so, "lockIcon", LoadSprite(BondsRoot + "Icons/ui_bonds_icon_lock_v1.png"));
+            var lockedPortrait = LoadSprite(BondsRoot + "Decor/ui_bonds_silhouette_locked_v1.png");
+            SetSpriteArray(
+                so.FindProperty("portraitSprites"),
+                new[]
+                {
+                    LoadSprite(RenPortraitPath),
+                    LoadSprite(CharlottePortraitPath),
+                    LoadSprite(CodaPortraitPath),
+                    LoadSprite(AstraPortraitPath),
+                    lockedPortrait,
+                    lockedPortrait
+                });
+            SetObjectRef(so, "reservedPortrait", lockedPortrait);
+            SetObjectRef(so, "detail", detail);
+            SetObjectArray(so.FindProperty("episodeRows"), rows);
+            SetObjectRef(so, "socialStatsTitle", FindPath(canvas, "CenterStats/Title")?.GetComponent<Text>());
+            SetObjectRef(so, "socialStatsJp", FindPath(canvas, "CenterStats/TitleJp")?.GetComponent<Text>());
+            SetObjectRef(so, "linkTitle", FindPath(canvas, "LinkEpisodes/Title")?.GetComponent<Text>());
+            SetObjectRef(so, "linkJp", FindPath(canvas, "LinkEpisodes/TitleJp")?.GetComponent<Text>());
+            SetObjectRef(so, "episodeHint", FindPath(canvas, "LinkEpisodes/Hint")?.GetComponent<Text>());
+            SetObjectRef(so, "headerLabel", FindPath(canvas, "HeaderBonds/Label")?.GetComponent<Text>());
+            SetObjectRef(so, "headerJp", FindPath(canvas, "HeaderBonds/LabelJp")?.GetComponent<Text>());
+            SetObjectRef(so, "confirmLabel", FindPath(canvas, "Footer/ConfirmLabel")?.GetComponent<Text>());
+            SetObjectRef(so, "backLabel", FindPath(canvas, "Footer/BackLabel")?.GetComponent<Text>());
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static HubCornerInfoHud AttachCornerHud(Transform canvas)
+        {
+            var root = FindPath(canvas, "CornerHud");
+            if (root == null)
+            {
+                return null;
+            }
+
+            var hud = EnsureComponent<HubCornerInfoHud>(root.gameObject);
+            var so = new SerializedObject(hud);
+            SetObjectRef(so, "dateLabel", FindPath(root, "DateLabel")?.GetComponent<Text>());
+            SetObjectRef(so, "dayLabel", FindPath(root, "DayLabel")?.GetComponent<Text>());
+            SetObjectRef(so, "phaseIcon", FindPath(root, "PhaseIcon")?.GetComponent<Image>());
+            SetObjectRef(so, "locationLabel", FindPath(root, "LocationLabel")?.GetComponent<Text>());
+            SetObjectRef(so, "taglineLabel", FindPath(root, "TaglineLabel")?.GetComponent<Text>());
+            so.ApplyModifiedPropertiesWithoutUndo();
+            hud.ApplyFonts();
+            return hud;
+        }
+
+        private static SocialStatsRadarGraphic AttachRadar(Transform canvas)
+        {
+            var radarRoot = FindPath(canvas, "CenterStats/ChartRoot/Radar");
+            return radarRoot != null ? EnsureComponent<SocialStatsRadarGraphic>(radarRoot.gameObject) : null;
+        }
+
+        private static SocialStatsNodeView[] AttachStatNodes(Transform canvas)
+        {
+            return new[]
+            {
+                AttachStatNode(FindPath(canvas, "CenterStats/Node_Resonance")),
+                AttachStatNode(FindPath(canvas, "CenterStats/Node_Cadence")),
+                AttachStatNode(FindPath(canvas, "CenterStats/Node_Pulse")),
+                AttachStatNode(FindPath(canvas, "CenterStats/Node_Harmony")),
+                AttachStatNode(FindPath(canvas, "CenterStats/Node_Rhythm"))
+            };
+        }
+
+        private static SocialStatsNodeView AttachStatNode(Transform root)
+        {
+            if (root == null)
+            {
+                return null;
+            }
+
+            var view = EnsureComponent<SocialStatsNodeView>(root.gameObject);
+            var so = new SerializedObject(view);
+            SetObjectRef(so, "iconImage", FindPath(root, "Icon")?.GetComponent<Image>());
+            SetObjectRef(so, "nameLabel", FindPath(root, "Name")?.GetComponent<Text>());
+            SetObjectRef(so, "rankLabel", FindPath(root, "Rank")?.GetComponent<Text>());
+            SetObjectRef(so, "flavorLabel", FindPath(root, "Flavor")?.GetComponent<Text>());
+            so.ApplyModifiedPropertiesWithoutUndo();
+            return view;
+        }
+
+        private static BondRosterChipView[] AttachChipViews(Transform canvas)
+        {
+            var roster = FindPath(canvas, "CenterStats/Roster");
+            if (roster == null)
+            {
+                return new BondRosterChipView[0];
+            }
+
+            var chips = new BondRosterChipView[BondPresentation.VisibleChipCount];
+            for (var i = 0; i < chips.Length; i++)
+            {
+                chips[i] = AttachChipView(FindPath(roster, $"Chip_{i}"));
+            }
+
+            return chips;
+        }
+
+        private static BondRosterChipView AttachChipView(Transform root)
+        {
+            if (root == null)
+            {
+                return null;
+            }
+
+            var button = EnsureComponent<Button>(root.gameObject);
+            var frame = FindPath(root, "Frame")?.GetComponent<Image>();
+            if (frame != null)
+            {
+                frame.raycastTarget = true;
+                button.targetGraphic = frame;
+            }
+
+            var view = EnsureComponent<BondRosterChipView>(root.gameObject);
+            var so = new SerializedObject(view);
+            SetObjectRef(so, "frame", frame);
+            SetObjectRef(so, "face", FindPath(root, "Face")?.GetComponent<Image>());
+            SetObjectRef(so, "lockIcon", FindPath(root, "Lock")?.GetComponent<Image>());
+            SetObjectRef(so, "nameLabel", FindPath(root, "Name")?.GetComponent<Text>());
+            SetObjectRef(so, "roleLabel", FindPath(root, "Role")?.GetComponent<Text>());
+            SetObjectRef(so, "button", button);
+            so.ApplyModifiedPropertiesWithoutUndo();
+            return view;
+        }
+
+        private static BondDetailCardView AttachDetailCard(Transform canvas)
+        {
+            var root = FindPath(canvas, "DetailCard");
+            if (root == null)
+            {
+                return null;
+            }
+
+            var view = EnsureComponent<BondDetailCardView>(root.gameObject);
+            var so = new SerializedObject(view);
+            SetObjectRef(so, "portrait", FindPath(root, "Portrait")?.GetComponent<Image>());
+            SetObjectRef(so, "nameLabel", FindPath(root, "Name")?.GetComponent<Text>());
+            SetObjectRef(so, "rankLabel", FindPath(root, "Rank")?.GetComponent<Text>());
+            SetObjectRef(so, "bioLabel", FindPath(root, "Bio")?.GetComponent<Text>());
+            SetObjectRef(so, "quoteLabel", FindPath(root, "Quote")?.GetComponent<Text>());
+            SetObjectRef(so, "expFill", FindPath(root, "ExpTrack/ExpFill")?.GetComponent<Image>());
+            SetObjectRef(so, "expLabel", FindPath(root, "ExpLabel")?.GetComponent<Text>());
+            SetObjectRef(so, "nextRankLabel", FindPath(root, "NextRank")?.GetComponent<Text>());
+            SetObjectRef(so, "nextHintLabel", FindPath(root, "NextHint")?.GetComponent<Text>());
+            so.ApplyModifiedPropertiesWithoutUndo();
+            return view;
+        }
+
+        private static BondEpisodeRowView[] AttachEpisodeRows(Transform canvas)
+        {
+            var root = FindPath(canvas, "LinkEpisodes");
+            if (root == null)
+            {
+                return new BondEpisodeRowView[0];
+            }
+
+            return new[]
+            {
+                AttachEpisodeRow(FindPath(root, "Row_01")),
+                AttachEpisodeRow(FindPath(root, "Row_02")),
+                AttachEpisodeRow(FindPath(root, "Row_03")),
+                AttachEpisodeRow(FindPath(root, "Row_04")),
+                AttachEpisodeRow(FindPath(root, "Row_05"))
+            };
+        }
+
+        private static BondEpisodeRowView AttachEpisodeRow(Transform root)
+        {
+            if (root == null)
+            {
+                return null;
+            }
+
+            var view = EnsureComponent<BondEpisodeRowView>(root.gameObject);
+            var button = EnsureComponent<Button>(root.gameObject);
+            var image = root.GetComponent<Image>();
+            if (image != null)
+            {
+                button.targetGraphic = image;
+            }
+
+            var so = new SerializedObject(view);
+            SetObjectRef(so, "icon", FindPath(root, "Icon")?.GetComponent<Image>());
+            SetObjectRef(so, "indexLabel", FindPath(root, "Index")?.GetComponent<Text>());
+            SetObjectRef(so, "titleLabel", FindPath(root, "Label")?.GetComponent<Text>());
+            SetObjectRef(so, "button", button);
+            SetObjectRef(so, "playSprite", LoadSprite(BondsRoot + "Icons/ui_bonds_icon_play_v1.png"));
+            SetObjectRef(so, "lockSprite", LoadSprite(BondsRoot + "Icons/ui_bonds_icon_lock_v1.png"));
+            so.ApplyModifiedPropertiesWithoutUndo();
+            return view;
+        }
+
+        private static Transform FindPath(Transform root, string path)
+        {
+            if (root == null || string.IsNullOrEmpty(path))
+            {
+                return null;
+            }
+
+            var parts = path.Split('/');
+            var current = root;
+            for (var i = 0; i < parts.Length; i++)
+            {
+                current = current.Find(parts[i]);
+                if (current == null)
+                {
+                    return null;
+                }
+            }
+
+            return current;
+        }
+
+        private static void SetObjectRef(SerializedObject so, string fieldName, Object value)
+        {
+            var prop = so.FindProperty(fieldName);
+            if (prop != null)
+            {
+                prop.objectReferenceValue = value;
+            }
+        }
+
+        private static void SetObjectArray<T>(SerializedProperty prop, T[] values) where T : Object
+        {
+            if (prop == null)
+            {
+                return;
+            }
+
+            prop.arraySize = values?.Length ?? 0;
+            for (var i = 0; i < prop.arraySize; i++)
+            {
+                prop.GetArrayElementAtIndex(i).objectReferenceValue = values[i];
+            }
+        }
+
+        private static void SetSpriteArray(SerializedProperty prop, Sprite[] values)
+        {
+            if (prop == null)
+            {
+                return;
+            }
+
+            prop.arraySize = values?.Length ?? 0;
+            for (var i = 0; i < prop.arraySize; i++)
+            {
+                prop.GetArrayElementAtIndex(i).objectReferenceValue = values[i];
+            }
         }
 
         private static void DestroyIfFound(string objectName)
