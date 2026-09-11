@@ -100,6 +100,43 @@ namespace FracturedChorus.Editor
             Debug.Log("[Fractured Chorus] Attached missing Bonds sandbox objects. Save the scene.");
         }
 
+        [MenuItem("Fractured Chorus/Bonds/Save Layout Snapshot")]
+        public static void SaveLayoutSnapshot()
+        {
+            var scenePath = EditorSceneManager.GetActiveScene().path;
+            if (string.IsNullOrEmpty(scenePath) || !scenePath.EndsWith("BondsLayoutSandbox.unity"))
+            {
+                EditorUtility.DisplayDialog(
+                    "Save Bonds Layout",
+                    "Focus BondsLayoutSandbox, Ctrl+S, run again.",
+                    "OK");
+                return;
+            }
+
+            if (EditorSceneManager.GetActiveScene().isDirty)
+            {
+                EditorSceneManager.SaveOpenScenes();
+            }
+
+            RunNodeTool(
+                "Tools/save-bonds-sandbox-layout-snapshot.mjs",
+                "Save Bonds Layout",
+                out var stdout,
+                out var stderr,
+                out var exitCode);
+            if (exitCode != 0)
+            {
+                Debug.LogError($"[Fractured Chorus] Snapshot failed: {stderr}\n{stdout}");
+                return;
+            }
+
+            AssetDatabase.Refresh();
+            Debug.Log(
+                "[Fractured Chorus] Saved Bonds layout snapshot → " +
+                "Assets/FracturedChorus/Art/UI/Bonds/bonds_sandbox_layout_snapshot.json\n" +
+                stdout);
+        }
+
         [MenuItem("Fractured Chorus/Bonds/Toggle Mock Guide")]
         public static void ToggleMockGuide()
         {
@@ -334,6 +371,7 @@ namespace FracturedChorus.Editor
         {
             var root = EnsurePanel(parent, name, out _);
             EnsureComponent<SocialStatsNodeView>(root.gameObject);
+            EnsureStatNodeWidgets(root);
         }
 
         private static void EnsureChip(Transform parent, int index, string displayName, string role, Sprite faceSprite, bool locked)
@@ -810,13 +848,56 @@ namespace FracturedChorus.Editor
             }
 
             var view = EnsureComponent<SocialStatsNodeView>(root.gameObject);
+            var icon = EnsureStatNodeIcon(root);
+            var name = EnsureStatNodeText(root, "Name", UiFontRole.Body);
+            var rank = EnsureStatNodeText(root, "Rank", UiFontRole.Display);
+            var flavor = EnsureStatNodeText(root, "Flavor", UiFontRole.Body);
             var so = new SerializedObject(view);
-            SetObjectRef(so, "iconImage", FindPath(root, "Icon")?.GetComponent<Image>());
-            SetObjectRef(so, "nameLabel", FindPath(root, "Name")?.GetComponent<Text>());
-            SetObjectRef(so, "rankLabel", FindPath(root, "Rank")?.GetComponent<Text>());
-            SetObjectRef(so, "flavorLabel", FindPath(root, "Flavor")?.GetComponent<Text>());
+            SetObjectRef(so, "iconImage", icon);
+            SetObjectRef(so, "nameLabel", name);
+            SetObjectRef(so, "rankLabel", rank);
+            SetObjectRef(so, "flavorLabel", flavor);
             so.ApplyModifiedPropertiesWithoutUndo();
             return view;
+        }
+
+        private static void EnsureStatNodeWidgets(Transform root)
+        {
+            if (root == null)
+            {
+                return;
+            }
+
+            EnsureStatNodeIcon(root);
+            EnsureStatNodeText(root, "Name", UiFontRole.Body);
+            EnsureStatNodeText(root, "Rank", UiFontRole.Display);
+            EnsureStatNodeText(root, "Flavor", UiFontRole.Body);
+        }
+
+        private static Image EnsureStatNodeIcon(Transform root)
+        {
+            var rect = Ensure(root, "Icon", out _);
+            EnsureComponent<CanvasRenderer>(rect.gameObject);
+            var image = EnsureComponent<Image>(rect.gameObject);
+            image.raycastTarget = false;
+            image.preserveAspect = true;
+            return image;
+        }
+
+        private static Text EnsureStatNodeText(Transform root, string name, UiFontRole role)
+        {
+            var rect = Ensure(root, name, out var created);
+            EnsureComponent<CanvasRenderer>(rect.gameObject);
+            var text = EnsureComponent<Text>(rect.gameObject);
+            if (created)
+            {
+                text.text = string.Empty;
+            }
+
+            text.color = Color.white;
+            text.raycastTarget = false;
+            UiFontCatalog.Apply(text, role, text.fontSize > 0 ? text.fontSize : 18);
+            return text;
         }
 
         private static BondRosterChipView[] AttachChipViews(Transform canvas)
@@ -995,6 +1076,57 @@ namespace FracturedChorus.Editor
             {
                 Object.DestroyImmediate(found);
             }
+        }
+
+        private static void RunNodeTool(string relativeToolPath, string label)
+        {
+            RunNodeTool(relativeToolPath, label, out _, out _, out _);
+        }
+
+        private static void RunNodeTool(
+            string relativeToolPath,
+            string label,
+            out string stdout,
+            out string stderr,
+            out int exitCode)
+        {
+            stdout = string.Empty;
+            stderr = string.Empty;
+            exitCode = -1;
+
+            var tool = Path.GetFullPath(relativeToolPath);
+            if (!File.Exists(tool))
+            {
+                Debug.LogError($"[Fractured Chorus] Missing tool: {tool}");
+                return;
+            }
+
+            var psi = new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = "node",
+                Arguments = $"\"{tool}\"",
+                WorkingDirectory = Path.GetFullPath("."),
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true,
+            };
+            using (var proc = System.Diagnostics.Process.Start(psi))
+            {
+                stdout = proc.StandardOutput.ReadToEnd();
+                stderr = proc.StandardError.ReadToEnd();
+                proc.WaitForExit();
+                exitCode = proc.ExitCode;
+            }
+
+            if (exitCode != 0)
+            {
+                Debug.LogError($"[Fractured Chorus] {label} failed: {stderr}\n{stdout}");
+                return;
+            }
+
+            AssetDatabase.Refresh();
+            Debug.Log($"[Fractured Chorus] {label} OK.\n{stdout}");
         }
 
         private static T EnsureComponent<T>(GameObject go) where T : Component

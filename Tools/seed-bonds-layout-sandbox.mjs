@@ -205,8 +205,18 @@ function addHubCorner(node, refs) {
 
 function addSocialStatsNode(node) {
   const id = allocId();
-  node.components.push({ kind: "socialStatsNode", id });
-  return id;
+  const component = {
+    kind: "socialStatsNode",
+    id,
+    refs: {
+      iconImageId: "0",
+      nameTextId: "0",
+      rankTextId: "0",
+      flavorTextId: "0",
+    },
+  };
+  node.components.push(component);
+  return component;
 }
 
 function addRadar(node) {
@@ -374,7 +384,18 @@ function navRow(parent, name, iconGuid, label, interactable) {
 
 function statNode(parent, name) {
   const node = createUiNode(name, parent);
-  addSocialStatsNode(node);
+  const socialStatsNode = addSocialStatsNode(node);
+  const iconImageId = addImage(createUiNode("Icon", node), null, { preserveAspect: true });
+  const nameTextId = addText(createUiNode("Name", node), "", "body", { fontSize: 16 });
+  const rankTextId = addText(createUiNode("Rank", node), "", "display", { fontSize: 16 });
+  const flavorTextId = addText(createUiNode("Flavor", node), "", "body", { fontSize: 14 });
+  socialStatsNode.refs = {
+    iconImageId,
+    nameTextId,
+    rankTextId,
+    flavorTextId,
+  };
+  return node;
 }
 
 function chip(parent, index, faceGuid, frameGuid, locked, displayName, role) {
@@ -747,10 +768,10 @@ Canvas:
   dawnSprite: {fileID: 21300000, guid: ${GUIDS.dawn}, type: 3}
 `;
     case "socialStatsNode":
-      return monoHeader(node.goId, component.id, GUIDS.socialStatsNodeView, "Assembly-CSharp::FracturedChorus.Hub.SocialStatsNodeView", true) + `  iconImage: {fileID: 0}
-  nameLabel: {fileID: 0}
-  rankLabel: {fileID: 0}
-  flavorLabel: {fileID: 0}
+      return monoHeader(node.goId, component.id, GUIDS.socialStatsNodeView, "Assembly-CSharp::FracturedChorus.Hub.SocialStatsNodeView", true) + `  iconImage: {fileID: ${component.refs.iconImageId}}
+  nameLabel: {fileID: ${component.refs.nameTextId}}
+  rankLabel: {fileID: ${component.refs.rankTextId}}
+  flavorLabel: {fileID: ${component.refs.flavorTextId}}
 `;
     case "radar":
       return monoHeader(node.goId, component.id, GUIDS.socialStatsRadarGraphic, "Assembly-CSharp::FracturedChorus.Hub.SocialStatsRadarGraphic", true) + `  m_Material: {fileID: 0}
