@@ -208,7 +208,8 @@ namespace FracturedChorus.Combat.Timeline
 
         /// <summary>
         /// Delay every impact note after Anchor S (and every note after those — full cascade).
-        /// Destinations stay inside the source note's phase (no spill into the next phrase).
+        /// +N may cross into the next phase: land in that phase's playable band (not beat 0),
+        /// fill empty cells, or merge hits into an existing note so the cell completes.
         /// </summary>
         public IReadOnlyList<TelegraphBeatMove> DelayImpactTelegraphsAfterBeat(
             int afterBeat,
@@ -244,18 +245,37 @@ namespace FracturedChorus.Combat.Timeline
             }
 
             var moving = new HashSet<EnemyTelegraph>(toMove);
+            var claimed = new HashSet<int>();
             var moves = new List<TelegraphBeatMove>(toMove.Count);
             foreach (var telegraph in toMove)
             {
                 var from = telegraph.BeatIndex;
-                var to = ResolveCascadeDestination(telegraph, from, delayBeats, moving);
-                if (to == from)
+                var result = ResolveCascadeDestination(telegraph, from, delayBeats, moving, claimed);
+                if (result.Beat == from && result.MergeInto == null)
                 {
                     continue;
                 }
 
-                telegraph.BeatIndex = to;
-                moves.Add(new TelegraphBeatMove(telegraph, from, to));
+                if (result.MergeInto != null)
+                {
+                    var occupantHits = HitsOf(result.MergeInto);
+                    var occupantTier = result.MergeInto.NoteTier;
+                    AddHits(result.MergeInto, telegraph);
+                    _telegraphs.Remove(telegraph);
+                    moving.Remove(telegraph);
+                    moves.Add(new TelegraphBeatMove(
+                        telegraph,
+                        from,
+                        result.Beat,
+                        result.MergeInto,
+                        occupantHits,
+                        occupantTier));
+                    continue;
+                }
+
+                telegraph.BeatIndex = result.Beat;
+                claimed.Add(result.Beat);
+                moves.Add(new TelegraphBeatMove(telegraph, from, result.Beat));
             }
 
             if (moves.Count > 0)
@@ -267,65 +287,119 @@ namespace FracturedChorus.Combat.Timeline
             return moves;
         }
 
+        private readonly struct CascadeDest
+        {
+            public readonly int Beat;
+            public readonly EnemyTelegraph MergeInto;
+
+            public CascadeDest(int beat, EnemyTelegraph mergeInto = null)
+            {
+                Beat = beat;
+                MergeInto = mergeInto;
+            }
+        }
+
         /// <summary>
-        /// Push +delayBeats, then cascade forward while the landing slot is occupied by a
-        /// non-moving note. Stays in-phase when possible; if delay would pass the phase end,
-        /// spills to beat 1 of the next phase and cascades there.
+        /// Push +delayBeats (may cross a phase). Never park on a phase's first beat
+        /// (reserved / incomplete cell). Same-phase: cascade to the next empty cell.
+        /// Cross-phase: merge into an existing note when the landing cell is occupied.
         /// </summary>
-        private int ResolveCascadeDestination(
+        private CascadeDest ResolveCascadeDestination(
             EnemyTelegraph self,
             int fromBeat,
             int delayBeats,
-            HashSet<EnemyTelegraph> moving)
+            HashSet<EnemyTelegraph> moving,
+            HashSet<int> claimed)
         {
-            var phaseMaxBeat = GetPhaseMaxBeatInclusive(fromBeat);
-            int dest;
-            int cascadeMax;
-
-            if (fromBeat + delayBeats <= phaseMaxBeat)
+            var dest = fromBeat + delayBeats;
+            if (dest >= BeatCount)
             {
-                dest = fromBeat + delayBeats;
-                cascadeMax = phaseMaxBeat;
+                return new CascadeDest(fromBeat);
             }
-            else
+
+            dest = SnapToPlayableImpactBeat(dest);
+            if (dest < 0 || dest >= BeatCount)
             {
-                dest = phaseMaxBeat + 1;
-                if (dest >= BeatCount)
+                return new CascadeDest(fromBeat);
+            }
+
+            var sourcePhase = TimelineConstants.GetPhaseIndex(fromBeat);
+            var cascadeMax = GetPhaseMaxBeatInclusive(dest);
+
+            while (dest <= cascadeMax && dest < BeatCount)
+            {
+                dest = SnapToPlayableImpactBeat(dest);
+                if (dest > cascadeMax || dest >= BeatCount)
                 {
-                    return fromBeat;
+                    break;
                 }
 
-                cascadeMax = GetPhaseMaxBeatInclusive(dest);
-            }
+                var claimedHere = claimed != null && claimed.Contains(dest);
+                var occupant = FindNonMovingOccupant(dest, self, moving);
+                if (!claimedHere && occupant == null)
+                {
+                    return new CascadeDest(dest);
+                }
 
-            while (dest < cascadeMax && IsImpactOccupiedByNonMoving(dest, self, moving))
-            {
+                var crossedPhase = TimelineConstants.GetPhaseIndex(dest) > sourcePhase;
+                if (!claimedHere && occupant != null && crossedPhase && HitsOf(occupant) < 3)
+                {
+                    return new CascadeDest(dest, occupant);
+                }
+
                 dest++;
             }
 
-            if (dest > cascadeMax || IsImpactOccupiedByNonMoving(dest, self, moving))
-            {
-                return fromBeat;
-            }
-
-            return dest;
+            return new CascadeDest(fromBeat);
         }
 
-        private static int GetPhaseMaxBeatInclusive(int beatIndex)
+        /// <summary>
+        /// Skip reserved lead-in beats (phase 0: &lt; 3; later phases: beat 0 of the phase).
+        /// </summary>
+        private static int SnapToPlayableImpactBeat(int beatIndex)
         {
-            TimelineConstants.GetPhaseBeatRange(
-                TimelineConstants.GetPhaseIndex(beatIndex),
-                out var startBeat,
-                out var count);
-            if (count <= 0)
+            if (beatIndex < 0 || beatIndex >= BeatCount)
             {
                 return beatIndex;
             }
 
-            return startBeat + count - 1;
+            TimelineConstants.GetPhaseBeatRange(
+                TimelineConstants.GetPhaseIndex(beatIndex),
+                out var startBeat,
+                out var count);
+            var minImpact = TimelineConstants.GetMinEnemyImpactBeat(startBeat);
+            var phaseMax = startBeat + Mathf.Max(0, count) - 1;
+            if (beatIndex < minImpact && minImpact <= phaseMax)
+            {
+                return minImpact;
+            }
+
+            return beatIndex;
         }
 
-        private bool IsImpactOccupiedByNonMoving(int beatIndex, EnemyTelegraph self, HashSet<EnemyTelegraph> moving)
+        private static int HitsOf(EnemyTelegraph telegraph)
+        {
+            if (telegraph == null)
+            {
+                return 0;
+            }
+
+            return telegraph.HitsRequired > 0
+                ? telegraph.HitsRequired
+                : Mathf.Max(1, (int)telegraph.NoteTier);
+        }
+
+        private static void AddHits(EnemyTelegraph target, EnemyTelegraph source)
+        {
+            var combined = Mathf.Clamp(HitsOf(target) + HitsOf(source), 1, 3);
+            target.HitsRequired = combined;
+            target.NoteTier = (BossNoteTier)combined;
+        }
+
+        private EnemyTelegraph FindNonMovingOccupant(
+            int beatIndex,
+            EnemyTelegraph self,
+            HashSet<EnemyTelegraph> moving)
         {
             foreach (var t in _telegraphs)
             {
@@ -344,10 +418,24 @@ namespace FracturedChorus.Combat.Timeline
                     continue;
                 }
 
-                return true;
+                return t;
             }
 
-            return false;
+            return null;
+        }
+
+        private static int GetPhaseMaxBeatInclusive(int beatIndex)
+        {
+            TimelineConstants.GetPhaseBeatRange(
+                TimelineConstants.GetPhaseIndex(beatIndex),
+                out var startBeat,
+                out var count);
+            if (count <= 0)
+            {
+                return beatIndex;
+            }
+
+            return startBeat + count - 1;
         }
 
         public void RevertTelegraphMoves(IReadOnlyList<TelegraphBeatMove> moves)
@@ -357,9 +445,28 @@ namespace FracturedChorus.Combat.Timeline
                 return;
             }
 
-            foreach (var move in moves)
+            for (var i = moves.Count - 1; i >= 0; i--)
             {
-                if (move.Telegraph == null || !_telegraphs.Contains(move.Telegraph))
+                var move = moves[i];
+                if (move.Telegraph == null)
+                {
+                    continue;
+                }
+
+                if (move.IsMerge && move.MergedInto != null)
+                {
+                    move.MergedInto.HitsRequired = move.OccupantHitsBefore;
+                    move.MergedInto.NoteTier = move.OccupantTierBefore;
+                    if (!_telegraphs.Contains(move.Telegraph))
+                    {
+                        _telegraphs.Add(move.Telegraph);
+                    }
+
+                    move.Telegraph.BeatIndex = move.FromBeat;
+                    continue;
+                }
+
+                if (!_telegraphs.Contains(move.Telegraph))
                 {
                     continue;
                 }

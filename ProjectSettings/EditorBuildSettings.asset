@@ -31,6 +31,6 @@ EditorBuildSettings:
     guid: a7c3e91f4b2d6840a1e5f809c3d47b26
   - enabled: 1
     path: Assets/FracturedChorus/Scenes/CharacterBuild.unity
-    guid: 00000000000000000000000000000000
+    guid: dbcd92f4a9b07c74f9bf0510336a6f1a
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}

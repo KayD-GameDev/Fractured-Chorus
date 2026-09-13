@@ -75,6 +75,13 @@ namespace FracturedChorus.UI
         public float BossNoteRailAnchoredY => ResolveNoteRailAnchoredY(
             viewport != null ? viewport.rect.height : 0f);
 
+        /// <summary>
+        /// Rail Y for a bottom-left-anchored child of <paramref name="layer"/> (BossNoteClusterLayer).
+        /// Viewport-bottom space and layer-bottom space differ when the layer is inset.
+        /// </summary>
+        public float BossNoteRailYInLayer(RectTransform layer) =>
+            ViewportBottomYToLayerY(layer, BossNoteRailAnchoredY);
+
         public void RebuildBossNoteClustersPublic() => RebuildBossNoteClusters();
 
         /// <summary>
@@ -3922,6 +3929,23 @@ namespace FracturedChorus.UI
         }
 
         /// <summary>
+        /// Map a Viewport-bottom-space Y onto the anchored Y a (0,0)-anchored child of
+        /// <paramref name="layer"/> should use. Needed because BossNoteClusterLayer can be
+        /// vertically inset while BossTrackFrame stays on Viewport.
+        /// </summary>
+        private float ViewportBottomYToLayerY(RectTransform layer, float yFromViewportBottom)
+        {
+            if (layer == null || viewport == null || layer == viewport)
+            {
+                return yFromViewportBottom;
+            }
+
+            var viewportLocal = new Vector3(0f, viewport.rect.yMin + yFromViewportBottom, 0f);
+            var layerLocal = layer.InverseTransformPoint(viewport.TransformPoint(viewportLocal));
+            return layerLocal.y - layer.rect.yMin;
+        }
+
+        /// <summary>
         /// Set a bottom-anchored (or viewport absolute) rect's Y so its pivot sits at viewport bottom-space Y.
         /// </summary>
         private void SetRectYFromViewportBottom(RectTransform rt, float yFromBottom)
@@ -4024,18 +4048,13 @@ namespace FracturedChorus.UI
             ResolveNoteRailAnchoredY(viewportHeight);
 
         /// <summary>
-        /// Prefer authored BossTrackFrame Y, then even-layout boss Y, then serialized fallbacks.
+        /// Prefer live BorderTop / BossTrackFrame Y in viewport-bottom space,
+        /// then even-layout boss Y, then serialized fallbacks.
         /// </summary>
         private float ResolveNoteRailAnchoredY(float viewportHeight)
         {
             if (preserveSceneLayout)
             {
-                CaptureBossTrackFrameSceneRect();
-                if (_bossTrackFrameLock.Has && Mathf.Abs(_bossTrackFrameLock.Y) > 0.01f)
-                {
-                    return _bossTrackFrameLock.Y;
-                }
-
                 if (_bossTrackFrame == null && viewport != null)
                 {
                     _bossTrackFrame = bossTrackFrame != null
@@ -4046,6 +4065,25 @@ namespace FracturedChorus.UI
                         _bossTrackFrameAuthoredInScene = true;
                         CaptureBossTrackFrameSceneRect();
                     }
+                }
+
+                var top = _bossTrackFrame != null
+                    ? _bossTrackFrame.Find("BorderTop") as RectTransform
+                    : null;
+                var railRt = top != null ? top : _bossTrackFrame;
+                if (railRt != null)
+                {
+                    var liveY = GetViewportBottomY(railRt);
+                    if (liveY > 0.01f)
+                    {
+                        return liveY;
+                    }
+                }
+
+                CaptureBossTrackFrameSceneRect();
+                if (_bossTrackFrameLock.Has && Mathf.Abs(_bossTrackFrameLock.Y) > 0.01f)
+                {
+                    return _bossTrackFrameLock.Y;
                 }
 
                 if (_bossTrackFrameAuthoredInScene
@@ -4575,7 +4613,10 @@ namespace FracturedChorus.UI
 
             if (_bossNoteClusterLayer != null)
             {
-                _bossNoteClusterLayer.anchoredPosition = new Vector2(x, 0f);
+                // Follow scroll X only. Scene Y / vertical inset is SoT — wiping Y to 0
+                // shifts the layer bottom vs Viewport and lifts notes off BorderTop.
+                var y = _bossNoteClusterLayer.anchoredPosition.y;
+                _bossNoteClusterLayer.anchoredPosition = new Vector2(x, y);
             }
         }
 
@@ -4623,7 +4664,10 @@ namespace FracturedChorus.UI
             }
 
             var height = viewport.rect.height;
-            var noteY = GetNoteCoverYFromBottom(height);
+            SyncBlockBarrierScroll();
+            var noteY = ViewportBottomYToLayerY(
+                _bossNoteClusterLayer,
+                GetNoteCoverYFromBottom(height));
             _bossNoteClusters.Configure(
                 _bossNoteClusterLayer,
                 NoteVisuals,

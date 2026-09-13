@@ -81,8 +81,8 @@ namespace FracturedChorus.Hub
 
             var menu = ResolveMenu(createIfMissing: false);
 
-            // Calendar / social / party là overlay con của status menu và tự xử lý ESC của chúng.
-            if (menu != null && (menu.IsCalendarOpen || menu.IsSocialStatsOpen || menu.IsPartyStatusOpen))
+            // Calendar / social là overlay con của status menu và tự xử lý ESC của chúng.
+            if (menu != null && (menu.IsCalendarOpen || menu.IsSocialStatsOpen))
             {
                 return;
             }

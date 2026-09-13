@@ -11,7 +11,7 @@ namespace FracturedChorus.Editor
 {
     /// <summary>
     /// Dựng LoadLayer bằng GameObject thật (không sinh runtime) để layout kéo thả chỉnh tay được.
-    /// Dùng chung cho scene sandbox và scene main menu production nên hai bên không lệch nhau.
+    /// Dùng chung cho scene đang mở và scene main menu production nên hai bên không lệch nhau.
     /// </summary>
     public static class SaveLoadLayerBuilder
     {

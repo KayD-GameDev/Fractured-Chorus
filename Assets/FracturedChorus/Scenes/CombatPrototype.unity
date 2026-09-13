@@ -4063,7 +4063,7 @@ Transform:
   m_GameObject: {fileID: 377598853}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.5552872, y: 0.027342796, z: -0.05}
+  m_LocalPosition: {x: -1.5970652, y: 0.13, z: -0.05}
   m_LocalScale: {x: 0.19826, y: 0.212055, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -4205,8 +4205,8 @@ BoxCollider2D:
   m_Offset: {x: -0.31349665, y: 0.0683794}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.7134743, y: 0.45334768}
-    oldSize: {x: 8.373441, y: 9.67}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 7.27, y: 8.5}
     newSize: {x: 7.27, y: 8.5}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -4321,7 +4321,7 @@ MonoBehaviour:
     sprite: {fileID: -7428215157034606851, guid: c717b6aad7a95364c80e530ab2dde0db, type: 3}
     animationClip: {fileID: 7400000, guid: 32682c7ba972ef54493f2a32b5fe48c2, type: 2}
     linkedState: 9
-    localScale: {x: 0.19826, y: 0.212055, z: 0}
+    localScale: {x: 0.31239828, y: 0.33413506, z: 0}
     feetAnchorLocal: {x: -0.27, y: -1.63, z: 0}
     receiveDmgLocal: {x: 1.23, y: 0.62, z: 0}
     projectileLocal: {x: 0, y: 5.8, z: 0}
@@ -4351,7 +4351,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FracturedChorus.Combat.Presentation.SkillVfxSimulator
   skill: {fileID: 11400000, guid: 1a3ed7762916ff74b82dea72f16dabf9, type: 2}
-  profileOverride: {fileID: 11400000, guid: 048f1ec8d341a354dacd3f5317e10f91, type: 2}
+  profileOverride: {fileID: 0}
   caster: {fileID: 377598857}
   projectileA: {fileID: 1143880313}
   targets:
@@ -5421,8 +5421,8 @@ BoxCollider2D:
   m_Offset: {x: 0.6842146, y: -1.6745038}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.33, y: 0.55}
-    oldSize: {x: 14.244898, y: 11.67347}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 5.6938777, y: 12.734694}
     newSize: {x: 2.69, y: 1.71}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -13841,7 +13841,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 12, y: -12}
-  m_SizeDelta: {x: 980, y: 128}
+  m_SizeDelta: {x: 798, y: 128}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1326051294
 MonoBehaviour:
@@ -18431,7 +18431,7 @@ RectTransform:
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: -12, y: -12}
-  m_SizeDelta: {x: 980, y: 128}
+  m_SizeDelta: {x: 798, y: 128}
   m_Pivot: {x: 1, y: 1}
 --- !u!114 &1923000102
 MonoBehaviour:

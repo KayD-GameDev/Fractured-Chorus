@@ -131,7 +131,7 @@ namespace FracturedChorus.Hub.CharacterBuild
             if (indexLabel == null && (portraitChips == null || portraitChips.Length == 0))
             {
                 Debug.LogWarning(
-                    "[CharacterBuild] Layout chips not bound. Sandbox: Fractured Chorus → Heal CharacterBuild Layout Sandbox Hierarchy.");
+                    "[CharacterBuild] Layout chips not bound. Assign portraitChips / indexLabel on CharacterBuild.unity.");
             }
 
             _state = GameMetaSession.Current;
@@ -1049,9 +1049,8 @@ namespace FracturedChorus.Hub.CharacterBuild
                     $"Choose skill for Slot {_equipFocusSlot + 1} — {DisplayName(Roster[_memberIndex])}";
             }
 
-            SkillUnlockCatalog.PartyLevel = stubLevel;
             var kit = new List<(string SkillId, string DisplayName, int UnlockLevel, bool Unlocked)>();
-            foreach (var unlock in SkillUnlockCatalog.KitFor(Roster[_memberIndex]))
+            foreach (var unlock in SkillUnlockCatalog.KitFor(Roster[_memberIndex], entry.Level))
             {
                 if (IsBasicSkill(Roster[_memberIndex], unlock.SkillId))
                 {
@@ -1059,11 +1058,6 @@ namespace FracturedChorus.Hub.CharacterBuild
                 }
 
                 kit.Add(unlock);
-            }
-
-            foreach (var unlock in SkillUnlockCatalog.UnlockedFor(Roster[_memberIndex], entry.Level))
-            {
-                return;
             }
 
             for (var i = 0; i < equipPoolViews.Length; i++)

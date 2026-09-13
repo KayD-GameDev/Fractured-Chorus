@@ -18,6 +18,7 @@ MonoBehaviour:
   toAnchor: 5
   fromOffset: {x: 0, y: 0, z: 0}
   toOffset: {x: 0, y: 0, z: 0}
+  projectileEuler: {x: 353.61636, y: 358.68207, z: 359.30194}
   projectileSprite: {fileID: 21300000, guid: ef78b0e2e52d4baaa183e56aad353714, type: 3}
   impactSprite: {fileID: 0}
   hideImpactSprite: 1
@@ -33,7 +34,7 @@ MonoBehaviour:
   projectileCount: 0
   verticalSpread: 0.22
   shotGapSeconds: 0.08
-  facingOffsetDegrees: 0
+  facingOffsetDegrees: 359.30194
   counteredShotMode: 1
   projectileAdditive: 0
   sortingOrder: 42

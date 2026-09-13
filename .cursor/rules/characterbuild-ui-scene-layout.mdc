@@ -1,8 +1,6 @@
 ---
-description: CharacterBuild / StatMenu sandbox layout lives in the scene; never re-hardcode RectTransforms.
+description: CharacterBuild / StatMenu layout lives in CharacterBuild.unity; never re-hardcode RectTransforms.
 globs:
-  - Assets/FracturedChorus/Editor/CharacterBuildSceneSetupEditor.cs
-  - Assets/FracturedChorus/Scenes/CharacterBuildLayoutSandbox.unity
   - Assets/FracturedChorus/Scenes/CharacterBuild.unity
   - Assets/FracturedChorus/Hub/CharacterBuild/**/*.cs
 alwaysApply: false
@@ -10,16 +8,12 @@ alwaysApply: false
 
 # CharacterBuild / StatMenu — scene layout is source of truth
 
-Pos / size / anchor **và thứ tự sibling Hierarchy** của `BuildCanvas` và mọi child (PortraitPanel, HeaderBar, StatsPanel, SkillsPanel, Nav, MockGuide…) **chỉ** nằm trên scene.
+Pos / size / anchor **và thứ tự sibling Hierarchy** của `BuildCanvas` và mọi child (PortraitPanel, HeaderBar, StatsPanel, SkillsPanel, Nav…) **chỉ** nằm trên `CharacterBuild.unity`.
 
 1. **Không hard-code** `anchoredPosition` / `sizeDelta` / Stretch vào apply khi object đã tồn tại.
-2. **Không reorder** `SetSiblingIndex` / `SetAsFirstSibling` trên object đã tồn tại — kể cả menu Attach / Mock Guide / Apply Stat Kit.
-3. Seed Rect chỉ khi **tạo object mới** (`created == true`); object mới có thể đặt sibling sau parent/logical anchor, không xáo các sibling khác.
-4. User chỉnh Hierarchy rồi **Ctrl+S** — mọi lần attach/mock sau **giữ nguyên** thứ tự + layout.
-5. Không `OpenScene` đè scene đang mở nếu chỉ cần attach missing / show mock.
-6. Menu **Apply CharacterBuild Sandbox Canvas Layers** = reset layer order có confirm — không chạy tự động.
-7. Heal / Rebuild (nếu có) là ngoại lệ được phép reset layout — có confirm dialog; không chạy khi user vừa chỉnh tay.
-8. **Save layout:** `Fractured Chorus/Save CharacterBuild Sandbox Layout` → ghi scene + `MockKit/sandbox_layout_snapshot.json` (chỉ backup tham chiếu, **không** apply lại từ code).
-9. **Production sync:** `Fractured Chorus/Sync CharacterBuild Production From Sandbox` → copy `BuildCanvas` sandbox → `CharacterBuild.unity`, wire `CharacterBuildMenuUI` + portrait layers + skill equip (layout sandbox giữ nguyên, không hardcode apply từ JSON).
-10. Portrait bust layers: `Wire CharacterBuild Portrait Layers` gắn ref scene → `CharacterBuildPortraitLayersView`; không đụng transform.
-11. Stat Details: `StatDetails_EditPreview` là scene-root canvas (như SkillEquip_EditPreview). Chỉnh `StatDetailsOverlay` / Title / Body / CloseButton trên Hierarchy rồi Ctrl+S. Runtime chỉ bật/tắt; không hardcode Rect. Seed layout chỉ khi object mới.
+2. **Không reorder** `SetSiblingIndex` / `SetAsFirstSibling` trên object đã tồn tại.
+3. Seed Rect chỉ khi **tạo object mới** (`created == true`).
+4. User chỉnh Hierarchy rồi **Ctrl+S** — layout scene là source of truth.
+5. Portrait bust layers: gắn ref scene → `CharacterBuildPortraitLayersView`; không đụng transform.
+6. Stat Details / Skill Equip overlay: chỉnh trên Hierarchy rồi Ctrl+S. Runtime chỉ bật/tắt; không hardcode Rect.
+7. Không dùng CharacterBuild layout sandbox — scene và editor heal/seed sandbox đã gỡ.

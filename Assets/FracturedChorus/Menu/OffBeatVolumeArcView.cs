@@ -64,6 +64,19 @@ namespace FracturedChorus.Menu
 #if UNITY_EDITOR
         private void OnValidate()
         {
+            // RectTransform.sizeDelta during OnValidate fires OnRectTransformDimensionsChange
+            // (SendMessage), which Unity forbids. Defer layout until after the callback.
+            UnityEditor.EditorApplication.delayCall -= ApplyValidatedLayout;
+            UnityEditor.EditorApplication.delayCall += ApplyValidatedLayout;
+        }
+
+        private void ApplyValidatedLayout()
+        {
+            if (this == null)
+            {
+                return;
+            }
+
             ResolveImages();
             if (applyLayoutOnAwake)
             {

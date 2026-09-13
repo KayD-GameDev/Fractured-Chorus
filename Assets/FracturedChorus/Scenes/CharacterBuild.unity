@@ -13002,7 +13002,6 @@ MonoBehaviour:
   statDetailsDimmer: {fileID: 2144500110}
   statDetailsBodyLabel: {fileID: 2144500142}
   seedUnspentWhenEmpty: 1
-  stubLevel: 15
   stubNextExp: 3600
 --- !u!114 &1331041831
 MonoBehaviour:
@@ -13214,8 +13213,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.35, y: 0.5}
   m_AnchorMax: {x: 0.35, y: 0.5}
-  m_AnchoredPosition: {x: -57.449997, y: 0}
-  m_SizeDelta: {x: 13.09, y: 20}
+  m_AnchoredPosition: {x: -96.600006, y: -0.3}
+  m_SizeDelta: {x: 20, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1345474248
 MonoBehaviour:
@@ -13783,8 +13782,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.28, y: 0.5}
   m_AnchorMax: {x: 0.28, y: 0.5}
-  m_AnchoredPosition: {x: -103.259995, y: 0}
-  m_SizeDelta: {x: 5.51, y: 20}
+  m_AnchoredPosition: {x: -77.22, y: 0.0000037774}
+  m_SizeDelta: {x: 20, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1420186612
 GameObject:
@@ -13895,7 +13894,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.02, y: 0.68}
   m_AnchorMax: {x: 0.52, y: 0.82}
-  m_AnchoredPosition: {x: 97, y: -316}
+  m_AnchoredPosition: {x: 89, y: -317}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1422762540
@@ -15962,7 +15961,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Text
   m_Material: {fileID: 0}
-  m_Color: {r: 0.227451, g: 0.258824, b: 0.4, a: 1}
+  m_Color: {r: 1, g: 0.8432673, b: 0.0056602955, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -15982,7 +15981,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: STAT
+  m_Text: STATS
 --- !u!222 &1738281389
 CanvasRenderer:
   m_ObjectHideFlags: 0

@@ -96,11 +96,6 @@ namespace FracturedChorus.Hub
                 return;
             }
 
-            if (partyStatusMenu != null && partyStatusMenu.IsOpen)
-            {
-                return;
-            }
-
             // ESC do StatusMenuRuntime làm chủ để mọi scene đóng/mở menu theo cùng một luật.
             if (_tab == Tab.System && WasHealHotkeyPressed())
             {
