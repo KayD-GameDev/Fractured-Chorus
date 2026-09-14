@@ -17,6 +17,58 @@ namespace FracturedChorus.Editor
     {
         public const string LayerName = "LoadLayer";
 
+        public const string PrefabPath = "Assets/FracturedChorus/Resources/UI/SaveLoadPanel.prefab";
+
+        /// <summary>
+        /// Sinh prefab cho scene không có LoadLayer dựng sẵn (status menu trong ván chơi).
+        /// Mở prefab ra chỉnh layout là runtime lấy đúng bản đã chỉnh.
+        /// </summary>
+        [MenuItem("Fractured Chorus/Save/Build Save Load Panel Prefab", false, 21)]
+        public static void BuildPanelPrefab()
+        {
+            EnsureFolder("Assets/FracturedChorus/Resources");
+            EnsureFolder("Assets/FracturedChorus/Resources/UI");
+
+            var holder = new GameObject("~SaveLoadPanelBuildRoot");
+            try
+            {
+                var layer = Build(holder.transform, sortingOrder: 500);
+                layer.name = "SaveLoadPanel";
+                layer.transform.SetParent(null, false);
+                layer.SetActive(false);
+
+                PrefabUtility.SaveAsPrefabAsset(layer, PrefabPath);
+                Object.DestroyImmediate(layer);
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+
+                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
+                Selection.activeObject = prefab;
+                EditorGUIUtility.PingObject(prefab);
+                Debug.Log($"[Fractured Chorus] Save/Load panel prefab dựng xong tại {PrefabPath}.");
+            }
+            catch (System.Exception error)
+            {
+                Debug.LogError($"[Fractured Chorus] Dựng Save/Load panel prefab lỗi: {error}");
+            }
+            finally
+            {
+                Object.DestroyImmediate(holder);
+            }
+        }
+
+        private static void EnsureFolder(string path)
+        {
+            if (AssetDatabase.IsValidFolder(path))
+            {
+                return;
+            }
+
+            var parent = System.IO.Path.GetDirectoryName(path)?.Replace('\\', '/');
+            var leaf = System.IO.Path.GetFileName(path);
+            AssetDatabase.CreateFolder(parent, leaf);
+        }
+
         /// <summary>
         /// Cắm LoadLayer vào scene đang mở mà không dựng lại cả hierarchy — dùng cho scene đã chỉnh tay.
         /// </summary>

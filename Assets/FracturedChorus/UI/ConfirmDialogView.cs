@@ -55,6 +55,16 @@ namespace FracturedChorus.UI
         {
             EnsureWired();
 
+            if (!_wired)
+            {
+                // Không có nút nào để bấm thì đừng khoá người chơi sau một modal chết.
+                Debug.LogError(
+                    "[Fractured Chorus] ConfirmDialogView thiếu Confirm/Cancel button — chạy thẳng hành động.",
+                    this);
+                onConfirm?.Invoke();
+                return;
+            }
+
             _onConfirm = onConfirm;
             _onCancel = onCancel;
 
@@ -118,7 +128,9 @@ namespace FracturedChorus.UI
         }
 
         /// <summary>
-        /// Nối sự kiện đúng một lần. Cần thiết vì dialog dựng từ scene không đi qua Build().
+        /// Nối sự kiện cho nút Yes/No. Chỉ chốt _wired khi hai nút đã có thật:
+        /// AddComponent trên GameObject đang bật khiến Awake chạy trước lúc Build() gán reference,
+        /// chốt sớm là hai nút vĩnh viễn không có listener và dialog thành nút chết.
         /// </summary>
         private void EnsureWired()
         {
@@ -127,15 +139,29 @@ namespace FracturedChorus.UI
                 return;
             }
 
-            _wired = true;
-
             if (canvasGroup == null)
             {
                 canvasGroup = GetComponent<CanvasGroup>();
             }
 
-            confirmButton?.onClick.AddListener(OnConfirmClicked);
-            cancelButton?.onClick.AddListener(OnCancelClicked);
+            if (confirmButton == null && cancelButton == null)
+            {
+                return;
+            }
+
+            _wired = true;
+
+            if (confirmButton != null)
+            {
+                confirmButton.onClick.RemoveListener(OnConfirmClicked);
+                confirmButton.onClick.AddListener(OnConfirmClicked);
+            }
+
+            if (cancelButton != null)
+            {
+                cancelButton.onClick.RemoveListener(OnCancelClicked);
+                cancelButton.onClick.AddListener(OnCancelClicked);
+            }
         }
 
         private void OnConfirmClicked()

@@ -13,6 +13,12 @@ namespace FracturedChorus.Menu
     /// </summary>
     public sealed class SaveLoadSlotListView : MonoBehaviour
     {
+        /// <summary>
+        /// Panel dùng cho scene chưa dựng sẵn LoadLayer (status menu trong ván chơi).
+        /// Dựng lại bằng menu Fractured Chorus → Save → Build Save Load Panel Prefab.
+        /// </summary>
+        public const string ResourcesPath = "UI/SaveLoadPanel";
+
         public enum Mode
         {
             Load,
@@ -42,6 +48,23 @@ namespace FracturedChorus.Menu
         [SerializeField] private SlotRow[] sceneSlots = Array.Empty<SlotRow>();
         [SerializeField] private ConfirmDialogView sceneConfirmDialog;
 
+        [Header("Style — chỉnh thẳng trong scene, runtime đọc lại từ đây")]
+        [Tooltip("Bật: màu nền hàng lúc không chọn lấy từ Image đã set trong scene, bỏ qua rowNormalColor.")]
+        [SerializeField] private bool useSceneRowColors = true;
+        [SerializeField] private Color rowNormalColor = FcColorTokens.Surface.Row;
+        [SerializeField] private Color rowSelectedColor = FcColorTokens.Selection.RowBackground;
+        [SerializeField] private Color tabActiveColor = FcColorTokens.Brand.Cyan;
+        [SerializeField] private Color tabIdleColor = FcColorTokens.Brand.TextIdle;
+        [SerializeField] private Color tabDisabledColor = FcColorTokens.WithAlpha(FcColorTokens.Brand.TextMuted, 0.38f);
+
+        [Header("Text — chỉnh thẳng trong scene")]
+        [SerializeField] private string loadTitle = "LOAD GAME";
+        [SerializeField] private string saveTitle = "SAVE GAME";
+        [SerializeField] private string loadActionLabel = "LOAD";
+        [SerializeField] private string saveActionLabel = "SAVE";
+        [SerializeField] private string overwriteActionLabel = "OVERWRITE";
+        [SerializeField] private string emptySelectionText = "Select a slot.";
+
         private CanvasGroup _canvasGroup;
         private Text _titleLabel;
         private Text _detailLabel;
@@ -54,6 +77,7 @@ namespace FracturedChorus.Menu
         private Text _saveTabLabel;
         private ConfirmDialogView _confirmDialog;
         private SlotRow[] _rows = Array.Empty<SlotRow>();
+        private Color[] _rowIdleColors = Array.Empty<Color>();
         private SaveSlotHeader[] _headers = Array.Empty<SaveSlotHeader>();
         private Mode _mode;
         private int _selectedSlot = -1;
@@ -86,9 +110,36 @@ namespace FracturedChorus.Menu
                 return existing;
             }
 
-            var view = Build(parent);
+            var view = SpawnFromPrefab(parent) ?? Build(parent);
             view.Open(mode, onLoad, onSave, onClosed, sessionActive);
             return view;
+        }
+
+        /// <summary>
+        /// Ưu tiên prefab trong Resources để layout chỉnh tay được; chỉ khi chưa có prefab mới
+        /// rơi về hierarchy dựng bằng code trong <see cref="Build"/>.
+        /// </summary>
+        private static SaveLoadSlotListView SpawnFromPrefab(Transform parent)
+        {
+            var prefab = Resources.Load<SaveLoadSlotListView>(ResourcesPath);
+            if (prefab == null)
+            {
+                return null;
+            }
+
+            var instance = Instantiate(prefab, parent, false);
+            instance.name = prefab.name;
+            instance.gameObject.SetActive(false);
+
+            // Canvas lồng trong canvas khác chỉ nghe sortingOrder khi bật overrideSorting,
+            // không thì panel chui xuống dưới HUD của scene.
+            var canvas = instance.GetComponent<Canvas>();
+            if (canvas != null && parent.GetComponentInParent<Canvas>() != null)
+            {
+                canvas.overrideSorting = true;
+            }
+
+            return instance;
         }
 
         public void Open(
@@ -122,7 +173,11 @@ namespace FracturedChorus.Menu
 
         public void Hide()
         {
-            _confirmDialog?.Close();
+            if (_confirmDialog != null)
+            {
+                _confirmDialog.Close();
+            }
+
             UiEscapeGate.Pop(this);
 
             if (_canvasGroup != null)
@@ -182,10 +237,28 @@ namespace FracturedChorus.Menu
             _loadTabButton?.onClick.AddListener(() => SetMode(Mode.Load));
             _saveTabButton?.onClick.AddListener(() => SetMode(Mode.Save));
 
+            CaptureRowIdleColors();
+
             for (var i = 0; i < _rows.Length; i++)
             {
                 var slotIndex = i;
                 _rows[i]?.Button?.onClick.AddListener(() => SelectSlot(slotIndex));
+            }
+        }
+
+        /// <summary>
+        /// Nhớ màu nền từng hàng đúng như người dựng scene đã set, để bỏ chọn là trả về màu đó
+        /// thay vì ép về một hằng số trong code.
+        /// </summary>
+        private void CaptureRowIdleColors()
+        {
+            _rowIdleColors = new Color[_rows.Length];
+            for (var i = 0; i < _rows.Length; i++)
+            {
+                var background = _rows[i]?.Background;
+                _rowIdleColors[i] = useSceneRowColors && background != null
+                    ? background.color
+                    : rowNormalColor;
             }
         }
 
@@ -238,7 +311,7 @@ namespace FracturedChorus.Menu
             ApplyTabVisual(_saveTabButton, _saveTabLabel, CanSave, _mode == Mode.Save);
         }
 
-        private static void ApplyTabVisual(Button button, Text label, bool available, bool selected)
+        private void ApplyTabVisual(Button button, Text label, bool available, bool selected)
         {
             if (button != null)
             {
@@ -252,11 +325,11 @@ namespace FracturedChorus.Menu
 
             if (!available)
             {
-                label.color = FcColorTokens.Brand.TextMuted * new Color(1f, 1f, 1f, 0.45f);
+                label.color = tabDisabledColor;
                 return;
             }
 
-            label.color = selected ? FcColorTokens.Brand.Cyan : FcColorTokens.Brand.TextIdle;
+            label.color = selected ? tabActiveColor : tabIdleColor;
         }
 
         private void RefreshHeaders()
@@ -293,27 +366,29 @@ namespace FracturedChorus.Menu
                 }
 
                 _rows[i].Background.color = i == _selectedSlot
-                    ? FcColorTokens.Selection.RowBackground
-                    : FcColorTokens.Surface.Row;
+                    ? rowSelectedColor
+                    : IdleColorFor(i);
             }
+        }
+
+        private Color IdleColorFor(int index)
+        {
+            return index >= 0 && index < _rowIdleColors.Length ? _rowIdleColors[index] : rowNormalColor;
         }
 
         private void UpdateDetail()
         {
             if (_titleLabel != null)
             {
-                _titleLabel.text = _mode == Mode.Load ? "LOAD GAME" : "SAVE GAME";
+                _titleLabel.text = _mode == Mode.Load ? loadTitle : saveTitle;
             }
 
-            if (_detailLabel == null)
-            {
-                return;
-            }
+            var emptyAction = _mode == Mode.Load ? loadActionLabel : saveActionLabel;
 
             if (_selectedSlot < 0 || _selectedSlot >= _headers.Length)
             {
-                _detailLabel.text = "Select a slot.";
-                SetPrimaryEnabled(false, _mode == Mode.Load ? "Load" : "Save");
+                SetDetailText(emptySelectionText);
+                SetPrimaryEnabled(false, emptyAction);
                 SetDeleteEnabled(false);
                 return;
             }
@@ -321,31 +396,39 @@ namespace FracturedChorus.Menu
             var header = _headers[_selectedSlot];
             if (header.isCorrupted)
             {
-                _detailLabel.text =
+                SetDetailText(
                     $"Slot {_selectedSlot + 1:00}\nCORRUPTED\n" +
-                    "File save sai chữ ký hoặc hỏng.\nChỉ có thể xóa hoặc ghi đè.";
-                SetPrimaryEnabled(_mode == Mode.Save, "Overwrite");
+                    "File save sai chữ ký hoặc hỏng.\nChỉ có thể xóa hoặc ghi đè.");
+                SetPrimaryEnabled(_mode == Mode.Save, overwriteActionLabel);
                 SetDeleteEnabled(true);
                 return;
             }
 
             if (header.isEmpty)
             {
-                _detailLabel.text = $"Slot {_selectedSlot + 1:00}\nEmpty";
-                SetPrimaryEnabled(_mode == Mode.Save, _mode == Mode.Load ? "Load" : "Save");
+                SetDetailText($"Slot {_selectedSlot + 1:00}\nEmpty");
+                SetPrimaryEnabled(_mode == Mode.Save, emptyAction);
                 SetDeleteEnabled(false);
                 return;
             }
 
-            _detailLabel.text =
+            SetDetailText(
                 $"Slot {_selectedSlot + 1:00}\n" +
                 $"{header.dateMonth:00}/{header.dateDay:00} · {PhaseLabel(header.phase)}\n" +
                 $"{header.locationLabel}\n" +
                 $"Notes {header.notes} · {DifficultyLabel(header.difficulty)}\n" +
-                $"Playtime {header.FormatPlayTime()}";
+                $"Playtime {header.FormatPlayTime()}");
 
-            SetPrimaryEnabled(true, _mode == Mode.Load ? "Load" : "Overwrite");
+            SetPrimaryEnabled(true, _mode == Mode.Load ? loadActionLabel : overwriteActionLabel);
             SetDeleteEnabled(true);
+        }
+
+        private void SetDetailText(string text)
+        {
+            if (_detailLabel != null)
+            {
+                _detailLabel.text = text;
+            }
         }
 
         private void OnPrimaryClicked()
@@ -355,8 +438,10 @@ namespace FracturedChorus.Menu
                 return;
             }
 
-            var header = _headers[_selectedSlot];
-            var slotLabel = $"SLOT {_selectedSlot + 1:00}";
+            // Chốt slot ngay lúc bấm: callback chạy sau khi dialog đóng, đọc lại field là rủi ro thừa.
+            var slot = _selectedSlot;
+            var header = _headers[slot];
+            var slotLabel = $"SLOT {slot + 1:00}";
 
             if (_mode == Mode.Load)
             {
@@ -370,18 +455,18 @@ namespace FracturedChorus.Menu
                     AskThen(
                         "THOÁT VÁN ĐANG CHƠI?",
                         $"Tải {slotLabel} sẽ bỏ tiến trình chưa lưu của ván hiện tại.",
-                        () => PerformLoad(_selectedSlot),
+                        () => PerformLoad(slot),
                         "TẢI");
                     return;
                 }
 
-                PerformLoad(_selectedSlot);
+                PerformLoad(slot);
                 return;
             }
 
             if (header.isEmpty)
             {
-                PerformSave(_selectedSlot);
+                PerformSave(slot);
                 return;
             }
 
@@ -390,7 +475,7 @@ namespace FracturedChorus.Menu
                 header.isCorrupted
                     ? $"{slotLabel} đang hỏng. Ghi đè sẽ thay bằng dữ liệu mới."
                     : $"Ghi đè {slotLabel}? Dữ liệu cũ sẽ mất.",
-                () => PerformSave(_selectedSlot),
+                () => PerformSave(slot),
                 "GHI ĐÈ");
         }
 
@@ -433,7 +518,12 @@ namespace FracturedChorus.Menu
         /// </summary>
         private void AskThen(string title, string message, Action onConfirm, string confirmText)
         {
-            _confirmDialog ??= ConfirmDialogView.Ensure(_canvasGroup != null ? _canvasGroup.transform : transform);
+            // Phải so bằng toán tử của Unity: dialog bị Destroy vẫn khác null theo nghĩa C#,
+            // nên "??=" sẽ giữ lại reference chết và Ask() ném MissingReference.
+            if (_confirmDialog == null)
+            {
+                _confirmDialog = ConfirmDialogView.Ensure(_canvasGroup != null ? _canvasGroup.transform : transform);
+            }
 
             if (_confirmDialog == null)
             {
@@ -496,6 +586,45 @@ namespace FracturedChorus.Menu
             (int)GameDifficulty.OffBeat => "Off Beat",
             _ => "Cadence"
         };
+
+#if UNITY_EDITOR
+        /// <summary>
+        /// Đổ header slot thật vào các label trong scene khi đang ở edit mode, để canh layout
+        /// theo nội dung sẽ hiện lúc chơi chứ không phải text placeholder. Chỉ ghi vào những
+        /// reference đã bind sẵn — không tự dựng gì thêm, không đổi anchor/size.
+        /// </summary>
+        public void ApplyEditorPreview(Mode mode, bool sessionActive)
+        {
+            var headers = GameMetaSaveLoad.ListHeaders();
+
+            if (sceneTitleLabel != null)
+            {
+                sceneTitleLabel.text = mode == Mode.Load ? loadTitle : saveTitle;
+            }
+
+            for (var i = 0; i < sceneSlots.Length; i++)
+            {
+                var label = sceneSlots[i]?.Label;
+                if (label != null)
+                {
+                    label.text = FormatRowLabel(i < headers.Length ? headers[i] : SaveSlotHeader.Empty(i));
+                }
+            }
+
+            if (sceneDetailLabel != null)
+            {
+                sceneDetailLabel.text = emptySelectionText;
+            }
+
+            if (scenePrimaryLabel != null)
+            {
+                scenePrimaryLabel.text = mode == Mode.Load ? loadActionLabel : saveActionLabel;
+            }
+
+            ApplyTabVisual(sceneLoadTabButton, sceneLoadTabLabel, true, mode == Mode.Load);
+            ApplyTabVisual(sceneSaveTabButton, sceneSaveTabLabel, sessionActive, mode == Mode.Save);
+        }
+#endif
 
         private static SaveLoadSlotListView Build(Transform parent)
         {

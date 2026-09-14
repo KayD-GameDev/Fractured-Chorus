@@ -9,6 +9,23 @@ Newest first.
 
 ---
 
+## 2026-09-14 — Astra Stage TV (drop + face reel)
+
+**Focus:** art · combat presentation
+
+**Done**
+- 6 PNG riêng (khung TV neon + 5 mặt Astra hỷ/nộ/ái/ố/bi), alpha thật, không atlas; pipeline `game-2d-asset-creation`.
+- Prefab + `AstraStageTvConfig` spawn runtime lên Background canvas khi intro TLB boss — không gắn object vào `CombatPrototype.unity`.
+- Drop từ đỉnh scene vào ô vuông tím, rồi reel top→bottom, khóa random 1 mặt.
+
+**Decisions**
+- Face-only Cadence (tóc bạch kim, mắt hổ phách), không outfit.
+- Cosmetic only — random face không ảnh hưởng combat.
+
+**Refs:** `Art/UI/Combat/Boss/Astra/StageTv/ASSET_BRIEF.md`
+
+---
+
 ## 2026-08-01 — Combat: uniform beat, nhạc chạy liên tục, Planning Window
 
 **Focus:** combat runtime · audio · docs

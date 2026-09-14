@@ -210,6 +210,7 @@ namespace FracturedChorus.Combat.Core
             _session?.SetTimelineRunning(true);
 
             var introSec = ResolveIntroDurationSec();
+            TryPlayAstraStageTv();
             if (timelineView != null)
             {
                 timelineView.BeginIntroPlayback(introSec, OnCombatIntroComplete);
@@ -222,6 +223,11 @@ namespace FracturedChorus.Combat.Core
             }
 
             _combatIntroRoutine = StartCoroutine(CombatIntroFallbackRoutine());
+        }
+
+        private void TryPlayAstraStageTv()
+        {
+            AstraStageTvView.PlayActive();
         }
 
         private static float ResolveIntroDurationSec()
