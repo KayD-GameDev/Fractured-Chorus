@@ -40,6 +40,7 @@ namespace FracturedChorus.Combat.Presentation
         public RectTransform Frame => frame;
         public RectTransform Screen => screen;
         public RectTransform FaceReel => faceReel;
+        public event System.Action<int> OnFaceLocked;
 
         public static AstraStageTvView FindActive()
         {
@@ -55,6 +56,15 @@ namespace FracturedChorus.Combat.Presentation
             if (view != null && view.gameObject.activeSelf)
             {
                 view.Play();
+            }
+        }
+
+        public static void PlayActiveReel(int? excludeFaceIndex)
+        {
+            var view = FindActive();
+            if (view != null && view.gameObject.activeSelf)
+            {
+                view.PlayReel(excludeFaceIndex);
             }
         }
 
@@ -153,8 +163,6 @@ namespace FracturedChorus.Combat.Presentation
 
             if (screenImage != null)
             {
-                screenImage.sprite = null;
-                screenImage.color = new Color(0.02f, 0.02f, 0.08f, 0.55f);
                 screenImage.raycastTarget = false;
             }
 
@@ -207,6 +215,32 @@ namespace FracturedChorus.Combat.Presentation
             ApplySequenceVisual();
         }
 
+        public void PlayReel(int? excludeFaceIndex)
+        {
+            EnsureBuilt();
+            if (config == null)
+            {
+                Debug.LogWarning("[AstraStageTv] Missing config.");
+                return;
+            }
+
+            gameObject.SetActive(true);
+            PlaceAfterSceneVideo();
+            var root = transform as RectTransform;
+            if (root != null)
+            {
+                root.anchoredPosition = _restAnchored;
+            }
+
+            _sequence.BeginReelOnly(
+                config.SpinDurationSec,
+                config.SpinSpeedFacesPerSec,
+                config.DecelDurationSec,
+                excludeFaceIndex: excludeFaceIndex);
+            _playing = true;
+            ApplySequenceVisual();
+        }
+
         public void ParkAboveForIntro()
         {
             EnsureBuilt();
@@ -254,6 +288,7 @@ namespace FracturedChorus.Combat.Presentation
             if (_sequence.Phase == AstraStageTvPhase.Locked)
             {
                 _playing = false;
+                OnFaceLocked?.Invoke(_sequence.LockedFaceIndex);
             }
         }
 

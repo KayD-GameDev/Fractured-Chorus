@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using FracturedChorus.Combat.Grid;
+using FracturedChorus.Combat.Presentation;
 using FracturedChorus.Combat.Units;
 using FracturedChorus.Data;
 using FracturedChorus.RunMap;
@@ -88,6 +89,13 @@ namespace FracturedChorus.Combat.Timeline
             if (unit != null && unit.PendingReduceS2 > 0)
             {
                 s2 = Mathf.Max(0, s2 - unit.PendingReduceS2);
+            }
+
+            if (unit != null
+                && unit.Side == GridSide.Player
+                && AstraTvMoodState.JoyS2ReduceBeats > 0)
+            {
+                s2 = Mathf.Max(0, s2 - AstraTvMoodState.JoyS2ReduceBeats);
             }
 
             return s2;

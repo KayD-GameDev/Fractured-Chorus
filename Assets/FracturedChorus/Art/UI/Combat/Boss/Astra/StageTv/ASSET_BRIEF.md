@@ -22,7 +22,7 @@
 | `astra_tv_face_hate_v1.png` | **1024 × 1024** | Ố — contempt |
 | `astra_tv_face_sorrow_v1.png` | **1024 × 1024** | Bi — tears |
 
-All faces: same 1:1 crop (crown → hair → upper shoulders), **Cadence Boss outfit** (black/white vest, gold stars, choker) visible at neck/shoulders, platinum hair, golden amber eyes, true-alpha background.
+All faces: same 1:1 crop locked to **Love** (`astra_tv_face_love_v1.png`) — crown → hair → cut across the bustier (gold stars near the bottom edge). **Cadence Boss outfit** (black/white vest, gold stars, choker) visible at neck/shoulders, platinum hair, golden amber eyes, true-alpha background.
 
 ## Pipeline
 

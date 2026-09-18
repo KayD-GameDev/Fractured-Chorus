@@ -1,6 +1,7 @@
 using FracturedChorus.Combat.Core;
 using FracturedChorus.Combat.Damage;
 using FracturedChorus.Combat.Grid;
+using FracturedChorus.Combat.Presentation;
 using FracturedChorus.Combat.Timeline;
 using FracturedChorus.Data;
 using FracturedChorus.RunMap;
@@ -392,6 +393,12 @@ namespace FracturedChorus.Combat.Actions
                 !Mathf.Approximately(ctx.QteOutgoingMultiplier, 1f))
             {
                 finalDamage *= ctx.QteOutgoingMultiplier;
+            }
+
+            var moodOutgoing = AstraTvMoodState.ResolveOutgoingMult(ctx.Source, target);
+            if (moodOutgoing > 0f && !Mathf.Approximately(moodOutgoing, 1f))
+            {
+                finalDamage *= moodOutgoing;
             }
 
             finalDamage = RunEventCombatMods.ModifyOutgoing(ctx.Source.Side, finalDamage);

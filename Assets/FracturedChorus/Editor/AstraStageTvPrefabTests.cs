@@ -29,6 +29,9 @@ namespace FracturedChorus.Tests
             Assert.That(config.RestNormalizedPos.y, Is.InRange(0f, 1f));
             Assert.Greater(config.RestSizePx.x, 32f);
             Assert.Greater(config.RestSizePx.y, 32f);
+            Assert.AreEqual(2, config.MoodDurationPhases);
+            Assert.Greater(config.HateCoverCostMult, 1f);
+            Assert.Less(config.AngerQteWindowMult, 1f);
 
             var paths = new[]
             {
@@ -128,6 +131,35 @@ namespace FracturedChorus.Tests
 
                 view.ShowAtRest();
                 Assert.AreEqual(new Vector2(7f, 9f), rect.anchoredPosition, "drop target must be the scene rest");
+            }
+            finally
+            {
+                Object.DestroyImmediate(canvasGo);
+            }
+        }
+
+        [Test]
+        public void SceneScreenColor_SurvivesEnsureBuilt()
+        {
+            var canvasGo = new GameObject("Canvas", typeof(Canvas));
+            try
+            {
+                var tvGo = new GameObject(AstraStageTvView.ObjectName, typeof(RectTransform));
+                tvGo.GetComponent<RectTransform>().SetParent(canvasGo.transform, false);
+
+                var screenGo = new GameObject(AstraStageTvView.ScreenChildName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                screenGo.transform.SetParent(tvGo.transform, false);
+                var authored = new Color(0.12f, 0.34f, 0.56f, 0.8f);
+                screenGo.GetComponent<Image>().color = authored;
+
+                var view = tvGo.AddComponent<AstraStageTvView>();
+                view.EnsureBuilt();
+
+                var screen = Find(tvGo.transform, AstraStageTvView.ScreenChildName);
+                Assert.IsNotNull(screen);
+                var image = screen.GetComponent<Image>();
+                Assert.IsNotNull(image);
+                Assert.AreEqual(authored, image.color, "Screen Image color/alpha must stay authored");
             }
             finally
             {

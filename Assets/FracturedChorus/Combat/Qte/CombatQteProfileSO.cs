@@ -94,16 +94,19 @@ namespace FracturedChorus.Combat.Qte
             return Mathf.Clamp01(Mathf.Min(chanceCap, baseOverride + chanceStep * steps));
         }
 
-        public CombatQteGrade Evaluate(float elapsedSec)
+        public CombatQteGrade Evaluate(float elapsedSec) => Evaluate(elapsedSec, 1f);
+
+        public CombatQteGrade Evaluate(float elapsedSec, float windowMult)
         {
             var delta = elapsedSec - shrinkDuration;
             var abs = Mathf.Abs(delta);
-            if (abs <= perfectWindowSec)
+            var safeMult = Mathf.Clamp(windowMult, 0.2f, 1f);
+            if (abs <= perfectWindowSec * safeMult)
             {
                 return CombatQteGrade.Perfect;
             }
 
-            if (abs <= goodWindowSec)
+            if (abs <= goodWindowSec * safeMult)
             {
                 return CombatQteGrade.Good;
             }

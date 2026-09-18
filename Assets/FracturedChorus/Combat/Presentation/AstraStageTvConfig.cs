@@ -28,6 +28,15 @@ namespace FracturedChorus.Combat.Presentation
         public float SpinSpeedFacesPerSec = 6f;
         public float DecelDurationSec = 0.45f;
 
+        [Header("Mood — Plan A (arena law, 2 Execute segments)")]
+        [Min(1)] public int MoodDurationPhases = 2;
+        [Min(0)] public int JoyS2ReduceBeats = 1;
+        [Min(0)] public int JoyExtraRedCoreNotes = 1;
+        [Range(0.2f, 1f)] public float AngerQteWindowMult = 0.55f;
+        [Min(1f)] public float LoveOutgoingMult = 1.25f;
+        [Min(1f)] public float HateCoverCostMult = 2f;
+        [Min(0)] public int SorrowExtraMiniAttacks = 1;
+
         public static AstraStageTvConfig Load()
         {
             var config = Resources.Load<AstraStageTvConfig>(ResourcePath);

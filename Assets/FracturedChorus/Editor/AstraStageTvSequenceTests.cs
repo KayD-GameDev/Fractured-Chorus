@@ -57,5 +57,42 @@ namespace FracturedChorus.Tests
             Assert.AreEqual(AstraStageTvPhase.Locked, a.Phase);
             Assert.AreEqual(a.LockedFaceIndex, b.LockedFaceIndex);
         }
+
+        [Test]
+        public void BeginReelOnly_SkipsDrop()
+        {
+            var seq = new AstraStageTvSequence();
+            seq.BeginReelOnly(0.8f, 8f, 0.2f, seed: 5);
+            Assert.AreEqual(AstraStageTvPhase.Rolling, seq.Phase);
+            Assert.AreEqual(1f, seq.DropT);
+
+            seq.Tick(0.05f);
+            Assert.AreEqual(AstraStageTvPhase.Rolling, seq.Phase);
+            Assert.Greater(seq.ReelOffset, 0f);
+        }
+
+        [Test]
+        public void BeginReelOnly_ExcludesPreviousFace()
+        {
+            var baseline = new AstraStageTvSequence();
+            baseline.Begin(0.05f, 0.8f, 8f, 0.2f, seed: 3);
+            for (var i = 0; i < 40; i++)
+            {
+                baseline.Tick(0.05f);
+            }
+
+            Assert.AreEqual(AstraStageTvPhase.Locked, baseline.Phase);
+            var excluded = baseline.LockedFaceIndex;
+
+            var seq = new AstraStageTvSequence();
+            seq.BeginReelOnly(0.8f, 8f, 0.2f, seed: 3, excludeFaceIndex: excluded);
+            for (var i = 0; i < 40; i++)
+            {
+                seq.Tick(0.05f);
+            }
+
+            Assert.AreEqual(AstraStageTvPhase.Locked, seq.Phase);
+            Assert.AreNotEqual(excluded, seq.LockedFaceIndex);
+        }
     }
 }

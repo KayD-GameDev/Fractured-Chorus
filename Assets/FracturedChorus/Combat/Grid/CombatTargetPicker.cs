@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using FracturedChorus.Combat.Formation;
+using FracturedChorus.Combat.Presentation;
 using FracturedChorus.Combat.Timeline;
 using FracturedChorus.Combat.Units;
 using UnityEngine;
@@ -19,10 +20,12 @@ namespace FracturedChorus.Combat.Grid
             var standingUnits = GetStandingUnitsOnBeat(grid, timeline, beatIndex);
             if (standingUnits.Count > 0)
             {
-                return standingUnits.OrderByDescending(u => u.Stats.BaseAv).First();
+                return AstraTvMoodState.ResolveLeakTarget(
+                    standingUnits.OrderByDescending(u => u.Stats.BaseAv).First());
             }
 
-            return PickEnemyAttackTarget(grid, BossFormationRuntime.Active);
+            return AstraTvMoodState.ResolveLeakTarget(
+                PickEnemyAttackTarget(grid, BossFormationRuntime.Active));
         }
 
         public static List<CombatUnit> GetStandingUnitsOnBeat(DualGrid grid, BeatTimelineEngine timeline, int beatIndex)
@@ -58,6 +61,20 @@ namespace FracturedChorus.Combat.Grid
             }
 
             return result;
+        }
+
+        public static CombatUnit PickHighestHeartBeatAlive(IEnumerable<CombatUnit> units)
+        {
+            if (units == null)
+            {
+                return null;
+            }
+
+            return units
+                .Where(u => u != null && u.IsAlive)
+                .OrderByDescending(u => u.Stats != null ? u.Stats.HeartBeat : 0)
+                .ThenByDescending(u => u.Stats != null ? u.Stats.BaseAv : 0)
+                .FirstOrDefault();
         }
 
         public static CombatUnit PickHighestBaseAvAlive(IEnumerable<CombatUnit> units)

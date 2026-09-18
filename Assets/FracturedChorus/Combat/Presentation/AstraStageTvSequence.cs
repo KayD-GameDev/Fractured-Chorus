@@ -33,19 +33,22 @@ namespace FracturedChorus.Combat.Presentation
         private float _decelTargetOffset;
         private bool _decelStarted;
         private Random _rng;
+        private int? _excludeFaceIndex;
 
         public void Begin(
             float dropDurationSec,
             float spinDurationSec,
             float spinSpeedFacesPerSec,
             float decelDurationSec,
-            int? seed = null)
+            int? seed = null,
+            int? excludeFaceIndex = null)
         {
             _dropDuration = Math.Max(0.05f, dropDurationSec);
             _spinDuration = Math.Max(0.05f, spinDurationSec);
             _spinSpeed = Math.Max(0.5f, spinSpeedFacesPerSec);
             _decelDuration = Clamp(decelDurationSec, 0.05f, _spinDuration);
             _rng = seed.HasValue ? new Random(seed.Value) : new Random();
+            _excludeFaceIndex = excludeFaceIndex;
             Phase = AstraStageTvPhase.Dropping;
             DropT = 0f;
             ReelOffset = 0f;
@@ -55,6 +58,20 @@ namespace FracturedChorus.Combat.Presentation
             _decelStarted = false;
             _decelStartOffset = 0f;
             _decelTargetOffset = 0f;
+        }
+
+        /// <summary>Mid-fight reroll: skip the drop, spin from the current rest pose.</summary>
+        public void BeginReelOnly(
+            float spinDurationSec,
+            float spinSpeedFacesPerSec,
+            float decelDurationSec,
+            int? seed = null,
+            int? excludeFaceIndex = null)
+        {
+            Begin(0.05f, spinDurationSec, spinSpeedFacesPerSec, decelDurationSec, seed, excludeFaceIndex);
+            Phase = AstraStageTvPhase.Rolling;
+            DropT = 1f;
+            _dropElapsed = _dropDuration;
         }
 
         public void Tick(float dt)
@@ -131,7 +148,7 @@ namespace FracturedChorus.Combat.Presentation
         private void BeginDecel()
         {
             _decelStarted = true;
-            LockedFaceIndex = _rng.Next(0, FaceCount);
+            LockedFaceIndex = RollFaceIndex();
             _decelStartOffset = ReelOffset;
             var target = LockedFaceIndex;
             while (target < _decelStartOffset + 0.35f)
@@ -140,6 +157,30 @@ namespace FracturedChorus.Combat.Presentation
             }
 
             _decelTargetOffset = target;
+        }
+
+        private int RollFaceIndex()
+        {
+            var pick = _rng.Next(0, FaceCount);
+            if (!_excludeFaceIndex.HasValue || FaceCount < 2)
+            {
+                return pick;
+            }
+
+            var excluded = _excludeFaceIndex.Value;
+            var guard = 0;
+            while (pick == excluded && guard < FaceCount + 2)
+            {
+                pick = _rng.Next(0, FaceCount);
+                guard++;
+            }
+
+            if (pick == excluded)
+            {
+                pick = (excluded + 1) % FaceCount;
+            }
+
+            return pick;
         }
 
         private static float Wrap(float offset)
