@@ -330,7 +330,7 @@ namespace FracturedChorus.UI
             }
 
             var pin = PinInNoteSpace;
-            var railY = view.BossNoteRailAnchoredY;
+            var railY = view.BossNoteRailYInLayer(rt.parent as RectTransform);
 #if UNITY_EDITOR
             if (!Application.isPlaying)
             {

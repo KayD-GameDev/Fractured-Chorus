@@ -1,6 +1,7 @@
 using System;
 using FracturedChorus.Combat.Block;
 using FracturedChorus.Combat.Damage;
+using FracturedChorus.Combat.Presentation;
 using UnityEngine;
 
 namespace FracturedChorus.Combat.Cover
@@ -13,6 +14,9 @@ namespace FracturedChorus.Combat.Cover
         public bool IsActive => ActiveBeatsRemaining > 0;
         public float OutgoingDamageMultiplier =>
             IsActive ? CoverConstants.DamageMultiplier : 1f;
+
+        public int ActivateCost =>
+            Mathf.Max(1, Mathf.CeilToInt(CoverConstants.ActivateCost * AstraTvMoodState.CoverCostMult));
 
         public event Action OnChanged;
 
@@ -38,7 +42,7 @@ namespace FracturedChorus.Combat.Cover
             renAlive &&
             !IsPending &&
             !IsActive &&
-            Gauge >= CoverConstants.ActivateCost;
+            Gauge >= ActivateCost;
 
         public bool TryActivate(bool renAlive)
         {
@@ -47,10 +51,11 @@ namespace FracturedChorus.Combat.Cover
                 return false;
             }
 
-            Gauge -= CoverConstants.ActivateCost;
+            var cost = ActivateCost;
+            Gauge -= cost;
             IsPending = true;
             Debug.Log(
-                $"[Cover] Activated (−{CoverConstants.ActivateCost}) → gauge {Gauge}/{CoverConstants.GaugeCap} pending");
+                $"[Cover] Activated (−{cost}) → gauge {Gauge}/{CoverConstants.GaugeCap} pending");
             OnChanged?.Invoke();
             return true;
         }

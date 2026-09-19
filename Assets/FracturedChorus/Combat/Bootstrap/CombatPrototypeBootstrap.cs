@@ -202,6 +202,15 @@ namespace FracturedChorus.Combat.Bootstrap
 
             combatController.SetActiveEncounter(encounterId);
 
+            if (isPooledEncounter)
+            {
+                AstraStageTvView.HideIfPresent();
+            }
+            else
+            {
+                EnsureAstraStageTv();
+            }
+
             ICombatMusicSync musicSync;
             if (isPooledEncounter && RunMusicSession.Instance != null && RunMusicSession.Instance.IsActive)
             {
@@ -1216,6 +1225,18 @@ namespace FracturedChorus.Combat.Bootstrap
             var image = go.GetComponent<Image>();
             image.type = Image.Type.Simple;
             return image;
+        }
+
+        private void EnsureAstraStageTv()
+        {
+            var bgRoot = GameObject.Find("Background canvas");
+            if (bgRoot == null)
+            {
+                Debug.LogWarning("[Bootstrap] Background canvas missing — Astra Stage TV skipped.");
+                return;
+            }
+
+            AstraStageTvView.EnsureOnBackground(bgRoot.transform);
         }
 
         private static void StopLuxeArenaVideoPlayback(GameObject bgRoot)

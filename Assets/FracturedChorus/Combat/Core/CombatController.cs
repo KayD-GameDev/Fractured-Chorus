@@ -61,6 +61,7 @@ namespace FracturedChorus.Combat.Core
         private int _relocateFromBeat = -1;
         private Coroutine _segmentCompleteRoutine;
         private Coroutine _encounterEndRoutine;
+        private AstraStageTvView _astraTv;
         private Coroutine _combatIntroRoutine;
         private bool _pendingEncounterResult;
 
@@ -136,6 +137,7 @@ namespace FracturedChorus.Combat.Core
             _session.OnUnitHpChanged += HandleUnitHpChanged;
 
             _session.OnEncounterEnded += HandleEncounterEnded;
+            BindAstraStageTv();
 
 
 
@@ -210,6 +212,7 @@ namespace FracturedChorus.Combat.Core
             _session?.SetTimelineRunning(true);
 
             var introSec = ResolveIntroDurationSec();
+            TryPlayAstraStageTv();
             if (timelineView != null)
             {
                 timelineView.BeginIntroPlayback(introSec, OnCombatIntroComplete);
@@ -222,6 +225,61 @@ namespace FracturedChorus.Combat.Core
             }
 
             _combatIntroRoutine = StartCoroutine(CombatIntroFallbackRoutine());
+        }
+
+        private void TryPlayAstraStageTv()
+        {
+            BindAstraStageTv();
+            AstraStageTvView.PlayActive();
+        }
+
+        private void TryReelAstraTvForPlanning()
+        {
+            if (_session == null || !AstraTvMoodState.ShouldReroll(_session.RoundSegmentIndex))
+            {
+                return;
+            }
+
+            BindAstraStageTv();
+            if (_astraTv == null || !_astraTv.gameObject.activeSelf)
+            {
+                return;
+            }
+
+            AstraTvMoodState.MarkRolled(_session.RoundSegmentIndex);
+            int? exclude = AstraTvMoodState.HasMood ? (int)AstraTvMoodState.Mood : null;
+            _astraTv.PlayReel(exclude);
+        }
+
+        private void BindAstraStageTv()
+        {
+            var view = AstraStageTvView.FindActive();
+            if (view == null || view == _astraTv)
+            {
+                return;
+            }
+
+            UnbindAstraStageTv();
+            _astraTv = view;
+            _astraTv.OnFaceLocked += HandleAstraFaceLocked;
+        }
+
+        private void UnbindAstraStageTv()
+        {
+            if (_astraTv == null)
+            {
+                return;
+            }
+
+            _astraTv.OnFaceLocked -= HandleAstraFaceLocked;
+            _astraTv = null;
+        }
+
+        private void HandleAstraFaceLocked(int faceIndex)
+        {
+            _session?.ApplyAstraTvMood(faceIndex);
+            timelineView?.RefreshTelegraphsAndSlots();
+            RefreshCoverHud();
         }
 
         private static float ResolveIntroDurationSec()
@@ -769,6 +827,7 @@ namespace FracturedChorus.Combat.Core
             _planningPaused = false;
             SetCoverActivateAllowed(true);
             _session.EndRoundSegment();
+            TryReelAstraTvForPlanning();
             timelineView?.HoldAtRoundEnd();
             timelineView?.RefreshTelegraphsAndSlots();
             RefreshCoverHud();
@@ -1419,6 +1478,8 @@ namespace FracturedChorus.Combat.Core
         private void OnDestroy()
 
         {
+
+            UnbindAstraStageTv();
 
             if (_session == null)
 

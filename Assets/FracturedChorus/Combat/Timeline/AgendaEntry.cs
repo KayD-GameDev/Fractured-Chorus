@@ -41,12 +41,31 @@ namespace FracturedChorus.Combat.Timeline
         public EnemyTelegraph Telegraph { get; }
         public int FromBeat { get; }
         public int ToBeat { get; }
+        public EnemyTelegraph MergedInto { get; }
+        public int OccupantHitsBefore { get; }
+        public BossNoteTier OccupantTierBefore { get; }
+
+        public bool IsMerge => MergedInto != null;
 
         public TelegraphBeatMove(EnemyTelegraph telegraph, int fromBeat, int toBeat)
+            : this(telegraph, fromBeat, toBeat, null, 0, BossNoteTier.Red)
+        {
+        }
+
+        public TelegraphBeatMove(
+            EnemyTelegraph telegraph,
+            int fromBeat,
+            int toBeat,
+            EnemyTelegraph mergedInto,
+            int occupantHitsBefore,
+            BossNoteTier occupantTierBefore)
         {
             Telegraph = telegraph;
             FromBeat = fromBeat;
             ToBeat = toBeat;
+            MergedInto = mergedInto;
+            OccupantHitsBefore = occupantHitsBefore;
+            OccupantTierBefore = occupantTierBefore;
         }
     }
 }

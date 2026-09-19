@@ -131,7 +131,7 @@ namespace FracturedChorus.Hub.CharacterBuild
             if (indexLabel == null && (portraitChips == null || portraitChips.Length == 0))
             {
                 Debug.LogWarning(
-                    "[CharacterBuild] Layout chips not bound. Sandbox: Fractured Chorus → Heal CharacterBuild Layout Sandbox Hierarchy.");
+                    "[CharacterBuild] Layout chips not bound. Assign portraitChips / indexLabel on CharacterBuild.unity.");
             }
 
             _state = GameMetaSession.Current;

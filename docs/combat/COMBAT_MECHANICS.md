@@ -80,6 +80,20 @@ Kết quả: trễ tối đa **~1 beat** (~0.39s @ 152 BPM) — snap beat kế, 
 - `BeatTimelineUIView.FinishRoundSegment` → `HoldAtRoundEnd` (divider tại scan bar) → `RefreshTelegraphsAndSlots` (không rebuild layout) → **Execute** block kế bắt đầu tại cùng px (`continueFromHold`).
 - Hết timeline (`segmentStart >= TotalBeats`) → không hiện Execute nữa.
 
+### Astra Stage TV moods (Plan A)
+
+Intro TV drop+reel khóa 1 mặt → **luật arena** trong **2 Execute segment** (1 segment = 1 phase 22 beat). Hết 2 Execute, Planning kế **reel-only** (không drop lại), loại mặt vừa khóa.
+
+| Mặt | Luật (không clone MICRO Resonance / EYE Dissonance) |
+|-----|-----------------------------------------------------|
+| **Joy** | S2 mọi skill player −1 beat (không ăn `PendingReduceS2`) + thêm 1 nốt đỏ CORE |
+| **Anger** | Cửa sổ Perfect/Good QTE ×0.55 |
+| **Love** | Spotlight = HeartBeat cao nhất: leak HP dồn vào họ; dmg họ → Boss CORE ×1.25 |
+| **Hate** | Cover cost ×2 (8→16; với cap 10 thì Cover không kích được trừ khi hạ multiplier) |
+| **Sorrow** | Thêm 1 telegraph mini (Eye/Mic/Elite) |
+
+Config: `AstraStageTvConfig` · runtime: `AstraTvMoodState` · inject extra note lúc lock (lookahead 3 phase đã plan sẵn).
+
 ### Luật ra đòn của quái
 
 - Min impact = `max(3, phaseStart + 3)` — phase đầu từ beat **3**.
@@ -564,6 +578,7 @@ Window 12 beat → party outgoing dmg ×1.25; Early/Late → OnBeat (player + Gu
 | `Resonance` / `Dissonance` stacks | 🔲 P1 | N/A |
 | Async per-char planning | 🔲 P1 | Batch planning |
 | Cover gauge / empty-beat (#4) | ✅ | `CoverRuntime` · Planning COVER · 12 beat ×1.25 |
+| Astra Stage TV moods (Plan A) | ✅ | `AstraTvMoodState` · reel mỗi 2 Execute · Joy/Anger/Love/Hate/Sorrow |
 
 ---
 
@@ -571,6 +586,7 @@ Window 12 beat → party outgoing dmg ×1.25; Early/Late → OnBeat (player + Gu
 
 | Ngày | Nội dung |
 |------|----------|
+| 2026-09-18 | **Astra Stage TV Plan A:** mặt khóa = luật arena 2 phase; mid-fight reel-only mỗi 2 Execute; Joy S2/−nốt CORE, Anger QTE hẹp, Love spotlight leak+CORE dmg, Hate Cover ×2, Sorrow extra mini |
 | 2026-09-10 | **Stacked counter QTE:** beat nốt luôn intercept + 1 QTE; pair gồm mọi Active (kể cả planning-applied Anchor); body = HeartBeat |
 | 2026-09-10 | **Counter QTE** mọi skill ra trận; duel đúng beat nốt (không Active leading); 1 QTE / nốt chồng, body = HeartBeat cao hơn; grade nhân chung mọi skill trên nốt |
 | 2026-09-02 | **Counter QTE** Miss: không hủy đòn, giảm dmg −25% (cap −35%, +5%/2 phase) hai phía |

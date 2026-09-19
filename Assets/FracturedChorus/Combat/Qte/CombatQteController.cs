@@ -1,5 +1,6 @@
 using System.Collections;
 using FracturedChorus.Combat.Core;
+using FracturedChorus.Combat.Presentation;
 using FracturedChorus.Combat.Timeline;
 using FracturedChorus.UI;
 using UnityEngine;
@@ -135,8 +136,11 @@ namespace FracturedChorus.Combat.Qte
         private IEnumerator RunPrompt(System.Action<CombatQteGrade> onResolved)
         {
             var duration = Mathf.Max(0.05f, profile.shrinkDuration);
+            var windowMult = AstraTvMoodState.AngerQteWindowMult;
             var startScale = Mathf.Max(1f, profile.outerStartScale);
-            var lateLimit = duration + Mathf.Max(profile.goodWindowSec, profile.perfectWindowSec);
+            var lateLimit = duration + Mathf.Max(
+                profile.goodWindowSec * windowMult,
+                profile.perfectWindowSec * windowMult);
             var elapsed = 0f;
 
             while (elapsed < lateLimit)
@@ -146,12 +150,12 @@ namespace FracturedChorus.Combat.Qte
                 if (overlay != null)
                 {
                     overlay.SetOuterScale(Mathf.Lerp(startScale, 1f, t));
-                    overlay.SetTimingPreview(profile.Evaluate(elapsed));
+                    overlay.SetTimingPreview(profile.Evaluate(elapsed, windowMult));
                 }
 
                 if (ReadConfirmPressed())
                 {
-                    onResolved(profile.Evaluate(elapsed));
+                    onResolved(profile.Evaluate(elapsed, windowMult));
                     yield break;
                 }
 

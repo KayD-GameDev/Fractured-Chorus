@@ -419,7 +419,7 @@ namespace FracturedChorus.Meta
             return legacy?.ToState();
         }
 
-        private static SaveSlotHeader ReadHeader(int slot)
+        public static SaveSlotHeader ReadHeader(int slot)
         {
             slot = ClampSlot(slot);
             if (!SlotExists(slot))
@@ -484,7 +484,40 @@ namespace FracturedChorus.Meta
                 return $"Cadence Run F{Mathf.Max(1, state.RunSnapshot.CurrentFloor)}";
             }
 
-            return "Campus Hub";
+            return SceneLabel(state.LastSceneName);
+        }
+
+        /// <summary>
+        /// Nhãn hiển thị trên danh sách slot. Scene lạ thì trả luôn tên scene còn hơn nói dối
+        /// là "Campus Hub" như bản trước.
+        /// </summary>
+        private static string SceneLabel(string sceneName)
+        {
+            if (string.IsNullOrWhiteSpace(sceneName))
+            {
+                return "Campus Hub";
+            }
+
+            switch (sceneName)
+            {
+                case "CampusHub":
+                    return "Campus Hub";
+                case "PrologueVN":
+                    return "Prologue";
+                case "OpeningInvestigation":
+                    return "Opening Investigation";
+                case "FlowerShopWork":
+                    return "Flower Shop";
+                case "CharacterBuild":
+                    return "Character Build";
+                case "RunMapPrototype":
+                    return "Cadence Run";
+                case "CombatPrototype":
+                case "CombatTutorial":
+                    return "Combat";
+                default:
+                    return sceneName;
+            }
         }
 
         private static int ClampSlot(int slot) => Mathf.Clamp(slot, 0, SlotCount - 1);
@@ -574,6 +607,9 @@ namespace FracturedChorus.Meta
         public bool runCanticleCleared;
         public PartyVitalsEntry[] partyVitals = Array.Empty<PartyVitalsEntry>();
 
+        // --- Save version 4 ---
+        public string sceneName = string.Empty;
+
         public static GameMetaSaveData FromState(GameMetaState state)
         {
             var stats = new List<StatEntry>();
@@ -660,7 +696,8 @@ namespace FracturedChorus.Meta
                 runPulseCleared = state.RunSnapshot.PulseCleared,
                 runEchoCleared = state.RunSnapshot.EchoCleared,
                 runCanticleCleared = state.RunSnapshot.CanticleCleared,
-                partyVitals = vitals.ToArray()
+                partyVitals = vitals.ToArray(),
+                sceneName = state.LastSceneName ?? string.Empty
             };
         }
 
@@ -674,6 +711,7 @@ namespace FracturedChorus.Meta
             state.Calendar.MorningQuizDone = morningQuizDone;
             state.Wallet.Notes = Mathf.Max(0, notes);
             state.Difficulty = difficulty;
+            state.LastSceneName = sceneName ?? string.Empty;
 
             if (stats != null)
             {

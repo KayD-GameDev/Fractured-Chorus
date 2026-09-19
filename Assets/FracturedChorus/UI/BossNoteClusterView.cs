@@ -130,9 +130,10 @@ namespace FracturedChorus.UI
             }
 
             var y = _noteYFromBottom;
-            if (viewportHeight > 1f)
+            var layerH = _layer != null ? _layer.rect.height : viewportHeight;
+            if (layerH > 1f)
             {
-                y = Mathf.Clamp(_noteYFromBottom, 0f, viewportHeight);
+                y = Mathf.Clamp(_noteYFromBottom, 0f, layerH);
             }
 
             foreach (var cluster in clusters)

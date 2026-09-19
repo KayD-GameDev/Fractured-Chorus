@@ -9,6 +9,7 @@ using FracturedChorus.Combat.Damage;
 using FracturedChorus.Combat.Difficulty;
 using FracturedChorus.Combat.Formation;
 using FracturedChorus.Combat.Grid;
+using FracturedChorus.Combat.Presentation;
 using FracturedChorus.Combat.Qte;
 using FracturedChorus.Combat.Timeline;
 using FracturedChorus.Combat.Units;
@@ -55,6 +56,7 @@ namespace FracturedChorus.Combat.Core
 
         private bool _combatIntroCompleted;
         private readonly HashSet<int> _plannedTelegraphPhases = new();
+        private readonly HashSet<int> _moodExtrasInjectedPhases = new();
         private CombatUnit _presentationPlayer;
         private CombatUnit _presentationEnemy;
 
@@ -107,6 +109,7 @@ namespace FracturedChorus.Combat.Core
             }
 
             CombatQteModifiers.Clear();
+            AstraTvMoodState.Clear();
             BeginPlanningRound();
         }
 
@@ -238,6 +241,7 @@ namespace FracturedChorus.Combat.Core
                 if (count > 0)
                 {
                     _enemyAi.PlanTelegraphsForPhase(phase, Grid, Timeline);
+                    TryInjectMoodExtras(phase);
                 }
             }
 
@@ -613,6 +617,7 @@ namespace FracturedChorus.Combat.Core
             IsCombatIntroActive = !_combatIntroCompleted;
             AllowCoverActivate = _combatIntroCompleted;
             _plannedTelegraphPhases.Clear();
+            _moodExtrasInjectedPhases.Clear();
             Timeline.ResetForPlanning();
             PhaseAv.ResetForPlanning();
             Cover.Reset();
@@ -622,6 +627,53 @@ namespace FracturedChorus.Combat.Core
             {
                 PrepareTelegraphsForCurrentSegment();
             }
+        }
+
+        public void ApplyAstraTvMood(int faceIndex)
+        {
+            var mood = AstraTvMoodState.FromFaceIndex(faceIndex);
+            if (mood == AstraTvMood.None)
+            {
+                return;
+            }
+
+            var config = AstraStageTvConfig.Load();
+            var spotlight = CombatTargetPicker.PickHighestHeartBeatAlive(Grid?.PlayerUnits);
+            AstraTvMoodState.Apply(mood, _roundSegmentIndex, config, spotlight);
+            _moodExtrasInjectedPhases.Clear();
+            var start = AstraTvMoodState.MoodStartSegment;
+            var end = start + AstraTvMoodState.DurationSegments;
+            for (var phase = start; phase < end; phase++)
+            {
+                if (_plannedTelegraphPhases.Contains(phase))
+                {
+                    TryInjectMoodExtras(phase);
+                }
+            }
+
+            Debug.Log(
+                $"[AstraTV] Mood {mood} @ segment {_roundSegmentIndex + 1} " +
+                $"for {AstraTvMoodState.DurationSegments} phase(s)" +
+                (spotlight != null && mood == AstraTvMood.Love
+                    ? $" spotlight={spotlight.DisplayName}"
+                    : string.Empty));
+            OnTelegraphsPlanned?.Invoke(_roundSegmentIndex);
+        }
+
+        private void TryInjectMoodExtras(int phase)
+        {
+            if (_enemyAi == null || !_moodExtrasInjectedPhases.Add(phase))
+            {
+                return;
+            }
+
+            if (!AstraTvMoodState.CoversSegment(phase))
+            {
+                _moodExtrasInjectedPhases.Remove(phase);
+                return;
+            }
+
+            _enemyAi.ApplyMoodExtras(phase, Grid, Timeline);
         }
 
         public void EndCombatIntro(int introEndBeat = 0)
@@ -1188,6 +1240,7 @@ namespace FracturedChorus.Combat.Core
 
             Timeline.SetPhase(outcome);
             Cover.Reset();
+            AstraTvMoodState.Clear();
             OnEncounterEnded?.Invoke();
             Debug.Log(outcome == CombatPhase.Victory ? "[Combat] Victory — all enemies defeated!" : "[Combat] Defeat!");
             return true;
@@ -1302,10 +1355,11 @@ namespace FracturedChorus.Combat.Core
         {
             if (_presentationPlayer != null && _presentationPlayer.IsAlive)
             {
-                return _presentationPlayer;
+                return AstraTvMoodState.ResolveLeakTarget(_presentationPlayer);
             }
 
-            return CombatTargetPicker.PickEnemyAttackTargetForBeat(Grid, Timeline, beatIndex);
+            return AstraTvMoodState.ResolveLeakTarget(
+                CombatTargetPicker.PickEnemyAttackTargetForBeat(Grid, Timeline, beatIndex));
         }
 
         private static CombatUnit PickAliveTelegraphUnit(IReadOnlyList<EnemyTelegraph> telegraphs)

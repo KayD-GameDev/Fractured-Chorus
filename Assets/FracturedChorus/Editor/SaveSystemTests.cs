@@ -2,9 +2,11 @@ using System.IO;
 using System.Text;
 using FracturedChorus.Combat.Bootstrap;
 using FracturedChorus.Meta;
+using FracturedChorus.UI;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
+using UnityEngine.UI;
 
 namespace FracturedChorus.Tests
 {
@@ -255,8 +257,34 @@ namespace FracturedChorus.Tests
 
             state.HubLocation.SetLocation("downtown", "flower_shop");
             state.Playtime.TotalSeconds = 3725d;
+            state.LastSceneName = "FlowerShopWork";
 
             return state;
+        }
+
+        [Test]
+        public void SaveThenLoad_RestoresSceneWherePlayerSaved()
+        {
+            var state = BuildSampleState();
+
+            Assert.IsTrue(GameMetaSaveLoad.TrySave(state, TestSlot));
+            var loaded = GameMetaSaveLoad.TryLoad(TestSlot);
+
+            Assert.IsNotNull(loaded);
+            Assert.AreEqual("FlowerShopWork", loaded.LastSceneName);
+        }
+
+        [Test]
+        public void SlotHeader_ShowsSceneLabelInsteadOfAlwaysCampus()
+        {
+            var state = BuildSampleState();
+            state.RunSnapshot.HasActiveRun = false;
+            state.LastSceneName = "FlowerShopWork";
+
+            Assert.IsTrue(GameMetaSaveLoad.TrySave(state, TestSlot));
+            var header = GameMetaSaveLoad.ReadHeader(TestSlot);
+
+            Assert.AreEqual("Flower Shop", header.locationLabel);
         }
     }
 
@@ -390,6 +418,78 @@ namespace FracturedChorus.Tests
             playtime.Reset();
 
             Assert.AreEqual(0, playtime.TotalSecondsRounded);
+        }
+    }
+
+    /// <summary>
+    /// Confirm dialog là cửa duy nhất dẫn tới Overwrite và Delete: nút Yes mất listener là
+    /// hai chức năng đó chết câm, nên phải có test giữ.
+    /// </summary>
+    public class ConfirmDialogWiringTests
+    {
+        [Test]
+        public void RuntimeBuiltDialog_ConfirmButtonRunsCallback()
+        {
+            var host = new GameObject("ConfirmHost", typeof(RectTransform));
+            try
+            {
+                var dialog = ConfirmDialogView.Ensure(host.transform);
+                Assert.IsNotNull(dialog);
+
+                var confirmed = false;
+                dialog.Ask("XÓA SLOT?", "Xóa hẳn SLOT 01?", () => confirmed = true);
+
+                Assert.IsTrue(dialog.IsOpen, "Dialog phải mở thật thì test click mới có nghĩa.");
+                Assert.IsFalse(confirmed, "Chưa bấm gì mà đã chạy callback là sai.");
+
+                FindButton(dialog.transform, "ConfirmButton").onClick.Invoke();
+
+                Assert.IsTrue(
+                    confirmed,
+                    "Awake chạy trước lúc Build() gán reference từng làm nút Yes không có listener.");
+                Assert.IsFalse(dialog.IsOpen);
+            }
+            finally
+            {
+                Object.DestroyImmediate(host);
+            }
+        }
+
+        [Test]
+        public void RuntimeBuiltDialog_CancelButtonSkipsCallback()
+        {
+            var host = new GameObject("ConfirmHost", typeof(RectTransform));
+            try
+            {
+                var dialog = ConfirmDialogView.Ensure(host.transform);
+                var confirmed = false;
+                var cancelled = false;
+                dialog.Ask("GHI ĐÈ SLOT?", "Dữ liệu cũ sẽ mất.", () => confirmed = true, () => cancelled = true);
+
+                FindButton(dialog.transform, "CancelButton").onClick.Invoke();
+
+                Assert.IsFalse(confirmed);
+                Assert.IsTrue(cancelled);
+                Assert.IsFalse(dialog.IsOpen);
+            }
+            finally
+            {
+                Object.DestroyImmediate(host);
+            }
+        }
+
+        private static Button FindButton(Transform root, string name)
+        {
+            foreach (var button in root.GetComponentsInChildren<Button>(true))
+            {
+                if (button.name == name)
+                {
+                    return button;
+                }
+            }
+
+            Assert.Fail($"Không tìm thấy nút '{name}' trong dialog.");
+            return null;
         }
     }
 }

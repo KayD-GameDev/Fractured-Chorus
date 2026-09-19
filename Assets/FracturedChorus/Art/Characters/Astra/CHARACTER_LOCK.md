@@ -86,6 +86,18 @@
 | **Micro** | AstraMic | `Art/UI/Combat/Characters/Avatars/astra_mic_enemy_avatar_v1.png` |
 - Same modular chrome as Astra enemy card. Legacy composites: `astra_miniboss_eye_icon_v1.png`, `astra_miniboss_mic_icon_v1.png`
 
+## Stage TV (boss intro jumbotron)
+- Frame: `Art/UI/Combat/Boss/Astra/StageTv/astra_stage_tv_frame_v1.png` (neon bezel, true-alpha screen hole)
+- Faces (Cadence **bust with outfit**, crop head → hair → upper shoulders; each file separate):
+  - Outfit: black/white idol vest, gold stars, gold-star choker — not bare shoulders
+  - Hỷ `astra_tv_face_joy_v1.png`
+  - Nộ `astra_tv_face_anger_v1.png`
+  - Ái `astra_tv_face_love_v1.png`
+  - Ố `astra_tv_face_hate_v1.png`
+  - Bi `astra_tv_face_sorrow_v1.png`
+- Runtime mirror: `Resources/UI/Combat/Boss/Astra/StageTv/`
+- Brief: `Art/UI/Combat/Boss/Astra/StageTv/ASSET_BRIEF.md`
+
 ## Tone
 - Stage/School: bright, welcoming idol — Pulse key energy
 - Cadence Boss: commanding, cold Chart Lord presence

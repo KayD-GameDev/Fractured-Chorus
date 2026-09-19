@@ -6,10 +6,11 @@ namespace FracturedChorus.Meta
     public sealed class GameMetaState
     {
         /// <summary>
-        /// 3 = thêm playtime, vị trí Campus, node đã đi, HP/level party. Save version 2 vẫn đọc được:
-        /// các trường mới nhận giá trị mặc định khi thiếu.
+        /// 3 = thêm playtime, vị trí Campus, node đã đi, HP/level party.
+        /// 4 = thêm LastSceneName để load về đúng scene đang chơi.
+        /// Save version cũ vẫn đọc được: các trường mới nhận giá trị mặc định khi thiếu.
         /// </summary>
-        public const int SaveVersion = 3;
+        public const int SaveVersion = 4;
 
         public int SaveVersionId = SaveVersion;
         public CalendarState Calendar = new CalendarState();
@@ -23,6 +24,12 @@ namespace FracturedChorus.Meta
         public HubLocationState HubLocation = new HubLocationState();
         public PartyVitalsState PartyVitals = new PartyVitalsState();
         public int Difficulty;
+
+        /// <summary>
+        /// Scene người chơi đang đứng lúc bấm save. Rỗng nghĩa là save cũ (version ≤ 3)
+        /// hoặc save sinh ra từ menu, khi đó điểm vào được suy lại từ cờ story.
+        /// </summary>
+        public string LastSceneName = string.Empty;
 
         public static GameMetaState CreateNew()
         {

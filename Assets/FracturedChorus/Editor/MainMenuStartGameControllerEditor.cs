@@ -62,15 +62,36 @@ namespace FracturedChorus.Editor
                 Undo.RecordObject(controller, "Preview Load Game");
                 controller.SetEditorPreview(MainMenuStartGameController.MainMenuEditorPreview.LoadGame);
                 EditorUtility.SetDirty(controller);
+                FillLoadLayerPreview(controller);
                 SceneView.RepaintAll();
             }
 
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.HelpBox(
-                "Off-Beat: chỉnh ArchivePanel / CatalogScroll / PlayerRoot trên MainMenuCanvas.",
+                "Off-Beat: chỉnh ArchivePanel / CatalogScroll / PlayerRoot trên MainMenuCanvas.\n" +
+                "Load: chỉnh layout ngay trên LoadLayer trong Hierarchy — runtime đọc lại đúng " +
+                "màu, chữ và vị trí bạn đặt ở đó.",
                 MessageType.None);
 
             DrawLoadLayerSection(controller);
+        }
+
+        /// <summary>
+        /// Ghi header slot thật vào các label của LoadLayer để preview hiện nội dung như lúc chơi,
+        /// nhờ vậy canh chiều rộng hàng và panel detail không bị hụt chữ.
+        /// </summary>
+        private static void FillLoadLayerPreview(MainMenuStartGameController controller)
+        {
+            var layer = controller.ResolveLoadLayer();
+            var view = layer != null ? layer.GetComponent<SaveLoadSlotListView>() : null;
+            if (view == null)
+            {
+                return;
+            }
+
+            Undo.RegisterFullObjectHierarchyUndo(view.gameObject, "Preview Save Slots");
+            view.ApplyEditorPreview(SaveLoadSlotListView.Mode.Load, sessionActive: false);
+            EditorSceneManager.MarkSceneDirty(view.gameObject.scene);
         }
 
         /// <summary>

@@ -8,6 +8,7 @@ using UnityEngine;
 
 namespace FracturedChorus.Editor
 {
+    [InitializeOnLoad]
     internal static class AnimatorGraphRepairEditor
     {
         private const BindingFlags InstanceFlags =
@@ -72,6 +73,47 @@ namespace FracturedChorus.Editor
                 $"closed {closed} Animator window(s), destroyed {destroyed} Graph object(s). " +
                 "Edge.WakeUp is editor-only. Reopen Animator, or Window → Layouts → Default. " +
                 "Clear Console to dismiss the old exception.");
+        }
+
+        private static void OnCompilationStarted(object _)
+        {
+            SanitizeGraphEdges();
+        }
+
+        private static void OnBeforeAssemblyReload()
+        {
+            var stale = SanitizeGraphEdges();
+            if (stale > 0)
+            {
+                CloseAnimatorWindows();
+            }
+        }
+
+        private static void OnEditorLog(string message, string stackTrace, LogType type)
+        {
+            if (type != LogType.Exception && type != LogType.Error)
+            {
+                return;
+            }
+
+            if (string.IsNullOrEmpty(stackTrace)
+                || stackTrace.IndexOf("UnityEditor.Graphs.Edge.WakeUp", StringComparison.Ordinal) < 0)
+            {
+                return;
+            }
+
+            if (_repairQueued)
+            {
+                return;
+            }
+
+            _repairQueued = true;
+            EditorApplication.delayCall += () =>
+            {
+                _repairQueued = false;
+                SanitizeGraphEdges();
+                CloseAnimatorWindows();
+            };
         }
 
         private static int SanitizeGraphEdges()

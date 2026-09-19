@@ -103,8 +103,22 @@ namespace FracturedChorus.Meta
             }
 
             FlushLiveState();
+            CaptureActiveScene();
             s_activeSlotIndex = slot;
             GameMetaSaveLoad.TrySave(s_state, slot);
+        }
+
+        /// <summary>
+        /// Ghi lại scene đang mở để Load đưa người chơi về đúng chỗ vừa dừng.
+        /// Tầng menu tự quyết scene nào là điểm vào hợp lệ, ở đây chỉ ghi trung thực.
+        /// </summary>
+        private static void CaptureActiveScene()
+        {
+            var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+            if (scene.IsValid() && !string.IsNullOrEmpty(scene.name))
+            {
+                s_state.LastSceneName = scene.name;
+            }
         }
 
         /// <summary>Đổ dữ liệu đang sống trên scene vào state trước khi ghi đĩa.</summary>

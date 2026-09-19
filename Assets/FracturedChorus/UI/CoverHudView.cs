@@ -433,7 +433,7 @@ namespace FracturedChorus.UI
             if (!_session.Cover.TryActivate(renAlive))
             {
                 Debug.Log(
-                    $"[Cover] Cannot activate — gauge {_session.Cover.Gauge}/{CoverConstants.ActivateCost}" +
+                    $"[Cover] Cannot activate — gauge {_session.Cover.Gauge}/{_session.Cover.ActivateCost}" +
                     $" pending={_session.Cover.IsPending} active={_session.Cover.IsActive} renAlive={renAlive}");
                 return;
             }

@@ -719,6 +719,12 @@ namespace FracturedChorus.Menu
 
         private static string ResolveLoadScene(GameMetaState state)
         {
+            var saved = ResolveSavedScene(state);
+            if (!string.IsNullOrEmpty(saved))
+            {
+                return saved;
+            }
+
             if (state.RunSnapshot.HasActiveRun)
             {
                 return RunMapSceneCatalog.RunMapPrototype;
@@ -730,6 +736,54 @@ namespace FracturedChorus.Menu
             }
 
             return RunMapSceneCatalog.PrologueVN;
+        }
+
+        /// <summary>
+        /// Đổi scene ghi trong save thành điểm vào chơi được. Trả null khi save cũ chưa có trường này
+        /// hoặc scene đó không phải chỗ đứng một mình được, để caller quay lại cách suy theo cờ story.
+        /// </summary>
+        private static string ResolveSavedScene(GameMetaState state)
+        {
+            var sceneName = state.LastSceneName;
+            if (string.IsNullOrWhiteSpace(sceneName))
+            {
+                return null;
+            }
+
+            if (sceneName == RunMapSceneCatalog.MainMenuStartGame)
+            {
+                return null;
+            }
+
+            // Combat và CharacterBuild sống nhờ handoff của scene gọi nó; vào thẳng là mất ngữ cảnh
+            // trận đấu, nên trả người chơi về màn hình đã mở chúng.
+            if (sceneName == RunMapSceneCatalog.CombatPrototype || sceneName == RunMapSceneCatalog.CombatTutorial)
+            {
+                return state.RunSnapshot.HasActiveRun
+                    ? RunMapSceneCatalog.RunMapPrototype
+                    : RunMapSceneCatalog.CampusHub;
+            }
+
+            if (sceneName == RunMapSceneCatalog.CharacterBuild)
+            {
+                return RunMapSceneCatalog.CampusHub;
+            }
+
+            // Autosave lúc rời run ghi lại tên scene run map dù ván đã đóng; mở lại sẽ ra map rỗng.
+            if (sceneName == RunMapSceneCatalog.RunMapPrototype && !state.RunSnapshot.HasActiveRun)
+            {
+                return RunMapSceneCatalog.CampusHub;
+            }
+
+            if (!RunMapSceneLoader.CanLoad(sceneName))
+            {
+                Debug.LogWarning(
+                    $"[Fractured Chorus] Save trỏ tới scene '{sceneName}' không có trong Build Settings — " +
+                    "load theo cờ story thay thế.");
+                return null;
+            }
+
+            return sceneName;
         }
 
         private IEnumerator TransitionToAttract()
