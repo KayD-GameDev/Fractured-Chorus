@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using System;
 using System.IO;
 using FracturedChorus.Combat.Bootstrap;
 using FracturedChorus.Hub;
@@ -7,6 +8,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
@@ -15,17 +17,20 @@ namespace FracturedChorus.Editor
 {
     public static class BondsSceneSetupEditor
     {
-        private const string ScenePath = "Assets/FracturedChorus/Scenes/BondsLayoutSandbox.unity";
+        private const string ScenePath = "Assets/FracturedChorus/Scenes/Bonds.unity";
         private const string BackgroundPath = "Assets/FracturedChorus/Art/UI/StatusMenu/statusmenu_hima_city_bg_v1.jpg";
-        private const string MockGuidePath = "Assets/FracturedChorus/Art/UI/Bonds/_ref/_ref_bonds_menu_v1.jpg";
+        private const string MockGuidePath = "Assets/FracturedChorus/Art/UI/Bonds/_ref/_ref_bonds_menu_align.jpg";
         private const string BondsRoot = "Assets/FracturedChorus/Art/UI/Bonds/";
+        private const string StatCrystalDir = "Assets/FracturedChorus/Art/UI/StatMenu/CrystalKit/";
+        private const string PackMapPath = BondsRoot + "bonds_pack_scene_map.json";
+        private const string PromoFrameChromeScenePath = "BondsCanvas/LinkEpisodes/PromoFrame/PromoFrameChrome";
         private const string RenPortraitPath = "Assets/FracturedChorus/Art/Characters/Ren/VnBust/ren_bust_neutral_v1.png";
         private const string CharlottePortraitPath = "Assets/FracturedChorus/Art/Characters/Charlotte/VnBust/charlotte_bust_neutral_v1.png";
         private const string CodaPortraitPath = "Assets/FracturedChorus/Art/Characters/Coda/VnBust/coda_bust_neutral_v1.png";
         private const string AstraPortraitPath = "Assets/FracturedChorus/Art/Characters/_Reference/LuxeConcert/astra_ref.png";
         private const float MockGuideAlpha = 0.4f;
 
-        [MenuItem("Fractured Chorus/Bonds/Create Layout Sandbox Scene")]
+        [MenuItem("Fractured Chorus/Bonds/Create Bonds Scene")]
         public static void CreateScene()
         {
             EnsureFolder("Assets/FracturedChorus/Scenes");
@@ -37,7 +42,7 @@ namespace FracturedChorus.Editor
             Debug.Log($"[Fractured Chorus] Saved {ScenePath}.");
         }
 
-        [MenuItem("Fractured Chorus/Bonds/Heal Layout Sandbox Hierarchy")]
+        [MenuItem("Fractured Chorus/Bonds/Heal Bonds Hierarchy")]
         public static void HealScene()
         {
             if (!EditorUtility.DisplayDialog(
@@ -69,7 +74,7 @@ namespace FracturedChorus.Editor
             EditorSceneManager.SaveScene(scene);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-            Debug.Log("[Fractured Chorus] Healed BondsLayoutSandbox hierarchy.");
+            Debug.Log("[Fractured Chorus] Healed Bonds hierarchy.");
         }
 
         [MenuItem("Fractured Chorus/Bonds/Attach Missing Layout Objects")]
@@ -80,7 +85,7 @@ namespace FracturedChorus.Editor
             {
                 EditorUtility.DisplayDialog(
                     "Attach Missing Bonds Objects",
-                    "Open BondsLayoutSandbox in Unity, then run this menu again. This action will not open scenes automatically.",
+                    "Open Bonds in Unity, then run this menu again. This action will not open scenes automatically.",
                     "OK");
                 return;
             }
@@ -95,20 +100,127 @@ namespace FracturedChorus.Editor
                 return;
             }
 
+            EnsureCamera();
+            ConfigureCanvas(canvas.gameObject);
             AttachMissingComponents(canvas);
+            FixPromoStack(canvas);
+            FixEpisodeRowButtons(canvas);
+            FixGlassPanelFillCenter(canvas);
+            FixBondExpBar(canvas);
+            EnsureSparkDriftFx(canvas);
             EditorSceneManager.MarkSceneDirty(activeScene);
             Debug.Log("[Fractured Chorus] Attached missing Bonds sandbox objects. Save the scene.");
+        }
+
+        [MenuItem("Fractured Chorus/Bonds/Fix Promo Stack")]
+        public static void FixPromoStackMenu()
+        {
+            var activeScene = EditorSceneManager.GetActiveScene();
+            if (activeScene.path != ScenePath)
+            {
+                EditorUtility.DisplayDialog(
+                    "Fix Promo Stack",
+                    "Open Bonds, then run this menu again.",
+                    "OK");
+                return;
+            }
+
+            var canvas = GameObject.Find("BondsCanvas")?.transform;
+            if (canvas == null)
+            {
+                return;
+            }
+
+            FixPromoStack(canvas);
+            EditorSceneManager.MarkSceneDirty(activeScene);
+            Debug.Log("[Fractured Chorus] Promo stack: PromoImage behind PromoFrameChrome.");
+        }
+
+        private static void FixPromoStack(Transform canvas)
+        {
+            var promoFrame = canvas.Find("LinkEpisodes/PromoFrame");
+            if (promoFrame == null)
+            {
+                return;
+            }
+
+            var promoImage = promoFrame.Find("PromoImage")?.GetComponent<Image>();
+            var chromeTransform = promoFrame.Find("PromoFrameChrome");
+            Image promoChrome;
+            if (chromeTransform == null)
+            {
+                promoChrome = EnsureImage(promoFrame, "PromoFrameChrome", out _);
+                ConfigureImage(
+                    promoChrome,
+                    LoadPackByPath(PromoFrameChromeScenePath),
+                    Image.Type.Simple,
+                    false,
+                    Color.white,
+                    true,
+                    false);
+                StretchFull(promoChrome.rectTransform);
+            }
+            else
+            {
+                promoChrome = chromeTransform.GetComponent<Image>();
+                if (promoChrome != null && promoChrome.sprite == null)
+                {
+                    ConfigureImage(
+                        promoChrome,
+                        LoadPackByPath(PromoFrameChromeScenePath),
+                        Image.Type.Simple,
+                        false,
+                        Color.white,
+                        true,
+                        false);
+                }
+            }
+
+            var legacyFrameImage = promoFrame.GetComponent<Image>();
+            if (legacyFrameImage != null)
+            {
+                legacyFrameImage.enabled = false;
+            }
+
+            if (promoImage != null)
+            {
+                promoImage.transform.SetAsFirstSibling();
+            }
+
+            if (promoChrome != null)
+            {
+                promoChrome.raycastTarget = false;
+                promoChrome.transform.SetAsLastSibling();
+            }
+        }
+
+        private static void FixEpisodeRowButtons(Transform canvas)
+        {
+            var episodes = canvas.Find("LinkEpisodes");
+            if (episodes == null)
+            {
+                return;
+            }
+
+            for (var i = 1; i <= 5; i++)
+            {
+                var row = episodes.Find($"Row_{i:00}")?.GetComponent<Button>();
+                if (row != null)
+                {
+                    row.interactable = true;
+                }
+            }
         }
 
         [MenuItem("Fractured Chorus/Bonds/Save Layout Snapshot")]
         public static void SaveLayoutSnapshot()
         {
             var scenePath = EditorSceneManager.GetActiveScene().path;
-            if (string.IsNullOrEmpty(scenePath) || !scenePath.EndsWith("BondsLayoutSandbox.unity"))
+            if (string.IsNullOrEmpty(scenePath) || !scenePath.EndsWith("Bonds.unity"))
             {
                 EditorUtility.DisplayDialog(
                     "Save Bonds Layout",
-                    "Focus BondsLayoutSandbox, Ctrl+S, run again.",
+                    "Focus Bonds, Ctrl+S, run again.",
                     "OK");
                 return;
             }
@@ -150,6 +262,59 @@ namespace FracturedChorus.Editor
             EditorSceneManager.MarkSceneDirty(guide.scene);
         }
 
+        [MenuItem("Fractured Chorus/Bonds/Apply Roster Face Template On Scene")]
+        public static void ApplyRosterFaceTemplateOnScene()
+        {
+            RunNodeTool(
+                "Tools/apply-bonds-roster-face-template.mjs",
+                "Apply roster face template",
+                out var stdout,
+                out var stderr,
+                out var exitCode);
+            if (exitCode != 0)
+            {
+                Debug.LogError($"[Fractured Chorus] Roster face template failed: {stderr}\n{stdout}");
+                return;
+            }
+
+            AssetDatabase.Refresh();
+            var scene = EditorSceneManager.GetActiveScene();
+            if (scene.isDirty)
+            {
+                EditorSceneManager.MarkSceneDirty(scene);
+            }
+
+            Debug.Log("[Fractured Chorus] Applied roster face template on Bonds.\n" + stdout);
+        }
+
+        [MenuItem("Fractured Chorus/Bonds/Apply Bootstrap Layout")]
+        public static void ApplyBootstrapLayout()
+        {
+            if (!EditorUtility.DisplayDialog(
+                    "Apply Bonds Bootstrap Layout",
+                    "Writes bootstrap RectTransforms into Bonds.unity from bonds_sandbox_bootstrap_layout.json.\nManual layout edits are overwritten for listed nodes only.",
+                    "Apply",
+                    "Cancel"))
+            {
+                return;
+            }
+
+            RunNodeTool(
+                "Tools/apply-bonds-sandbox-bootstrap-layout.mjs",
+                "Apply Bonds Bootstrap Layout",
+                out var stdout,
+                out var stderr,
+                out var exitCode);
+            if (exitCode != 0)
+            {
+                Debug.LogError($"[Fractured Chorus] Bootstrap layout failed: {stderr}\n{stdout}");
+                return;
+            }
+
+            AssetDatabase.Refresh();
+            Debug.Log("[Fractured Chorus] Applied Bonds bootstrap layout.\n" + stdout);
+        }
+
         private static void BuildHierarchy()
         {
             EnsureCamera();
@@ -165,6 +330,7 @@ namespace FracturedChorus.Editor
             EnsureLinkEpisodes(canvas);
             EnsureFooter(canvas);
             EnsureWordmark(canvas);
+            EnsureDivider(canvas);
             EnsureTaglineRight(canvas);
             EnsureCompass(canvas);
             EnsureMockGuide(canvas);
@@ -194,7 +360,20 @@ namespace FracturedChorus.Editor
         private static void ConfigureCanvas(GameObject canvasGo)
         {
             var canvas = EnsureComponent<Canvas>(canvasGo);
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            var camera = Camera.main;
+            if (camera != null)
+            {
+                canvas.renderMode = RenderMode.ScreenSpaceCamera;
+                canvas.worldCamera = camera;
+                canvas.planeDistance = 100f;
+            }
+            else
+            {
+                canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            }
+
+            canvas.overrideSorting = false;
+            canvas.sortingOrder = 0;
 
             var scaler = EnsureComponent<CanvasScaler>(canvasGo);
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
@@ -203,6 +382,31 @@ namespace FracturedChorus.Editor
 
             EnsureComponent<GraphicRaycaster>(canvasGo);
             EnsureComponent<BondsMenuUI>(canvasGo);
+        }
+
+        private static void FixGlassPanelFillCenter(Transform canvas)
+        {
+            var images = canvas.GetComponentsInChildren<Image>(true);
+            for (var i = 0; i < images.Length; i++)
+            {
+                var image = images[i];
+                if (image.type != Image.Type.Sliced || image.sprite == null)
+                {
+                    continue;
+                }
+
+                var spritePath = AssetDatabase.GetAssetPath(image.sprite);
+                if (spritePath == null)
+                {
+                    continue;
+                }
+
+                if (spritePath.EndsWith("ui_bonds_panel_glass_v1.png") ||
+                    spritePath.EndsWith("ui_bonds_header_plate_v1.png"))
+                {
+                    image.fillCenter = false;
+                }
+            }
         }
 
         private static void EnsureBackground(Transform canvas)
@@ -228,7 +432,7 @@ namespace FracturedChorus.Editor
             {
                 ConfigureImage(
                     phaseIcon,
-                    LoadSprite("Assets/FracturedChorus/Art/UI/TownMap/townmap_icon_sun.png"),
+                    LoadPackByPath("BondsCanvas/CornerHud/PhaseIcon"),
                     Image.Type.Simple,
                     false,
                     Color.white,
@@ -248,10 +452,11 @@ namespace FracturedChorus.Editor
             {
                 ConfigureImage(
                     header,
-                    LoadSprite(BondsRoot + "Kit/ui_bonds_header_plate_v1.png"),
-                    Image.Type.Sliced,
+                    LoadPackByPath("BondsCanvas/HeaderBonds"),
+                    Image.Type.Simple,
                     false,
                     Color.white,
+                    true,
                     false);
             }
 
@@ -260,7 +465,7 @@ namespace FracturedChorus.Editor
             {
                 ConfigureImage(
                     icon,
-                    LoadSprite(BondsRoot + "Icons/ui_bonds_icon_people_v1.png"),
+                    LoadPackByPath("BondsCanvas/HeaderBonds/Icon"),
                     Image.Type.Simple,
                     false,
                     Color.white,
@@ -274,25 +479,27 @@ namespace FracturedChorus.Editor
         private static void EnsureLeftNav(Transform canvas)
         {
             var nav = EnsurePanel(canvas, "LeftNav", out _);
-            EnsureNavRow(nav, "Row_SocialStats", "Social Stats", "ui_bonds_icon_social_stats_v1.png", true);
-            EnsureNavRow(nav, "Row_Link", "Link", "ui_bonds_icon_link_v1.png", false);
-            EnsureNavRow(nav, "Row_Conversations", "Conversations", "ui_bonds_icon_conversations_v1.png", false);
-            EnsureNavRow(nav, "Row_Memories", "Memories", "ui_bonds_icon_memories_v1.png", false);
-            EnsureNavRow(nav, "Row_Gallery", "Gallery", "ui_bonds_icon_gallery_v1.png", false);
+            EnsureNavRow(nav, "Row_SocialStats", "Social Stats", true);
+            EnsureNavRow(nav, "Row_Link", "Link", true);
+            EnsureNavRow(nav, "Row_Conversations", "Conversations", true);
+            EnsureNavRow(nav, "Row_Memories", "Memories", true);
+            EnsureNavRow(nav, "Row_Gallery", "Gallery", true);
         }
 
-        private static void EnsureNavRow(Transform parent, string name, string label, string iconFile, bool interactable)
+        private static void EnsureNavRow(Transform parent, string name, string label, bool interactable)
         {
             var row = EnsureButton(parent, name, out var created);
             row.interactable = interactable;
+            var rowPath = "BondsCanvas/LeftNav/" + name;
             if (created)
             {
                 ConfigureImage(
                     row.GetComponent<Image>(),
-                    LoadSprite(BondsRoot + "Kit/ui_bonds_nav_selected_v1.png"),
-                    Image.Type.Sliced,
+                    LoadPackByPath(rowPath),
+                    Image.Type.Simple,
                     true,
                     Color.white,
+                    true,
                     false);
             }
 
@@ -301,7 +508,7 @@ namespace FracturedChorus.Editor
             {
                 ConfigureImage(
                     icon,
-                    LoadSprite(BondsRoot + "Icons/" + iconFile),
+                    LoadPackByPath(rowPath + "/Icon"),
                     Image.Type.Simple,
                     false,
                     Color.white,
@@ -318,10 +525,11 @@ namespace FracturedChorus.Editor
             {
                 ConfigureImage(
                     center,
-                    LoadSprite(BondsRoot + "Kit/ui_bonds_panel_glass_v1.png"),
-                    Image.Type.Sliced,
+                    LoadPackByPath("BondsCanvas/CenterStats"),
+                    Image.Type.Simple,
                     false,
                     Color.white,
+                    true,
                     false);
             }
 
@@ -344,19 +552,37 @@ namespace FracturedChorus.Editor
             EnsureChip(roster, 3, "Astra", string.Empty, LoadSprite("Assets/FracturedChorus/Art/Characters/_Reference/LuxeConcert/astra_ref.png"), false);
             var locked = LoadSprite(BondsRoot + "Decor/ui_bonds_silhouette_locked_v1.png");
             EnsureChip(roster, 4, "Ryo", string.Empty, locked, true);
-            EnsureChip(roster, 5, "Mei Lin", string.Empty, locked, true);
-            EnsureChip(roster, 6, "Reserved", string.Empty, locked, true);
 
             var chevron = EnsureImage(roster, "Chevron", out created);
             if (created)
             {
                 ConfigureImage(
                     chevron,
-                    LoadSprite(BondsRoot + "Icons/ui_bonds_icon_chevron_v1.png"),
+                    LoadPackByPath("BondsCanvas/CenterStats/Roster/Chevron"),
                     Image.Type.Simple,
                     false,
                     Color.white,
                     true);
+            }
+
+            var chevronPrev = EnsureImage(roster, "ChevronPrev", out created);
+            if (created)
+            {
+                ConfigureImage(
+                    chevronPrev,
+                    LoadPackByPath("BondsCanvas/CenterStats/Roster/Chevron"),
+                    Image.Type.Simple,
+                    false,
+                    Color.white,
+                    true);
+                var src = chevron.rectTransform;
+                var dst = chevronPrev.rectTransform;
+                dst.anchorMin = src.anchorMin;
+                dst.anchorMax = src.anchorMax;
+                dst.pivot = src.pivot;
+                dst.sizeDelta = src.sizeDelta;
+                dst.anchoredPosition = new Vector2(-src.anchoredPosition.x, src.anchoredPosition.y);
+                dst.localScale = new Vector3(-1f, 1f, 1f);
             }
         }
 
@@ -381,10 +607,14 @@ namespace FracturedChorus.Editor
             var frame = EnsureImage(chip, "Frame", out var created);
             if (created)
             {
-                var framePath = locked
-                    ? BondsRoot + "Kit/ui_bonds_chip_locked_v1.png"
-                    : BondsRoot + "Kit/ui_bonds_chip_frame_normal_v1.png";
-                ConfigureImage(frame, LoadSprite(framePath), Image.Type.Sliced, false, Color.white, false);
+                ConfigureImage(
+                    frame,
+                    LoadPackByPath("BondsCanvas/CenterStats/Roster/Chip_0/Frame"),
+                    Image.Type.Simple,
+                    false,
+                    Color.white,
+                    true,
+                    false);
             }
 
             var face = EnsureImage(chip, "Face", out created);
@@ -398,7 +628,7 @@ namespace FracturedChorus.Editor
             {
                 ConfigureImage(
                     lockImage,
-                    LoadSprite(BondsRoot + "Icons/ui_bonds_icon_lock_v1.png"),
+                    LoadPackFile(PackMap().refs.lockIcon),
                     Image.Type.Simple,
                     false,
                     locked ? Color.white : new Color(1f, 1f, 1f, 0f),
@@ -407,6 +637,25 @@ namespace FracturedChorus.Editor
 
             EnsureText(chip, "Name", displayName, UiFontRole.Body);
             EnsureText(chip, "Role", role, UiFontRole.Body);
+            EnsureChipChildOrder(chip);
+        }
+
+        private static void EnsureChipChildOrder(Transform chip)
+        {
+            if (chip == null)
+            {
+                return;
+            }
+
+            var order = new[] { "Frame", "Face", "Lock", "Name", "Role" };
+            for (var i = 0; i < order.Length; i++)
+            {
+                var child = chip.Find(order[i]);
+                if (child != null)
+                {
+                    child.SetSiblingIndex(i);
+                }
+            }
         }
 
         private static void EnsureDetailCard(Transform canvas)
@@ -416,10 +665,11 @@ namespace FracturedChorus.Editor
             {
                 ConfigureImage(
                     card,
-                    LoadSprite(BondsRoot + "Kit/ui_bonds_panel_glass_v1.png"),
-                    Image.Type.Sliced,
+                    LoadPackByPath("BondsCanvas/DetailCard"),
+                    Image.Type.Simple,
                     false,
                     Color.white,
+                    true,
                     false);
             }
 
@@ -445,8 +695,8 @@ namespace FracturedChorus.Editor
             {
                 ConfigureImage(
                     expTrack,
-                    LoadSprite(BondsRoot + "Kit/ui_bonds_bar_track_v1.png"),
-                    Image.Type.Sliced,
+                    LoadSprite(StatCrystalDir + "ui_stat_bar_track_v3.png"),
+                    Image.Type.Simple,
                     false,
                     Color.white,
                     false);
@@ -455,13 +705,7 @@ namespace FracturedChorus.Editor
             var expFill = EnsureImage(expTrack.transform, "ExpFill", out created);
             if (created)
             {
-                ConfigureImage(
-                    expFill,
-                    LoadSprite(BondsRoot + "Kit/ui_bonds_bar_fill_v1.png"),
-                    Image.Type.Sliced,
-                    false,
-                    Color.white,
-                    false);
+                ConfigureBondExpFill(expFill);
             }
 
             EnsureText(card.transform, "ExpLabel", "0 / 10", UiFontRole.Display);
@@ -476,10 +720,11 @@ namespace FracturedChorus.Editor
             {
                 ConfigureImage(
                     root,
-                    LoadSprite(BondsRoot + "Kit/ui_bonds_panel_glass_v1.png"),
-                    Image.Type.Sliced,
+                    LoadPackByPath("BondsCanvas/LinkEpisodes"),
+                    Image.Type.Simple,
                     false,
                     Color.white,
+                    true,
                     false);
             }
 
@@ -487,28 +732,48 @@ namespace FracturedChorus.Editor
             EnsureText(root.transform, "TitleJp", BondPresentation.LinkEpisodesJp, UiFontRole.Display);
             EnsureText(root.transform, "Hint", BondPresentation.EpisodeLockHint, UiFontRole.Body);
 
-            var promoFrame = EnsureImage(root.transform, "PromoFrame", out created);
-            if (created)
-            {
-                ConfigureImage(
-                    promoFrame,
-                    LoadSprite(BondsRoot + "Kit/ui_bonds_panel_glass_v1.png"),
-                    Image.Type.Sliced,
-                    false,
-                    Color.white,
-                    false);
-            }
+            var promoFrame = EnsurePanel(root.transform, "PromoFrame", out created);
 
-            var promoImage = EnsureImage(promoFrame.transform, "PromoImage", out created);
-            if (created)
+            var promoImage = EnsureImage(promoFrame, "PromoImage", out var promoImageCreated);
+            if (promoImageCreated)
             {
                 ConfigureImage(
                     promoImage,
-                    LoadSprite(BondsRoot + "Decor/ui_bonds_promo_piano_v1.png"),
+                    null,
                     Image.Type.Simple,
                     false,
                     Color.white,
                     true);
+            }
+
+            var promoChrome = EnsureImage(promoFrame, "PromoFrameChrome", out var chromeCreated);
+            if (chromeCreated)
+            {
+                ConfigureImage(
+                    promoChrome,
+                    LoadPackByPath(PromoFrameChromeScenePath),
+                    Image.Type.Simple,
+                    false,
+                    Color.white,
+                    true,
+                    false);
+                StretchFull(promoChrome.rectTransform);
+            }
+
+            var legacyFrameImage = promoFrame.GetComponent<Image>();
+            if (legacyFrameImage != null)
+            {
+                legacyFrameImage.enabled = false;
+            }
+
+            if (promoImageCreated)
+            {
+                promoImage.transform.SetAsFirstSibling();
+            }
+
+            if (chromeCreated)
+            {
+                promoChrome.transform.SetAsLastSibling();
             }
 
             EnsureText(root.transform, "PromoCaption", BondPresentation.PromoCaption, UiFontRole.Body);
@@ -522,23 +787,29 @@ namespace FracturedChorus.Editor
         private static void EnsureEpisodeRow(Transform parent, int index, string title)
         {
             var row = EnsureButton(parent, $"Row_{index:00}", out var created);
-            row.interactable = index == 1;
+            row.interactable = true;
             if (created)
             {
                 ConfigureImage(
                     row.GetComponent<Image>(),
-                    LoadSprite(BondsRoot + "Kit/ui_bonds_episode_row_v1.png"),
-                    Image.Type.Sliced,
+                    LoadPackByPath($"BondsCanvas/LinkEpisodes/Row_{index:00}"),
+                    Image.Type.Simple,
                     true,
                     Color.white,
+                    true,
                     false);
             }
 
             var icon = EnsureImage(row.transform, "Icon", out created);
             if (created)
             {
-                var spriteName = index == 1 ? "ui_bonds_icon_play_v1.png" : "ui_bonds_icon_lock_v1.png";
-                ConfigureImage(icon, LoadSprite(BondsRoot + "Icons/" + spriteName), Image.Type.Simple, false, Color.white, true);
+                ConfigureImage(
+                    icon,
+                    LoadPackByPath($"BondsCanvas/LinkEpisodes/Row_{index:00}/Icon"),
+                    Image.Type.Simple,
+                    false,
+                    Color.white,
+                    true);
             }
 
             EnsureText(row.transform, "Index", index.ToString("00"), UiFontRole.Display);
@@ -548,7 +819,31 @@ namespace FracturedChorus.Editor
         private static void EnsureFooter(Transform canvas)
         {
             var footer = EnsurePanel(canvas, "Footer", out _);
+            var confirmIcon = EnsureImage(footer, "ConfirmIcon", out var created);
+            if (created)
+            {
+                ConfigureImage(
+                    confirmIcon,
+                    LoadPackByPath("BondsCanvas/Footer/ConfirmIcon"),
+                    Image.Type.Simple,
+                    false,
+                    Color.white,
+                    true);
+            }
+
             EnsureText(footer, "ConfirmLabel", "Confirm", UiFontRole.Display);
+            var backIcon = EnsureImage(footer, "BackIcon", out created);
+            if (created)
+            {
+                ConfigureImage(
+                    backIcon,
+                    LoadPackByPath("BondsCanvas/Footer/BackIcon"),
+                    Image.Type.Simple,
+                    false,
+                    Color.white,
+                    true);
+            }
+
             EnsureText(footer, "BackLabel", "Back", UiFontRole.Display);
         }
 
@@ -557,6 +852,23 @@ namespace FracturedChorus.Editor
             var root = EnsurePanel(canvas, "Wordmark", out _);
             EnsureText(root, "Title", BondPresentation.Wordmark, UiFontRole.Display);
             EnsureText(root, "Sub", BondPresentation.WordmarkSub, UiFontRole.Body);
+        }
+
+        private static void EnsureDivider(Transform canvas)
+        {
+            var divider = EnsureImage(canvas, "Divider", out var created);
+            if (!created)
+            {
+                return;
+            }
+
+            ConfigureImage(
+                divider,
+                LoadPackByPath("BondsCanvas/Divider"),
+                Image.Type.Simple,
+                false,
+                Color.white,
+                true);
         }
 
         private static void EnsureTaglineRight(Transform canvas)
@@ -574,7 +886,7 @@ namespace FracturedChorus.Editor
 
             ConfigureImage(
                 compass,
-                LoadSprite(BondsRoot + "Icons/ui_bonds_icon_compass_v1.png"),
+                LoadPackByPath("BondsCanvas/Compass"),
                 Image.Type.Simple,
                 false,
                 Color.white,
@@ -634,6 +946,11 @@ namespace FracturedChorus.Editor
             camera.orthographic = true;
             camera.clearFlags = CameraClearFlags.SolidColor;
             camera.backgroundColor = new Color(0.011764706f, 0.03529412f, 0.078431375f, 1f);
+            camera.depth = -1f;
+            camera.nearClipPlane = 0.3f;
+            camera.farClipPlane = 1000f;
+            camera.transform.position = new Vector3(0f, 0f, -10f);
+            EnsureComponent<UniversalAdditionalCameraData>(camera.gameObject);
         }
 
         private static void EnsureEventSystem()
@@ -681,13 +998,95 @@ namespace FracturedChorus.Editor
             return text;
         }
 
+        private static void FixBondExpBar(Transform canvas)
+        {
+            var detail = FindPath(canvas, "CenterStats/Roster/DetailCard") ?? FindPath(canvas, "DetailCard");
+            if (detail == null)
+            {
+                return;
+            }
+
+            var track = FindPath(detail, "ExpTrack")?.GetComponent<Image>();
+            if (track != null)
+            {
+                ConfigureImage(
+                    track,
+                    LoadSprite(StatCrystalDir + "ui_stat_bar_track_v3.png"),
+                    Image.Type.Simple,
+                    false,
+                    Color.white,
+                    false);
+
+                var mask = track.GetComponent<RectMask2D>();
+                if (mask != null)
+                {
+                    Object.DestroyImmediate(mask);
+                }
+            }
+
+            var fill = FindPath(detail, "ExpTrack/ExpFill")?.GetComponent<Image>();
+            if (fill != null)
+            {
+                ConfigureBondExpFill(fill);
+            }
+        }
+
+        private static void ConfigureBondExpFill(Image fill)
+        {
+            ConfigureImage(
+                fill,
+                LoadSprite(StatCrystalDir + "ui_stat_bar_fill_v3.png"),
+                Image.Type.Filled,
+                false,
+                Color.white,
+                false);
+            fill.fillMethod = Image.FillMethod.Horizontal;
+            fill.fillOrigin = (int)Image.OriginHorizontal.Left;
+            fill.fillAmount = 0.35f;
+            StretchFull(fill.rectTransform);
+        }
+
+        private static void EnsureSparkDriftFx(Transform canvas)
+        {
+            var background = FindPath(canvas, "Background");
+            if (background == null)
+            {
+                return;
+            }
+
+            var sparkRoot = background.Find("SparkFx");
+            if (sparkRoot == null)
+            {
+                return;
+            }
+
+            EnsureComponent<BondsMenuSparkDrift>(sparkRoot.gameObject);
+            var sparkSprite = LoadPackFile("30_Decor_Spark.png");
+            if (sparkSprite == null)
+            {
+                return;
+            }
+
+            for (var i = 0; i < sparkRoot.childCount; i++)
+            {
+                var image = sparkRoot.GetChild(i).GetComponent<Image>();
+                if (image == null || image.sprite != null)
+                {
+                    continue;
+                }
+
+                ConfigureImage(image, sparkSprite, Image.Type.Simple, false, image.color, true);
+            }
+        }
+
         private static void ConfigureImage(
             Image image,
             Sprite sprite,
             Image.Type type,
             bool raycastTarget,
             Color color,
-            bool preserveAspect)
+            bool preserveAspect,
+            bool fillCenter = true)
         {
             if (image == null)
             {
@@ -699,6 +1098,73 @@ namespace FracturedChorus.Editor
             image.raycastTarget = raycastTarget;
             image.color = color;
             image.preserveAspect = preserveAspect;
+            if (type == Image.Type.Sliced)
+            {
+                image.fillCenter = fillCenter;
+            }
+        }
+
+        [Serializable]
+        private class PackSceneMap
+        {
+            public string packDir;
+            public PackAssign[] assignments;
+            public PackRefs refs;
+        }
+
+        [Serializable]
+        private class PackAssign
+        {
+            public string path;
+            public string file;
+        }
+
+        [Serializable]
+        private class PackRefs
+        {
+            public string[] statIcons;
+            public string chipFrameNormal;
+            public string chipFrameSelected;
+            public string chipFrameLocked;
+            public string lockIcon;
+            public string playSprite;
+            public string lockSprite;
+            public string menuNormal;
+            public string menuSelected;
+            public string episodeRowNormal;
+            public string episodeRowSelected;
+        }
+
+        private static PackSceneMap _packMap;
+
+        private static PackSceneMap PackMap()
+        {
+            if (_packMap != null)
+            {
+                return _packMap;
+            }
+
+            _packMap = JsonUtility.FromJson<PackSceneMap>(File.ReadAllText(PackMapPath));
+            return _packMap;
+        }
+
+        private static Sprite LoadPackByPath(string scenePath)
+        {
+            var map = PackMap();
+            for (var i = 0; i < map.assignments.Length; i++)
+            {
+                if (map.assignments[i].path == scenePath)
+                {
+                    return LoadPackFile(map.assignments[i].file);
+                }
+            }
+
+            return null;
+        }
+
+        private static Sprite LoadPackFile(string file)
+        {
+            return LoadSprite(PackMap().packDir + "/" + file);
         }
 
         private static Sprite LoadSprite(string path)
@@ -753,6 +1219,7 @@ namespace FracturedChorus.Editor
             var detail = AttachDetailCard(canvas);
             var chips = AttachChipViews(canvas);
             var rows = AttachEpisodeRows(canvas);
+            var nav = AttachNavRows(canvas);
             var nodes = AttachStatNodes(canvas);
 
             var so = new SerializedObject(menu);
@@ -760,36 +1227,51 @@ namespace FracturedChorus.Editor
             SetObjectRef(so, "cornerHud", cornerHud);
             SetObjectRef(so, "radar", radar);
             SetObjectArray(so.FindProperty("nodes"), nodes);
+            var refs = PackMap().refs;
             SetSpriteArray(
                 so.FindProperty("statIcons"),
                 new[]
                 {
-                    LoadSprite(BondsRoot + "Icons/ui_bonds_icon_stat_resonance_v1.png"),
-                    LoadSprite(BondsRoot + "Icons/ui_bonds_icon_stat_cadence_v1.png"),
-                    LoadSprite(BondsRoot + "Icons/ui_bonds_icon_stat_pulse_v1.png"),
-                    LoadSprite(BondsRoot + "Icons/ui_bonds_icon_stat_harmony_v1.png"),
-                    LoadSprite(BondsRoot + "Icons/ui_bonds_icon_stat_rhythm_v1.png")
+                    LoadPackFile(refs.statIcons[0]),
+                    LoadPackFile(refs.statIcons[1]),
+                    LoadPackFile(refs.statIcons[2]),
+                    LoadPackFile(refs.statIcons[3]),
+                    LoadPackFile(refs.statIcons[4])
                 });
             SetObjectArray(so.FindProperty("chips"), chips);
-            SetObjectRef(so, "chipFrameNormal", LoadSprite(BondsRoot + "Kit/ui_bonds_chip_frame_normal_v1.png"));
-            SetObjectRef(so, "chipFrameSelected", LoadSprite(BondsRoot + "Kit/ui_bonds_chip_frame_selected_v1.png"));
-            SetObjectRef(so, "chipFrameLocked", LoadSprite(BondsRoot + "Kit/ui_bonds_chip_locked_v1.png"));
-            SetObjectRef(so, "lockIcon", LoadSprite(BondsRoot + "Icons/ui_bonds_icon_lock_v1.png"));
-            var lockedPortrait = LoadSprite(BondsRoot + "Decor/ui_bonds_silhouette_locked_v1.png");
-            SetSpriteArray(
-                so.FindProperty("portraitSprites"),
-                new[]
-                {
-                    LoadSprite(RenPortraitPath),
-                    LoadSprite(CharlottePortraitPath),
-                    LoadSprite(CodaPortraitPath),
-                    LoadSprite(AstraPortraitPath),
-                    lockedPortrait,
-                    lockedPortrait
-                });
-            SetObjectRef(so, "reservedPortrait", lockedPortrait);
+            SetObjectRef(so, "rosterChevron", AttachRosterChevron(canvas, "CenterStats/Roster/Chevron"));
+            SetObjectRef(so, "rosterChevronPrev", AttachRosterChevron(canvas, "CenterStats/Roster/ChevronPrev"));
+            SetObjectRef(so, "chipFrameNormal", LoadPackFile(refs.chipFrameNormal));
+            SetObjectRef(so, "chipFrameSelected", LoadPackFile(refs.chipFrameSelected));
+            SetObjectRef(so, "chipFrameLocked", LoadPackFile(refs.chipFrameLocked));
+            SetObjectRef(so, "lockIcon", LoadPackFile(refs.lockIcon));
+            var portraits = so.FindProperty("portraitSprites");
+            if (portraits != null && (portraits.arraySize == 0 || portraits.GetArrayElementAtIndex(0).objectReferenceValue == null))
+            {
+                var lockedPortrait = LoadSprite(BondsRoot + "Decor/ui_bonds_silhouette_locked_v1.png");
+                SetSpriteArray(
+                    portraits,
+                    new[]
+                    {
+                        LoadSprite(RenPortraitPath),
+                        LoadSprite(CharlottePortraitPath),
+                        LoadSprite(CodaPortraitPath),
+                        LoadSprite(AstraPortraitPath),
+                        lockedPortrait,
+                        lockedPortrait
+                    });
+                SetObjectRef(so, "reservedPortrait", lockedPortrait);
+            }
+
+            SetObjectRef(
+                so,
+                "storyHiddenPortrait",
+                LoadSprite("Assets/FracturedChorus/Art/UI/Bonds/Cards/bond_card_story_hidden_v1.png"));
             SetObjectRef(so, "detail", detail);
             SetObjectArray(so.FindProperty("episodeRows"), rows);
+            SetObjectArray(so.FindProperty("navRows"), nav);
+            SetObjectRef(so, "navPlateNormal", LoadPackFile(refs.menuNormal));
+            SetObjectRef(so, "navPlateSelected", LoadPackFile(refs.menuSelected));
             SetObjectRef(so, "socialStatsTitle", FindPath(canvas, "CenterStats/Title")?.GetComponent<Text>());
             SetObjectRef(so, "socialStatsJp", FindPath(canvas, "CenterStats/TitleJp")?.GetComponent<Text>());
             SetObjectRef(so, "linkTitle", FindPath(canvas, "LinkEpisodes/Title")?.GetComponent<Text>());
@@ -799,6 +1281,10 @@ namespace FracturedChorus.Editor
             SetObjectRef(so, "headerJp", FindPath(canvas, "HeaderBonds/LabelJp")?.GetComponent<Text>());
             SetObjectRef(so, "confirmLabel", FindPath(canvas, "Footer/ConfirmLabel")?.GetComponent<Text>());
             SetObjectRef(so, "backLabel", FindPath(canvas, "Footer/BackLabel")?.GetComponent<Text>());
+            SetObjectRef(
+                so,
+                "promoImage",
+                FindPath(canvas, "LinkEpisodes/PromoFrame/PromoImage")?.GetComponent<Image>());
             so.ApplyModifiedPropertiesWithoutUndo();
         }
 
@@ -850,7 +1336,7 @@ namespace FracturedChorus.Editor
             var view = EnsureComponent<SocialStatsNodeView>(root.gameObject);
             var icon = EnsureStatNodeIcon(root);
             var name = EnsureStatNodeText(root, "Name", UiFontRole.Body);
-            var rank = EnsureStatNodeText(root, "Rank", UiFontRole.Display);
+            var rank = EnsureStatNodeText(root, "Rank", UiFontRole.Body);
             var flavor = EnsureStatNodeText(root, "Flavor", UiFontRole.Body);
             var so = new SerializedObject(view);
             SetObjectRef(so, "iconImage", icon);
@@ -870,7 +1356,7 @@ namespace FracturedChorus.Editor
 
             EnsureStatNodeIcon(root);
             EnsureStatNodeText(root, "Name", UiFontRole.Body);
-            EnsureStatNodeText(root, "Rank", UiFontRole.Display);
+            EnsureStatNodeText(root, "Rank", UiFontRole.Body);
             EnsureStatNodeText(root, "Flavor", UiFontRole.Body);
         }
 
@@ -889,14 +1375,22 @@ namespace FracturedChorus.Editor
             var rect = Ensure(root, name, out var created);
             EnsureComponent<CanvasRenderer>(rect.gameObject);
             var text = EnsureComponent<Text>(rect.gameObject);
-            if (created)
+            if (created || string.IsNullOrEmpty(text.text))
             {
-                text.text = string.Empty;
+                text.text = name switch
+                {
+                    "Name" => root.name.Replace("Node_", string.Empty),
+                    "Rank" => "Rank 1",
+                    "Flavor" => "Preview copy.",
+                    _ => string.Empty
+                };
             }
 
             text.color = Color.white;
             text.raycastTarget = false;
-            UiFontCatalog.Apply(text, role, text.fontSize > 0 ? text.fontSize : 18);
+            text.horizontalOverflow = HorizontalWrapMode.Overflow;
+            text.verticalOverflow = VerticalWrapMode.Overflow;
+            UiFontCatalog.Apply(text, role, text.fontSize > 0 ? text.fontSize : name == "Flavor" ? 11 : 14);
             return text;
         }
 
@@ -908,13 +1402,43 @@ namespace FracturedChorus.Editor
                 return new BondRosterChipView[0];
             }
 
-            var chips = new BondRosterChipView[BondPresentation.VisibleChipCount];
+            var chips = new BondRosterChipView[BondPresentation.VisibleChipSlots];
             for (var i = 0; i < chips.Length; i++)
             {
                 chips[i] = AttachChipView(FindPath(roster, $"Chip_{i}"));
             }
 
+            for (var i = BondPresentation.VisibleChipSlots; ; i++)
+            {
+                var extra = FindPath(roster, $"Chip_{i}");
+                if (extra == null)
+                {
+                    break;
+                }
+
+                extra.gameObject.SetActive(false);
+            }
+
             return chips;
+        }
+
+        private static Button AttachRosterChevron(Transform canvas, string path)
+        {
+            var root = FindPath(canvas, path);
+            if (root == null)
+            {
+                return null;
+            }
+
+            var button = EnsureComponent<Button>(root.gameObject);
+            var image = root.GetComponent<Image>();
+            if (image != null)
+            {
+                image.raycastTarget = true;
+                button.targetGraphic = image;
+            }
+
+            return button;
         }
 
         private static BondRosterChipView AttachChipView(Transform root)
@@ -929,24 +1453,33 @@ namespace FracturedChorus.Editor
             if (frame != null)
             {
                 frame.raycastTarget = true;
+                frame.preserveAspect = true;
                 button.targetGraphic = frame;
+            }
+
+            var face = FindPath(root, "Face")?.GetComponent<Image>();
+            if (face != null)
+            {
+                face.raycastTarget = false;
+                face.preserveAspect = true;
             }
 
             var view = EnsureComponent<BondRosterChipView>(root.gameObject);
             var so = new SerializedObject(view);
             SetObjectRef(so, "frame", frame);
-            SetObjectRef(so, "face", FindPath(root, "Face")?.GetComponent<Image>());
+            SetObjectRef(so, "face", face);
             SetObjectRef(so, "lockIcon", FindPath(root, "Lock")?.GetComponent<Image>());
             SetObjectRef(so, "nameLabel", FindPath(root, "Name")?.GetComponent<Text>());
             SetObjectRef(so, "roleLabel", FindPath(root, "Role")?.GetComponent<Text>());
             SetObjectRef(so, "button", button);
             so.ApplyModifiedPropertiesWithoutUndo();
+            EnsureChipChildOrder(root);
             return view;
         }
 
         private static BondDetailCardView AttachDetailCard(Transform canvas)
         {
-            var root = FindPath(canvas, "DetailCard");
+            var root = FindPath(canvas, "CenterStats/Roster/DetailCard") ?? FindPath(canvas, "DetailCard");
             if (root == null)
             {
                 return null;
@@ -1000,13 +1533,63 @@ namespace FracturedChorus.Editor
                 button.targetGraphic = image;
             }
 
+            var refs = PackMap().refs;
             var so = new SerializedObject(view);
+            SetObjectRef(so, "plate", image);
             SetObjectRef(so, "icon", FindPath(root, "Icon")?.GetComponent<Image>());
             SetObjectRef(so, "indexLabel", FindPath(root, "Index")?.GetComponent<Text>());
             SetObjectRef(so, "titleLabel", FindPath(root, "Label")?.GetComponent<Text>());
             SetObjectRef(so, "button", button);
-            SetObjectRef(so, "playSprite", LoadSprite(BondsRoot + "Icons/ui_bonds_icon_play_v1.png"));
-            SetObjectRef(so, "lockSprite", LoadSprite(BondsRoot + "Icons/ui_bonds_icon_lock_v1.png"));
+            SetObjectRef(so, "plateNormal", LoadPackFile(refs.episodeRowNormal));
+            SetObjectRef(so, "plateSelected", LoadPackFile(refs.episodeRowSelected));
+            SetObjectRef(so, "playSprite", LoadPackFile(refs.playSprite));
+            SetObjectRef(so, "lockSprite", LoadPackFile(refs.lockSprite));
+            so.ApplyModifiedPropertiesWithoutUndo();
+            return view;
+        }
+
+        private static BondNavRowView[] AttachNavRows(Transform canvas)
+        {
+            var nav = FindPath(canvas, "LeftNav");
+            if (nav == null)
+            {
+                return new BondNavRowView[0];
+            }
+
+            return new[]
+            {
+                AttachNavRow(FindPath(nav, "Row_SocialStats")),
+                AttachNavRow(FindPath(nav, "Row_Link")),
+                AttachNavRow(FindPath(nav, "Row_Conversations")),
+                AttachNavRow(FindPath(nav, "Row_Memories")),
+                AttachNavRow(FindPath(nav, "Row_Gallery"))
+            };
+        }
+
+        private static BondNavRowView AttachNavRow(Transform root)
+        {
+            if (root == null)
+            {
+                return null;
+            }
+
+            var button = EnsureComponent<Button>(root.gameObject);
+            var plate = root.GetComponent<Image>();
+            if (plate != null)
+            {
+                button.targetGraphic = plate;
+            }
+
+            button.interactable = true;
+            button.transition = Selectable.Transition.None;
+            var view = EnsureComponent<BondNavRowView>(root.gameObject);
+            var refs = PackMap().refs;
+            var so = new SerializedObject(view);
+            SetObjectRef(so, "plate", plate);
+            SetObjectRef(so, "label", FindPath(root, "Label")?.GetComponent<Text>());
+            SetObjectRef(so, "button", button);
+            SetObjectRef(so, "plateNormal", LoadPackFile(refs.menuNormal));
+            SetObjectRef(so, "plateSelected", LoadPackFile(refs.menuSelected));
             so.ApplyModifiedPropertiesWithoutUndo();
             return view;
         }

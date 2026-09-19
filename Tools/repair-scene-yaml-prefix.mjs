@@ -17,7 +17,7 @@ const prefix = (() => {
 
 const scenes = [
   "d:/Fractured-Chorus1/Assets/FracturedChorus/Scenes/CharacterBuild.unity",
-  "d:/Fractured-Chorus1/Assets/FracturedChorus/Scenes/CharacterBuildLayoutSandbox.unity",
+  "d:/Fractured-Chorus1/Assets/FracturedChorus/Scenes/CharacterBuild.unity",
 ];
 
 for (const path of scenes) {

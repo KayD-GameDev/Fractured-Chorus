@@ -1,0 +1,52 @@
+{
+  "scene": "Assets/FracturedChorus/Scenes/OpeningInvestigation.unity",
+  "nodes": [
+    {
+      "name": "DialoguePanel",
+      "siblingIndex": 0,
+      "anchorMin": { "x": 0.04, "y": 0.03 },
+      "anchorMax": { "x": 0.96, "y": 0.36 },
+      "anchoredPosition": { "x": 0, "y": 0 },
+      "sizeDelta": { "x": 0, "y": 0 },
+      "pivot": { "x": 0.5, "y": 0.5 }
+    },
+    {
+      "name": "DialogueBodyBacking",
+      "siblingIndex": 0,
+      "anchorMin": { "x": 0.07, "y": 0.12 },
+      "anchorMax": { "x": 0.93, "y": 0.74 },
+      "anchoredPosition": { "x": -3.999878, "y": -26 },
+      "sizeDelta": { "x": 32.0001, "y": -8.118 },
+      "pivot": { "x": 0.5, "y": 0.5 }
+    },
+    {
+      "name": "DialogueFrame",
+      "siblingIndex": 1,
+      "anchorMin": { "x": 0, "y": 0 },
+      "anchorMax": { "x": 1, "y": 1 },
+      "anchoredPosition": { "x": 0, "y": -49.157 },
+      "sizeDelta": { "x": 0, "y": 98.315 },
+      "pivot": { "x": 0.5, "y": 0.5 },
+      "imageType": 0,
+      "preserveAspect": 1
+    },
+    {
+      "name": "Nameplate",
+      "siblingIndex": 2,
+      "anchorMin": { "x": 0.018, "y": 0.9 },
+      "anchorMax": { "x": 0.195, "y": 1.06 },
+      "anchoredPosition": { "x": 132.3, "y": -114.56 },
+      "sizeDelta": { "x": -41.63, "y": -3.12 },
+      "pivot": { "x": 0.5, "y": 0.5 }
+    },
+    {
+      "name": "DialogueBody",
+      "siblingIndex": 3,
+      "anchorMin": { "x": 0.07, "y": 0.12 },
+      "anchorMax": { "x": 0.93, "y": 0.74 },
+      "anchoredPosition": { "x": -22.89, "y": -41.73 },
+      "sizeDelta": { "x": -372.92, "y": -83.47 },
+      "pivot": { "x": 0.5, "y": 0.5 }
+    }
+  ]
+}

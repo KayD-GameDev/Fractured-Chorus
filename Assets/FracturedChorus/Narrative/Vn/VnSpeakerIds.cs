@@ -7,5 +7,6 @@ namespace FracturedChorus.Narrative.Vn
         public const string Ryo = "ryo";
         public const string MeiLin = "mei_lin";
         public const string Ren = "ren";
+        public const string Charlotte = "charlotte";
     }
 }

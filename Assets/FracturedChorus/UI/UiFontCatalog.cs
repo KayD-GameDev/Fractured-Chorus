@@ -83,6 +83,11 @@ namespace FracturedChorus.UI
                 slashBanner.ApplyFonts();
             }
 
+            foreach (var cornerHud in root.GetComponentsInChildren<FracturedChorus.Hub.HubCornerInfoHud>(includeInactive))
+            {
+                cornerHud.ApplyFonts();
+            }
+
             foreach (var runtime in root.GetComponentsInChildren<FracturedChorus.Narrative.Vn.VnRuntimeController>(includeInactive))
             {
                 FracturedChorus.Narrative.Vn.VnRuntimeUiLayoutApplier.ApplyReadability(runtime);

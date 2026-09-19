@@ -4,7 +4,7 @@ import { execSync } from "child_process";
 const scenePath =
   "d:/Fractured-Chorus1/Assets/FracturedChorus/Scenes/CharacterBuild.unity";
 const sandboxPath =
-  "d:/Fractured-Chorus1/Assets/FracturedChorus/Scenes/CharacterBuildLayoutSandbox.unity";
+  "d:/Fractured-Chorus1/Assets/FracturedChorus/Scenes/CharacterBuild.unity";
 
 function analyze(path) {
   const buf = fs.readFileSync(path);

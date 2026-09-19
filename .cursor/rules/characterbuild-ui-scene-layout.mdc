@@ -2,7 +2,7 @@
 description: CharacterBuild / StatMenu sandbox layout lives in the scene; never re-hardcode RectTransforms.
 globs:
   - Assets/FracturedChorus/Editor/CharacterBuildSceneSetupEditor.cs
-  - Assets/FracturedChorus/Scenes/CharacterBuildLayoutSandbox.unity
+  - Assets/FracturedChorus/Scenes/CharacterBuild.unity
   - Assets/FracturedChorus/Scenes/CharacterBuild.unity
   - Assets/FracturedChorus/Hub/CharacterBuild/**/*.cs
 alwaysApply: false
@@ -20,6 +20,6 @@ Pos / size / anchor **và thứ tự sibling Hierarchy** của `BuildCanvas` và
 6. Menu **Apply CharacterBuild Sandbox Canvas Layers** = reset layer order có confirm — không chạy tự động.
 7. Heal / Rebuild (nếu có) là ngoại lệ được phép reset layout — có confirm dialog; không chạy khi user vừa chỉnh tay.
 8. **Save layout:** `Fractured Chorus/Save CharacterBuild Sandbox Layout` → ghi scene + `MockKit/sandbox_layout_snapshot.json` (chỉ backup tham chiếu, **không** apply lại từ code).
-9. **Production sync:** `Fractured Chorus/Sync CharacterBuild Production From Sandbox` → copy `BuildCanvas` sandbox → `CharacterBuild.unity`, wire `CharacterBuildMenuUI` + portrait layers + skill equip (layout sandbox giữ nguyên, không hardcode apply từ JSON).
+9. Layout chỉnh trực tiếp trên `CharacterBuild.unity`; không còn scene sandbox riêng.
 10. Portrait bust layers: `Wire CharacterBuild Portrait Layers` gắn ref scene → `CharacterBuildPortraitLayersView`; không đụng transform.
 11. Stat Details: `StatDetails_EditPreview` là scene-root canvas (như SkillEquip_EditPreview). Chỉnh `StatDetailsOverlay` / Title / Body / CloseButton trên Hierarchy rồi Ctrl+S. Runtime chỉ bật/tắt; không hardcode Rect. Seed layout chỉ khi object mới.

@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 
 const ROOT = "D:/Fractured-Chorus1";
-const SANDBOX = `${ROOT}/Assets/FracturedChorus/Scenes/CharacterBuildLayoutSandbox.unity`;
+const SANDBOX = `${ROOT}/Assets/FracturedChorus/Scenes/CharacterBuild.unity`;
 const PRODUCTION = `${ROOT}/Assets/FracturedChorus/Scenes/CharacterBuild.unity`;
 const SNAPSHOT_SANDBOX = `${ROOT}/Assets/FracturedChorus/Art/UI/StatMenu/MockKit/sandbox_layout_snapshot.json`;
 const SNAPSHOT_PROD = `${ROOT}/Assets/FracturedChorus/Art/UI/StatMenu/MockKit/characterbuild_layout_snapshot.json`;

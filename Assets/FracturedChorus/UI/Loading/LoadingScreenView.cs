@@ -17,7 +17,8 @@ namespace FracturedChorus.UI.Loading
         {
             "UI/LoadingBg/loading_bg_01",
             "UI/LoadingBg/loading_bg_02",
-            "UI/LoadingBg/loading_bg_03"
+            "UI/LoadingBg/loading_bg_03",
+            "UI/LoadingBg/loading_bg_04"
         };
         private static readonly Color DimColor = new Color(0.02f, 0.01f, 0.06f, 0.82f);
 

@@ -1,4 +1,5 @@
 using FracturedChorus.Meta;
+using FracturedChorus.UI;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,26 +17,26 @@ namespace FracturedChorus.Hub
             if (nameLabel != null)
             {
                 nameLabel.text = SocialStatPresentation.GetDisplayName(stat);
+                nameLabel.color = FcColorTokens.Brand.TextPrimary;
             }
 
             if (rankLabel != null)
             {
                 rankLabel.text = $"Rank {Mathf.Clamp(rank, 1, SocialStatsState.MaxRank)}";
+                rankLabel.color = FcColorTokens.Brand.TextPrimary;
             }
 
             if (flavorLabel != null)
             {
                 flavorLabel.text = SocialStatPresentation.GetFlavor(stat);
+                flavorLabel.color = FcColorTokens.WithAlpha(FcColorTokens.Brand.TextPrimary, 0.82f);
             }
 
             if (iconImage != null)
             {
+                iconImage.sprite = icon;
                 iconImage.enabled = icon != null;
-                if (icon != null)
-                {
-                    iconImage.sprite = icon;
-                    iconImage.preserveAspect = true;
-                }
+                iconImage.preserveAspect = true;
             }
         }
 

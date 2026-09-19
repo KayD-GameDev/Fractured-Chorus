@@ -55,6 +55,7 @@ namespace FracturedChorus.Hub
                 }
 
                 _phaseDriver.BeginCurrentPhase();
+                townMapView?.FulfillPendingStatusMenuReturn(GameMetaSession.Current);
                 TutorialDirector.Ensure().StartHubTrack();
                 CampusBgmPlayer.Play();
                 var canvas = Object.FindAnyObjectByType<Canvas>();

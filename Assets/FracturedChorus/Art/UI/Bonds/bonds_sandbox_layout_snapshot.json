@@ -1,20 +1,18 @@
 {
-  "scene": "Assets/FracturedChorus/Scenes/BondsLayoutSandbox.unity",
-  "savedAtUtc": "2026-09-11T13:57:02.734Z",
-  "note": "Reference backup only. Layout SoT is BondsLayoutSandbox.unity - do not re-apply these values from code.",
+  "scene": "Assets/FracturedChorus/Scenes/Bonds.unity",
+  "savedAtUtc": "2026-09-15T17:36:36.824Z",
+  "note": "Reference backup only. Layout SoT is Bonds.unity - do not re-apply these values from code.",
   "rootChildren": [
+    "MockGuide",
     "Background",
+    "DismissBackdrop",
     "CornerHud",
     "HeaderBonds",
     "LeftNav",
     "CenterStats",
-    "DetailCard",
     "LinkEpisodes",
     "Footer",
-    "Wordmark",
-    "TaglineRight",
-    "Compass",
-    "MockGuide"
+    "Divider"
   ],
   "nodes": [
     {
@@ -24,6 +22,59 @@
       "activeSelf": true,
       "layoutKind": "RectTransform",
       "localScale": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/MockGuide",
+      "goFileId": "931000585",
+      "siblingIndex": 0,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
         "x": 1,
         "y": 1,
         "z": 1
@@ -68,11 +119,66 @@
         "x": 0.5,
         "y": 0.5,
         "z": 0
-      }
+      },
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/_ref/_ref_bonds_menu_align.jpg"
     },
     {
       "path": "BondsCanvas/Background",
       "goFileId": "931000015",
+      "siblingIndex": 1,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 1,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/bond_bg_hima_lobby.png"
+    },
+    {
+      "path": "BondsCanvas/Background/SparkFx",
+      "goFileId": "931001700",
       "siblingIndex": 0,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -121,65 +227,11 @@
         "x": 0.5,
         "y": 0.5,
         "z": 0
-      },
-      "spritePath": "Assets/FracturedChorus/Art/UI/StatusMenu/statusmenu_hima_city_bg_v1.jpg"
-    },
-    {
-      "path": "BondsCanvas/CornerHud",
-      "goFileId": "931000019",
-      "siblingIndex": 1,
-      "activeSelf": true,
-      "layoutKind": "RectTransform",
-      "localScale": {
-        "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "localPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "localRotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "w": 1
-      },
-      "localEulerAnglesHint": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchoredPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "sizeDelta": {
-        "x": 100,
-        "y": 100,
-        "z": 0
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
       }
     },
     {
-      "path": "BondsCanvas/CornerHud/DateLabel",
-      "goFileId": "931000023",
+      "path": "BondsCanvas/Background/SparkFx/Spark_0",
+      "goFileId": "931001710",
       "siblingIndex": 0,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -205,13 +257,13 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0.08,
+        "y": 0.18,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0.08,
+        "y": 0.18,
         "z": 0
       },
       "anchoredPosition": {
@@ -220,19 +272,20 @@
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 20,
+        "y": 20,
         "z": 0
       },
       "pivot": {
         "x": 0.5,
         "y": 0.5,
         "z": 0
-      }
+      },
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/30_Decor_Spark.png"
     },
     {
-      "path": "BondsCanvas/CornerHud/DayLabel",
-      "goFileId": "931000025",
+      "path": "BondsCanvas/Background/SparkFx/Spark_1",
+      "goFileId": "931001720",
       "siblingIndex": 1,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -258,13 +311,13 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0.22,
+        "y": 0.32,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0.22,
+        "y": 0.32,
         "z": 0
       },
       "anchoredPosition": {
@@ -273,19 +326,20 @@
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 14,
+        "y": 14,
         "z": 0
       },
       "pivot": {
         "x": 0.5,
         "y": 0.5,
         "z": 0
-      }
+      },
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/30_Decor_Spark.png"
     },
     {
-      "path": "BondsCanvas/CornerHud/PhaseIcon",
-      "goFileId": "931000027",
+      "path": "BondsCanvas/Background/SparkFx/Spark_2",
+      "goFileId": "931001730",
       "siblingIndex": 2,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -311,13 +365,13 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0.38,
+        "y": 0.14,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0.38,
+        "y": 0.14,
         "z": 0
       },
       "anchoredPosition": {
@@ -326,8 +380,8 @@
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 18,
+        "y": 18,
         "z": 0
       },
       "pivot": {
@@ -335,11 +389,11 @@
         "y": 0.5,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/TownMap/townmap_icon_sun.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/30_Decor_Spark.png"
     },
     {
-      "path": "BondsCanvas/CornerHud/LocationLabel",
-      "goFileId": "931000029",
+      "path": "BondsCanvas/Background/SparkFx/Spark_3",
+      "goFileId": "931001740",
       "siblingIndex": 3,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -365,13 +419,13 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0.52,
+        "y": 0.4,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0.52,
+        "y": 0.4,
         "z": 0
       },
       "anchoredPosition": {
@@ -380,19 +434,20 @@
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 12,
+        "y": 12,
         "z": 0
       },
       "pivot": {
         "x": 0.5,
         "y": 0.5,
         "z": 0
-      }
+      },
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/30_Decor_Spark.png"
     },
     {
-      "path": "BondsCanvas/CornerHud/TaglineLabel",
-      "goFileId": "931000031",
+      "path": "BondsCanvas/Background/SparkFx/Spark_4",
+      "goFileId": "931001750",
       "siblingIndex": 4,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -418,13 +473,13 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0.68,
+        "y": 0.24,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0.68,
+        "y": 0.24,
         "z": 0
       },
       "anchoredPosition": {
@@ -433,8 +488,332 @@
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 16,
+        "y": 16,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/30_Decor_Spark.png"
+    },
+    {
+      "path": "BondsCanvas/Background/SparkFx/Spark_5",
+      "goFileId": "931001760",
+      "siblingIndex": 5,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.84,
+        "y": 0.52,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.84,
+        "y": 0.52,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 22,
+        "y": 22,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/30_Decor_Spark.png"
+    },
+    {
+      "path": "BondsCanvas/Background/SparkFx/Spark_6",
+      "goFileId": "931001770",
+      "siblingIndex": 6,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.14,
+        "y": 0.58,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.14,
+        "y": 0.58,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 15,
+        "y": 15,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/30_Decor_Spark.png"
+    },
+    {
+      "path": "BondsCanvas/Background/SparkFx/Spark_7",
+      "goFileId": "931001780",
+      "siblingIndex": 7,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.33,
+        "y": 0.74,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.33,
+        "y": 0.74,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 13,
+        "y": 13,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/30_Decor_Spark.png"
+    },
+    {
+      "path": "BondsCanvas/Background/SparkFx/Spark_8",
+      "goFileId": "931001790",
+      "siblingIndex": 8,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.59,
+        "y": 0.68,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.59,
+        "y": 0.68,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 17,
+        "y": 17,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/30_Decor_Spark.png"
+    },
+    {
+      "path": "BondsCanvas/Background/SparkFx/Spark_9",
+      "goFileId": "931001800",
+      "siblingIndex": 9,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.77,
+        "y": 0.8,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.77,
+        "y": 0.8,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 11,
+        "y": 11,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/30_Decor_Spark.png"
+    },
+    {
+      "path": "BondsCanvas/DismissBackdrop",
+      "goFileId": "931001850",
+      "siblingIndex": 2,
+      "activeSelf": false,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 1,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
         "z": 0
       },
       "pivot": {
@@ -444,8 +823,167 @@
       }
     },
     {
-      "path": "BondsCanvas/HeaderBonds",
-      "goFileId": "931000044",
+      "path": "BondsCanvas/CornerHud",
+      "goFileId": "931000019",
+      "siblingIndex": 3,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 36,
+        "y": -30,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 300,
+        "y": 112,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/CornerHud/BgDark",
+      "goFileId": "931000881",
+      "siblingIndex": 0,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.52,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/CornerHud/BgLight",
+      "goFileId": "931000885",
+      "siblingIndex": 1,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.52,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 1,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/CornerHud/DecorLineV",
+      "goFileId": "931000889",
       "siblingIndex": 2,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -471,13 +1009,66 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0,
+        "y": 0.08,
         "z": 0
       },
       "anchorMax": {
+        "x": 0,
+        "y": 0.92,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 18,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 2,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
         "x": 0.5,
         "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/CornerHud/DecorLineH",
+      "goFileId": "931000893",
+      "siblingIndex": 3,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.04,
+        "y": 0.54,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.96,
+        "y": 0.54,
         "z": 0
       },
       "anchoredPosition": {
@@ -486,16 +1077,388 @@
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 0,
+        "y": 2,
         "z": 0
       },
       "pivot": {
         "x": 0.5,
         "y": 0.5,
         "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/CornerHud/DecorGlint",
+      "goFileId": "931000897",
+      "siblingIndex": 4,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Kit/ui_bonds_header_plate_v1.png"
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0.54,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0,
+        "y": 0.54,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 14,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 12,
+        "y": 12,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/CornerHud/DateLabel",
+      "goFileId": "931000023",
+      "siblingIndex": 5,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 16,
+        "y": -12,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 120,
+        "y": 32,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/CornerHud/DayLabel",
+      "goFileId": "931000025",
+      "siblingIndex": 6,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 140,
+        "y": -12,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 80,
+        "y": 32,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/CornerHud/PhaseIcon",
+      "goFileId": "931000027",
+      "siblingIndex": 7,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 228,
+        "y": -16,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 36,
+        "y": 36,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Art/UI/TownMap/townmap_icon_sun.png"
+    },
+    {
+      "path": "BondsCanvas/CornerHud/LocationLabel",
+      "goFileId": "931000029",
+      "siblingIndex": 8,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 36.7,
+        "y": -13.7,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 220,
+        "y": 26,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/CornerHud/TaglineLabel",
+      "goFileId": "931000031",
+      "siblingIndex": 9,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 26.4,
+        "y": -69.2,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 268,
+        "y": 22,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/HeaderBonds",
+      "goFileId": "931000044",
+      "siblingIndex": 4,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": -0.08654515,
+        "w": 0.996248
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": -9.93
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 28,
+        "y": -220,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 406.21,
+        "y": 159.34,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/01_Header_Bonds.png"
     },
     {
       "path": "BondsCanvas/HeaderBonds/Icon",
@@ -525,23 +1488,23 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 81,
+        "y": 25,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 63.74,
+        "y": 63.9,
         "z": 0
       },
       "pivot": {
@@ -549,7 +1512,7 @@
         "y": 0.5,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Icons/ui_bonds_icon_people_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/13_Icon_Bonds.png"
     },
     {
       "path": "BondsCanvas/HeaderBonds/Label",
@@ -570,85 +1533,32 @@
       "localRotation": {
         "x": 0,
         "y": 0,
-        "z": 0,
-        "w": 1
+        "z": -0.019876601,
+        "w": 0.9998025
       },
       "localEulerAnglesHint": {
         "x": 0,
         "y": 0,
-        "z": 0
+        "z": -2.278
       },
       "anchorMin": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 216,
+        "y": 18,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
-        "z": 0
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      }
-    },
-    {
-      "path": "BondsCanvas/HeaderBonds/LabelJp",
-      "goFileId": "931000056",
-      "siblingIndex": 2,
-      "activeSelf": true,
-      "layoutKind": "RectTransform",
-      "localScale": {
-        "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "localPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "localRotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "w": 1
-      },
-      "localEulerAnglesHint": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchoredPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 200,
+        "y": 48,
         "z": 0
       },
       "pivot": {
@@ -660,7 +1570,7 @@
     {
       "path": "BondsCanvas/LeftNav",
       "goFileId": "931000060",
-      "siblingIndex": 3,
+      "siblingIndex": 5,
       "activeSelf": true,
       "layoutKind": "RectTransform",
       "localScale": {
@@ -685,28 +1595,28 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0,
+        "y": 1,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0,
+        "y": 1,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 30,
+        "y": -422,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 370,
+        "y": 380,
         "z": 0
       },
       "pivot": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0,
+        "y": 1,
         "z": 0
       }
     },
@@ -738,31 +1648,31 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0,
+        "y": 1,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 1,
+        "y": 1,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 10.979996,
+        "y": -0.0000023842,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 37.52,
+        "y": 70.3,
         "z": 0
       },
       "pivot": {
         "x": 0.5,
-        "y": 0.5,
+        "y": 1,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Kit/ui_bonds_nav_selected_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/02_Menu_Normal.png"
     },
     {
       "path": "BondsCanvas/LeftNav/Row_SocialStats/Icon",
@@ -802,13 +1712,13 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": -144,
+        "y": -1,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 69.81,
+        "y": 66.17,
         "z": 0
       },
       "pivot": {
@@ -816,7 +1726,7 @@
         "y": 0.5,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Icons/ui_bonds_icon_social_stats_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/14_Icon_SocialStats.png"
     },
     {
       "path": "BondsCanvas/LeftNav/Row_SocialStats/Label",
@@ -856,12 +1766,12 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": -28.9,
+        "y": -1.5,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
+        "x": 158.3,
         "y": 100,
         "z": 0
       },
@@ -899,31 +1809,31 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0,
+        "y": 1,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 1,
+        "y": 1,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 8.005005,
+        "y": -82.6,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 16.01,
+        "y": 58.61,
         "z": 0
       },
       "pivot": {
         "x": 0.5,
-        "y": 0.5,
+        "y": 1,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Kit/ui_bonds_nav_selected_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/02_Menu_Normal.png"
     },
     {
       "path": "BondsCanvas/LeftNav/Row_Link/Icon",
@@ -963,13 +1873,13 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": -133.19994,
+        "y": 2,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 66.64,
+        "y": 67.24,
         "z": 0
       },
       "pivot": {
@@ -977,7 +1887,7 @@
         "y": 0.5,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Icons/ui_bonds_icon_link_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/15_Icon_Link.png"
     },
     {
       "path": "BondsCanvas/LeftNav/Row_Link/Label",
@@ -1017,8 +1927,8 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": -72.49994,
+        "y": -0.20000076,
         "z": 0
       },
       "sizeDelta": {
@@ -1060,31 +1970,31 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0,
+        "y": 1,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 1,
+        "y": 1,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 8.005005,
+        "y": -154.9,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 16.01,
+        "y": 59.61,
         "z": 0
       },
       "pivot": {
         "x": 0.5,
-        "y": 0.5,
+        "y": 1,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Kit/ui_bonds_nav_selected_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/02_Menu_Normal.png"
     },
     {
       "path": "BondsCanvas/LeftNav/Row_Conversations/Icon",
@@ -1124,13 +2034,13 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": -132.88992,
+        "y": 6.5,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 32.59,
+        "y": 36.91,
         "z": 0
       },
       "pivot": {
@@ -1138,7 +2048,7 @@
         "y": 0.5,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Icons/ui_bonds_icon_conversations_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/16_Icon_Conversations.png"
     },
     {
       "path": "BondsCanvas/LeftNav/Row_Conversations/Label",
@@ -1178,12 +2088,12 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": -8.699934,
+        "y": 3.2000008,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
+        "x": 194.49,
         "y": 100,
         "z": 0
       },
@@ -1221,31 +2131,31 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0,
+        "y": 1,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 1,
+        "y": 1,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 6.175003,
+        "y": -223.4,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 12.35,
+        "y": 59.31,
         "z": 0
       },
       "pivot": {
         "x": 0.5,
-        "y": 0.5,
+        "y": 1,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Kit/ui_bonds_nav_selected_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/02_Menu_Normal.png"
     },
     {
       "path": "BondsCanvas/LeftNav/Row_Memories/Icon",
@@ -1285,13 +2195,13 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": -129.24994,
+        "y": 7.4300003,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 44.22,
+        "y": 50.99,
         "z": 0
       },
       "pivot": {
@@ -1299,7 +2209,7 @@
         "y": 0.5,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Icons/ui_bonds_icon_memories_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/17_Icon_Memories.png"
     },
     {
       "path": "BondsCanvas/LeftNav/Row_Memories/Label",
@@ -1339,12 +2249,12 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": -32.099934,
+        "y": 4.799999,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
+        "x": 142.2,
         "y": 100,
         "z": 0
       },
@@ -1382,31 +2292,31 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0,
+        "y": 1,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 1,
+        "y": 1,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 5.600006,
+        "y": -290.6,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 10.66,
+        "y": 59.61,
         "z": 0
       },
       "pivot": {
         "x": 0.5,
-        "y": 0.5,
+        "y": 1,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Kit/ui_bonds_nav_selected_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/02_Menu_Normal.png"
     },
     {
       "path": "BondsCanvas/LeftNav/Row_Gallery/Icon",
@@ -1446,13 +2356,13 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": -132.55994,
+        "y": 1.9599991,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 45.37,
+        "y": 55.52,
         "z": 0
       },
       "pivot": {
@@ -1460,7 +2370,7 @@
         "y": 0.5,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Icons/ui_bonds_icon_gallery_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/18_Icon_Gallery.png"
     },
     {
       "path": "BondsCanvas/LeftNav/Row_Gallery/Label",
@@ -1500,8 +2410,8 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": -53.499935,
+        "y": -0.5999985,
         "z": 0
       },
       "sizeDelta": {
@@ -1518,7 +2428,7 @@
     {
       "path": "BondsCanvas/CenterStats",
       "goFileId": "931000127",
-      "siblingIndex": 4,
+      "siblingIndex": 6,
       "activeSelf": true,
       "layoutKind": "RectTransform",
       "localScale": {
@@ -1543,31 +2453,31 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0,
+        "y": 1,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0,
+        "y": 1,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 445,
+        "y": -23.799988,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 1029.8,
+        "y": 954.15,
         "z": 0
       },
       "pivot": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0,
+        "y": 1,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Kit/ui_bonds_panel_glass_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/04_Panel_SocialStats.png"
     },
     {
       "path": "BondsCanvas/CenterStats/Title",
@@ -1598,1518 +2508,34 @@
       },
       "anchorMin": {
         "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchoredPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "sizeDelta": {
-        "x": 100,
-        "y": 100,
-        "z": 0
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      }
-    },
-    {
-      "path": "BondsCanvas/CenterStats/TitleJp",
-      "goFileId": "931000135",
-      "siblingIndex": 1,
-      "activeSelf": true,
-      "layoutKind": "RectTransform",
-      "localScale": {
-        "x": 1,
         "y": 1,
-        "z": 1
-      },
-      "localPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "localRotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "w": 1
-      },
-      "localEulerAnglesHint": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
         "z": 0
       },
       "anchorMax": {
         "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchoredPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "sizeDelta": {
-        "x": 100,
-        "y": 100,
-        "z": 0
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      }
-    },
-    {
-      "path": "BondsCanvas/CenterStats/ChartRoot",
-      "goFileId": "931000139",
-      "siblingIndex": 2,
-      "activeSelf": true,
-      "layoutKind": "RectTransform",
-      "localScale": {
-        "x": 1,
         "y": 1,
-        "z": 1
-      },
-      "localPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "localRotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "w": 1
-      },
-      "localEulerAnglesHint": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": -381,
+        "y": -114,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 360,
+        "y": 32,
         "z": 0
       },
       "pivot": {
         "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      }
-    },
-    {
-      "path": "BondsCanvas/CenterStats/ChartRoot/Radar",
-      "goFileId": "931000141",
-      "siblingIndex": 0,
-      "activeSelf": true,
-      "layoutKind": "RectTransform",
-      "localScale": {
-        "x": 1,
         "y": 1,
-        "z": 1
-      },
-      "localPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "localRotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "w": 1
-      },
-      "localEulerAnglesHint": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchoredPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "sizeDelta": {
-        "x": 100,
-        "y": 100,
-        "z": 0
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      }
-    },
-    {
-      "path": "BondsCanvas/CenterStats/Node_Resonance",
-      "goFileId": "931000145",
-      "siblingIndex": 3,
-      "activeSelf": true,
-      "layoutKind": "RectTransform",
-      "localScale": {
-        "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "localPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "localRotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "w": 1
-      },
-      "localEulerAnglesHint": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchoredPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "sizeDelta": {
-        "x": 100,
-        "y": 100,
-        "z": 0
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      }
-    },
-    {
-      "path": "BondsCanvas/CenterStats/Node_Resonance/Icon",
-      "goFileId": "931000148",
-      "siblingIndex": 0,
-      "activeSelf": true,
-      "layoutKind": "RectTransform",
-      "localScale": {
-        "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "localPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "localRotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "w": 1
-      },
-      "localEulerAnglesHint": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchoredPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "sizeDelta": {
-        "x": 100,
-        "y": 100,
-        "z": 0
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      }
-    },
-    {
-      "path": "BondsCanvas/CenterStats/Node_Resonance/Name",
-      "goFileId": "931000152",
-      "siblingIndex": 1,
-      "activeSelf": true,
-      "layoutKind": "RectTransform",
-      "localScale": {
-        "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "localPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "localRotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "w": 1
-      },
-      "localEulerAnglesHint": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchoredPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "sizeDelta": {
-        "x": 100,
-        "y": 100,
-        "z": 0
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      }
-    },
-    {
-      "path": "BondsCanvas/CenterStats/Node_Resonance/Rank",
-      "goFileId": "931000156",
-      "siblingIndex": 2,
-      "activeSelf": true,
-      "layoutKind": "RectTransform",
-      "localScale": {
-        "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "localPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "localRotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "w": 1
-      },
-      "localEulerAnglesHint": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchoredPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "sizeDelta": {
-        "x": 100,
-        "y": 100,
-        "z": 0
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      }
-    },
-    {
-      "path": "BondsCanvas/CenterStats/Node_Resonance/Flavor",
-      "goFileId": "931000160",
-      "siblingIndex": 3,
-      "activeSelf": true,
-      "layoutKind": "RectTransform",
-      "localScale": {
-        "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "localPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "localRotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "w": 1
-      },
-      "localEulerAnglesHint": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchoredPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "sizeDelta": {
-        "x": 100,
-        "y": 100,
-        "z": 0
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      }
-    },
-    {
-      "path": "BondsCanvas/CenterStats/Node_Cadence",
-      "goFileId": "931000164",
-      "siblingIndex": 4,
-      "activeSelf": true,
-      "layoutKind": "RectTransform",
-      "localScale": {
-        "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "localPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "localRotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "w": 1
-      },
-      "localEulerAnglesHint": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchoredPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "sizeDelta": {
-        "x": 100,
-        "y": 100,
-        "z": 0
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      }
-    },
-    {
-      "path": "BondsCanvas/CenterStats/Node_Cadence/Icon",
-      "goFileId": "931000167",
-      "siblingIndex": 0,
-      "activeSelf": true,
-      "layoutKind": "RectTransform",
-      "localScale": {
-        "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "localPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "localRotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "w": 1
-      },
-      "localEulerAnglesHint": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchoredPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "sizeDelta": {
-        "x": 100,
-        "y": 100,
-        "z": 0
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      }
-    },
-    {
-      "path": "BondsCanvas/CenterStats/Node_Cadence/Name",
-      "goFileId": "931000171",
-      "siblingIndex": 1,
-      "activeSelf": true,
-      "layoutKind": "RectTransform",
-      "localScale": {
-        "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "localPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "localRotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "w": 1
-      },
-      "localEulerAnglesHint": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchoredPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "sizeDelta": {
-        "x": 100,
-        "y": 100,
-        "z": 0
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      }
-    },
-    {
-      "path": "BondsCanvas/CenterStats/Node_Cadence/Rank",
-      "goFileId": "931000175",
-      "siblingIndex": 2,
-      "activeSelf": true,
-      "layoutKind": "RectTransform",
-      "localScale": {
-        "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "localPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "localRotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "w": 1
-      },
-      "localEulerAnglesHint": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchoredPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "sizeDelta": {
-        "x": 100,
-        "y": 100,
-        "z": 0
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      }
-    },
-    {
-      "path": "BondsCanvas/CenterStats/Node_Cadence/Flavor",
-      "goFileId": "931000179",
-      "siblingIndex": 3,
-      "activeSelf": true,
-      "layoutKind": "RectTransform",
-      "localScale": {
-        "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "localPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "localRotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "w": 1
-      },
-      "localEulerAnglesHint": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchoredPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "sizeDelta": {
-        "x": 100,
-        "y": 100,
-        "z": 0
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      }
-    },
-    {
-      "path": "BondsCanvas/CenterStats/Node_Pulse",
-      "goFileId": "931000183",
-      "siblingIndex": 5,
-      "activeSelf": true,
-      "layoutKind": "RectTransform",
-      "localScale": {
-        "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "localPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "localRotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "w": 1
-      },
-      "localEulerAnglesHint": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchoredPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "sizeDelta": {
-        "x": 100,
-        "y": 100,
-        "z": 0
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      }
-    },
-    {
-      "path": "BondsCanvas/CenterStats/Node_Pulse/Icon",
-      "goFileId": "931000186",
-      "siblingIndex": 0,
-      "activeSelf": true,
-      "layoutKind": "RectTransform",
-      "localScale": {
-        "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "localPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "localRotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "w": 1
-      },
-      "localEulerAnglesHint": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchoredPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "sizeDelta": {
-        "x": 100,
-        "y": 100,
-        "z": 0
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      }
-    },
-    {
-      "path": "BondsCanvas/CenterStats/Node_Pulse/Name",
-      "goFileId": "931000190",
-      "siblingIndex": 1,
-      "activeSelf": true,
-      "layoutKind": "RectTransform",
-      "localScale": {
-        "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "localPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "localRotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "w": 1
-      },
-      "localEulerAnglesHint": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchoredPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "sizeDelta": {
-        "x": 100,
-        "y": 100,
-        "z": 0
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      }
-    },
-    {
-      "path": "BondsCanvas/CenterStats/Node_Pulse/Rank",
-      "goFileId": "931000194",
-      "siblingIndex": 2,
-      "activeSelf": true,
-      "layoutKind": "RectTransform",
-      "localScale": {
-        "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "localPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "localRotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "w": 1
-      },
-      "localEulerAnglesHint": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchoredPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "sizeDelta": {
-        "x": 100,
-        "y": 100,
-        "z": 0
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      }
-    },
-    {
-      "path": "BondsCanvas/CenterStats/Node_Pulse/Flavor",
-      "goFileId": "931000198",
-      "siblingIndex": 3,
-      "activeSelf": true,
-      "layoutKind": "RectTransform",
-      "localScale": {
-        "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "localPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "localRotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "w": 1
-      },
-      "localEulerAnglesHint": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchoredPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "sizeDelta": {
-        "x": 100,
-        "y": 100,
-        "z": 0
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      }
-    },
-    {
-      "path": "BondsCanvas/CenterStats/Node_Harmony",
-      "goFileId": "931000202",
-      "siblingIndex": 6,
-      "activeSelf": true,
-      "layoutKind": "RectTransform",
-      "localScale": {
-        "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "localPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "localRotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "w": 1
-      },
-      "localEulerAnglesHint": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchoredPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "sizeDelta": {
-        "x": 100,
-        "y": 100,
-        "z": 0
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      }
-    },
-    {
-      "path": "BondsCanvas/CenterStats/Node_Harmony/Icon",
-      "goFileId": "931000205",
-      "siblingIndex": 0,
-      "activeSelf": true,
-      "layoutKind": "RectTransform",
-      "localScale": {
-        "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "localPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "localRotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "w": 1
-      },
-      "localEulerAnglesHint": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchoredPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "sizeDelta": {
-        "x": 100,
-        "y": 100,
-        "z": 0
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      }
-    },
-    {
-      "path": "BondsCanvas/CenterStats/Node_Harmony/Name",
-      "goFileId": "931000209",
-      "siblingIndex": 1,
-      "activeSelf": true,
-      "layoutKind": "RectTransform",
-      "localScale": {
-        "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "localPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "localRotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "w": 1
-      },
-      "localEulerAnglesHint": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchoredPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "sizeDelta": {
-        "x": 100,
-        "y": 100,
-        "z": 0
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      }
-    },
-    {
-      "path": "BondsCanvas/CenterStats/Node_Harmony/Rank",
-      "goFileId": "931000213",
-      "siblingIndex": 2,
-      "activeSelf": true,
-      "layoutKind": "RectTransform",
-      "localScale": {
-        "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "localPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "localRotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "w": 1
-      },
-      "localEulerAnglesHint": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchoredPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "sizeDelta": {
-        "x": 100,
-        "y": 100,
-        "z": 0
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      }
-    },
-    {
-      "path": "BondsCanvas/CenterStats/Node_Harmony/Flavor",
-      "goFileId": "931000217",
-      "siblingIndex": 3,
-      "activeSelf": true,
-      "layoutKind": "RectTransform",
-      "localScale": {
-        "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "localPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "localRotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "w": 1
-      },
-      "localEulerAnglesHint": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchoredPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "sizeDelta": {
-        "x": 100,
-        "y": 100,
-        "z": 0
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      }
-    },
-    {
-      "path": "BondsCanvas/CenterStats/Node_Rhythm",
-      "goFileId": "931000221",
-      "siblingIndex": 7,
-      "activeSelf": true,
-      "layoutKind": "RectTransform",
-      "localScale": {
-        "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "localPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "localRotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "w": 1
-      },
-      "localEulerAnglesHint": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchoredPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "sizeDelta": {
-        "x": 100,
-        "y": 100,
-        "z": 0
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      }
-    },
-    {
-      "path": "BondsCanvas/CenterStats/Node_Rhythm/Icon",
-      "goFileId": "931000224",
-      "siblingIndex": 0,
-      "activeSelf": true,
-      "layoutKind": "RectTransform",
-      "localScale": {
-        "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "localPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "localRotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "w": 1
-      },
-      "localEulerAnglesHint": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchoredPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "sizeDelta": {
-        "x": 100,
-        "y": 100,
-        "z": 0
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      }
-    },
-    {
-      "path": "BondsCanvas/CenterStats/Node_Rhythm/Name",
-      "goFileId": "931000228",
-      "siblingIndex": 1,
-      "activeSelf": true,
-      "layoutKind": "RectTransform",
-      "localScale": {
-        "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "localPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "localRotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "w": 1
-      },
-      "localEulerAnglesHint": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchoredPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "sizeDelta": {
-        "x": 100,
-        "y": 100,
-        "z": 0
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      }
-    },
-    {
-      "path": "BondsCanvas/CenterStats/Node_Rhythm/Rank",
-      "goFileId": "931000232",
-      "siblingIndex": 2,
-      "activeSelf": true,
-      "layoutKind": "RectTransform",
-      "localScale": {
-        "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "localPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "localRotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "w": 1
-      },
-      "localEulerAnglesHint": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchoredPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "sizeDelta": {
-        "x": 100,
-        "y": 100,
-        "z": 0
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      }
-    },
-    {
-      "path": "BondsCanvas/CenterStats/Node_Rhythm/Flavor",
-      "goFileId": "931000236",
-      "siblingIndex": 3,
-      "activeSelf": true,
-      "layoutKind": "RectTransform",
-      "localScale": {
-        "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "localPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "localRotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "w": 1
-      },
-      "localEulerAnglesHint": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchoredPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "sizeDelta": {
-        "x": 100,
-        "y": 100,
-        "z": 0
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5,
         "z": 0
       }
     },
     {
       "path": "BondsCanvas/CenterStats/Roster",
       "goFileId": "931000240",
-      "siblingIndex": 8,
+      "siblingIndex": 1,
       "activeSelf": true,
       "layoutKind": "RectTransform",
       "localScale": {
@@ -3134,28 +2560,28 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0,
+        "y": 1,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0,
+        "y": 1,
         "z": 0
       },
       "anchoredPosition": {
         "x": 0,
-        "y": 0,
+        "y": -230,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 1000,
+        "y": 135,
         "z": 0
       },
       "pivot": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0,
+        "y": 1,
         "z": 0
       }
     },
@@ -3187,23 +2613,23 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 129,
+        "y": 30,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 108,
+        "y": 120,
         "z": 0
       },
       "pivot": {
@@ -3250,13 +2676,13 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 15.1,
+        "y": -33.106,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 192.07,
+        "y": 191.99,
         "z": 0
       },
       "pivot": {
@@ -3264,7 +2690,7 @@
         "y": 0.5,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Kit/ui_bonds_chip_frame_normal_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/08_Card_Character_Normal.png"
     },
     {
       "path": "BondsCanvas/CenterStats/Roster/Chip_0/Face",
@@ -3304,13 +2730,13 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 14.58,
+        "y": -37.36,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 185.15,
+        "y": 183.49,
         "z": 0
       },
       "pivot": {
@@ -3318,7 +2744,7 @@
         "y": 0.5,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/Characters/Ren/VnBust/ren_bust_neutral_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Cards/bond_card_ren.png"
     },
     {
       "path": "BondsCanvas/CenterStats/Roster/Chip_0/Lock",
@@ -3358,8 +2784,8 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 12.7,
+        "y": -35.8,
         "z": 0
       },
       "sizeDelta": {
@@ -3372,7 +2798,7 @@
         "y": 0.5,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Icons/ui_bonds_icon_lock_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/24_Icon_Lock.png"
     },
     {
       "path": "BondsCanvas/CenterStats/Roster/Chip_0/Name",
@@ -3412,8 +2838,8 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 15.3,
+        "y": -90.2,
         "z": 0
       },
       "sizeDelta": {
@@ -3465,8 +2891,8 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": -40.7,
+        "y": -102.8,
         "z": 0
       },
       "sizeDelta": {
@@ -3508,23 +2934,23 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 315.00003,
+        "y": 29.999992,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 108,
+        "y": 120,
         "z": 0
       },
       "pivot": {
@@ -3534,8 +2960,8 @@
       }
     },
     {
-      "path": "BondsCanvas/CenterStats/Roster/Chip_1/Frame",
-      "goFileId": "931000266",
+      "path": "BondsCanvas/CenterStats/Roster/Chip_1/Face",
+      "goFileId": "931000270",
       "siblingIndex": 0,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -3571,13 +2997,13 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 11.2,
+        "y": -34.1,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 182.45,
+        "y": 207.02,
         "z": 0
       },
       "pivot": {
@@ -3585,18 +3011,18 @@
         "y": 0.5,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Kit/ui_bonds_chip_frame_normal_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Cards/bond_card_charlotte.png"
     },
     {
-      "path": "BondsCanvas/CenterStats/Roster/Chip_1/Face",
-      "goFileId": "931000270",
+      "path": "BondsCanvas/CenterStats/Roster/Chip_1/Frame",
+      "goFileId": "707538015",
       "siblingIndex": 1,
       "activeSelf": true,
       "layoutKind": "RectTransform",
       "localScale": {
-        "x": 1,
-        "y": 1,
-        "z": 1
+        "x": 1.0000798,
+        "y": 1.0000798,
+        "z": 1.0000798
       },
       "localPosition": {
         "x": 0,
@@ -3625,13 +3051,13 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 10.7,
+        "y": -33.106033,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 192.07,
+        "y": 191.99,
         "z": 0
       },
       "pivot": {
@@ -3639,7 +3065,7 @@
         "y": 0.5,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/Characters/Charlotte/VnBust/charlotte_bust_neutral_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/08_Card_Character_Normal.png"
     },
     {
       "path": "BondsCanvas/CenterStats/Roster/Chip_1/Lock",
@@ -3679,8 +3105,8 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 10.9,
+        "y": -36.4,
         "z": 0
       },
       "sizeDelta": {
@@ -3693,7 +3119,7 @@
         "y": 0.5,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Icons/ui_bonds_icon_lock_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/24_Icon_Lock.png"
     },
     {
       "path": "BondsCanvas/CenterStats/Roster/Chip_1/Name",
@@ -3733,8 +3159,8 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 10.8,
+        "y": -90.4,
         "z": 0
       },
       "sizeDelta": {
@@ -3829,23 +3255,23 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 504.7,
+        "y": 29.999992,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 108,
+        "y": 120,
         "z": 0
       },
       "pivot": {
@@ -3856,7 +3282,7 @@
     },
     {
       "path": "BondsCanvas/CenterStats/Roster/Chip_2/Frame",
-      "goFileId": "931000288",
+      "goFileId": "1988218331",
       "siblingIndex": 0,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -3892,13 +3318,13 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 5.7,
+        "y": -33.106,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 192.07,
+        "y": 191.99,
         "z": 0
       },
       "pivot": {
@@ -3906,7 +3332,7 @@
         "y": 0.5,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Kit/ui_bonds_chip_frame_normal_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/08_Card_Character_Normal.png"
     },
     {
       "path": "BondsCanvas/CenterStats/Roster/Chip_2/Face",
@@ -3946,13 +3372,13 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 5.99,
+        "y": -34.176,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 180.87,
+        "y": 212.45,
         "z": 0
       },
       "pivot": {
@@ -3960,7 +3386,7 @@
         "y": 0.5,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/Characters/Coda/VnBust/coda_bust_neutral_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Cards/bond_card_coda.png"
     },
     {
       "path": "BondsCanvas/CenterStats/Roster/Chip_2/Lock",
@@ -4001,7 +3427,7 @@
       },
       "anchoredPosition": {
         "x": 0,
-        "y": 0,
+        "y": -35.8,
         "z": 0
       },
       "sizeDelta": {
@@ -4014,7 +3440,7 @@
         "y": 0.5,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Icons/ui_bonds_icon_lock_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/24_Icon_Lock.png"
     },
     {
       "path": "BondsCanvas/CenterStats/Roster/Chip_2/Name",
@@ -4054,8 +3480,8 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 4.8,
+        "y": -90.4,
         "z": 0
       },
       "sizeDelta": {
@@ -4150,23 +3576,23 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 692.7,
+        "y": 29.999992,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 108,
+        "y": 120,
         "z": 0
       },
       "pivot": {
@@ -4177,7 +3603,7 @@
     },
     {
       "path": "BondsCanvas/CenterStats/Roster/Chip_3/Frame",
-      "goFileId": "931000310",
+      "goFileId": "146310504",
       "siblingIndex": 0,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -4213,13 +3639,13 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 0.7,
+        "y": -33.106,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 192.07,
+        "y": 191.99,
         "z": 0
       },
       "pivot": {
@@ -4227,11 +3653,11 @@
         "y": 0.5,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Kit/ui_bonds_chip_frame_normal_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/08_Card_Character_Normal.png"
     },
     {
       "path": "BondsCanvas/CenterStats/Roster/Chip_3/Face",
-      "goFileId": "931000314",
+      "goFileId": "932200301",
       "siblingIndex": 1,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -4267,13 +3693,13 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 1.6,
+        "y": -37.01,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 193.88,
+        "y": 190.31,
         "z": 0
       },
       "pivot": {
@@ -4281,11 +3707,11 @@
         "y": 0.5,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/Characters/_Reference/LuxeConcert/astra_ref.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Cards/bond_card_astra.png"
     },
     {
       "path": "BondsCanvas/CenterStats/Roster/Chip_3/Lock",
-      "goFileId": "931000318",
+      "goFileId": "2049509057",
       "siblingIndex": 2,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -4321,8 +3747,8 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 0.1,
+        "y": -38.4,
         "z": 0
       },
       "sizeDelta": {
@@ -4335,7 +3761,7 @@
         "y": 0.5,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Icons/ui_bonds_icon_lock_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/24_Icon_Lock.png"
     },
     {
       "path": "BondsCanvas/CenterStats/Roster/Chip_3/Name",
@@ -4375,8 +3801,8 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 2.8,
+        "y": -91.5,
         "z": 0
       },
       "sizeDelta": {
@@ -4445,7 +3871,7 @@
     },
     {
       "path": "BondsCanvas/CenterStats/Roster/Chip_4",
-      "goFileId": "931000330",
+      "goFileId": "659314519",
       "siblingIndex": 4,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -4471,23 +3897,23 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 875.7,
+        "y": 29.999992,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 108,
+        "y": 120,
         "z": 0
       },
       "pivot": {
@@ -4498,7 +3924,7 @@
     },
     {
       "path": "BondsCanvas/CenterStats/Roster/Chip_4/Frame",
-      "goFileId": "931000332",
+      "goFileId": "1211555370",
       "siblingIndex": 0,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -4534,13 +3960,13 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 0.7,
+        "y": -33.106,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 192.07,
+        "y": 191.99,
         "z": 0
       },
       "pivot": {
@@ -4548,11 +3974,11 @@
         "y": 0.5,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Kit/ui_bonds_chip_locked_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/08_Card_Character_Normal.png"
     },
     {
       "path": "BondsCanvas/CenterStats/Roster/Chip_4/Face",
-      "goFileId": "931000336",
+      "goFileId": "932200401",
       "siblingIndex": 1,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -4588,13 +4014,13 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 1.4275,
+        "y": -34.11,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 193.53,
+        "y": 220.77,
         "z": 0
       },
       "pivot": {
@@ -4602,11 +4028,11 @@
         "y": 0.5,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Decor/ui_bonds_silhouette_locked_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Cards/bond_card_ryo.png"
     },
     {
       "path": "BondsCanvas/CenterStats/Roster/Chip_4/Lock",
-      "goFileId": "931000340",
+      "goFileId": "693856019",
       "siblingIndex": 2,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -4642,8 +4068,8 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": -0.6,
+        "y": -37.7,
         "z": 0
       },
       "sizeDelta": {
@@ -4656,11 +4082,11 @@
         "y": 0.5,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Icons/ui_bonds_icon_lock_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/24_Icon_Lock.png"
     },
     {
       "path": "BondsCanvas/CenterStats/Roster/Chip_4/Name",
-      "goFileId": "931000344",
+      "goFileId": "2119466386",
       "siblingIndex": 3,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -4696,8 +4122,8 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 3.4,
+        "y": -91.5,
         "z": 0
       },
       "sizeDelta": {
@@ -4713,7 +4139,7 @@
     },
     {
       "path": "BondsCanvas/CenterStats/Roster/Chip_4/Role",
-      "goFileId": "931000348",
+      "goFileId": "943384046",
       "siblingIndex": 4,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -4766,7 +4192,7 @@
     },
     {
       "path": "BondsCanvas/CenterStats/Roster/Chip_5",
-      "goFileId": "931000352",
+      "goFileId": "1010747490",
       "siblingIndex": 5,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -4792,23 +4218,23 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 129,
+        "y": -176,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 108,
+        "y": 120,
         "z": 0
       },
       "pivot": {
@@ -4819,7 +4245,7 @@
     },
     {
       "path": "BondsCanvas/CenterStats/Roster/Chip_5/Frame",
-      "goFileId": "931000354",
+      "goFileId": "822784085",
       "siblingIndex": 0,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -4855,13 +4281,13 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 15.1,
+        "y": -33.106,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 192.07,
+        "y": 191.99,
         "z": 0
       },
       "pivot": {
@@ -4869,11 +4295,11 @@
         "y": 0.5,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Kit/ui_bonds_chip_locked_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/08_Card_Character_Normal.png"
     },
     {
       "path": "BondsCanvas/CenterStats/Roster/Chip_5/Face",
-      "goFileId": "931000358",
+      "goFileId": "1874636879",
       "siblingIndex": 1,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -4909,13 +4335,13 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 14.58,
+        "y": -37.36,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 185.15,
+        "y": 183.49,
         "z": 0
       },
       "pivot": {
@@ -4923,11 +4349,11 @@
         "y": 0.5,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Decor/ui_bonds_silhouette_locked_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Cards/bond_card_meilin.png"
     },
     {
       "path": "BondsCanvas/CenterStats/Roster/Chip_5/Lock",
-      "goFileId": "931000362",
+      "goFileId": "1973595720",
       "siblingIndex": 2,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -4963,8 +4389,8 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 12.7,
+        "y": -35.8,
         "z": 0
       },
       "sizeDelta": {
@@ -4977,11 +4403,11 @@
         "y": 0.5,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Icons/ui_bonds_icon_lock_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/24_Icon_Lock.png"
     },
     {
       "path": "BondsCanvas/CenterStats/Roster/Chip_5/Name",
-      "goFileId": "931000366",
+      "goFileId": "860348353",
       "siblingIndex": 3,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -5017,8 +4443,8 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 15.3,
+        "y": -90.2,
         "z": 0
       },
       "sizeDelta": {
@@ -5034,7 +4460,328 @@
     },
     {
       "path": "BondsCanvas/CenterStats/Roster/Chip_5/Role",
-      "goFileId": "931000370",
+      "goFileId": "1598043416",
+      "siblingIndex": 4,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": -40.7,
+        "y": -102.8,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 100,
+        "y": 100,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/CenterStats/Roster/Chip_6",
+      "goFileId": "937798695",
+      "siblingIndex": 6,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 315.00003,
+        "y": -176,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 108,
+        "y": 120,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/CenterStats/Roster/Chip_6/Face",
+      "goFileId": "1967549605",
+      "siblingIndex": 0,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 11.2,
+        "y": -34.1,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 182.45,
+        "y": 207.02,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Cards/bond_card_story_hidden_v1.png"
+    },
+    {
+      "path": "BondsCanvas/CenterStats/Roster/Chip_6/Frame",
+      "goFileId": "981127739",
+      "siblingIndex": 1,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1.0000798,
+        "y": 1.0000798,
+        "z": 1.0000798
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 10.7,
+        "y": -33.106033,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 192.07,
+        "y": 191.99,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/08_Card_Character_Normal.png"
+    },
+    {
+      "path": "BondsCanvas/CenterStats/Roster/Chip_6/Lock",
+      "goFileId": "102615553",
+      "siblingIndex": 2,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 10.9,
+        "y": -36.4,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 100,
+        "y": 100,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/24_Icon_Lock.png"
+    },
+    {
+      "path": "BondsCanvas/CenterStats/Roster/Chip_6/Name",
+      "goFileId": "240752405",
+      "siblingIndex": 3,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 10.8,
+        "y": -90.4,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 100,
+        "y": 100,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/CenterStats/Roster/Chip_6/Role",
+      "goFileId": "1936167579",
       "siblingIndex": 4,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -5086,9 +4833,9 @@
       }
     },
     {
-      "path": "BondsCanvas/CenterStats/Roster/Chip_6",
-      "goFileId": "931000374",
-      "siblingIndex": 6,
+      "path": "BondsCanvas/CenterStats/Roster/Chip_7",
+      "goFileId": "147231674",
+      "siblingIndex": 7,
       "activeSelf": true,
       "layoutKind": "RectTransform",
       "localScale": {
@@ -5113,23 +4860,23 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 504.7,
+        "y": -176,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 108,
+        "y": 120,
         "z": 0
       },
       "pivot": {
@@ -5139,8 +4886,8 @@
       }
     },
     {
-      "path": "BondsCanvas/CenterStats/Roster/Chip_6/Frame",
-      "goFileId": "931000376",
+      "path": "BondsCanvas/CenterStats/Roster/Chip_7/Frame",
+      "goFileId": "2064545887",
       "siblingIndex": 0,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -5176,13 +4923,13 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 5.7,
+        "y": -33.106,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 192.07,
+        "y": 191.99,
         "z": 0
       },
       "pivot": {
@@ -5190,11 +4937,11 @@
         "y": 0.5,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Kit/ui_bonds_chip_locked_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/08_Card_Character_Normal.png"
     },
     {
-      "path": "BondsCanvas/CenterStats/Roster/Chip_6/Face",
-      "goFileId": "931000380",
+      "path": "BondsCanvas/CenterStats/Roster/Chip_7/Face",
+      "goFileId": "1225164986",
       "siblingIndex": 1,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -5230,13 +4977,13 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 5.99,
+        "y": -34.176,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 180.87,
+        "y": 212.45,
         "z": 0
       },
       "pivot": {
@@ -5244,11 +4991,11 @@
         "y": 0.5,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Decor/ui_bonds_silhouette_locked_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Cards/bond_card_story_hidden_v1.png"
     },
     {
-      "path": "BondsCanvas/CenterStats/Roster/Chip_6/Lock",
-      "goFileId": "931000384",
+      "path": "BondsCanvas/CenterStats/Roster/Chip_7/Lock",
+      "goFileId": "826884707",
       "siblingIndex": 2,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -5285,7 +5032,7 @@
       },
       "anchoredPosition": {
         "x": 0,
-        "y": 0,
+        "y": -35.8,
         "z": 0
       },
       "sizeDelta": {
@@ -5298,12 +5045,65 @@
         "y": 0.5,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Icons/ui_bonds_icon_lock_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/24_Icon_Lock.png"
     },
     {
-      "path": "BondsCanvas/CenterStats/Roster/Chip_6/Name",
-      "goFileId": "931000388",
+      "path": "BondsCanvas/CenterStats/Roster/Chip_7/Name",
+      "goFileId": "2139199307",
       "siblingIndex": 3,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 4.8,
+        "y": -90.4,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 100,
+        "y": 100,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/CenterStats/Roster/Chip_7/Role",
+      "goFileId": "19297158",
+      "siblingIndex": 4,
       "activeSelf": true,
       "layoutKind": "RectTransform",
       "localScale": {
@@ -5354,8 +5154,597 @@
       }
     },
     {
-      "path": "BondsCanvas/CenterStats/Roster/Chip_6/Role",
-      "goFileId": "931000392",
+      "path": "BondsCanvas/CenterStats/Roster/Chip_8",
+      "goFileId": "623621019",
+      "siblingIndex": 8,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 692.7,
+        "y": -176,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 108,
+        "y": 120,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/CenterStats/Roster/Chip_8/Frame",
+      "goFileId": "1508043924",
+      "siblingIndex": 0,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0.7,
+        "y": -33.106,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 192.07,
+        "y": 191.99,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/08_Card_Character_Normal.png"
+    },
+    {
+      "path": "BondsCanvas/CenterStats/Roster/Chip_8/Face",
+      "goFileId": "1186401732",
+      "siblingIndex": 1,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 1.6,
+        "y": -37.01,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 193.88,
+        "y": 190.31,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Cards/bond_card_story_hidden_v1.png"
+    },
+    {
+      "path": "BondsCanvas/CenterStats/Roster/Chip_8/Lock",
+      "goFileId": "981718341",
+      "siblingIndex": 2,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0.1,
+        "y": -38.4,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 100,
+        "y": 100,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/24_Icon_Lock.png"
+    },
+    {
+      "path": "BondsCanvas/CenterStats/Roster/Chip_8/Name",
+      "goFileId": "62910802",
+      "siblingIndex": 3,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 2.8,
+        "y": -91.5,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 100,
+        "y": 100,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/CenterStats/Roster/Chip_8/Role",
+      "goFileId": "588749749",
+      "siblingIndex": 4,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 100,
+        "y": 100,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/CenterStats/Roster/Chip_9",
+      "goFileId": "1307977670",
+      "siblingIndex": 9,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 875.7,
+        "y": -176,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 108,
+        "y": 120,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/CenterStats/Roster/Chip_9/Frame",
+      "goFileId": "1078929729",
+      "siblingIndex": 0,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0.7,
+        "y": -33.106,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 192.07,
+        "y": 191.99,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/08_Card_Character_Normal.png"
+    },
+    {
+      "path": "BondsCanvas/CenterStats/Roster/Chip_9/Face",
+      "goFileId": "2138832483",
+      "siblingIndex": 1,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 1.4275,
+        "y": -34.11,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 193.53,
+        "y": 220.77,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Cards/bond_card_story_hidden_v1.png"
+    },
+    {
+      "path": "BondsCanvas/CenterStats/Roster/Chip_9/Lock",
+      "goFileId": "714638071",
+      "siblingIndex": 2,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": -0.6,
+        "y": -37.7,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 100,
+        "y": 100,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/24_Icon_Lock.png"
+    },
+    {
+      "path": "BondsCanvas/CenterStats/Roster/Chip_9/Name",
+      "goFileId": "656757308",
+      "siblingIndex": 3,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 3.4,
+        "y": -91.5,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 100,
+        "y": 100,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/CenterStats/Roster/Chip_9/Role",
+      "goFileId": "102183822",
       "siblingIndex": 4,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -5409,7 +5798,7 @@
     {
       "path": "BondsCanvas/CenterStats/Roster/Chevron",
       "goFileId": "931000396",
-      "siblingIndex": 7,
+      "siblingIndex": 10,
       "activeSelf": true,
       "layoutKind": "RectTransform",
       "localScale": {
@@ -5444,13 +5833,13 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 504,
+        "y": -120,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 68.89,
+        "y": 64,
         "z": 0
       },
       "pivot": {
@@ -5458,12 +5847,66 @@
         "y": 0.5,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Icons/ui_bonds_icon_chevron_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/26_Icon_Arrow.png"
     },
     {
-      "path": "BondsCanvas/DetailCard",
+      "path": "BondsCanvas/CenterStats/Roster/ChevronPrev",
+      "goFileId": "932200520",
+      "siblingIndex": 11,
+      "activeSelf": false,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": -1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": -504,
+        "y": -120,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 68.89,
+        "y": 64,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/26_Icon_Arrow.png"
+    },
+    {
+      "path": "BondsCanvas/CenterStats/Roster/DetailCard",
       "goFileId": "931000400",
-      "siblingIndex": 5,
+      "siblingIndex": 12,
       "activeSelf": true,
       "layoutKind": "RectTransform",
       "localScale": {
@@ -5488,34 +5931,34 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0,
+        "y": 1,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0,
+        "y": 1,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": -6.49,
+        "y": -440,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 1026.45,
+        "y": 326.44,
         "z": 0
       },
       "pivot": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0,
+        "y": 1,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Kit/ui_bonds_panel_glass_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/10_Panel_CharacterInfo.png"
     },
     {
-      "path": "BondsCanvas/DetailCard/Portrait",
+      "path": "BondsCanvas/CenterStats/Roster/DetailCard/Portrait",
       "goFileId": "931000404",
       "siblingIndex": 0,
       "activeSelf": true,
@@ -5533,32 +5976,32 @@
       "localRotation": {
         "x": 0,
         "y": 0,
-        "z": 0,
-        "w": 1
+        "z": 0.22811091,
+        "w": 0.9736352
       },
       "localEulerAnglesHint": {
         "x": 0,
         "y": 0,
-        "z": 0
+        "z": 26.372
       },
       "anchorMin": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 126.2,
+        "y": 42.699997,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 440.96,
+        "y": 348.62,
         "z": 0
       },
       "pivot": {
@@ -5566,10 +6009,10 @@
         "y": 0.5,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/Characters/Charlotte/VnBust/charlotte_bust_neutral_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Cards/bond_card_charlotte.png"
     },
     {
-      "path": "BondsCanvas/DetailCard/Name",
+      "path": "BondsCanvas/CenterStats/Roster/DetailCard/Name",
       "goFileId": "931000408",
       "siblingIndex": 1,
       "activeSelf": true,
@@ -5596,33 +6039,33 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0,
+        "y": 1,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0,
+        "y": 1,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 191.7,
+        "y": -67,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 280,
+        "y": 36,
         "z": 0
       },
       "pivot": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0,
+        "y": 1,
         "z": 0
       }
     },
     {
-      "path": "BondsCanvas/DetailCard/Rank",
+      "path": "BondsCanvas/CenterStats/Roster/DetailCard/Rank",
       "goFileId": "931000412",
       "siblingIndex": 2,
       "activeSelf": true,
@@ -5649,33 +6092,33 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0,
+        "y": 1,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0,
+        "y": 1,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 246,
+        "y": -95.100006,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 140,
+        "y": 28,
         "z": 0
       },
       "pivot": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0,
+        "y": 1,
         "z": 0
       }
     },
     {
-      "path": "BondsCanvas/DetailCard/Bio",
+      "path": "BondsCanvas/CenterStats/Roster/DetailCard/Bio",
       "goFileId": "931000416",
       "siblingIndex": 3,
       "activeSelf": true,
@@ -5702,33 +6145,33 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0,
+        "y": 1,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0,
+        "y": 1,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 270.48,
+        "y": -123.4,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 493.97,
+        "y": 72,
         "z": 0
       },
       "pivot": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0,
+        "y": 1,
         "z": 0
       }
     },
     {
-      "path": "BondsCanvas/DetailCard/Quote",
+      "path": "BondsCanvas/CenterStats/Roster/DetailCard/Quote",
       "goFileId": "931000420",
       "siblingIndex": 4,
       "activeSelf": true,
@@ -5765,13 +6208,13 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": -4.9625,
+        "y": -63.007996,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 512.37,
+        "y": 65.39,
         "z": 0
       },
       "pivot": {
@@ -5781,7 +6224,7 @@
       }
     },
     {
-      "path": "BondsCanvas/DetailCard/ExpTrack",
+      "path": "BondsCanvas/CenterStats/Roster/DetailCard/ExpTrack",
       "goFileId": "931000424",
       "siblingIndex": 5,
       "activeSelf": true,
@@ -5808,34 +6251,34 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchoredPosition": {
         "x": 0,
         "y": 0,
         "z": 0
       },
+      "anchorMax": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 346.68,
+        "y": 210.7,
+        "z": 0
+      },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 306.14,
+        "y": 16,
         "z": 0
       },
       "pivot": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0,
+        "y": 0,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Kit/ui_bonds_bar_track_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/StatMenu/CrystalKit/ui_stat_bar_track_v3.png"
     },
     {
-      "path": "BondsCanvas/DetailCard/ExpTrack/ExpFill",
+      "path": "BondsCanvas/CenterStats/Roster/DetailCard/ExpTrack/ExpFill",
       "goFileId": "931000428",
       "siblingIndex": 0,
       "activeSelf": true,
@@ -5886,10 +6329,10 @@
         "y": 0.5,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Kit/ui_bonds_bar_fill_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/StatMenu/CrystalKit/ui_stat_bar_fill_v3.png"
     },
     {
-      "path": "BondsCanvas/DetailCard/ExpLabel",
+      "path": "BondsCanvas/CenterStats/Roster/DetailCard/ExpLabel",
       "goFileId": "931000432",
       "siblingIndex": 6,
       "activeSelf": true,
@@ -5926,12 +6369,12 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 189.9,
+        "y": 54.8,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
+        "x": 95.39,
         "y": 100,
         "z": 0
       },
@@ -5942,7 +6385,7 @@
       }
     },
     {
-      "path": "BondsCanvas/DetailCard/NextRank",
+      "path": "BondsCanvas/CenterStats/Roster/DetailCard/NextRank",
       "goFileId": "931000436",
       "siblingIndex": 7,
       "activeSelf": true,
@@ -5979,8 +6422,8 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 312,
+        "y": 25,
         "z": 0
       },
       "sizeDelta": {
@@ -5995,7 +6438,7 @@
       }
     },
     {
-      "path": "BondsCanvas/DetailCard/NextHint",
+      "path": "BondsCanvas/CenterStats/Roster/DetailCard/NextHint",
       "goFileId": "931000440",
       "siblingIndex": 8,
       "activeSelf": true,
@@ -6032,13 +6475,13 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 385.92004,
+        "y": -14.970001,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 246.52,
+        "y": 117.33,
         "z": 0
       },
       "pivot": {
@@ -6048,9 +6491,115 @@
       }
     },
     {
-      "path": "BondsCanvas/LinkEpisodes",
-      "goFileId": "931000444",
-      "siblingIndex": 6,
+      "path": "BondsCanvas/CenterStats/ChartRoot",
+      "goFileId": "931000139",
+      "siblingIndex": 2,
+      "activeSelf": false,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": -10,
+        "y": 23,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 434.7,
+        "y": 477.16,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/CenterStats/ChartRoot/Radar",
+      "goFileId": "931000141",
+      "siblingIndex": 0,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 1,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/CenterStats/ChartRoot/Node_Resonance",
+      "goFileId": "931000145",
+      "siblingIndex": 1,
       "activeSelf": true,
       "layoutKind": "RectTransform",
       "localScale": {
@@ -6085,25 +6634,24 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 153,
+        "y": -208,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 180,
+        "y": 88,
         "z": 0
       },
       "pivot": {
         "x": 0.5,
         "y": 0.5,
         "z": 0
-      },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Kit/ui_bonds_panel_glass_v1.png"
+      }
     },
     {
-      "path": "BondsCanvas/LinkEpisodes/Title",
-      "goFileId": "931000448",
+      "path": "BondsCanvas/CenterStats/ChartRoot/Node_Resonance/Icon",
+      "goFileId": "931000148",
       "siblingIndex": 0,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -6139,24 +6687,25 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 0.6,
+        "y": 14,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 48.56,
+        "y": 54.27,
         "z": 0
       },
       "pivot": {
         "x": 0.5,
         "y": 0.5,
         "z": 0
-      }
+      },
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/22_Icon_Resonance.png"
     },
     {
-      "path": "BondsCanvas/LinkEpisodes/TitleJp",
-      "goFileId": "931000452",
+      "path": "BondsCanvas/CenterStats/ChartRoot/Node_Resonance/Name",
+      "goFileId": "931000152",
       "siblingIndex": 1,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -6193,23 +6742,23 @@
       },
       "anchoredPosition": {
         "x": 0,
-        "y": 0,
+        "y": -4,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 170,
+        "y": 22,
         "z": 0
       },
       "pivot": {
         "x": 0.5,
-        "y": 0.5,
+        "y": 1,
         "z": 0
       }
     },
     {
-      "path": "BondsCanvas/LinkEpisodes/Hint",
-      "goFileId": "931000456",
+      "path": "BondsCanvas/CenterStats/ChartRoot/Node_Resonance/Rank",
+      "goFileId": "931000156",
       "siblingIndex": 2,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -6246,23 +6795,23 @@
       },
       "anchoredPosition": {
         "x": 0,
-        "y": 0,
+        "y": -22,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 170,
+        "y": 20,
         "z": 0
       },
       "pivot": {
         "x": 0.5,
-        "y": 0.5,
+        "y": 1,
         "z": 0
       }
     },
     {
-      "path": "BondsCanvas/LinkEpisodes/PromoFrame",
-      "goFileId": "931000460",
+      "path": "BondsCanvas/CenterStats/ChartRoot/Node_Resonance/Flavor",
+      "goFileId": "931000160",
       "siblingIndex": 3,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -6299,24 +6848,76 @@
       },
       "anchoredPosition": {
         "x": 0,
-        "y": 0,
+        "y": -40,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 170,
+        "y": 24,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 1,
+        "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/CenterStats/ChartRoot/Node_Cadence",
+      "goFileId": "931000164",
+      "siblingIndex": 2,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": -150,
+        "y": -211,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 180,
+        "y": 88,
         "z": 0
       },
       "pivot": {
         "x": 0.5,
         "y": 0.5,
         "z": 0
-      },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Kit/ui_bonds_panel_glass_v1.png"
+      }
     },
     {
-      "path": "BondsCanvas/LinkEpisodes/PromoFrame/PromoImage",
-      "goFileId": "931000464",
+      "path": "BondsCanvas/CenterStats/ChartRoot/Node_Cadence/Icon",
+      "goFileId": "931000167",
       "siblingIndex": 0,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -6353,12 +6954,12 @@
       },
       "anchoredPosition": {
         "x": 0,
-        "y": 0,
+        "y": 14,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 36,
+        "y": 36,
         "z": 0
       },
       "pivot": {
@@ -6366,11 +6967,436 @@
         "y": 0.5,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Decor/ui_bonds_promo_piano_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/20_Icon_Cadence.png"
     },
     {
-      "path": "BondsCanvas/LinkEpisodes/PromoCaption",
-      "goFileId": "931000468",
+      "path": "BondsCanvas/CenterStats/ChartRoot/Node_Cadence/Name",
+      "goFileId": "931000171",
+      "siblingIndex": 1,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": -4,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 170,
+        "y": 22,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 1,
+        "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/CenterStats/ChartRoot/Node_Cadence/Rank",
+      "goFileId": "931000175",
+      "siblingIndex": 2,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": -22,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 170,
+        "y": 20,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 1,
+        "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/CenterStats/ChartRoot/Node_Cadence/Flavor",
+      "goFileId": "931000179",
+      "siblingIndex": 3,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": -40,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 170,
+        "y": 24,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 1,
+        "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/CenterStats/ChartRoot/Node_Pulse",
+      "goFileId": "931000183",
+      "siblingIndex": 3,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 274,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 180,
+        "y": 88,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/CenterStats/ChartRoot/Node_Pulse/Icon",
+      "goFileId": "931000186",
+      "siblingIndex": 0,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 18,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 36,
+        "y": 36,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/19_Icon_Pulse.png"
+    },
+    {
+      "path": "BondsCanvas/CenterStats/ChartRoot/Node_Pulse/Name",
+      "goFileId": "931000190",
+      "siblingIndex": 1,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": -2,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 170,
+        "y": 22,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 1,
+        "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/CenterStats/ChartRoot/Node_Pulse/Rank",
+      "goFileId": "931000194",
+      "siblingIndex": 2,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": -20,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 170,
+        "y": 20,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 1,
+        "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/CenterStats/ChartRoot/Node_Pulse/Flavor",
+      "goFileId": "931000198",
+      "siblingIndex": 3,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": -38,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 170,
+        "y": 24,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 1,
+        "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/CenterStats/ChartRoot/Node_Harmony",
+      "goFileId": "931000202",
       "siblingIndex": 4,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -6406,13 +7432,13 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 291,
+        "y": 18,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 180,
+        "y": 88,
         "z": 0
       },
       "pivot": {
@@ -6422,8 +7448,221 @@
       }
     },
     {
-      "path": "BondsCanvas/LinkEpisodes/Row_01",
-      "goFileId": "931000472",
+      "path": "BondsCanvas/CenterStats/ChartRoot/Node_Harmony/Icon",
+      "goFileId": "931000205",
+      "siblingIndex": 0,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 1,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 1,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": -122.7,
+        "y": 48.8,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 36,
+        "y": 36,
+        "z": 0
+      },
+      "pivot": {
+        "x": 1,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/21_Icon_Harmony.png"
+    },
+    {
+      "path": "BondsCanvas/CenterStats/ChartRoot/Node_Harmony/Name",
+      "goFileId": "931000209",
+      "siblingIndex": 1,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": -14.800005,
+        "y": 16.6,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 118,
+        "y": 22,
+        "z": 0
+      },
+      "pivot": {
+        "x": 1,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/CenterStats/ChartRoot/Node_Harmony/Rank",
+      "goFileId": "931000213",
+      "siblingIndex": 2,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": -28.500006,
+        "y": -4,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 118,
+        "y": 20,
+        "z": 0
+      },
+      "pivot": {
+        "x": 1,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/CenterStats/ChartRoot/Node_Harmony/Flavor",
+      "goFileId": "931000217",
+      "siblingIndex": 3,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 83,
+        "y": -34.3,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 126,
+        "y": 24,
+        "z": 0
+      },
+      "pivot": {
+        "x": 1,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/CenterStats/ChartRoot/Node_Rhythm",
+      "goFileId": "931000221",
       "siblingIndex": 5,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -6459,25 +7698,24 @@
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": -293,
+        "y": 19,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 180,
+        "y": 88,
         "z": 0
       },
       "pivot": {
         "x": 0.5,
         "y": 0.5,
         "z": 0
-      },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Kit/ui_bonds_episode_row_v1.png"
+      }
     },
     {
-      "path": "BondsCanvas/LinkEpisodes/Row_01/Icon",
-      "goFileId": "931000477",
+      "path": "BondsCanvas/CenterStats/ChartRoot/Node_Rhythm/Icon",
+      "goFileId": "931000224",
       "siblingIndex": 0,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -6503,35 +7741,35 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 129,
+        "y": 49.7,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 36,
+        "y": 36,
         "z": 0
       },
       "pivot": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Icons/ui_bonds_icon_play_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/23_Icon_Rhythm.png"
     },
     {
-      "path": "BondsCanvas/LinkEpisodes/Row_01/Index",
-      "goFileId": "931000481",
+      "path": "BondsCanvas/CenterStats/ChartRoot/Node_Rhythm/Name",
+      "goFileId": "931000228",
       "siblingIndex": 1,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -6567,17 +7805,500 @@
         "z": 0
       },
       "anchoredPosition": {
+        "x": 22.799992,
+        "y": 17.9,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 118,
+        "y": 22,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/CenterStats/ChartRoot/Node_Rhythm/Rank",
+      "goFileId": "931000232",
+      "siblingIndex": 2,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 26.09999,
+        "y": -4,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 118,
+        "y": 20,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/CenterStats/ChartRoot/Node_Rhythm/Flavor",
+      "goFileId": "931000236",
+      "siblingIndex": 3,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": -72.6,
+        "y": -33.7,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 126,
+        "y": 24,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/LinkEpisodes",
+      "goFileId": "931000444",
+      "siblingIndex": 7,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 1460,
+        "y": -68.00003,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 460,
+        "y": 901.64,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/05_Panel_Episodes.png"
+    },
+    {
+      "path": "BondsCanvas/LinkEpisodes/PromoFrame",
+      "goFileId": "931000460",
+      "siblingIndex": 0,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.5,
+        "y": 1,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.5,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": -8.160004,
+        "y": -567.07,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 360.78,
+        "y": 264.79,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 1,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/11_Frame_Promo.png"
+    },
+    {
+      "path": "BondsCanvas/LinkEpisodes/PromoFrame/PromoImage",
+      "goFileId": "931000464",
+      "siblingIndex": 0,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 1,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": -0.060012817,
+        "y": -4.354889,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 122.519966,
+        "y": -43.860046,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Promo/bonds_episode_promo_placeholder_v1.jpg"
+    },
+    {
+      "path": "BondsCanvas/LinkEpisodes/PromoFrame/PromoFrameChrome",
+      "goFileId": "932301001",
+      "siblingIndex": 1,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 1,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
         "x": 0,
         "y": 0,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 0,
+        "y": 0,
         "z": 0
       },
       "pivot": {
         "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/11_Frame_Promo.png"
+    },
+    {
+      "path": "BondsCanvas/LinkEpisodes/Row_01",
+      "goFileId": "931000472",
+      "siblingIndex": 1,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.5,
+        "y": 1,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.5,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": -4.6531067,
+        "y": -148,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 340.69,
+        "y": 52.25,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 1,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/06_Row_Episode_Normal.png"
+    },
+    {
+      "path": "BondsCanvas/LinkEpisodes/Row_01/Icon",
+      "goFileId": "931000477",
+      "siblingIndex": 0,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 59.5,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 28,
+        "y": 28,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/25_Icon_Play.png"
+    },
+    {
+      "path": "BondsCanvas/LinkEpisodes/Row_01/Index",
+      "goFileId": "931000481",
+      "siblingIndex": 1,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0,
+        "y": 0.5,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 87.499985,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 40,
+        "y": 24,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0,
         "y": 0.5,
         "z": 0
       }
@@ -6610,27 +8331,27 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
+        "x": 127.499985,
         "y": 0,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 220,
+        "y": 24,
         "z": 0
       },
       "pivot": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       }
@@ -6638,7 +8359,7 @@
     {
       "path": "BondsCanvas/LinkEpisodes/Row_02",
       "goFileId": "931000489",
-      "siblingIndex": 6,
+      "siblingIndex": 2,
       "activeSelf": true,
       "layoutKind": "RectTransform",
       "localScale": {
@@ -6664,30 +8385,30 @@
       },
       "anchorMin": {
         "x": 0.5,
-        "y": 0.5,
+        "y": 1,
         "z": 0
       },
       "anchorMax": {
         "x": 0.5,
-        "y": 0.5,
+        "y": 1,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": -10.559006,
+        "y": -209,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 332.58,
+        "y": 47.65,
         "z": 0
       },
       "pivot": {
         "x": 0.5,
-        "y": 0.5,
+        "y": 1,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Kit/ui_bonds_episode_row_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/06_Row_Episode_Normal.png"
     },
     {
       "path": "BondsCanvas/LinkEpisodes/Row_02/Icon",
@@ -6717,23 +8438,23 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
+        "x": 61.6,
         "y": 0,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 28,
+        "y": 28,
         "z": 0
       },
       "pivot": {
@@ -6741,7 +8462,7 @@
         "y": 0.5,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Icons/ui_bonds_icon_lock_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/24_Icon_Lock.png"
     },
     {
       "path": "BondsCanvas/LinkEpisodes/Row_02/Index",
@@ -6771,27 +8492,27 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
+        "x": 89.59998,
         "y": 0,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 40,
+        "y": 24,
         "z": 0
       },
       "pivot": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       }
@@ -6824,27 +8545,27 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
+        "x": 129.59998,
         "y": 0,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 220,
+        "y": 24,
         "z": 0
       },
       "pivot": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       }
@@ -6852,7 +8573,7 @@
     {
       "path": "BondsCanvas/LinkEpisodes/Row_03",
       "goFileId": "931000506",
-      "siblingIndex": 7,
+      "siblingIndex": 3,
       "activeSelf": true,
       "layoutKind": "RectTransform",
       "localScale": {
@@ -6878,30 +8599,30 @@
       },
       "anchorMin": {
         "x": 0.5,
-        "y": 0.5,
+        "y": 1,
         "z": 0
       },
       "anchorMax": {
         "x": 0.5,
-        "y": 0.5,
+        "y": 1,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": -11.444,
+        "y": -264.1,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 334.35,
+        "y": 47.75,
         "z": 0
       },
       "pivot": {
         "x": 0.5,
-        "y": 0.5,
+        "y": 1,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Kit/ui_bonds_episode_row_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/06_Row_Episode_Normal.png"
     },
     {
       "path": "BondsCanvas/LinkEpisodes/Row_03/Icon",
@@ -6931,23 +8652,23 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
+        "x": 63.4,
         "y": 0,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 28,
+        "y": 28,
         "z": 0
       },
       "pivot": {
@@ -6955,7 +8676,7 @@
         "y": 0.5,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Icons/ui_bonds_icon_lock_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/24_Icon_Lock.png"
     },
     {
       "path": "BondsCanvas/LinkEpisodes/Row_03/Index",
@@ -6985,27 +8706,27 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
+        "x": 91.40001,
         "y": 0,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 40,
+        "y": 24,
         "z": 0
       },
       "pivot": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       }
@@ -7038,27 +8759,27 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
+        "x": 131.40001,
         "y": 0,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 220,
+        "y": 24,
         "z": 0
       },
       "pivot": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       }
@@ -7066,7 +8787,7 @@
     {
       "path": "BondsCanvas/LinkEpisodes/Row_04",
       "goFileId": "931000523",
-      "siblingIndex": 8,
+      "siblingIndex": 4,
       "activeSelf": true,
       "layoutKind": "RectTransform",
       "localScale": {
@@ -7092,30 +8813,30 @@
       },
       "anchorMin": {
         "x": 0.5,
-        "y": 0.5,
+        "y": 1,
         "z": 0
       },
       "anchorMax": {
         "x": 0.5,
-        "y": 0.5,
+        "y": 1,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": -11.442993,
+        "y": -319.90002,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 334.35,
+        "y": 47.75,
         "z": 0
       },
       "pivot": {
         "x": 0.5,
-        "y": 0.5,
+        "y": 1,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Kit/ui_bonds_episode_row_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/06_Row_Episode_Normal.png"
     },
     {
       "path": "BondsCanvas/LinkEpisodes/Row_04/Icon",
@@ -7145,23 +8866,23 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
+        "x": 62.699997,
         "y": 0,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 28,
+        "y": 28,
         "z": 0
       },
       "pivot": {
@@ -7169,7 +8890,7 @@
         "y": 0.5,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Icons/ui_bonds_icon_lock_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/24_Icon_Lock.png"
     },
     {
       "path": "BondsCanvas/LinkEpisodes/Row_04/Index",
@@ -7199,27 +8920,27 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
+        "x": 90.699936,
         "y": 0,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 40,
+        "y": 24,
         "z": 0
       },
       "pivot": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       }
@@ -7252,27 +8973,27 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
+        "x": 130.69994,
         "y": 0,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 220,
+        "y": 24,
         "z": 0
       },
       "pivot": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       }
@@ -7280,7 +9001,7 @@
     {
       "path": "BondsCanvas/LinkEpisodes/Row_05",
       "goFileId": "931000540",
-      "siblingIndex": 9,
+      "siblingIndex": 5,
       "activeSelf": true,
       "layoutKind": "RectTransform",
       "localScale": {
@@ -7306,30 +9027,30 @@
       },
       "anchorMin": {
         "x": 0.5,
-        "y": 0.5,
+        "y": 1,
         "z": 0
       },
       "anchorMax": {
         "x": 0.5,
-        "y": 0.5,
+        "y": 1,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": -11.442993,
+        "y": -375.7,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 334.35,
+        "y": 47.45,
         "z": 0
       },
       "pivot": {
         "x": 0.5,
-        "y": 0.5,
+        "y": 1,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Kit/ui_bonds_episode_row_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/06_Row_Episode_Normal.png"
     },
     {
       "path": "BondsCanvas/LinkEpisodes/Row_05/Icon",
@@ -7359,23 +9080,23 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
+        "x": 63.199997,
         "y": 0,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 28,
+        "y": 28,
         "z": 0
       },
       "pivot": {
@@ -7383,7 +9104,7 @@
         "y": 0.5,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Icons/ui_bonds_icon_lock_v1.png"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/24_Icon_Lock.png"
     },
     {
       "path": "BondsCanvas/LinkEpisodes/Row_05/Index",
@@ -7413,27 +9134,27 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
+        "x": 91.199936,
         "y": 0,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 40,
+        "y": 24,
         "z": 0
       },
       "pivot": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       }
@@ -7466,34 +9187,87 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
+        "x": 131.19994,
         "y": 0,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 220,
+        "y": 24,
         "z": 0
       },
       "pivot": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       }
     },
     {
-      "path": "BondsCanvas/Footer",
-      "goFileId": "931000557",
+      "path": "BondsCanvas/LinkEpisodes/Hint",
+      "goFileId": "931000456",
+      "siblingIndex": 6,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.5,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.5,
+        "y": 0,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 5.600006,
+        "y": 434.4,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 364.9,
+        "y": 24,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/LinkEpisodes/Title",
+      "goFileId": "931000448",
       "siblingIndex": 7,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -7520,27 +9294,80 @@
       },
       "anchorMin": {
         "x": 0.5,
-        "y": 0.5,
+        "y": 1,
         "z": 0
       },
       "anchorMax": {
         "x": 0.5,
-        "y": 0.5,
+        "y": 1,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": -13.5,
+        "y": -62.200012,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 360,
+        "y": 36,
         "z": 0
       },
       "pivot": {
         "x": 0.5,
-        "y": 0.5,
+        "y": 1,
+        "z": 0
+      }
+    },
+    {
+      "path": "BondsCanvas/Footer",
+      "goFileId": "931000557",
+      "siblingIndex": 8,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 1560,
+        "y": -1014,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 320,
+        "y": 50,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0,
+        "y": 1,
         "z": 0
       }
     },
@@ -7572,23 +9399,23 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
+        "x": 110,
         "y": 0,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 140,
+        "y": 32,
         "z": 0
       },
       "pivot": {
@@ -7625,23 +9452,23 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
+        "x": 1,
         "y": 0.5,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
+        "x": 1,
         "y": 0.5,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
+        "x": -90,
         "y": 0,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 120,
+        "y": 32,
         "z": 0
       },
       "pivot": {
@@ -7651,9 +9478,9 @@
       }
     },
     {
-      "path": "BondsCanvas/Wordmark",
-      "goFileId": "931000567",
-      "siblingIndex": 8,
+      "path": "BondsCanvas/Footer/ConfirmIcon",
+      "goFileId": "931000800",
+      "siblingIndex": 2,
       "activeSelf": true,
       "layoutKind": "RectTransform",
       "localScale": {
@@ -7678,35 +9505,36 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
+        "x": 0,
         "y": 0.5,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
+        "x": 28,
         "y": 0,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 36,
+        "y": 36,
         "z": 0
       },
       "pivot": {
         "x": 0.5,
         "y": 0.5,
         "z": 0
-      }
+      },
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/28_Icon_Mouse.png"
     },
     {
-      "path": "BondsCanvas/Wordmark/Title",
-      "goFileId": "931000569",
-      "siblingIndex": 0,
+      "path": "BondsCanvas/Footer/BackIcon",
+      "goFileId": "931000804",
+      "siblingIndex": 3,
       "activeSelf": true,
       "layoutKind": "RectTransform",
       "localScale": {
@@ -7731,87 +9559,35 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchoredPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "sizeDelta": {
-        "x": 100,
-        "y": 100,
-        "z": 0
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      }
-    },
-    {
-      "path": "BondsCanvas/Wordmark/Sub",
-      "goFileId": "931000573",
-      "siblingIndex": 1,
-      "activeSelf": true,
-      "layoutKind": "RectTransform",
-      "localScale": {
         "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "localPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "localRotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "w": 1
-      },
-      "localEulerAnglesHint": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "anchorMin": {
-        "x": 0.5,
         "y": 0.5,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
+        "x": 1,
         "y": 0.5,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
+        "x": -168,
         "y": 0,
         "z": 0
       },
       "sizeDelta": {
-        "x": 100,
-        "y": 100,
+        "x": 36,
+        "y": 36,
         "z": 0
       },
       "pivot": {
         "x": 0.5,
         "y": 0.5,
         "z": 0
-      }
+      },
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/29_Icon_Back.png"
     },
     {
-      "path": "BondsCanvas/TaglineRight",
-      "goFileId": "931000577",
+      "path": "BondsCanvas/Divider",
+      "goFileId": "931000808",
       "siblingIndex": 9,
       "activeSelf": true,
       "layoutKind": "RectTransform",
@@ -7837,138 +9613,31 @@
         "z": 0
       },
       "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchoredPosition": {
         "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "sizeDelta": {
-        "x": 100,
-        "y": 100,
-        "z": 0
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      }
-    },
-    {
-      "path": "BondsCanvas/Compass",
-      "goFileId": "931000581",
-      "siblingIndex": 10,
-      "activeSelf": true,
-      "layoutKind": "RectTransform",
-      "localScale": {
-        "x": 1,
         "y": 1,
-        "z": 1
-      },
-      "localPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "localRotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "w": 1
-      },
-      "localEulerAnglesHint": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "anchorMin": {
-        "x": 0.5,
-        "y": 0.5,
         "z": 0
       },
       "anchorMax": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "anchoredPosition": {
         "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "sizeDelta": {
-        "x": 100,
-        "y": 100,
-        "z": 0
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0
-      },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Icons/ui_bonds_icon_compass_v1.png"
-    },
-    {
-      "path": "BondsCanvas/MockGuide",
-      "goFileId": "931000585",
-      "siblingIndex": 11,
-      "activeSelf": false,
-      "layoutKind": "RectTransform",
-      "localScale": {
-        "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "localPosition": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "localRotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "w": 1
-      },
-      "localEulerAnglesHint": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "anchorMin": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "anchorMax": {
-        "x": 1,
         "y": 1,
         "z": 0
       },
       "anchoredPosition": {
-        "x": 0,
-        "y": 0,
+        "x": 35,
+        "y": -968,
         "z": 0
       },
       "sizeDelta": {
-        "x": 0,
-        "y": 0,
+        "x": 380,
+        "y": 16,
         "z": 0
       },
       "pivot": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 0,
+        "y": 1,
         "z": 0
       },
-      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/_ref/_ref_bonds_menu_v1.jpg"
+      "spritePath": "Assets/FracturedChorus/Art/UI/Bonds/Pack/31_Decor_Divider.png"
     }
   ]
 }

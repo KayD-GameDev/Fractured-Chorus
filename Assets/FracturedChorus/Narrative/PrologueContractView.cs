@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using FracturedChorus.Narrative.Vn;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -17,6 +18,11 @@ namespace FracturedChorus.Narrative
         [SerializeField] private PrologueVNLayoutConfig layoutConfig;
 
         private Action<string> _onSigned;
+        private bool _nameInputListenersBound;
+
+        private static readonly Color NameValueFilledColor = new Color(0.05f, 0.05f, 0.08f, 1f);
+        private static readonly Color NameValueSuggestionColor = new Color(0.08f, 0.12f, 0.28f, 0.55f);
+        private static readonly Color NameInputCaretColor = new Color(0.05f, 0.05f, 0.08f, 0f);
 
         public void Bind(PrologueAudioController audio)
         {
@@ -37,7 +43,6 @@ namespace FracturedChorus.Narrative
             EnsureContractPaperSprite();
             StyleFields();
             EnsureConfirmButtonHover();
-            SyncNameValueRectToInput();
         }
 
         public void Hide()
@@ -70,26 +75,24 @@ namespace FracturedChorus.Narrative
             EnsureContractPaperSprite();
             StyleFields();
             EnsureConfirmButtonHover();
-            SyncNameValueRectToInput();
 
             _onSigned = onSigned;
 
-            if (nameValueText != null)
-            {
-                nameValueText.text = string.Empty;
-                nameValueText.gameObject.SetActive(false);
-            }
+            EnsureNameInputBindings();
 
             if (nameInput != null)
             {
                 nameInput.gameObject.SetActive(true);
-                nameInput.text = RunProfile.DefaultNameSuggestion;
                 nameInput.interactable = true;
+                nameInput.text = string.Empty;
                 if (nameInput.placeholder is Text placeholderText)
                 {
                     placeholderText.text = RunProfile.DefaultNameSuggestion;
+                    placeholderText.enabled = true;
                 }
             }
+
+            RefreshNameDisplay(nameInput != null ? nameInput.text : string.Empty);
 
             if (hintText != null)
             {
@@ -193,7 +196,8 @@ namespace FracturedChorus.Narrative
             if (nameValueText != null)
             {
                 nameValueText.text = entered;
-                SyncNameValueRectToInput();
+                nameValueText.enabled = true;
+                nameValueText.raycastTarget = false;
                 nameValueText.gameObject.SetActive(true);
             }
 
@@ -211,19 +215,17 @@ namespace FracturedChorus.Narrative
             EnsureContractPaperSprite();
             StyleFields();
             EnsureConfirmButtonHover();
-            SyncNameValueRectToInput();
 
-            if (nameValueText != null)
-            {
-                nameValueText.gameObject.SetActive(false);
-            }
+            EnsureNameInputBindings();
 
             if (nameInput != null)
             {
                 nameInput.gameObject.SetActive(true);
-                nameInput.text = RunProfile.DefaultNameSuggestion;
                 nameInput.interactable = true;
+                nameInput.text = string.Empty;
             }
+
+            RefreshNameDisplay(string.Empty);
 
             if (hintText != null)
             {
@@ -281,7 +283,6 @@ namespace FracturedChorus.Narrative
         public void ApplyLayoutConfig(PrologueVNLayoutConfig config)
         {
             layoutConfig = config;
-            ApplyLayout();
             StyleFields();
         }
 
@@ -294,6 +295,41 @@ namespace FracturedChorus.Narrative
         {
             Hide();
             _onSigned?.Invoke(playerName);
+        }
+
+        private void EnsureNameInputBindings()
+        {
+            if (nameInput == null || _nameInputListenersBound)
+            {
+                return;
+            }
+
+            nameInput.onValueChanged.AddListener(OnNameInputChanged);
+            _nameInputListenersBound = true;
+        }
+
+        private void OnNameInputChanged(string value)
+        {
+            RefreshNameDisplay(value);
+        }
+
+        private void RefreshNameDisplay(string raw)
+        {
+            var suggestion = RunProfile.DefaultNameSuggestion;
+            var isEmpty = string.IsNullOrEmpty(raw);
+            var display = isEmpty ? suggestion : raw;
+
+            if (nameValueText == null)
+            {
+                return;
+            }
+
+            nameValueText.gameObject.SetActive(true);
+            nameValueText.enabled = true;
+            nameValueText.raycastTarget = false;
+            nameValueText.text = display;
+            nameValueText.fontStyle = isEmpty ? FontStyle.Italic : FontStyle.Normal;
+            nameValueText.color = isEmpty ? NameValueSuggestionColor : NameValueFilledColor;
         }
 
         private void ResolveReferences()
@@ -312,6 +348,23 @@ namespace FracturedChorus.Narrative
             {
                 hintText = transform.Find("HintText")?.GetComponent<Text>();
             }
+
+            if (nameValueText == null)
+            {
+                var nameSlot = transform.Find("Name") ?? transform.Find("NameValue");
+                if (nameSlot != null)
+                {
+                    nameValueText = nameSlot.GetComponent<Text>();
+                }
+            }
+
+            if (nameInput == null)
+            {
+                var nameRoot = transform.Find("Name");
+                nameInput = nameRoot != null
+                    ? nameRoot.GetComponentInChildren<InputField>(true)
+                    : GetComponentInChildren<InputField>(true);
+            }
         }
 
         private void EnsureContractPaperSprite()
@@ -325,31 +378,6 @@ namespace FracturedChorus.Narrative
             if (resolved != null)
             {
                 contractPaper.sprite = resolved;
-            }
-        }
-
-        private void ApplyLayout()
-        {
-            if (contractPaper == null)
-            {
-                return;
-            }
-
-            PrologueContractLayout.ApplyFieldRect(
-                nameInput != null ? nameInput.GetComponent<RectTransform>() : null,
-                layoutConfig,
-                true);
-            PrologueContractLayout.ApplyFieldRect(
-                nameValueText != null ? nameValueText.rectTransform : null,
-                layoutConfig,
-                true);
-
-            if (signaturePad != null)
-            {
-                PrologueContractLayout.ApplyFieldRect(
-                    signaturePad.GetComponent<RectTransform>(),
-                    layoutConfig,
-                    false);
             }
         }
 
@@ -369,39 +397,33 @@ namespace FracturedChorus.Narrative
 
             if (nameValueText != null)
             {
+                VnUiFont.Apply(nameValueText, 26, FontStyle.Normal);
                 nameValueText.alignment = TextAnchor.MiddleLeft;
-                nameValueText.fontSize = 26;
-                nameValueText.color = new Color(0.05f, 0.05f, 0.08f, 1f);
+                nameValueText.horizontalOverflow = HorizontalWrapMode.Overflow;
                 nameValueText.raycastTarget = false;
             }
 
-            if (nameInput != null && nameInput.textComponent is Text inputText)
+            if (nameInput != null)
             {
-                inputText.alignment = TextAnchor.MiddleLeft;
-                inputText.fontSize = 26;
-                inputText.color = new Color(0.05f, 0.05f, 0.08f, 1f);
-            }
-        }
+                if (nameInput.textComponent is Text inputText)
+                {
+                    VnUiFont.Apply(inputText, 26, FontStyle.Normal);
+                    inputText.alignment = TextAnchor.MiddleLeft;
+                    inputText.horizontalOverflow = HorizontalWrapMode.Overflow;
+                    inputText.color = NameInputCaretColor;
+                    inputText.raycastTarget = false;
+                }
 
-        private void SyncNameValueRectToInput()
-        {
-            if (nameInput == null || nameValueText == null)
-            {
-                return;
+                if (nameInput.placeholder is Text placeholderText)
+                {
+                    VnUiFont.Apply(placeholderText, 26, FontStyle.Italic);
+                    placeholderText.alignment = TextAnchor.MiddleLeft;
+                    placeholderText.horizontalOverflow = HorizontalWrapMode.Overflow;
+                    placeholderText.enabled = true;
+                    placeholderText.raycastTarget = false;
+                    placeholderText.gameObject.SetActive(false);
+                }
             }
-
-            var source = nameInput.GetComponent<RectTransform>();
-            var target = nameValueText.rectTransform;
-            if (source == null || target == null)
-            {
-                return;
-            }
-
-            target.anchorMin = source.anchorMin;
-            target.anchorMax = source.anchorMax;
-            target.anchoredPosition = source.anchoredPosition;
-            target.sizeDelta = source.sizeDelta;
-            target.pivot = source.pivot;
         }
 
         private void EnsureConfirmButtonHover()

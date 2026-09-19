@@ -17,6 +17,231 @@ MonoBehaviour:
   beats:
   - kind: 3
     speakerId: 
+    text: LUMINA
+    expression: 
+    bgId: bg_black
+    bgmId: 
+    sfxId: 
+    bgmPitch: 0
+    bgmStartTime: 0
+    duration: 2
+    setFlags: []
+    showDateHud: 0
+    hideDateHud: 1
+    dateHudDate: 
+    dateHudPhase: 
+    dateHudFromMeta: 0
+  - kind: 1
+    speakerId: 
+    text: "Morning in Lumina.\nA city that never walks out of time."
+    expression: 
+    bgId: lumina_crossing_day
+    bgmId: 
+    sfxId: 
+    bgmPitch: 0
+    bgmStartTime: 0
+    duration: 0
+    setFlags: []
+    showDateHud: 0
+    hideDateHud: 0
+    dateHudDate: 
+    dateHudPhase: 
+    dateHudFromMeta: 0
+  - kind: 1
+    speakerId: 
+    text: "Banners sell the same promise on every corner:\nmusic will make you whole."
+    expression: 
+    bgId: 
+    bgmId: 
+    sfxId: 
+    bgmPitch: 0
+    bgmStartTime: 0
+    duration: 0
+    setFlags: []
+    showDateHud: 0
+    hideDateHud: 0
+    dateHudDate: 
+    dateHudPhase: 
+    dateHudFromMeta: 0
+  - kind: 1
+    speakerId: 
+    text: "StellaWorks built the towers, the charts,\nand the device in every ear."
+    expression: 
+    bgId: stellaworks_hq
+    bgmId: 
+    sfxId: 
+    bgmPitch: 0
+    bgmStartTime: 0
+    duration: 0
+    setFlags: []
+    showDateHud: 0
+    hideDateHud: 0
+    dateHudDate: 
+    dateHudPhase: 
+    dateHudFromMeta: 0
+  - kind: 1
+    speakerId: 
+    text: "If a song hits number one, the city hears it.\nThat is policy, not poetry."
+    expression: 
+    bgId: 
+    bgmId: 
+    sfxId: 
+    bgmPitch: 0
+    bgmStartTime: 0
+    duration: 0
+    setFlags: []
+    showDateHud: 0
+    hideDateHud: 0
+    dateHudDate: 
+    dateHudPhase: 
+    dateHudFromMeta: 0
+  - kind: 1
+    speakerId: 
+    text: "SyncPod SP-01. Clip on. Live in sync.\nBlue light: you are still yourself."
+    expression: 
+    bgId: syncpod_ad_wall
+    bgmId: 
+    sfxId: 
+    bgmPitch: 0
+    bgmStartTime: 0
+    duration: 0
+    setFlags: []
+    showDateHud: 0
+    hideDateHud: 0
+    dateHudDate: 
+    dateHudPhase: 
+    dateHudFromMeta: 0
+  - kind: 1
+    speakerId: 
+    text: "HIMA Music Academy —\nwhere the city forges its next voices."
+    expression: 
+    bgId: hima_campus_day
+    bgmId: 
+    sfxId: 
+    bgmPitch: 0
+    bgmStartTime: 0
+    duration: 0
+    setFlags: []
+    showDateHud: 0
+    hideDateHud: 0
+    dateHudDate: 
+    dateHudPhase: 
+    dateHudFromMeta: 0
+  - kind: 1
+    speakerId: 
+    text: "Talent enters.\nThe charts decide who leaves famous."
+    expression: 
+    bgId: 
+    bgmId: 
+    sfxId: 
+    bgmPitch: 0
+    bgmStartTime: 0
+    duration: 0
+    setFlags: []
+    showDateHud: 0
+    hideDateHud: 0
+    dateHudDate: 
+    dateHudPhase: 
+    dateHudFromMeta: 0
+  - kind: 1
+    speakerId: 
+    text: "Practice halls. Recital nights.\nA brighter tomorrow, printed on the walls."
+    expression: 
+    bgId: hima_recital_hall
+    bgmId: 
+    sfxId: 
+    bgmPitch: 0
+    bgmStartTime: 0
+    duration: 0
+    setFlags: []
+    showDateHud: 0
+    hideDateHud: 0
+    dateHudDate: 
+    dateHudPhase: 
+    dateHudFromMeta: 0
+  - kind: 4
+    speakerId: 
+    text: 
+    expression: 
+    bgId: 
+    bgmId: 
+    sfxId: 
+    bgmPitch: 0
+    bgmStartTime: 0
+    duration: 0.8
+    setFlags: []
+    showDateHud: 0
+    hideDateHud: 1
+    dateHudDate: 
+    dateHudPhase: 
+    dateHudFromMeta: 0
+  - kind: 1
+    speakerId: 
+    text: Evening. Somewhere in the city, a screen stays on.
+    expression: 
+    bgId: lumina_apartment_tv
+    bgmId: 
+    sfxId: 
+    bgmPitch: 0
+    bgmStartTime: 0
+    duration: 0
+    setFlags: []
+    showDateHud: 0
+    hideDateHud: 0
+    dateHudDate: 
+    dateHudPhase: 
+    dateHudFromMeta: 0
+  - kind: 1
+    speakerId: 
+    text: "Multiple SyncPod-related incidents.\nVictims found emptied — as if something
+      drank them dry."
+    expression: 
+    bgId: news_drain_cases
+    bgmId: 
+    sfxId: 
+    bgmPitch: 0
+    bgmStartTime: 0
+    duration: 0
+    setFlags: []
+    showDateHud: 0
+    hideDateHud: 0
+    dateHudDate: 
+    dateHudPhase: 
+    dateHudFromMeta: 0
+  - kind: 1
+    speakerId: 
+    text: "Authorities urge calm. No confirmed cause.\nThe ticker keeps moving."
+    expression: 
+    bgId: 
+    bgmId: 
+    sfxId: 
+    bgmPitch: 0
+    bgmStartTime: 0
+    duration: 0
+    setFlags: []
+    showDateHud: 0
+    hideDateHud: 0
+    dateHudDate: 
+    dateHudPhase: 
+    dateHudFromMeta: 0
+  - kind: 4
+    speakerId: 
+    text: 
+    expression: 
+    bgId: 
+    bgmId: 
+    sfxId: 
+    bgmPitch: 0
+    bgmStartTime: 0
+    duration: 1
+    setFlags: []
+    showDateHud: 0
+    hideDateHud: 1
+    dateHudDate: 
+    dateHudPhase: 
+    dateHudFromMeta: 0
+  - kind: 3
+    speakerId: 
     text: LUMINA, 17 AUGUST 20XX
     expression: 
     bgId: bg_black
@@ -715,6 +940,277 @@ MonoBehaviour:
     sfxId: 
     duration: 2
     setFlags: []
+  - kind: 4
+    speakerId: 
+    text: 
+    expression: 
+    bgId: 
+    bgmId: 
+    sfxId: 
+    bgmPitch: 0
+    bgmStartTime: 0
+    duration: 1
+    setFlags: []
+    showDateHud: 0
+    hideDateHud: 1
+    dateHudDate: 
+    dateHudPhase: 
+    dateHudFromMeta: 0
+  - kind: 3
+    speakerId: 
+    text: THE NEXT MORNING
+    expression: 
+    bgId: bg_black
+    bgmId: 
+    sfxId: 
+    bgmPitch: 0
+    bgmStartTime: 0
+    duration: 2
+    setFlags: []
+    showDateHud: 0
+    hideDateHud: 1
+    dateHudDate: 
+    dateHudPhase: 
+    dateHudFromMeta: 0
+  - kind: 1
+    speakerId: 
+    text: "Sun cuts across a still-unpacked room.\nEnrollment papers on the desk.
+      Uniform on the hook."
+    expression: 
+    bgId: hima_dorm_morning
+    bgmId: 
+    sfxId: 
+    bgmPitch: 0
+    bgmStartTime: 0
+    duration: 0
+    setFlags: []
+    showDateHud: 0
+    hideDateHud: 0
+    dateHudDate: 02/09
+    dateHudPhase: Morning
+    dateHudFromMeta: 0
+  - kind: 1
+    speakerId: 
+    text: Ren stretches. The city is already loud through the glass.
+    expression: 
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 1
+    speakerId: 
+    text: "School kit. Waveform tie. SyncPod on the ear.\nThe mirror does not argue."
+    expression: 
+    bgId: cg_ren_mirror_uniform
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: ren
+    text: "\u2026Alright. HIMA."
+    expression: neutral
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 1
+    speakerId: 
+    text: "The morning train hangs over the bay.\nEveryone wears the same blue light."
+    expression: 
+    bgId: lumina_train_morning
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 1
+    speakerId: 
+    text: "HIMA Music Academy.\nThe banners already know his name as a category: newcomer."
+    expression: 
+    bgId: hima_campus_day
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 1
+    speakerId: 
+    text: "Glass corridor. Class 3-2.\nHe turns the corner too fast."
+    expression: 
+    bgId: hima_hallway_day
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 1
+    speakerId: 
+    text: Impact.
+    expression: 
+    bgId: cg_hallway_bump
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: ren
+    text: "\u2014!"
+    expression: startled
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: charlotte
+    text: Hey\u2014 watch it!
+    expression: startled
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 1
+    speakerId: 
+    text: Two SyncPods hit the stone. Blue LEDs still pulsing.
+    expression: 
+    bgId: cg_syncpods_floor
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 1
+    speakerId: 
+    text: "Charlotte picks his up first.\nThe display is still playing."
+    expression: 
+    bgId: cg_indie_player_breath
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: charlotte
+    text: "Breath of the World\u2026?\nThat isn't on the indie boards."
+    expression: curious
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: ren
+    text: It's mine.
+    expression: neutral
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: charlotte
+    text: "\u2026Yours."
+    expression: curious
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 1
+    speakerId: 
+    text: "They don't have time to finish it.\nHomeroom is already filling."
+    expression: 
+    bgId: hima_classroom_day
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: ren
+    text: You're in this class too.
+    expression: curious
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: charlotte
+    text: Don't make it weird.
+    expression: neutral
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 4
+    speakerId: 
+    text: 
+    expression: 
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0.8
+    setFlags: []
+    hideDateHud: 1
+  - kind: 3
+    speakerId: 
+    text: OPENING CEREMONY
+    expression: 
+    bgId: bg_black
+    bgmId: 
+    sfxId: 
+    duration: 2
+    setFlags: []
+    hideDateHud: 1
+  - kind: 1
+    speakerId: 
+    text: "Noon. The hall fills.\nThe principal talks. The city listens."
+    expression: 
+    bgId: hima_ceremony_hall
+    bgmId: eternal_spark
+    sfxId: 
+    duration: 0
+    setFlags: []
+    dateHudDate: 02/09
+    dateHudPhase: Noon
+  - kind: 1
+    speakerId: 
+    text: "Then the song in every ear skips \u2014 not to silence.\nTo a version that
+      should not exist."
+    expression: 
+    bgId: hima_ceremony_desync
+    bgmId: 
+    sfxId: 
+    bgmPitch: 0.38
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: ren
+    text: That's Eternal Spark. It isn't clean.
+    expression: startled
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 0
+    speakerId: charlotte
+    text: You hear the undertone too.
+    expression: grim
+    bgId: 
+    bgmId: 
+    sfxId: 
+    duration: 0
+    setFlags: []
+  - kind: 1
+    speakerId: 
+    text: "They refuse the pull. The system does not.\nDesync flagged. Cadence opens."
+    expression: 
+    bgId: cadence_fracture_pull
+    bgmId: stop
+    sfxId: 
+    duration: 0
+    setFlags: []
   - kind: 5
     speakerId: 
     text: 
@@ -727,3 +1223,6 @@ MonoBehaviour:
     - lumina_case_open
     - opening_investigation_done
     - ren_arrived_hima
+    - opening_ceremony
+    - first_resonance_dive
+    - cadence_breach

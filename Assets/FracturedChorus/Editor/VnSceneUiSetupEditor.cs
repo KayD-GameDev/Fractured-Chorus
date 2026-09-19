@@ -27,7 +27,7 @@ namespace FracturedChorus.Editor
 
             if (!EditorUtility.DisplayDialog(
                     "Reset VN layout",
-                    "Ghi đè vị trí/kích thước UI về chuẩn OpeningInvestigation. Chỉ dùng khi cần reset — không chạy sau khi đã chỉnh tay.",
+                    "Áp layout dialogue từ JSON snapshot (OpeningInvestigation) + font/sprite chuẩn. Chỉ dùng khi cần reset — không chạy sau khi đã chỉnh tay.",
                     "Reset layout",
                     "Cancel"))
             {
@@ -83,6 +83,7 @@ namespace FracturedChorus.Editor
             }
 
             ApplyDialoguePanelLayout(dialoguePanel);
+            VnDialoguePanelLayoutSnapshotEditor.ApplyOpeningInvestigationLayout(dialoguePanel);
             ApplyTextCardLayout(runtime);
             ApplyChoicePanelLayout(canvas);
             ApplyCanvasSiblingOrder(runtime, canvas);
@@ -193,18 +194,13 @@ namespace FracturedChorus.Editor
                 return;
             }
 
-            Stretch(
-                dialoguePanel.GetComponent<RectTransform>(),
-                VnDialoguePanelLayout.DialoguePanelAnchorMin,
-                VnDialoguePanelLayout.DialoguePanelAnchorMax);
-
             var frame = dialoguePanel.transform.Find("DialogueFrame")?.GetComponent<Image>();
             if (frame != null)
             {
                 frame.gameObject.SetActive(true);
                 frame.sprite = LoadSprite(DialogueFramePath);
-                frame.type = Image.Type.Sliced;
-                frame.preserveAspect = false;
+                frame.type = Image.Type.Simple;
+                frame.preserveAspect = true;
                 frame.fillCenter = true;
                 frame.color = Color.white;
                 frame.raycastTarget = false;
@@ -215,14 +211,12 @@ namespace FracturedChorus.Editor
             var nameplate = dialoguePanel.transform.Find("Nameplate")?.GetComponent<Text>();
             if (nameplate != null)
             {
-                Stretch(nameplate.rectTransform, VnDialoguePanelLayout.NameplateAnchorMin, VnDialoguePanelLayout.NameplateAnchorMax);
                 VnUiFont.ApplyReadableNameplate(nameplate);
             }
 
             var body = dialoguePanel.transform.Find("DialogueBody")?.GetComponent<Text>();
             if (body != null)
             {
-                Stretch(body.rectTransform, VnDialoguePanelLayout.BodyAnchorMin, VnDialoguePanelLayout.BodyAnchorMax);
                 VnUiFont.ApplyReadableBody(body);
             }
         }
@@ -321,18 +315,26 @@ namespace FracturedChorus.Editor
         private static void EnsureBodyBacking(Transform dialoguePanel)
         {
             var existing = dialoguePanel.Find("DialogueBodyBacking");
+            var created = false;
             if (existing == null)
             {
                 var go = new GameObject("DialogueBodyBacking", typeof(RectTransform), typeof(Image));
                 go.transform.SetParent(dialoguePanel, false);
                 existing = go.transform;
+                created = true;
             }
 
             existing.SetAsFirstSibling();
             var image = existing.GetComponent<Image>() ?? existing.gameObject.AddComponent<Image>();
-            image.color = VnDialoguePanelLayout.BodyBackingColor;
             image.raycastTarget = false;
-            Stretch(existing.GetComponent<RectTransform>(), VnDialoguePanelLayout.BodyBackingAnchorMin, VnDialoguePanelLayout.BodyBackingAnchorMax);
+            if (created)
+            {
+                image.color = VnDialoguePanelLayout.BodyBackingColor;
+                Stretch(
+                    existing.GetComponent<RectTransform>(),
+                    VnDialoguePanelLayout.BodyBackingAnchorMin,
+                    VnDialoguePanelLayout.BodyBackingAnchorMax);
+            }
 
             var frame = dialoguePanel.Find("DialogueFrame");
             if (frame != null)

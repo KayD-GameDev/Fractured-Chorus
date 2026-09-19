@@ -13,6 +13,9 @@ namespace FracturedChorus.Narrative.Vn
         private const string OpeningPhase = "Late Night";
         private const string RenDate = "01/09";
         private const string RenPhase = "Night";
+        private const string EnrollmentDate = "02/09";
+        private const string EnrollmentMorning = "Morning";
+        private const string EnrollmentNoon = "Noon";
 
         public static void ApplyTo(VnScriptSO script)
         {
@@ -30,6 +33,28 @@ namespace FracturedChorus.Narrative.Vn
         {
             return new[]
             {
+                Card("LUMINA", 2.0f, VnBgIds.Black),
+                N("Morning in Lumina.\nA city that never walks out of time.",
+                    VnBgIds.LuminaCrossingDay),
+                N("Banners sell the same promise on every corner:\nmusic will make you whole."),
+                N("StellaWorks built the towers, the charts,\nand the device in every ear.",
+                    VnBgIds.StellaWorksHq),
+                N("If a song hits number one, the city hears it.\nThat is policy, not poetry."),
+                N("SyncPod SP-01. Clip on. Live in sync.\nBlue light: you are still yourself.",
+                    VnBgIds.SyncPodAdWall),
+                N("HIMA Music Academy —\nwhere the city forges its next voices.",
+                    VnBgIds.HimaCampusDay),
+                N("Talent enters.\nThe charts decide who leaves famous."),
+                N("Practice halls. Recital nights.\nA brighter tomorrow, printed on the walls.",
+                    VnBgIds.HimaRecitalHall),
+                Fade(0.8f),
+                N("Evening. Somewhere in the city, a screen stays on.",
+                    VnBgIds.LuminaApartmentTv),
+                N("Multiple SyncPod-related incidents.\nVictims found emptied — as if something drank them dry.",
+                    VnBgIds.NewsDrainCases),
+                N("Authorities urge calm. No confirmed cause.\nThe ticker keeps moving."),
+                Fade(1.0f),
+
                 Card("LUMINA, 17 AUGUST 20XX", 2.2f, VnBgIds.Black),
                 N("Under the lights of Astra Arena,\nLUXE holds the city in one chorus.",
                     VnBgIds.LuxeConcert, VnAudioIds.EternalSpark),
@@ -113,11 +138,54 @@ namespace FracturedChorus.Narrative.Vn
                 N("Bag on his shoulder. Early-enrollment papers for HIMA.\nLight rain still falling."),
 
                 Card("September 1 — Ren Takahashi arrives in Lumina.", 2.0f),
+                Fade(1.0f),
+                Card("THE NEXT MORNING", 2.0f, VnBgIds.Black),
+                N("Sun cuts across a still-unpacked room.\nEnrollment papers on the desk. Uniform on the hook.",
+                    VnBgIds.HimaDormMorning,
+                    dateHudDate: EnrollmentDate, dateHudPhase: EnrollmentMorning),
+                N("Ren stretches. The city is already loud through the glass."),
+                N("School kit. Waveform tie. SyncPod on the ear.\nThe mirror does not argue.",
+                    VnBgIds.CgRenMirrorUniform),
+                L(VnSpeakerIds.Ren, "…Alright. HIMA.", "neutral"),
+                N("The morning train hangs over the bay.\nEveryone wears the same blue light.",
+                    VnBgIds.LuminaTrainMorning),
+                N("HIMA Music Academy.\nThe banners already know his name as a category: newcomer.",
+                    VnBgIds.HimaCampusDay),
+                N("Glass corridor. Class 3-2.\nHe turns the corner too fast.",
+                    VnBgIds.HimaHallwayDay),
+                N("Impact.", VnBgIds.CgHallwayBump),
+                L(VnSpeakerIds.Ren, "—!", "startled"),
+                L(VnSpeakerIds.Charlotte, "Hey— watch it!", "startled"),
+                N("Two SyncPods hit the stone. Blue LEDs still pulsing.",
+                    VnBgIds.CgSyncpodsFloor),
+                N("Charlotte picks his up first.\nThe display is still playing.",
+                    VnBgIds.CgIndiePlayerBreath),
+                L(VnSpeakerIds.Charlotte, "Breath of the World…?\nThat isn't on the indie boards.", "curious"),
+                L(VnSpeakerIds.Ren, "It's mine.", "neutral"),
+                L(VnSpeakerIds.Charlotte, "…Yours.", "curious"),
+                N("They don't have time to finish it.\nHomeroom is already filling.",
+                    VnBgIds.HimaClassroomDay),
+                L(VnSpeakerIds.Ren, "You're in this class too.", "curious"),
+                L(VnSpeakerIds.Charlotte, "Don't make it weird.", "neutral"),
+                Fade(0.8f),
+                Card("OPENING CEREMONY", 2.0f, VnBgIds.Black),
+                N("Noon. The hall fills.\nThe principal talks. The city listens.",
+                    VnBgIds.HimaCeremonyHall, VnAudioIds.EternalSpark,
+                    dateHudDate: EnrollmentDate, dateHudPhase: EnrollmentNoon),
+                N("Then the song in every ear skips — not to silence.\nTo a version that should not exist.",
+                    VnBgIds.HimaCeremonyDesync, bgmPitch: EarPainPitch),
+                L(VnSpeakerIds.Ren, "That's Eternal Spark. It isn't clean.", "startled"),
+                L(VnSpeakerIds.Charlotte, "You hear the undertone too.", "grim"),
+                N("They refuse the pull. The system does not.\nDesync flagged. Cadence opens.",
+                    VnBgIds.CadenceFracturePull, VnAudioIds.StopBgm),
 
                 End(
                     StoryFlagIds.LuminaCaseOpen,
                     StoryFlagIds.OpeningInvestigationDone,
-                    StoryFlagIds.RenArrivedHima)
+                    StoryFlagIds.RenArrivedHima,
+                    StoryFlagIds.OpeningCeremony,
+                    StoryFlagIds.FirstResonanceDive,
+                    StoryFlagIds.CadenceBreach)
             };
         }
 

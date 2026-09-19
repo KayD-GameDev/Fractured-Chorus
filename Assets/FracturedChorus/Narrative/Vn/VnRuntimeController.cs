@@ -301,7 +301,12 @@ namespace FracturedChorus.Narrative.Vn
         {
             return bgId == VnBgIds.Black
                 || bgId == VnBgIds.LuxeConcert
-                || bgId == VnBgIds.LuminaSquareNight;
+                || bgId == VnBgIds.LuminaApartmentTv
+                || bgId == VnBgIds.NewsDrainCases
+                || bgId == VnBgIds.LuminaSquareNight
+                || bgId == VnBgIds.HimaCeremonyDesync
+                || bgId == VnBgIds.CadenceFracturePull
+                || bgId == VnBgIds.CgHallwayBump;
         }
 
         private IEnumerator PlayBeatWithBgCrossfade(VnBeat beat)
@@ -825,7 +830,26 @@ namespace FracturedChorus.Narrative.Vn
                 return;
             }
 
-            if (bgId == VnBgIds.Black || bgId == VnBgIds.LuxeConcert)
+            if (bgId == VnBgIds.Black
+                || bgId == VnBgIds.LuxeConcert
+                || bgId == VnBgIds.LuminaCrossingDay
+                || bgId == VnBgIds.StellaWorksHq
+                || bgId == VnBgIds.SyncPodAdWall
+                || bgId == VnBgIds.HimaCampusDay
+                || bgId == VnBgIds.HimaRecitalHall
+                || bgId == VnBgIds.LuminaApartmentTv
+                || bgId == VnBgIds.NewsDrainCases
+                || bgId == VnBgIds.HimaDormMorning
+                || bgId == VnBgIds.CgRenMirrorUniform
+                || bgId == VnBgIds.LuminaTrainMorning
+                || bgId == VnBgIds.HimaHallwayDay
+                || bgId == VnBgIds.CgHallwayBump
+                || bgId == VnBgIds.CgSyncpodsFloor
+                || bgId == VnBgIds.CgIndiePlayerBreath
+                || bgId == VnBgIds.HimaClassroomDay
+                || bgId == VnBgIds.HimaCeremonyHall
+                || bgId == VnBgIds.HimaCeremonyDesync
+                || bgId == VnBgIds.CadenceFracturePull)
             {
                 audioPlayer?.StopAmbience();
             }

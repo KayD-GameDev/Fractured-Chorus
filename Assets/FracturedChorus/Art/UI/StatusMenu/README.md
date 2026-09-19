@@ -27,8 +27,8 @@
 
 | File | Use |
 |------|-----|
-| `statusmenu_prompt_confirm.png` | Confirm |
-| `statusmenu_prompt_close.png` | Close |
+| `statusmenu_prompt_confirm.png` | Mouse left-click — Confirm |
+| `statusmenu_prompt_close.png` | ESC — Back |
 
 ## Wire vào scene
 

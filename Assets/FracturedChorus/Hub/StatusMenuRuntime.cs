@@ -1,11 +1,15 @@
+using FracturedChorus.Combat.Bootstrap;
 using FracturedChorus.Hub.CharacterBuild;
 using FracturedChorus.Menu;
 using FracturedChorus.Meta;
 using FracturedChorus.Narrative;
 using FracturedChorus.Narrative.Vn;
+using FracturedChorus.RunMap;
+using FracturedChorus.Tutorial;
 using FracturedChorus.UI;
 using FracturedChorus.UI.Loading;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace FracturedChorus.Hub
 {
@@ -65,12 +69,41 @@ namespace FracturedChorus.Hub
         }
 
         /// <summary>Menu dự phòng sống qua scene, nên phải tự đóng khi đổi scene kẻo nó nằm đè cảnh mới.</summary>
-        private void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
-            if (_fallbackMenu != null && _fallbackMenu.IsOpen)
+            CombatInputSetup.EnsureEventSystem();
+            TutorialDirector.HideOverlay();
+            if (!LoadingScreenController.IsBusy)
             {
-                _fallbackMenu.Hide();
+                LoadingScreenController.HideCoverNow();
             }
+
+            _fallbackMenu?.Hide();
+            if (scene.name == RunMapSceneCatalog.MainMenuStartGame)
+            {
+                TitleScreenUiGuard.SuppressStrayResonanceDiveButtons();
+                ClearFallbackMenu();
+                return;
+            }
+
+            if (scene.name == RunMapSceneCatalog.CampusHub)
+            {
+                ClearFallbackMenu();
+                StartCoroutine(FulfillCampusStatusMenuReturnNextFrame());
+            }
+        }
+
+        private System.Collections.IEnumerator FulfillCampusStatusMenuReturnNextFrame()
+        {
+            yield return null;
+            if (!HubNavigationEscContext.HasPendingReopenAfterRunMapEsc
+                && !TownMapView.OpenStatusMenuOnNextShow)
+            {
+                yield break;
+            }
+
+            var townMap = UnityEngine.Object.FindFirstObjectByType<TownMapView>();
+            townMap?.FulfillPendingStatusMenuReturn(GameMetaSession.Current);
         }
 
         private void Update()
@@ -82,9 +115,45 @@ namespace FracturedChorus.Hub
 
             if (IsCharacterBuildActive())
             {
+                return;
+            }
+
+            if (IsBondsMenuActive())
+            {
                 if (UiEscapeGate.TryConsumeBackground())
                 {
-                    CharacterBuildMenuUI.ReturnToCampusHub(openStatusMenu: true);
+                    var bonds = UnityEngine.Object.FindFirstObjectByType<BondsMenuUI>();
+                    if (bonds != null && bonds.TryHandleCancelInput())
+                    {
+                        return;
+                    }
+
+                    BondsMenuUI.ReturnToCampusHub();
+                }
+
+                return;
+            }
+
+            if (IsRunMapActive())
+            {
+                if (UiEscapeGate.TryConsumeBackground())
+                {
+                    _fallbackMenu?.Hide();
+                    var cadence = CadenceMapController.Instance;
+                    if (cadence != null)
+                    {
+                        if (cadence.TryHandleCancelInput())
+                        {
+                            return;
+                        }
+
+                        if (cadence.IsInsideVaultRun())
+                        {
+                            return;
+                        }
+                    }
+
+                    RunMapHubBridge.ReturnFromRunMapNavigation();
                 }
 
                 return;
@@ -102,6 +171,11 @@ namespace FracturedChorus.Hub
             {
                 if (UiEscapeGate.TryConsumeBackground())
                 {
+                    if (menu.TryNavigateBack())
+                    {
+                        return;
+                    }
+
                     menu.Hide();
                 }
 
@@ -179,7 +253,7 @@ namespace FracturedChorus.Hub
         /// <summary>Những ngữ cảnh mà ESC đã có nghĩa khác, mở status menu vào sẽ giẫm chân.</summary>
         private static bool IsSuppressed()
         {
-            if (UiEscapeGate.IsBlocked || LoadingScreenController.IsBusy || IsCharacterBuildActive())
+            if (UiEscapeGate.IsBlocked || LoadingScreenController.IsBusy || IsCharacterBuildActive() || IsBondsMenuActive())
             {
                 return true;
             }
@@ -209,10 +283,37 @@ namespace FracturedChorus.Hub
 
         private static bool IsCharacterBuildActive()
         {
-            var sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+            var sceneName = SceneManager.GetActiveScene().name;
             return sceneName == CampusBgmPlayer.CharacterBuildScene
-                || sceneName == CampusBgmPlayer.CharacterBuildSandboxScene
                 || FindAnyObjectByType<CharacterBuildMenuUI>() != null;
+        }
+
+        private static bool IsBondsMenuActive()
+        {
+            var sceneName = SceneManager.GetActiveScene().name;
+            return sceneName == CampusBgmPlayer.BondsScene
+                || sceneName == RunMapSceneCatalog.Bonds
+                || FindAnyObjectByType<BondsMenuUI>() != null;
+        }
+
+        private static bool IsRunMapActive()
+        {
+            return SceneManager.GetActiveScene().name == RunMapSceneCatalog.RunMapPrototype;
+        }
+
+        private void ClearFallbackMenu()
+        {
+            if (_fallbackMenu == null)
+            {
+                return;
+            }
+
+            var go = _fallbackMenu.gameObject;
+            _fallbackMenu = null;
+            if (go != null)
+            {
+                Destroy(go);
+            }
         }
     }
 }

@@ -1,0 +1,467 @@
+[
+  {
+    "file": "01_Header_Bonds.png",
+    "guid": "7c8ddcf0e0ce9050dcc10d168d61d66c",
+    "srcSize": [
+      2172,
+      724
+    ],
+    "outSize": [
+      2049,
+      601
+    ],
+    "opaqueRatio": 0.5119,
+    "blocked": false,
+    "ms": 316
+  },
+  {
+    "file": "02_Menu_Normal.png",
+    "guid": "f5e3112d2d11179fbadc7a711a632b94",
+    "srcSize": [
+      2172,
+      724
+    ],
+    "outSize": [
+      2069,
+      638
+    ],
+    "opaqueRatio": 0.4101,
+    "blocked": false,
+    "ms": 266
+  },
+  {
+    "file": "03_Menu_Selected.png",
+    "guid": "8e2b1a39addcffaed01343437f5306a7",
+    "srcSize": [
+      2172,
+      724
+    ],
+    "outSize": [
+      2133,
+      587
+    ],
+    "opaqueRatio": 0.4591,
+    "blocked": false,
+    "ms": 321
+  },
+  {
+    "file": "04_Panel_SocialStats.png",
+    "guid": "83f98ca6e3de4e9d3db1d7e78a1a0618",
+    "srcSize": [
+      1536,
+      1024
+    ],
+    "outSize": [
+      1442,
+      865
+    ],
+    "opaqueRatio": 0.7264,
+    "blocked": false,
+    "ms": 221
+  },
+  {
+    "file": "05_Panel_Episodes.png",
+    "guid": "b8e2c2ec38ac19593d12ff57f980021e",
+    "srcSize": [
+      1024,
+      1536
+    ],
+    "outSize": [
+      987,
+      1403
+    ],
+    "opaqueRatio": 0.7616,
+    "blocked": false,
+    "ms": 224
+  },
+  {
+    "file": "06_Row_Episode_Normal.png",
+    "guid": "de131ebaf3d61102ad49e88b30a4ca0d",
+    "srcSize": [
+      2172,
+      724
+    ],
+    "outSize": [
+      2092,
+      667
+    ],
+    "opaqueRatio": 0.4744,
+    "blocked": false,
+    "ms": 290
+  },
+  {
+    "file": "07_Row_Episode_Selected.png",
+    "guid": "5f2f305c51cd742457ce69105382d531",
+    "srcSize": [
+      2172,
+      724
+    ],
+    "outSize": [
+      2082,
+      577
+    ],
+    "opaqueRatio": 0.3962,
+    "blocked": false,
+    "ms": 290
+  },
+  {
+    "file": "08_Card_Character_Normal.png",
+    "guid": "69eab0237bbe6831d12f225776964170",
+    "srcSize": [
+      1254,
+      1254
+    ],
+    "outSize": [
+      1164,
+      1084
+    ],
+    "opaqueRatio": 0.4333,
+    "blocked": false,
+    "ms": 302
+  },
+  {
+    "file": "09_Card_Character_Selected.png",
+    "guid": "e80e07b265bcf16810f278af0b5d2fe8",
+    "srcSize": [
+      1254,
+      1254
+    ],
+    "outSize": [
+      1216,
+      1049
+    ],
+    "opaqueRatio": 0.5876,
+    "blocked": false,
+    "ms": 352
+  },
+  {
+    "file": "10_Panel_CharacterInfo.png",
+    "guid": "901de54f6f4ef0bbfd0ce8ee97473810",
+    "srcSize": [
+      2172,
+      724
+    ],
+    "outSize": [
+      2118,
+      628
+    ],
+    "opaqueRatio": 0.5946,
+    "blocked": false,
+    "ms": 252
+  },
+  {
+    "file": "11_Frame_Promo.png",
+    "guid": "3d2cb6841e9d2abcbfe04d4478bfdf74",
+    "srcSize": [
+      1672,
+      941
+    ],
+    "outSize": [
+      1627,
+      853
+    ],
+    "opaqueRatio": 0.1508,
+    "blocked": false,
+    "ms": 103
+  },
+  {
+    "file": "12_Panel_Footer.png",
+    "guid": "9e6817742c980bbc9d960523986f6e63",
+    "srcSize": [
+      2172,
+      724
+    ],
+    "outSize": [
+      2004,
+      584
+    ],
+    "opaqueRatio": 0.4837,
+    "blocked": false,
+    "ms": 299
+  },
+  {
+    "file": "13_Icon_Bonds.png",
+    "guid": "55bd2474fdd1f603684b2e31766423b0",
+    "srcSize": [
+      1254,
+      1254
+    ],
+    "outSize": [
+      873,
+      668
+    ],
+    "opaqueRatio": 0.2163,
+    "blocked": false,
+    "ms": 466
+  },
+  {
+    "file": "14_Icon_SocialStats.png",
+    "guid": "354b2bb9dbb693ad14a4611f92f4f9f6",
+    "srcSize": [
+      1254,
+      1254
+    ],
+    "outSize": [
+      973,
+      975
+    ],
+    "opaqueRatio": 0.0892,
+    "blocked": false,
+    "ms": 444
+  },
+  {
+    "file": "15_Icon_Link.png",
+    "guid": "a962038f464099e78f1a326c40454b41",
+    "srcSize": [
+      1254,
+      1254
+    ],
+    "outSize": [
+      1250,
+      1186
+    ],
+    "opaqueRatio": 0.1139,
+    "blocked": false,
+    "ms": 443
+  },
+  {
+    "file": "16_Icon_Conversations.png",
+    "guid": "e80c87bb02bcdaac553ecc7ed2f3538c",
+    "srcSize": [
+      1254,
+      1254
+    ],
+    "outSize": [
+      694,
+      701
+    ],
+    "opaqueRatio": 0.1981,
+    "blocked": false,
+    "ms": 481
+  },
+  {
+    "file": "17_Icon_Memories.png",
+    "guid": "f3909969e35a3384e66ee8b9d77bb0c7",
+    "srcSize": [
+      1254,
+      1254
+    ],
+    "outSize": [
+      909,
+      1207
+    ],
+    "opaqueRatio": 0.2933,
+    "blocked": false,
+    "ms": 466
+  },
+  {
+    "file": "18_Icon_Gallery.png",
+    "guid": "10bb2b9fc0614ab88b945229eb8d1369",
+    "srcSize": [
+      1254,
+      1254
+    ],
+    "outSize": [
+      1122,
+      908
+    ],
+    "opaqueRatio": 0.3105,
+    "blocked": false,
+    "ms": 511
+  },
+  {
+    "file": "19_Icon_Pulse.png",
+    "guid": "dd9f465f9f9b4a36a35d9aad3e47ebde",
+    "srcSize": [
+      1254,
+      1254
+    ],
+    "outSize": [
+      541,
+      454
+    ],
+    "opaqueRatio": 0.026,
+    "blocked": false,
+    "ms": 489
+  },
+  {
+    "file": "20_Icon_Cadence.png",
+    "guid": "3833709189761caae52e90e2f654ffbb",
+    "srcSize": [
+      1254,
+      1254
+    ],
+    "outSize": [
+      804,
+      726
+    ],
+    "opaqueRatio": 0.23,
+    "blocked": false,
+    "ms": 487
+  },
+  {
+    "file": "21_Icon_Harmony.png",
+    "guid": "52633a8ceec977828fffec47174868d5",
+    "srcSize": [
+      1254,
+      1254
+    ],
+    "outSize": [
+      1006,
+      925
+    ],
+    "opaqueRatio": 0.1683,
+    "blocked": false,
+    "ms": 490
+  },
+  {
+    "file": "22_Icon_Resonance.png",
+    "guid": "8c5e8ca431df3003b31875d58ec75d4a",
+    "srcSize": [
+      1254,
+      1254
+    ],
+    "outSize": [
+      1130,
+      1130
+    ],
+    "opaqueRatio": 0.1555,
+    "blocked": false,
+    "ms": 342
+  },
+  {
+    "file": "23_Icon_Rhythm.png",
+    "guid": "144a7ef3d073c378710be0f7e2f1155d",
+    "srcSize": [
+      1254,
+      1254
+    ],
+    "outSize": [
+      566,
+      692
+    ],
+    "opaqueRatio": 0.0596,
+    "blocked": false,
+    "ms": 466
+  },
+  {
+    "file": "24_Icon_Lock.png",
+    "guid": "65586af2206956775fc6395ace370607",
+    "srcSize": [
+      1254,
+      1254
+    ],
+    "outSize": [
+      1109,
+      913
+    ],
+    "opaqueRatio": 0.1428,
+    "blocked": false,
+    "ms": 462
+  },
+  {
+    "file": "25_Icon_Play.png",
+    "guid": "47e5e1a13847550f22ce29b0047ae814",
+    "srcSize": [
+      1254,
+      1254
+    ],
+    "outSize": [
+      748,
+      748
+    ],
+    "opaqueRatio": 0.2556,
+    "blocked": false,
+    "ms": 504
+  },
+  {
+    "file": "26_Icon_Arrow.png",
+    "guid": "b72ef556b0bd7d20b7a5c7228c8f046f",
+    "srcSize": [
+      1254,
+      1254
+    ],
+    "outSize": [
+      569,
+      735
+    ],
+    "opaqueRatio": 0.0224,
+    "blocked": false,
+    "ms": 419
+  },
+  {
+    "file": "27_Icon_Sun.png",
+    "guid": "8cfe69b2f11e08f4924c76990f77edfa",
+    "srcSize": [
+      1254,
+      1254
+    ],
+    "outSize": [
+      998,
+      984
+    ],
+    "opaqueRatio": 0.1408,
+    "blocked": false,
+    "ms": 462
+  },
+  {
+    "file": "28_Icon_Mouse.png",
+    "guid": "e75f12c669f8247fc737ca2b6252d1dd",
+    "srcSize": [
+      1254,
+      1254
+    ],
+    "outSize": [
+      1105,
+      717
+    ],
+    "opaqueRatio": 0.1449,
+    "blocked": false,
+    "ms": 405
+  },
+  {
+    "file": "29_Icon_Back.png",
+    "guid": "ca70e467b2f185616bf3944774f41f6e",
+    "srcSize": [
+      1254,
+      1254
+    ],
+    "outSize": [
+      1180,
+      1120
+    ],
+    "opaqueRatio": 0.397,
+    "blocked": false,
+    "ms": 287
+  },
+  {
+    "file": "30_Decor_Spark.png",
+    "guid": "598df4563fb81a16b77c6cc645a4c963",
+    "srcSize": [
+      1254,
+      1254
+    ],
+    "outSize": [
+      1235,
+      1202
+    ],
+    "opaqueRatio": 0.095,
+    "blocked": false,
+    "ms": 332
+  },
+  {
+    "file": "31_Decor_Divider.png",
+    "guid": "5c157100161e7d4cf7de47e8daca998d",
+    "srcSize": [
+      2172,
+      724
+    ],
+    "outSize": [
+      1928,
+      607
+    ],
+    "opaqueRatio": 0.0254,
+    "blocked": false,
+    "ms": 370
+  }
+]

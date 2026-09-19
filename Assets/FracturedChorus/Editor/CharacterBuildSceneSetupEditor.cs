@@ -18,11 +18,9 @@ namespace FracturedChorus.Editor
 {
     public static class CharacterBuildSceneSetupEditor
     {
-        public const string SandboxScenePath =
-            "Assets/FracturedChorus/Scenes/CharacterBuildLayoutSandbox.unity";
         public const string ProductionScenePath =
             "Assets/FracturedChorus/Scenes/CharacterBuild.unity";
-        private const string ScenePath = SandboxScenePath;
+        private const string ScenePath = ProductionScenePath;
         private const string KitDir = "Assets/FracturedChorus/Art/UI/StatMenu/Kit/";
         private const string IconDir = "Assets/FracturedChorus/Art/UI/StatMenu/Icons/";
         private const string CrystalDir = "Assets/FracturedChorus/Art/UI/StatMenu/CrystalKit/";

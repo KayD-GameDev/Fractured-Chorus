@@ -9,8 +9,7 @@ namespace FracturedChorus.Hub
         public const string ClipResourcePath = "Audio/Music/Neon_Golden_Hour";
         public const float Volume = 0.65f;
         public const string CharacterBuildScene = "CharacterBuild";
-        public const string CharacterBuildSandboxScene = "CharacterBuildLayoutSandbox";
-        public const string BondsSandboxScene = "BondsLayoutSandbox";
+        public const string BondsScene = "Bonds";
 
         private static CampusBgmPlayer _instance;
         private AudioSource _source;
@@ -25,8 +24,7 @@ namespace FracturedChorus.Hub
         {
             return sceneName == RunMapSceneCatalog.CampusHub
                 || sceneName == CharacterBuildScene
-                || sceneName == CharacterBuildSandboxScene
-                || sceneName == BondsSandboxScene;
+                || sceneName == BondsScene;
         }
 
         private static CampusBgmPlayer Ensure()

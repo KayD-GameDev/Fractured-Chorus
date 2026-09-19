@@ -144,7 +144,7 @@ function addMask(text, panelGoId, maskId, afterCompId) {
 }
 
 const prodPath = "D:/Fractured-Chorus1/Assets/FracturedChorus/Scenes/CharacterBuild.unity";
-const sandPath = "D:/Fractured-Chorus1/Assets/FracturedChorus/Scenes/CharacterBuildLayoutSandbox.unity";
+const sandPath = "D:/Fractured-Chorus1/Assets/FracturedChorus/Scenes/CharacterBuild.unity";
 
 let prod = fs.readFileSync(prodPath, "utf8");
 prod = convertPortrait(prod, {

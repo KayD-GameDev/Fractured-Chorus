@@ -1,5 +1,5 @@
 {
-  "scene": "Assets/FracturedChorus/Scenes/CharacterBuildLayoutSandbox.unity",
+  "scene": "Assets/FracturedChorus/Scenes/CharacterBuild.unity",
   "savedAtUtc": "2026-09-08T09:11:28.568Z",
   "note": "Reference backup only. Layout SoT is the scene file — editor menus must not re-apply these values.",
   "buildCanvasChildren": [

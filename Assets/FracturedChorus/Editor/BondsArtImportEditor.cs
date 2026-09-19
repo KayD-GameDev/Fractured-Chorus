@@ -54,6 +54,34 @@ namespace FracturedChorus.Editor
                 Configure(path, 0, 0, 0, 0);
             }
 
+            var packDir = ToFullPath("Assets/FracturedChorus/Art/UI/Bonds/Pack");
+            if (Directory.Exists(packDir))
+            {
+                foreach (var file in Directory.GetFiles(packDir, "*.png"))
+                {
+                    Configure(
+                        "Assets/FracturedChorus/Art/UI/Bonds/Pack/" + Path.GetFileName(file),
+                        0,
+                        0,
+                        0,
+                        0);
+                }
+            }
+
+            var promoDir = ToFullPath("Assets/FracturedChorus/Art/UI/Bonds/Promo");
+            if (Directory.Exists(promoDir))
+            {
+                foreach (var file in Directory.GetFiles(promoDir, "*.jpg"))
+                {
+                    Configure(
+                        "Assets/FracturedChorus/Art/UI/Bonds/Promo/" + Path.GetFileName(file),
+                        0,
+                        0,
+                        0,
+                        0);
+                }
+            }
+
             Configure("Assets/FracturedChorus/Art/UI/Bonds/_ref/_ref_bonds_menu_v1.jpg", 0, 0, 0, 0, sprite: false);
             AssetDatabase.SaveAssets();
         }

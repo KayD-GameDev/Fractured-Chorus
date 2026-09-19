@@ -2,8 +2,9 @@ import fs from "fs";
 import path from "path";
 
 const ROOT = "D:/Fractured-Chorus1";
-const SCENE = `${ROOT}/Assets/FracturedChorus/Scenes/BondsLayoutSandbox.unity`;
+const SCENE = `${ROOT}/Assets/FracturedChorus/Scenes/Bonds.unity`;
 const OUT = `${ROOT}/Assets/FracturedChorus/Art/UI/Bonds/bonds_sandbox_layout_snapshot.json`;
+const BOOTSTRAP = `${ROOT}/Assets/FracturedChorus/Art/UI/Bonds/bonds_sandbox_bootstrap_layout.json`;
 const ROOT_NAME = "BondsCanvas";
 
 function parseScene(text) {
@@ -153,6 +154,18 @@ function walkNode(byId, guidMap, goId, pathStr, siblingIndex, nodes) {
   });
 }
 
+function toBootstrapNode(node) {
+  if (node.layoutKind !== "RectTransform") return null;
+  return {
+    path: node.path,
+    anchorMin: node.anchorMin,
+    anchorMax: node.anchorMax,
+    anchoredPosition: node.anchoredPosition,
+    sizeDelta: node.sizeDelta,
+    pivot: node.pivot,
+  };
+}
+
 const byId = parseScene(fs.readFileSync(SCENE, "utf8"));
 const guidMap = loadGuidMap();
 const rootGoId = findGoByName(byId, ROOT_NAME);
@@ -167,16 +180,27 @@ const rootChildren = rootTransform
 const nodes = [];
 walkNode(byId, guidMap, rootGoId, ROOT_NAME, 0, nodes);
 
+const savedAtUtc = new Date().toISOString();
+const snapshotDoc = {
+  scene: "Assets/FracturedChorus/Scenes/Bonds.unity",
+  savedAtUtc,
+  note: "Reference backup only. Layout SoT is Bonds.unity - do not re-apply these values from code.",
+  rootChildren,
+  nodes,
+};
+
 fs.mkdirSync(path.dirname(OUT), { recursive: true });
+fs.writeFileSync(OUT, JSON.stringify(snapshotDoc, null, 2) + "\n");
+
+const bootstrapNodes = nodes.map(toBootstrapNode).filter(Boolean);
 fs.writeFileSync(
-  OUT,
+  BOOTSTRAP,
   JSON.stringify(
     {
-      scene: "Assets/FracturedChorus/Scenes/BondsLayoutSandbox.unity",
-      savedAtUtc: new Date().toISOString(),
-      note: "Reference backup only. Layout SoT is BondsLayoutSandbox.unity - do not re-apply these values from code.",
-      rootChildren,
-      nodes,
+      scene: snapshotDoc.scene,
+      note: "Synced from bonds_sandbox_layout_snapshot.json. Layout SoT is the .unity scene after manual align.",
+      savedAtUtc,
+      nodes: bootstrapNodes,
     },
     null,
     2,
@@ -187,9 +211,11 @@ console.log(
   JSON.stringify(
     {
       nodes: nodes.length,
+      bootstrapNodes: bootstrapNodes.length,
       rootChildren,
       sample: nodes.find((node) => node.path === "BondsCanvas/CenterStats"),
       out: OUT.replace(`${ROOT}/`, ""),
+      bootstrap: BOOTSTRAP.replace(`${ROOT}/`, ""),
     },
     null,
     2,

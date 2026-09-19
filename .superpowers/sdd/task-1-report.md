@@ -1,66 +1,86 @@
-# Task 1 Report — LoadingProgress math
+# Task 1 Report — Presentation + episode catalog (TDD)
 
-## Status
+**Date:** 2026-09-11  
+**Branch:** `branch2`  
+**Status:** DONE_WITH_CONCERNS
 
-**DONE_WITH_CONCERNS** — Implementation and tests match the brief; EditMode tests were not executed from CLI.
+## Summary
 
-## Deliverables
+Implemented pure C# Bonds HUD presentation layer and link-episode catalog per task brief, with 8 NUnit EditMode tests. Committed only the 6 task files (3 `.cs` + 3 `.meta`).
 
-| File | Action |
-|------|--------|
-| `Assets/FracturedChorus/UI/Loading/LoadingProgress.cs` | Created |
-| `Assets/FracturedChorus/UI/Loading/LoadingProgress.cs.meta` | Created |
-| `Assets/FracturedChorus/Editor/LoadingProgressTests.cs` | Created |
-| `Assets/FracturedChorus/Editor/LoadingProgressTests.cs.meta` | Created |
+## Files Created
 
-## Implementation summary
+| File | Purpose |
+|------|---------|
+| `Assets/FracturedChorus/Editor/BondPresentationTests.cs` | 8 EditMode tests (exact copy from brief) |
+| `Assets/FracturedChorus/Hub/BondPresentation.cs` | Static copy/constants, roster order, display names, bios, quotes, portrait unlock |
+| `Assets/FracturedChorus/Hub/BondLinkEpisodeCatalog.cs` | `BondLinkEpisode` struct + 5-episode catalog + rank gate helper |
 
-`LoadingProgress` is a static helper in namespace `FracturedChorus.UI.Loading`:
+## TDD Steps
 
-- **Constants** (verbatim from brief): `UnityActivationCap=0.9f`, `FadeInSec=0.20f`, `FadeOutSec=0.25f`, `MinHoldSec=0.80f`, `SmoothTime=0.12f`, `ActivateFill=0.99f`, `PercentVisibleMin=0.02f`.
-- **`MapAsyncProgress(float)`** — returns `0` for non-positive input; otherwise `Clamp01(unityProgress / UnityActivationCap)`.
-- **`CanActivate(float displayedFill, float holdElapsedSec)`** — true when `displayedFill >= ActivateFill` and `holdElapsedSec >= MinHoldSec`.
+### Step 1 — Failing tests written
 
-## Tests (TDD)
+`BondPresentationTests.cs` added with all 8 tests from brief:
+- `RosterOrder_MatchesHubBondList`
+- `VisibleChipCount_IsSixNpcsPlusReserved`
+- `DisplayNames_MatchLock`
+- `RoleLabel_OnlyRenIsPlayer`
+- `PortraitUnlock_Arc1VisibleFour`
+- `CharlotteCopy_MatchesMock`
+- `LinkEpisodes_FiveTitles_RankGates`
+- `EpisodeUnlock_UsesBondRank`
 
-Written first per brief (`LoadingProgressTests` in `FracturedChorus.Tests`):
+### Step 2 — Verify fail (type missing)
 
-1. `MapAsyncProgress_Zero_IsZero`
-2. `MapAsyncProgress_Cap_IsOne`
-3. `MapAsyncProgress_HalfCap_IsHalf`
-4. `MapAsyncProgress_AboveCap_ClampsToOne`
-5. `CanActivate_RequiresFillAndHold`
+**Not executed in CI.** Unity Editor 6000.4.0f1 (`ProjectVersion.txt`) not found on this machine (`Unity.exe` absent under `Program Files\Unity\Hub\Editor` and common alternate paths). Expected compile failure before implementation was not observed locally.
 
-Manual trace against expected values: all five cases pass by inspection.
+### Step 3 — Implementation
 
-## Test execution
+Added `BondPresentation.cs` and `BondLinkEpisodeCatalog.cs` verbatim from brief. Reuses existing `FracturedChorus.Meta.BondNpcIds` from `BondState.cs` — no duplication.
 
-- Checked `C:\Program Files\Unity\Hub\Editor` — directory exists but contains no installed Editor versions (no `Unity.exe` found).
-- `where Unity` — not on PATH.
-- **EditMode not run** — no Unity Editor available for batchmode from this environment.
+Key contracts:
+- `RosterOrder`: ren, charlotte, coda, astra, ryo, mei_lin
+- `VisibleChipCount`: 7
+- Portrait unlock: ren/charlotte/coda/astra only
+- 5 link episodes with ranks 1–5
+- `IsUnlocked(bondRank, requiredRank)`: `bondRank >= requiredRank && requiredRank >= 1`
 
-**Recommended verification:** Unity → Window → General → Test Runner → EditMode → run `LoadingProgressTests`.
+### Step 4 — Verify pass
 
-## Self-review
+**Not executed.** Unity Test Runner unavailable. Implementation matches brief exactly; all 8 assertions are satisfied by static data/logic review.
 
-- Signatures and constants match the brief exactly.
-- `FadeOutSec` is `0.25f` (float literal), not a string or seconds suffix.
-- No explanatory comments in new source.
-- Commit scoped to the four task files only (no `git add -A`).
-- Folder `Assets/FracturedChorus/UI/Loading/` has no `Loading.meta` in the commit; Unity may generate it on first import — add in a follow-up if the project requires folder meta for version control.
+### Step 5 — Commit
 
-## Commit
+```
+9da4f4c Add Bonds presentation constants for sandbox HUD copy.
+```
 
-- **SHA:** `0a1065a`
-- **Subject:** Add loading progress mapping for async scene activation.
-- **Files:** 4 changed, 84 insertions
+Staged/committed only:
+- `Assets/FracturedChorus/Hub/BondPresentation.cs` (+ `.meta`)
+- `Assets/FracturedChorus/Hub/BondLinkEpisodeCatalog.cs` (+ `.meta`)
+- `Assets/FracturedChorus/Editor/BondPresentationTests.cs` (+ `.meta`)
+
+Unrelated Hub/StatusMenu WIP left unstaged.
+
+## Test Summary
+
+| Expected | Actual |
+|----------|--------|
+| 8 EditMode tests PASS | Not run — Unity unavailable |
+| Pre-impl FAIL (missing types) | Not run |
+
+Manual verification: all test expectations align with implementation.
 
 ## Concerns
 
-1. EditMode tests unverified in Unity (no Editor install detected).
-2. `Loading.meta` for the new folder was not committed (not listed in brief); confirm after opening project in Unity.
+1. **Unity Test Runner not run** — user should run EditMode → `BondPresentationTests` once in Unity 6000.4.0f1 to confirm green.
+2. **`.meta` GUIDs hand-authored** — Unity may regenerate on first import; if GUIDs change, re-commit only if Unity rewrites them.
 
-## Not done
+## Not Done (out of scope for Task 1)
 
-- UI, scene load, art (out of scope for Task 1).
-- Push to remote (explicitly excluded).
+- uGUI sandbox scene wiring (later tasks)
+- RectTransform layout (epic constraint; no Rects in this task)
+
+## Next Steps (Task 2+)
+
+Run tests in Unity, then proceed to sandbox scene / HUD binding per epic plan.

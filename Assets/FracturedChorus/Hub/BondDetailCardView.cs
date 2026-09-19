@@ -26,6 +26,7 @@ namespace FracturedChorus.Hub
                 portrait.sprite = portraitSprite;
                 portrait.enabled = portraitSprite != null;
                 portrait.preserveAspect = true;
+                portrait.color = Color.white;
             }
 
             if (nameLabel != null)
@@ -59,9 +60,8 @@ namespace FracturedChorus.Hub
 
             if (expFill != null)
             {
-                expFill.type = Image.Type.Filled;
-                expFill.fillMethod = Image.FillMethod.Horizontal;
-                expFill.fillAmount = unlocked && threshold > 0 ? Mathf.Clamp01(exp / (float)threshold) : 0f;
+                var amount = unlocked && threshold > 0 ? Mathf.Clamp01(exp / (float)threshold) : 0f;
+                expFill.fillAmount = amount;
             }
 
             if (nextRankLabel != null)

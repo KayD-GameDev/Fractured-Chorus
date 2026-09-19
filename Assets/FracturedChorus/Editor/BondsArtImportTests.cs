@@ -32,8 +32,19 @@ namespace FracturedChorus.Tests
             "Assets/FracturedChorus/Art/UI/Bonds/Kit/ui_bonds_episode_row_v1.png",
             "Assets/FracturedChorus/Art/UI/Bonds/Kit/ui_bonds_bar_track_v1.png",
             "Assets/FracturedChorus/Art/UI/Bonds/Kit/ui_bonds_bar_fill_v1.png",
-            "Assets/FracturedChorus/Art/UI/Bonds/Decor/ui_bonds_promo_piano_v1.png",
-            "Assets/FracturedChorus/Art/UI/Bonds/Decor/ui_bonds_silhouette_locked_v1.png"
+            "Assets/FracturedChorus/Art/UI/Bonds/Decor/ui_bonds_silhouette_locked_v1.png",
+            "Assets/FracturedChorus/Art/UI/Bonds/Promo/bonds_episode_promo_placeholder_v1.jpg",
+            "Assets/FracturedChorus/Art/UI/Bonds/Cards/bond_card_story_hidden_v1.png",
+            "Assets/FracturedChorus/Art/UI/Bonds/Promo/charlotte_ep01_after_the_bell_v1.jpg",
+            "Assets/FracturedChorus/Art/UI/Bonds/Promo/charlotte_ep02_the_page_he_keeps_v1.jpg",
+            "Assets/FracturedChorus/Art/UI/Bonds/Promo/charlotte_ep03_faded_ink_v1.jpg",
+            "Assets/FracturedChorus/Art/UI/Bonds/Promo/charlotte_ep04_grandfathers_mark_v1.jpg",
+            "Assets/FracturedChorus/Art/UI/Bonds/Promo/charlotte_ep05_unfinished_rest_v1.jpg",
+            "Assets/FracturedChorus/Art/UI/Bonds/Promo/ren_ep01_the_file_he_gave_away_v1.jpg",
+            "Assets/FracturedChorus/Art/UI/Bonds/Promo/ren_ep02_demo_seven_v1.jpg",
+            "Assets/FracturedChorus/Art/UI/Bonds/Promo/ren_ep03_dead_handle_v1.jpg",
+            "Assets/FracturedChorus/Art/UI/Bonds/Promo/ren_ep04_no_name_no_face_v1.jpg",
+            "Assets/FracturedChorus/Art/UI/Bonds/Promo/ren_ep05_still_keeping_the_files_v1.jpg"
         };
 
         [Test]

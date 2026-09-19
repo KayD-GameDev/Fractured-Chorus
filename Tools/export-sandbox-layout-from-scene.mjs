@@ -1,7 +1,7 @@
 import fs from "fs";
 
 const scenePath =
-  "D:/Fractured-Chorus1/Assets/FracturedChorus/Scenes/CharacterBuildLayoutSandbox.unity";
+  "D:/Fractured-Chorus1/Assets/FracturedChorus/Scenes/CharacterBuild.unity";
 const outPath =
   "D:/Fractured-Chorus1/Assets/FracturedChorus/Art/UI/StatMenu/MockKit/sandbox_layout_snapshot.json";
 
@@ -176,10 +176,10 @@ for (const [i, childId] of canvasLayout.children.entries()) {
 }
 
 const snapshot = {
-  scene: "Assets/FracturedChorus/Scenes/CharacterBuildLayoutSandbox.unity",
+  scene: "Assets/FracturedChorus/Scenes/CharacterBuild.unity",
   savedAtUtc: new Date().toISOString(),
   note:
-    "Reference backup only. Layout SoT is CharacterBuildLayoutSandbox.unity — editor menus must not re-apply these values.",
+    "Reference backup only. Layout SoT is CharacterBuild.unity — editor menus must not re-apply these values.",
   buildCanvasChildren,
   nodes,
 };

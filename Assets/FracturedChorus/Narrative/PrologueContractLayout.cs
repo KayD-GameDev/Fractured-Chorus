@@ -5,12 +5,12 @@ namespace FracturedChorus.Narrative
     public static class PrologueContractLayout
     {
         public const string ContractSpritePath =
-            "Assets/FracturedChorus/Art/UI/Narrative/Contract_Document_Realistic_v2.png";
+            "Assets/FracturedChorus/Art/UI/Narrative/prologue_contract_bg_v1.jpg";
 
-        public static readonly Vector2 NameLineMin = new Vector2(0.355f, 0.205f);
-        public static readonly Vector2 NameLineMax = new Vector2(0.70f, 0.25f);
-        public static readonly Vector2 SignatureLineMin = new Vector2(0.29f, 0.125f);
-        public static readonly Vector2 SignatureLineMax = new Vector2(0.83f, 0.175f);
+        public static readonly Vector2 NameLineMin = new Vector2(0.42f, 0.212f);
+        public static readonly Vector2 NameLineMax = new Vector2(0.58f, 0.252f);
+        public static readonly Vector2 SignatureLineMin = new Vector2(0.38f, 0.198f);
+        public static readonly Vector2 SignatureLineMax = new Vector2(0.72f, 0.268f);
 
         public static void ApplyFieldRect(RectTransform rect, Vector2 min, Vector2 max)
         {

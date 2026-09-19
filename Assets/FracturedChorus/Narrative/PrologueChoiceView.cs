@@ -9,12 +9,8 @@ namespace FracturedChorus.Narrative
 {
     public class PrologueChoiceView : MonoBehaviour
     {
-        private const float RowMinX = 0.28f;
-        private const float RowMaxX = 0.72f;
-        private const float AgreeRowYMin = 0.3f;
-        private const float AgreeRowYMax = 0.41f;
-        private const float DisagreeRowYMin = 0.15f;
-        private const float DisagreeRowYMax = 0.26f;
+        private static readonly Color LabelOnLightButton = new Color(0.10f, 0.14f, 0.28f, 1f);
+        private static readonly Color LabelOnDarkButton = new Color(0.96f, 0.97f, 1f, 1f);
 
         [SerializeField] private CanvasGroup root;
         [SerializeField] private Text promptText;
@@ -22,6 +18,10 @@ namespace FracturedChorus.Narrative
         [SerializeField] private Text disagreeLabel;
         [SerializeField] private Image agreeHighlight;
         [SerializeField] private Image disagreeHighlight;
+        [SerializeField] private Sprite agreeNormalSprite;
+        [SerializeField] private Sprite agreeSelectedSprite;
+        [SerializeField] private Sprite disagreeNormalSprite;
+        [SerializeField] private Sprite disagreeSelectedSprite;
         [FormerlySerializedAs("agreeSelectedColor")]
         [SerializeField] private Color selectedColor;
         [FormerlySerializedAs("agreeIdleColor")]
@@ -78,6 +78,7 @@ namespace FracturedChorus.Narrative
 
             if (promptText != null)
             {
+                promptText.raycastTarget = false;
                 if (string.IsNullOrEmpty(prompt))
                 {
                     promptText.gameObject.SetActive(false);
@@ -91,11 +92,13 @@ namespace FracturedChorus.Narrative
 
             if (agreeLabel != null)
             {
+                agreeLabel.gameObject.SetActive(true);
                 agreeLabel.text = agreeText;
             }
 
             if (disagreeLabel != null)
             {
+                disagreeLabel.gameObject.SetActive(true);
                 disagreeLabel.text = disagreeText;
             }
 
@@ -105,8 +108,8 @@ namespace FracturedChorus.Narrative
             {
                 root.gameObject.SetActive(true);
                 root.alpha = 1f;
-                root.interactable = CanAcceptInput();
-                root.blocksRaycasts = CanAcceptInput();
+                root.interactable = true;
+                root.blocksRaycasts = true;
             }
         }
 
@@ -117,7 +120,7 @@ namespace FracturedChorus.Narrative
 
         public void HoverOption(int optionIndex)
         {
-            if (!_active || !CanAcceptInput())
+            if (!_active)
             {
                 return;
             }
@@ -135,7 +138,7 @@ namespace FracturedChorus.Narrative
 
         public void HoverExitOption(int optionIndex)
         {
-            if (!_active || !CanAcceptInput() || _hoverIndex != optionIndex)
+            if (!_active || _hoverIndex != optionIndex)
             {
                 return;
             }
@@ -240,53 +243,52 @@ namespace FracturedChorus.Narrative
 
             if (agreeLabel != null)
             {
-                agreeLabel.text = "I agree.";
+                agreeLabel.gameObject.SetActive(true);
+                agreeLabel.text = "I agree";
             }
 
             if (disagreeLabel != null)
             {
-                disagreeLabel.text = "I do not agree.";
+                disagreeLabel.gameObject.SetActive(true);
+                disagreeLabel.text = "I do not agree";
             }
 
             _selectedIndex = -1;
             _hoverIndex = -1;
+            _active = true;
             RefreshSelectionVisuals();
+
+            if (promptText != null)
+            {
+                promptText.raycastTarget = false;
+            }
 
             if (root != null)
             {
                 root.gameObject.SetActive(true);
                 root.alpha = 1f;
-                root.interactable = false;
-                root.blocksRaycasts = false;
+                root.interactable = true;
+                root.blocksRaycasts = true;
             }
-        }
-
-        public void ApplyChoiceLayout()
-        {
-            if (root == null)
-            {
-                return;
-            }
-
-            ApplyRowAnchors(root.transform.Find("AgreeRow"), AgreeRowYMin, AgreeRowYMax);
-            ApplyRowAnchors(root.transform.Find("DisagreeRow"), DisagreeRowYMin, DisagreeRowYMax);
         }
 
         private void RefreshSelectionVisuals()
         {
-            ApplyHighlight(agreeHighlight, ResolveHighlightState(0));
-            ApplyHighlight(disagreeHighlight, ResolveHighlightState(1));
+            ApplyHighlight(agreeHighlight, ResolveHighlightState(0), agreeNormalSprite, agreeSelectedSprite);
+            ApplyHighlight(disagreeHighlight, ResolveHighlightState(1), disagreeNormalSprite, disagreeSelectedSprite);
 
             if (agreeLabel != null)
             {
                 UiFontCatalog.Apply(agreeLabel, UiFontRole.Display);
-                agreeLabel.color = Color.white;
+                agreeLabel.raycastTarget = false;
+                agreeLabel.color = ContrastLabelColor(agreeHighlight, true);
             }
 
             if (disagreeLabel != null)
             {
-                UiFontCatalog.Apply(disagreeLabel, UiFontRole.DisplaySecondary);
-                disagreeLabel.color = Color.white;
+                UiFontCatalog.Apply(disagreeLabel, UiFontRole.Display);
+                disagreeLabel.raycastTarget = false;
+                disagreeLabel.color = ContrastLabelColor(disagreeHighlight, false);
             }
         }
 
@@ -305,10 +307,59 @@ namespace FracturedChorus.Narrative
             return HighlightState.Idle;
         }
 
-        private void ApplyHighlight(Image highlight, HighlightState state)
+        private static bool HasButtonArt(Sprite normal, Sprite selected)
+        {
+            return normal != null || selected != null;
+        }
+
+        private static Color ContrastLabelColor(Image highlight, bool lightButtonFallback)
+        {
+            var sprite = highlight != null ? highlight.sprite : null;
+            if (TryGetSpriteLuminance(sprite, out var luminance))
+            {
+                return luminance >= 0.5f ? LabelOnLightButton : LabelOnDarkButton;
+            }
+
+            return lightButtonFallback ? LabelOnLightButton : LabelOnDarkButton;
+        }
+
+        private static bool TryGetSpriteLuminance(Sprite sprite, out float luminance)
+        {
+            luminance = 0f;
+            if (sprite == null)
+            {
+                return false;
+            }
+
+            var texture = sprite.texture;
+            if (texture == null || !texture.isReadable)
+            {
+                return false;
+            }
+
+            var rect = sprite.textureRect;
+            var x = Mathf.Clamp(Mathf.RoundToInt(rect.x + rect.width * 0.5f), 0, texture.width - 1);
+            var y = Mathf.Clamp(Mathf.RoundToInt(rect.y + rect.height * 0.5f), 0, texture.height - 1);
+            var color = texture.GetPixel(x, y);
+            luminance = (0.2126f * color.r) + (0.7152f * color.g) + (0.0722f * color.b);
+            return true;
+        }
+
+        private void ApplyHighlight(Image highlight, HighlightState state, Sprite normal, Sprite selected)
         {
             if (highlight == null)
             {
+                return;
+            }
+
+            var lit = state != HighlightState.Idle;
+            if (HasButtonArt(normal, selected))
+            {
+                highlight.sprite = lit ? (selected != null ? selected : normal) : (normal != null ? normal : selected);
+                highlight.color = Color.white;
+                highlight.preserveAspect = true;
+                highlight.raycastTarget = false;
+                highlight.gameObject.SetActive(true);
                 return;
             }
 
@@ -325,27 +376,28 @@ namespace FracturedChorus.Narrative
         {
             EnsureOptionRow(agreeLabel, "AgreeRow");
             EnsureOptionRow(disagreeLabel, "DisagreeRow");
-            ApplyChoiceLayout();
             RebindRowHighlights();
 
             if (agreeLabel != null)
             {
                 agreeLabel.raycastTarget = false;
+                agreeLabel.gameObject.SetActive(true);
             }
 
             if (disagreeLabel != null)
             {
                 disagreeLabel.raycastTarget = false;
+                disagreeLabel.gameObject.SetActive(true);
             }
 
             if (agreeHighlight == null && agreeLabel != null)
             {
-                agreeHighlight = CreateHighlight("AgreeHighlight", GetRowTransform(agreeLabel.transform), -2f);
+                agreeHighlight = CreateHighlight("AgreeHighlight", GetRowTransform(agreeLabel.transform));
             }
 
             if (disagreeHighlight == null && disagreeLabel != null)
             {
-                disagreeHighlight = CreateHighlight("DisagreeHighlight", GetRowTransform(disagreeLabel.transform), 2f);
+                disagreeHighlight = CreateHighlight("DisagreeHighlight", GetRowTransform(disagreeLabel.transform));
             }
 
             if (agreeLabel != null)
@@ -433,22 +485,6 @@ namespace FracturedChorus.Narrative
             }
         }
 
-        private static void ApplyRowAnchors(Transform row, float yMin, float yMax)
-        {
-            if (row == null || row is not RectTransform rect)
-            {
-                return;
-            }
-
-            rect.anchorMin = new Vector2(RowMinX, yMin);
-            rect.anchorMax = new Vector2(RowMaxX, yMax);
-            rect.anchoredPosition = Vector2.zero;
-            rect.sizeDelta = Vector2.zero;
-            rect.offsetMin = Vector2.zero;
-            rect.offsetMax = Vector2.zero;
-            rect.localRotation = Quaternion.identity;
-        }
-
         private static Transform GetRowTransform(Transform labelTransform)
         {
             if (labelTransform == null)
@@ -468,7 +504,7 @@ namespace FracturedChorus.Narrative
             return labelTransform;
         }
 
-        private static Image CreateHighlight(string name, Transform row, float zRotation)
+        private static Image CreateHighlight(string name, Transform row)
         {
             if (row == null)
             {
@@ -489,7 +525,7 @@ namespace FracturedChorus.Narrative
             rect.anchorMax = Vector2.one;
             rect.offsetMin = new Vector2(8f, 6f);
             rect.offsetMax = new Vector2(-8f, -6f);
-            rect.localRotation = Quaternion.Euler(0f, 0f, zRotation);
+            rect.localRotation = Quaternion.identity;
             var image = go.GetComponent<Image>();
             image.raycastTarget = false;
             return image;
@@ -599,6 +635,7 @@ namespace FracturedChorus.Narrative
 
             NormalizeLegacyColors();
             EnsureChoiceUi();
+            RefreshSelectionVisuals();
         }
 #endif
     }

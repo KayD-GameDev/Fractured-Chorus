@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 
 const ROOT = "D:/Fractured-Chorus1";
-const SCENE_PATH = path.join(ROOT, "Assets/FracturedChorus/Scenes/BondsLayoutSandbox.unity");
+const SCENE_PATH = path.join(ROOT, "Assets/FracturedChorus/Scenes/Bonds.unity");
 const META_PATH = `${SCENE_PATH}.meta`;
 
 const GUIDS = {
@@ -18,6 +18,7 @@ const GUIDS = {
   button: "4e29b1a8efbd4b44bb3f3716e73f07ff",
   canvasScaler: "0cd44c1031e13a943bb63640046fad76",
   graphicRaycaster: "dc42784cf147c0c48a680349fa168899",
+  urpCamera: "a79441f348de89743a2939f4d699eac1",
   displayFont: "d4e5f6a7b8c94091a2b3c4d5e6f70891",
   bodyFont: "787fda44816c480a9cc3cadfdc29ce24",
   background: "a7c3e91f4b2d6840b1e5f809c3d47c11",
@@ -179,13 +180,13 @@ function addButton(node, targetGraphicId, interactable) {
   return id;
 }
 
-function addCanvas(node) {
+function addCanvas(node, cameraId) {
   const canvasId = allocId();
   const scalerId = allocId();
   const raycasterId = allocId();
   const menuId = allocId();
   node.components.push(
-    { kind: "canvas", id: canvasId },
+    { kind: "canvas", id: canvasId, cameraId },
     { kind: "canvasScaler", id: scalerId },
     { kind: "graphicRaycaster", id: raycasterId },
     { kind: "bondsMenuUi", id: menuId },
@@ -231,11 +232,14 @@ function addRadar(node) {
 function addCamera(node) {
   const cameraId = allocId();
   const listenerId = allocId();
+  const urpId = allocId();
+  node.position = { x: 0, y: 0, z: -10 };
   node.components.push(
     { kind: "camera", id: cameraId },
     { kind: "audioListener", id: listenerId },
+    { kind: "urpCamera", id: urpId },
   );
-  return { cameraId, listenerId };
+  return { cameraId, listenerId, urpId };
 }
 
 function addEventSystem(node) {
@@ -250,13 +254,13 @@ function addEventSystem(node) {
 
 function buildScene() {
   const mainCamera = createRootNode("Main Camera");
-  addCamera(mainCamera);
+  const { cameraId } = addCamera(mainCamera);
 
   const eventSystem = createRootNode("EventSystem");
   addEventSystem(eventSystem);
 
   const bondsCanvas = createUiNode("BondsCanvas", null, stretchDefaults());
-  addCanvas(bondsCanvas);
+  addCanvas(bondsCanvas, cameraId);
 
   addImage(createUiNode("Background", bondsCanvas, stretchDefaults()), GUIDS.background);
 
@@ -545,7 +549,14 @@ NavMeshSettings:
 }
 
 function renderScene() {
-  return `${yamlHeader()}${nodes.map(renderNode).join("")}`;
+  const roots = nodes.filter((node) => node.parentId === "0");
+  const sceneRoots = `--- !u!1660057539 &9223372036854775807
+SceneRoots:
+  m_ObjectHideFlags: 0
+  m_Roots:
+${roots.map((node) => `  - {fileID: ${node.transformId}}`).join("\n")}
+`;
+  return `${yamlHeader()}${nodes.map(renderNode).join("")}${sceneRoots}`;
 }
 
 function renderNode(node) {
@@ -584,7 +595,7 @@ Transform:
   m_GameObject: {fileID: ${node.goId}}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: ${node.position?.x ?? 0}, y: ${node.position?.y ?? 0}, z: ${node.position?.z ?? 0}}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: [${node.children.map((id) => `{fileID: ${id}}`).join(", ")}]
@@ -720,7 +731,7 @@ Canvas:
   m_Enabled: 1
   serializedVersion: 3
   m_RenderMode: 1
-  m_Camera: {fileID: 0}
+  m_Camera: {fileID: ${component.cameraId}}
   m_PlaneDistance: 100
   m_PixelPerfect: 0
   m_ReceivesEvents: 1
@@ -826,7 +837,7 @@ Camera:
   field of view: 60
   orthographic: 1
   orthographic size: 5
-  m_Depth: 0
+  m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -841,6 +852,40 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
+`;
+    case "urpCamera":
+      return monoHeader(node.goId, component.id, GUIDS.urpCamera, "Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalCameraData", true) + `  m_RenderShadows: 1
+  m_RequiresDepthTextureOption: 2
+  m_RequiresOpaqueTextureOption: 2
+  m_CameraType: 0
+  m_Cameras: []
+  m_RendererIndex: -1
+  m_VolumeLayerMask:
+    serializedVersion: 2
+    m_Bits: 1
+  m_VolumeTrigger: {fileID: 0}
+  m_VolumeFrameworkUpdateModeOption: 2
+  m_RenderPostProcessing: 0
+  m_Antialiasing: 0
+  m_AntialiasingQuality: 2
+  m_StopNaN: 0
+  m_Dithering: 0
+  m_ClearDepth: 1
+  m_AllowXRRendering: 1
+  m_AllowHDROutput: 1
+  m_UseScreenCoordOverride: 0
+  m_ScreenSizeOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_ScreenCoordScaleBias: {x: 0, y: 0, z: 0, w: 0}
+  m_RequiresDepthTexture: 0
+  m_RequiresColorTexture: 0
+  m_TaaSettings:
+    m_Quality: 3
+    m_FrameInfluence: 0.1
+    m_JitterScale: 1
+    m_MipBias: 0
+    m_VarianceClampScale: 0.9
+    m_ContrastAdaptiveSharpening: 0
+  m_Version: 2
 `;
     case "audioListener":
       return `--- !u!81 &${component.id}

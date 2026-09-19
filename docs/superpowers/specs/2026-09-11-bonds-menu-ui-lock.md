@@ -22,7 +22,7 @@
 | Left nav | `Social Stats` selected and enabled. `Link`, `Conversations`, `Memories`, `Gallery` exist and are muted/disabled. |
 | Radar | `SocialStatsRadarGraphic.SetRanks` reads from `SocialStatsState`. |
 | Nodes | `SocialStatsNodeView.Bind` with Task 2 stat icons. |
-| Roster | Order is `Ren, Charlotte, Coda, Astra, Ryo, MeiLin, reserved`. Default selection is `Charlotte`. First four portraits are unlocked. |
+| Roster | Order is `Ren, Charlotte, Coda, Astra, Ryo, MeiLin, reserved`. Default selection is `Charlotte`. Unlocked portraits: Ren, Charlotte, Coda. Astra, Ryo, Mei Lin show locked until story. |
 | Detail | Selected NPC bust plus bio, quote, `Rank n`, `{exp}/{threshold}`, and `NEXT RANK` hint. |
 | Link Episodes | Five rows. Unlock rule is `bond.Rank >= requiredRank`. Confirm on unlocked rows logs only in sandbox. |
 | Background | Reuse `Assets/FracturedChorus/Art/UI/StatusMenu/statusmenu_hima_city_bg_v1.jpg`. |

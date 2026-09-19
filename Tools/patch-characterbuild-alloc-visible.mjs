@@ -2,7 +2,7 @@ import fs from "fs";
 
 const scenes = [
   "D:/Fractured-Chorus1/Assets/FracturedChorus/Scenes/CharacterBuild.unity",
-  "D:/Fractured-Chorus1/Assets/FracturedChorus/Scenes/CharacterBuildLayoutSandbox.unity",
+  "D:/Fractured-Chorus1/Assets/FracturedChorus/Scenes/CharacterBuild.unity",
 ];
 
 function patchAllocControls(s) {

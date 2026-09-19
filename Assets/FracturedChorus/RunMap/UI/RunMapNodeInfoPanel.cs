@@ -25,6 +25,8 @@ namespace FracturedChorus.RunMap.UI
         private System.Action<MapNodeData> _onConfirm;
         private System.Action _onCancel;
 
+        public bool IsOpen => gameObject.activeSelf;
+
         public void Wire(
             RectTransform panel,
             Text title,

@@ -18,9 +18,10 @@ namespace FracturedChorus.Tests
 
         private static readonly string[] RuntimeBackgrounds =
         {
-            "Assets/FracturedChorus/Resources/UI/LoadingBg/loading_bg_01.png",
-            "Assets/FracturedChorus/Resources/UI/LoadingBg/loading_bg_02.png",
-            "Assets/FracturedChorus/Resources/UI/LoadingBg/loading_bg_03.png"
+            "Assets/FracturedChorus/Resources/UI/LoadingBg/loading_bg_01.jpg",
+            "Assets/FracturedChorus/Resources/UI/LoadingBg/loading_bg_02.jpg",
+            "Assets/FracturedChorus/Resources/UI/LoadingBg/loading_bg_03.jpg",
+            "Assets/FracturedChorus/Resources/UI/LoadingBg/loading_bg_04.jpg"
         };
 
         [Test]

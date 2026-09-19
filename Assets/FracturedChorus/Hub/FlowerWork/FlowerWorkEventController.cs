@@ -1,3 +1,4 @@
+using FracturedChorus.Hub;
 using FracturedChorus.Meta;
 using FracturedChorus.Narrative.Vn;
 using FracturedChorus.RunMap;
@@ -122,6 +123,12 @@ namespace FracturedChorus.Hub.FlowerWork
 
         private static void ReturnToHub()
         {
+            if (!HubNavigationEscContext.HasPending)
+            {
+                HubNavigationEscContext.SetReturnToTownMap();
+            }
+
+            HubNavigationEscContext.ApplyBeforeLoadCampusHub();
             if (!RunMapSceneLoader.LoadByName(RunMapSceneCatalog.CampusHub))
             {
                 Debug.LogError("[FlowerWork] Failed to return to CampusHub.");

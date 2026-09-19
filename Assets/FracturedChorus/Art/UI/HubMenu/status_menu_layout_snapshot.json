@@ -1,0 +1,4267 @@
+{
+  "scene": "Assets/FracturedChorus/Scenes/CampusHub.unity",
+  "savedAtUtc": "2026-09-11T18:25:21.889Z",
+  "note": "Reference backup only. Layout SoT is CampusHub.unity — do not re-apply these values from code.",
+  "statusMenuChildren": [
+    "Background",
+    "HubCornerInfoHud",
+    "DateChip",
+    "MenuList",
+    "SystemMenuList",
+    "DetailPanel",
+    "Tooltip",
+    "Prompts"
+  ],
+  "systemMenuListChildren": [
+    "BtnSave",
+    "BtnLoad",
+    "BtnConfig",
+    "BtnReturnToTitle"
+  ],
+  "includesHubConfigOverlay": true,
+  "nodes": [
+    {
+      "path": "StatusMenu",
+      "goFileId": "137282936",
+      "siblingIndex": 0,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 1,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "StatusMenu/Background",
+      "goFileId": "1921249756",
+      "siblingIndex": 0,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 1,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Resources/UI/StatusMenu/statusmenu_hima_city_bg_v1.jpg"
+    },
+    {
+      "path": "StatusMenu/HubCornerInfoHud",
+      "goFileId": "930030001",
+      "siblingIndex": 1,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 28,
+        "y": -20,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 392,
+        "y": 132,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      }
+    },
+    {
+      "path": "StatusMenu/HubCornerInfoHud/BgDark",
+      "goFileId": "930030010",
+      "siblingIndex": 0,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.52,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "StatusMenu/HubCornerInfoHud/BgLight",
+      "goFileId": "930030020",
+      "siblingIndex": 1,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.52,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 1,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "StatusMenu/HubCornerInfoHud/DecorLineV",
+      "goFileId": "930030030",
+      "siblingIndex": 2,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0.08,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0,
+        "y": 0.92,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 18,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 2,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "StatusMenu/HubCornerInfoHud/DecorLineH",
+      "goFileId": "930030040",
+      "siblingIndex": 3,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.04,
+        "y": 0.54,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.96,
+        "y": 0.54,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 2,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "StatusMenu/HubCornerInfoHud/DecorGlint",
+      "goFileId": "930030050",
+      "siblingIndex": 4,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0.54,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0,
+        "y": 0.54,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 14,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 12,
+        "y": 12,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "StatusMenu/HubCornerInfoHud/DateLabel",
+      "goFileId": "930030060",
+      "siblingIndex": 5,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.08,
+        "y": 0.58,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.52,
+        "y": 0.98,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "text": "12 / 09"
+    },
+    {
+      "path": "StatusMenu/HubCornerInfoHud/DayLabel",
+      "goFileId": "930030070",
+      "siblingIndex": 6,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.52,
+        "y": 0.58,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.72,
+        "y": 0.98,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "text": "Sat"
+    },
+    {
+      "path": "StatusMenu/HubCornerInfoHud/PhaseIcon",
+      "goFileId": "930030080",
+      "siblingIndex": 7,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.84,
+        "y": 0.62,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.98,
+        "y": 0.96,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Art/UI/TownMap/townmap_icon_sun.png"
+    },
+    {
+      "path": "StatusMenu/HubCornerInfoHud/LocationLabel",
+      "goFileId": "930030090",
+      "siblingIndex": 8,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.08,
+        "y": 0.22,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.92,
+        "y": 0.52,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "text": "HIMA CITY"
+    },
+    {
+      "path": "StatusMenu/HubCornerInfoHud/TaglineLabel",
+      "goFileId": "930030100",
+      "siblingIndex": 9,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.08,
+        "y": 0.02,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.92,
+        "y": 0.24,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "text": "Music Lives in You"
+    },
+    {
+      "path": "StatusMenu/DateChip",
+      "goFileId": "100021601",
+      "siblingIndex": 2,
+      "activeSelf": false,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.02,
+        "y": 0.9,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.28,
+        "y": 0.98,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "text": "\"12/09  \\xB7  Day\""
+    },
+    {
+      "path": "StatusMenu/MenuList",
+      "goFileId": "1006393896",
+      "siblingIndex": 3,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.52,
+        "y": 0.18,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.96,
+        "y": 0.88,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 123,
+        "y": -69,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": -192.54,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "StatusMenu/MenuList/BtnStats",
+      "goFileId": "603665801",
+      "siblingIndex": 0,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0.0046375045,
+        "w": 0.9999893
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0.531
+      },
+      "anchorMin": {
+        "x": 0.05,
+        "y": 0.8,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.98,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": -19.571655,
+        "y": -2.334961,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Resources/UI/HubMenu/ui_hub_menu_btn_normal.png"
+    },
+    {
+      "path": "StatusMenu/MenuList/BtnStats/Label",
+      "goFileId": "1038257760",
+      "siblingIndex": 0,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.22,
+        "y": 0.16,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.86,
+        "y": 0.84,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 136,
+        "y": -6,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "text": "STATS"
+    },
+    {
+      "path": "StatusMenu/MenuList/BtnStats/TailEdgeFx",
+      "goFileId": "1857683349",
+      "siblingIndex": 1,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 1,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": -12.5,
+        "y": -5.100006,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 45.72,
+        "y": 198.44,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Resources/UI/HubMenu/ui_hub_menu_btn_edge_fx.png"
+    },
+    {
+      "path": "StatusMenu/MenuList/BtnStats/Icon",
+      "goFileId": "920010010",
+      "siblingIndex": 2,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": -0.0026120981,
+        "w": 0.9999966
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": -0.299
+      },
+      "anchorMin": {
+        "x": 0.02,
+        "y": 0.1,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.24,
+        "y": 0.9,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 19.099976,
+        "y": 2.8999634,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 13.97,
+        "y": 26.99,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Resources/UI/HubMenu/ui_hub_menu_icon_stats.png"
+    },
+    {
+      "path": "StatusMenu/MenuList/BtnBonds",
+      "goFileId": "1961913925",
+      "siblingIndex": 1,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0.00027418952,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0.031
+      },
+      "anchorMin": {
+        "x": 0.09,
+        "y": 0.58,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.98,
+        "y": 0.78,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": -32.080994,
+        "y": -0.79000854,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 25.018,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Resources/UI/HubMenu/ui_hub_menu_btn_normal.png"
+    },
+    {
+      "path": "StatusMenu/MenuList/BtnBonds/Label",
+      "goFileId": "497049476",
+      "siblingIndex": 0,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.22,
+        "y": 0.16,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.86,
+        "y": 0.84,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 135,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "text": "BONDS"
+    },
+    {
+      "path": "StatusMenu/MenuList/BtnBonds/TailEdgeFx",
+      "goFileId": "300525859",
+      "siblingIndex": 1,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1.0000799,
+        "y": 1.0000799,
+        "z": 1.0000798
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0.004363318,
+        "w": 0.99999046
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 1,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": -11.5,
+        "y": -1.300003,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 46.79236,
+        "y": 198.43997,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Resources/UI/HubMenu/ui_hub_menu_btn_edge_fx.png"
+    },
+    {
+      "path": "StatusMenu/MenuList/BtnBonds/Icon",
+      "goFileId": "920010020",
+      "siblingIndex": 2,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.02,
+        "y": 0.1,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.24,
+        "y": 0.9,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 12.299927,
+        "y": -11.699997,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 31.73,
+        "y": 43.76,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Resources/UI/HubMenu/ui_hub_menu_icon_bonds.png"
+    },
+    {
+      "path": "StatusMenu/MenuList/BtnCalendar",
+      "goFileId": "106368106",
+      "siblingIndex": 2,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": -0.004089119,
+        "w": 0.9999917
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": -0.469
+      },
+      "anchorMin": {
+        "x": 0.13,
+        "y": 0.36,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.98,
+        "y": 0.56,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": -45.690018,
+        "y": 1.7999878,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 47.82,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Resources/UI/HubMenu/ui_hub_menu_btn_normal.png"
+    },
+    {
+      "path": "StatusMenu/MenuList/BtnCalendar/Label",
+      "goFileId": "537346423",
+      "siblingIndex": 0,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.22,
+        "y": 0.16,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.86,
+        "y": 0.84,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 135,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "text": "CALENDAR"
+    },
+    {
+      "path": "StatusMenu/MenuList/BtnCalendar/TailEdgeFx",
+      "goFileId": "773381336",
+      "siblingIndex": 1,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1.0000798,
+        "y": 1.0000798,
+        "z": 1.0000798
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0.00872654,
+        "w": 0.9999619
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 1,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": -9.300049,
+        "y": -5,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 50.08075,
+        "y": 198.43997,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Resources/UI/HubMenu/ui_hub_menu_btn_edge_fx.png"
+    },
+    {
+      "path": "StatusMenu/MenuList/BtnCalendar/Icon",
+      "goFileId": "920010030",
+      "siblingIndex": 2,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.02,
+        "y": 0.1,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.24,
+        "y": 0.9,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 21.400024,
+        "y": 17.600006,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 33.24,
+        "y": 44.61,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Resources/UI/HubMenu/ui_hub_menu_icon_calendar.png"
+    },
+    {
+      "path": "StatusMenu/MenuList/BtnSystem",
+      "goFileId": "1228547242",
+      "siblingIndex": 3,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": -0.008452357,
+        "w": 0.99996436
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": -0.969
+      },
+      "anchorMin": {
+        "x": 0.17,
+        "y": 0.14,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.98,
+        "y": 0.34,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": -60.429993,
+        "y": 3.2700195,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 74.37,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Resources/UI/HubMenu/ui_hub_menu_btn_normal.png"
+    },
+    {
+      "path": "StatusMenu/MenuList/BtnSystem/Label",
+      "goFileId": "1269841075",
+      "siblingIndex": 0,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.22,
+        "y": 0.16,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.86,
+        "y": 0.84,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 136,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "text": "SYSTEM"
+    },
+    {
+      "path": "StatusMenu/MenuList/BtnSystem/TailEdgeFx",
+      "goFileId": "1617446099",
+      "siblingIndex": 1,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1.0000796,
+        "y": 1.0000796,
+        "z": 1.0000798
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0.013089603,
+        "w": 0.9999144
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 1,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": -13.840027,
+        "y": -1.9299927,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 49.62,
+        "y": 199.19,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Resources/UI/HubMenu/ui_hub_menu_btn_edge_fx.png"
+    },
+    {
+      "path": "StatusMenu/MenuList/BtnSystem/Icon",
+      "goFileId": "920010040",
+      "siblingIndex": 2,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.02,
+        "y": 0.1,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.24,
+        "y": 0.9,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 14.400024,
+        "y": 17.59999,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 39.75,
+        "y": 44.74,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Resources/UI/HubMenu/ui_hub_menu_icon_system.png"
+    },
+    {
+      "path": "StatusMenu/SystemMenuList",
+      "goFileId": "910000001",
+      "siblingIndex": 4,
+      "activeSelf": false,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0.037609283,
+        "w": 0.99929255
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 4.311
+      },
+      "anchorMin": {
+        "x": 0.52,
+        "y": 0.18,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.96,
+        "y": 0.88,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 123.84436,
+        "y": -70.598175,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": -192.54,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "StatusMenu/SystemMenuList/BtnSave",
+      "goFileId": "910000010",
+      "siblingIndex": 0,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": -0.034899496,
+        "w": 0.99939084
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.05,
+        "y": 0.8,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.98,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Resources/UI/HubMenu/ui_hub_menu_btn_normal.png"
+    },
+    {
+      "path": "StatusMenu/SystemMenuList/BtnSave/Label",
+      "goFileId": "910000015",
+      "siblingIndex": 0,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.22,
+        "y": 0.16,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.86,
+        "y": 0.84,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 139,
+        "y": -6,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "text": "SAVE"
+    },
+    {
+      "path": "StatusMenu/SystemMenuList/BtnSave/TailEdgeFx",
+      "goFileId": "807296671",
+      "siblingIndex": 1,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 1,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": -12.5,
+        "y": -5.100006,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 45.72,
+        "y": 198.44,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Resources/UI/HubMenu/ui_hub_menu_btn_edge_fx.png"
+    },
+    {
+      "path": "StatusMenu/SystemMenuList/BtnSave/Icon",
+      "goFileId": "920010050",
+      "siblingIndex": 2,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.02,
+        "y": 0.1,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.24,
+        "y": 0.9,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 18.299927,
+        "y": 3.9000092,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 35.33,
+        "y": 26.17,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Resources/UI/HubMenu/ui_hub_menu_icon_save.png"
+    },
+    {
+      "path": "StatusMenu/SystemMenuList/BtnLoad",
+      "goFileId": "910000020",
+      "siblingIndex": 1,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": -0.03925982,
+        "w": 0.9992291
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.09,
+        "y": 0.58,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.98,
+        "y": 0.78,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": -24.160034,
+        "y": 1.9100037,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 27.77,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Resources/UI/HubMenu/ui_hub_menu_btn_normal.png"
+    },
+    {
+      "path": "StatusMenu/SystemMenuList/BtnLoad/Label",
+      "goFileId": "910000025",
+      "siblingIndex": 0,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.22,
+        "y": 0.16,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.86,
+        "y": 0.84,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 136,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "text": "LOAD"
+    },
+    {
+      "path": "StatusMenu/SystemMenuList/BtnLoad/TailEdgeFx",
+      "goFileId": "1234191102",
+      "siblingIndex": 1,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1.0000799,
+        "y": 1.0000799,
+        "z": 1.0000798
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0.004363318,
+        "w": 0.99999046
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 1,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": -11.5,
+        "y": -1.300003,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 46.79236,
+        "y": 198.43997,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Resources/UI/HubMenu/ui_hub_menu_btn_edge_fx.png"
+    },
+    {
+      "path": "StatusMenu/SystemMenuList/BtnLoad/Icon",
+      "goFileId": "920010060",
+      "siblingIndex": 2,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.02,
+        "y": 0.1,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.24,
+        "y": 0.9,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 19.200012,
+        "y": 5.299999,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 59.37,
+        "y": 22.68,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Resources/UI/HubMenu/ui_hub_menu_icon_load.png"
+    },
+    {
+      "path": "StatusMenu/SystemMenuList/BtnConfig",
+      "goFileId": "910000030",
+      "siblingIndex": 2,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": -0.043619387,
+        "w": 0.99904823
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.13,
+        "y": 0.36,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.98,
+        "y": 0.56,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": -47.810013,
+        "y": 3.7200012,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 47.73,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Resources/UI/HubMenu/ui_hub_menu_btn_normal.png"
+    },
+    {
+      "path": "StatusMenu/SystemMenuList/BtnConfig/Label",
+      "goFileId": "910000035",
+      "siblingIndex": 0,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.22,
+        "y": 0.16,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.86,
+        "y": 0.84,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 134,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "text": "CONFIG"
+    },
+    {
+      "path": "StatusMenu/SystemMenuList/BtnConfig/TailEdgeFx",
+      "goFileId": "423977536",
+      "siblingIndex": 1,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1.0000798,
+        "y": 1.0000798,
+        "z": 1.0000798
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0.00872654,
+        "w": 0.9999619
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 1,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": -9.299988,
+        "y": -5,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 50.08075,
+        "y": 198.43997,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Resources/UI/HubMenu/ui_hub_menu_btn_edge_fx.png"
+    },
+    {
+      "path": "StatusMenu/SystemMenuList/BtnConfig/Icon",
+      "goFileId": "920010070",
+      "siblingIndex": 2,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.02,
+        "y": 0.1,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.24,
+        "y": 0.9,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 19.200073,
+        "y": 2,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 46.86,
+        "y": 30.24,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Resources/UI/HubMenu/ui_hub_menu_icon_config.png"
+    },
+    {
+      "path": "StatusMenu/SystemMenuList/BtnReturnToTitle",
+      "goFileId": "910000040",
+      "siblingIndex": 3,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": -0.04797899,
+        "w": 0.99884886
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.17,
+        "y": 0.14,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.98,
+        "y": 0.34,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": -76.099976,
+        "y": 5.9000244,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 72.74,
+        "y": 2.14,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Resources/UI/HubMenu/ui_hub_menu_btn_normal.png"
+    },
+    {
+      "path": "StatusMenu/SystemMenuList/BtnReturnToTitle/Label",
+      "goFileId": "910000045",
+      "siblingIndex": 0,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.22,
+        "y": 0.16,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.86,
+        "y": 0.84,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 108,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "text": "RETURN TO TITLE"
+    },
+    {
+      "path": "StatusMenu/SystemMenuList/BtnReturnToTitle/TailEdgeFx",
+      "goFileId": "316597179",
+      "siblingIndex": 1,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1.0000796,
+        "y": 1.0000796,
+        "z": 1.0000798
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0.013089603,
+        "w": 0.9999144
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 1,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": -13.839966,
+        "y": -1.9299927,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 49.62,
+        "y": 199.19,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Resources/UI/HubMenu/ui_hub_menu_btn_edge_fx.png"
+    },
+    {
+      "path": "StatusMenu/SystemMenuList/BtnReturnToTitle/Icon",
+      "goFileId": "920010080",
+      "siblingIndex": 2,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.02,
+        "y": 0.1,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.24,
+        "y": 0.9,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 19.21997,
+        "y": 2.850006,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 62.81,
+        "y": 31.29,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Resources/UI/HubMenu/ui_hub_menu_icon_title.png"
+    },
+    {
+      "path": "StatusMenu/DetailPanel",
+      "goFileId": "1641468251",
+      "siblingIndex": 5,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.08,
+        "y": 0.08,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.48,
+        "y": 0.42,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": -70,
+        "y": -129,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "StatusMenu/DetailPanel/DetailBody",
+      "goFileId": "736835522",
+      "siblingIndex": 0,
+      "activeSelf": false,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.05,
+        "y": 0.08,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.95,
+        "y": 0.92,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "text": "\"Resonance: Rank 1  \\xB7  EXP 0/15\\r\\nCadence: Rank 1  \\xB7  EXP 0/15\\r\\nPulse:"
+    },
+    {
+      "path": "StatusMenu/DetailPanel/ResonanceDiveButton",
+      "goFileId": "940030001",
+      "siblingIndex": 1,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 1,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 68,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "StatusMenu/DetailPanel/ResonanceDiveButton/Layer_Shadow",
+      "goFileId": "940030011",
+      "siblingIndex": 0,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 1,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Resources/UI/ResonanceDive/12_Shadow.png"
+    },
+    {
+      "path": "StatusMenu/DetailPanel/ResonanceDiveButton/Layer_Plate",
+      "goFileId": "940030021",
+      "siblingIndex": 1,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 1,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Art/UI/ResonanceDive/state_normal.png"
+    },
+    {
+      "path": "StatusMenu/DetailPanel/ResonanceDiveButton/Layer_Glow",
+      "goFileId": "940030031",
+      "siblingIndex": 2,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 1,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Resources/UI/ResonanceDive/08_Glow.png"
+    },
+    {
+      "path": "StatusMenu/DetailPanel/ResonanceDiveButton/Layer_Particles",
+      "goFileId": "940030041",
+      "siblingIndex": 3,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 1,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Resources/UI/ResonanceDive/09_Particles.png"
+    },
+    {
+      "path": "StatusMenu/DetailPanel/ResonanceDiveButton/TextRoot",
+      "goFileId": "940030071",
+      "siblingIndex": 4,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 1,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "StatusMenu/DetailPanel/ResonanceDiveButton/TextRoot/TitleLabel",
+      "goFileId": "940030081",
+      "siblingIndex": 0,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.38,
+        "y": 0.42,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.88,
+        "y": 0.82,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "text": "Resonance Dive"
+    },
+    {
+      "path": "StatusMenu/DetailPanel/ResonanceDiveButton/TextRoot/SubtitleLabel",
+      "goFileId": "940030091",
+      "siblingIndex": 1,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.38,
+        "y": 0.2,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.88,
+        "y": 0.42,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "text": "ENTER THE OTHER SIDE"
+    },
+    {
+      "path": "StatusMenu/Tooltip",
+      "goFileId": "582857716",
+      "siblingIndex": 6,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.55,
+        "y": 0.08,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.92,
+        "y": 0.14,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "text": "Open Character Build"
+    },
+    {
+      "path": "StatusMenu/Prompts",
+      "goFileId": "1881873894",
+      "siblingIndex": 7,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.72,
+        "y": 0.02,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.98,
+        "y": 0.08,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "StatusMenu/Prompts/ConfirmIcon",
+      "goFileId": "1851032672",
+      "siblingIndex": 0,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0.1,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.14,
+        "y": 0.9,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 8.799927,
+        "y": -2.199997,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 59.2,
+        "y": 63.6,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Resources/UI/StatusMenu/statusmenu_prompt_confirm.png"
+    },
+    {
+      "path": "StatusMenu/Prompts/ConfirmText",
+      "goFileId": "480427950",
+      "siblingIndex": 1,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.14,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.38,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "text": "Confirm"
+    },
+    {
+      "path": "StatusMenu/Prompts/PromptSeparator",
+      "goFileId": "940060010",
+      "siblingIndex": 2,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.41,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.45,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "text": "'|'"
+    },
+    {
+      "path": "StatusMenu/Prompts/BackIcon",
+      "goFileId": "1235451123",
+      "siblingIndex": 3,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.48,
+        "y": 0.1,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.62,
+        "y": 0.9,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 8.5,
+        "y": -1.550003,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 27.08,
+        "y": 30.86,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "spritePath": "Assets/FracturedChorus/Resources/UI/StatusMenu/statusmenu_prompt_close.png"
+    },
+    {
+      "path": "StatusMenu/Prompts/BackText",
+      "goFileId": "1602759977",
+      "siblingIndex": 4,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.62,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.86,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "text": "Back"
+    },
+    {
+      "path": "HubConfigOverlay",
+      "goFileId": "910000100",
+      "siblingIndex": 0,
+      "activeSelf": false,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 1,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "HubConfigOverlay/Dimmer",
+      "goFileId": "910000110",
+      "siblingIndex": 0,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 1,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "HubConfigOverlay/Panel",
+      "goFileId": "910000120",
+      "siblingIndex": 1,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.3,
+        "y": 0.38,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.7,
+        "y": 0.62,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "HubConfigOverlay/Panel/Title",
+      "goFileId": "910000130",
+      "siblingIndex": 0,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.08,
+        "y": 0.68,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.92,
+        "y": 0.92,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "text": "CONFIG"
+    },
+    {
+      "path": "HubConfigOverlay/Panel/VolumeLabel",
+      "goFileId": "910000140",
+      "siblingIndex": 1,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.08,
+        "y": 0.38,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.35,
+        "y": 0.62,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "text": "Volume"
+    },
+    {
+      "path": "HubConfigOverlay/Panel/VolumeValue",
+      "goFileId": "910000150",
+      "siblingIndex": 2,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.72,
+        "y": 0.38,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.92,
+        "y": 0.62,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "text": "85%"
+    },
+    {
+      "path": "HubConfigOverlay/Panel/VolumeSlider",
+      "goFileId": "910000160",
+      "siblingIndex": 3,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.08,
+        "y": 0.18,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.92,
+        "y": 0.36,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "HubConfigOverlay/Panel/VolumeSlider/Background",
+      "goFileId": "910000170",
+      "siblingIndex": 0,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 1,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "HubConfigOverlay/Panel/VolumeSlider/Fill Area",
+      "goFileId": "910000180",
+      "siblingIndex": 1,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.02,
+        "y": 0.25,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.98,
+        "y": 0.75,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "HubConfigOverlay/Panel/VolumeSlider/Fill Area/Fill",
+      "goFileId": "910000190",
+      "siblingIndex": 0,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 1,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "HubConfigOverlay/Panel/VolumeSlider/Handle Slide Area",
+      "goFileId": "910000200",
+      "siblingIndex": 2,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.02,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.98,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "HubConfigOverlay/Panel/VolumeSlider/Handle Slide Area/Handle",
+      "goFileId": "910000210",
+      "siblingIndex": 0,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 18,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "HubConfigOverlay/Panel/CloseButton",
+      "goFileId": "910000220",
+      "siblingIndex": 4,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0.86,
+        "y": 0.78,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 0.96,
+        "y": 0.94,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      }
+    },
+    {
+      "path": "HubConfigOverlay/Panel/CloseButton/Label",
+      "goFileId": "910000230",
+      "siblingIndex": 0,
+      "activeSelf": true,
+      "layoutKind": "RectTransform",
+      "localScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "localPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "localRotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "localEulerAnglesHint": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMin": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "anchorMax": {
+        "x": 1,
+        "y": 1,
+        "z": 0
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "text": "X"
+    }
+  ]
+}

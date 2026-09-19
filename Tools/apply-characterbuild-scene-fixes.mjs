@@ -2,7 +2,7 @@ import fs from "fs";
 
 const SCENES = [
   "D:/Fractured-Chorus1/Assets/FracturedChorus/Scenes/CharacterBuild.unity",
-  "D:/Fractured-Chorus1/Assets/FracturedChorus/Scenes/CharacterBuildLayoutSandbox.unity",
+  "D:/Fractured-Chorus1/Assets/FracturedChorus/Scenes/CharacterBuild.unity",
 ];
 
 const GUID = {

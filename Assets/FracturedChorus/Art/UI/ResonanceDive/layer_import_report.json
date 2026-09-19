@@ -1,0 +1,176 @@
+{
+  "bakedChecker": true,
+  "format": "jpeg",
+  "canvas": "1024x576",
+  "starPivot": {
+    "x": 0.28127433498137094,
+    "y": 0.49892283781477376
+  },
+  "layers": [
+    {
+      "id": "02_Border",
+      "source": "jpeg-no-alpha",
+      "bakedChecker": true,
+      "tile": 8,
+      "box": {
+        "minX": 0,
+        "minY": 0,
+        "maxX": 1023,
+        "maxY": 575,
+        "w": 1024,
+        "h": 576
+      },
+      "flooded": 32294
+    },
+    {
+      "id": "01_Base",
+      "source": "jpeg-no-alpha",
+      "bakedChecker": true,
+      "tile": 8,
+      "box": {
+        "minX": 0,
+        "minY": 0,
+        "maxX": 1023,
+        "maxY": 575,
+        "w": 1024,
+        "h": 576
+      },
+      "flooded": 12051
+    },
+    {
+      "id": "03_Glass",
+      "source": "jpeg-no-alpha",
+      "bakedChecker": true,
+      "tile": 16,
+      "box": {
+        "minX": 0,
+        "minY": 0,
+        "maxX": 1023,
+        "maxY": 575,
+        "w": 1024,
+        "h": 576
+      },
+      "flooded": 21391
+    },
+    {
+      "id": "04_Gradient",
+      "source": "jpeg-no-alpha",
+      "bakedChecker": true,
+      "tile": 16,
+      "box": {
+        "minX": 0,
+        "minY": 0,
+        "maxX": 1023,
+        "maxY": 575,
+        "w": 1024,
+        "h": 576
+      },
+      "flooded": 23296
+    },
+    {
+      "id": "05_Deco_Left",
+      "source": "jpeg-no-alpha",
+      "bakedChecker": true,
+      "tile": 8,
+      "box": {
+        "minX": 0,
+        "minY": 0,
+        "maxX": 1023,
+        "maxY": 575,
+        "w": 1024,
+        "h": 576
+      },
+      "flooded": 88820
+    },
+    {
+      "id": "06_Deco_Right",
+      "source": "jpeg-no-alpha",
+      "bakedChecker": true,
+      "tile": 16,
+      "box": {
+        "minX": 0,
+        "minY": 0,
+        "maxX": 1023,
+        "maxY": 575,
+        "w": 1024,
+        "h": 576
+      },
+      "flooded": 14232
+    },
+    {
+      "id": "08_Glow",
+      "source": "jpeg-no-alpha",
+      "bakedChecker": true,
+      "tile": 16,
+      "box": {
+        "minX": 0,
+        "minY": 0,
+        "maxX": 1023,
+        "maxY": 575,
+        "w": 1024,
+        "h": 576
+      },
+      "flooded": 4835
+    },
+    {
+      "id": "11_Scanline",
+      "source": "jpeg-no-alpha",
+      "bakedChecker": true,
+      "tile": 16,
+      "box": {
+        "minX": 0,
+        "minY": 0,
+        "maxX": 1023,
+        "maxY": 575,
+        "w": 1024,
+        "h": 576
+      },
+      "flooded": 26577
+    },
+    {
+      "id": "09_Particles",
+      "source": "jpeg-no-alpha",
+      "bakedChecker": true,
+      "tile": 16,
+      "box": {
+        "minX": 0,
+        "minY": 0,
+        "maxX": 1023,
+        "maxY": 575,
+        "w": 1024,
+        "h": 576
+      },
+      "flooded": 27849
+    },
+    {
+      "id": "10_Wave",
+      "source": "jpeg-no-alpha",
+      "bakedChecker": true,
+      "tile": 16,
+      "box": {
+        "minX": 0,
+        "minY": 0,
+        "maxX": 1023,
+        "maxY": 575,
+        "w": 1024,
+        "h": 576
+      },
+      "flooded": 67526
+    },
+    {
+      "id": "12_Shadow",
+      "source": "jpeg-no-alpha",
+      "bakedChecker": true,
+      "tile": 16,
+      "box": {
+        "minX": 0,
+        "minY": 0,
+        "maxX": 1023,
+        "maxY": 575,
+        "w": 1024,
+        "h": 576
+      },
+      "flooded": 23845
+    }
+  ]
+}

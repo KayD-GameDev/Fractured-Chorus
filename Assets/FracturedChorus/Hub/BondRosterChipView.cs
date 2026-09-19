@@ -16,10 +16,23 @@ namespace FracturedChorus.Hub
         public string NpcId { get; private set; }
         public Button Button => button;
 
-        public void Bind(string npcId, bool selected, Sprite faceSprite, Sprite frameSprite, Sprite lockSprite)
+        private void Awake()
         {
+            Resolve();
+        }
+
+        public void Bind(
+            string npcId,
+            bool selected,
+            Sprite faceSprite,
+            Sprite frameSprite,
+            Sprite lockSprite,
+            BondProgress bond)
+        {
+            Resolve();
             NpcId = npcId;
             var unlocked = BondPresentation.IsPortraitUnlocked(npcId);
+            var showLock = BondPresentation.ShouldShowRosterLock(npcId, bond) && lockSprite != null;
 
             if (nameLabel != null)
             {
@@ -43,18 +56,70 @@ namespace FracturedChorus.Hub
             {
                 frame.sprite = frameSprite;
                 frame.enabled = frameSprite != null;
+                frame.raycastTarget = true;
             }
 
             if (lockIcon != null)
             {
                 lockIcon.sprite = lockSprite;
-                lockIcon.enabled = !unlocked && lockSprite != null;
+                lockIcon.enabled = showLock;
+                lockIcon.color = showLock ? Color.white : new Color(1f, 1f, 1f, 0f);
             }
 
             if (button != null)
             {
-                button.interactable = unlocked;
+                button.interactable = true;
             }
+        }
+
+        private void Resolve()
+        {
+            if (frame == null)
+            {
+                frame = FindImage("Frame");
+            }
+
+            if (face == null)
+            {
+                face = FindImage("Face");
+            }
+
+            if (lockIcon == null)
+            {
+                lockIcon = FindImage("Lock");
+            }
+
+            if (nameLabel == null)
+            {
+                nameLabel = FindText("Name");
+            }
+
+            if (roleLabel == null)
+            {
+                roleLabel = FindText("Role");
+            }
+
+            if (button == null)
+            {
+                button = GetComponent<Button>();
+            }
+
+            if (button != null && button.targetGraphic == null && frame != null)
+            {
+                button.targetGraphic = frame;
+            }
+        }
+
+        private Image FindImage(string childName)
+        {
+            var child = transform.Find(childName);
+            return child != null ? child.GetComponent<Image>() : null;
+        }
+
+        private Text FindText(string childName)
+        {
+            var child = transform.Find(childName);
+            return child != null ? child.GetComponent<Text>() : null;
         }
     }
 }

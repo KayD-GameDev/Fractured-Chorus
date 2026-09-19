@@ -1,6 +1,6 @@
 import fs from "node:fs";
 
-const SCENE = "D:/Fractured-Chorus1/Assets/FracturedChorus/Scenes/CharacterBuildLayoutSandbox.unity";
+const SCENE = "D:/Fractured-Chorus1/Assets/FracturedChorus/Scenes/CharacterBuild.unity";
 const CANVAS_RT = 777585278;
 
 const GUID = {

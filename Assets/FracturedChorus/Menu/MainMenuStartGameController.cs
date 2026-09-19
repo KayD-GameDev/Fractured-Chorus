@@ -1,7 +1,9 @@
 using System.Collections;
 using FracturedChorus.Combat.Bootstrap;
+using FracturedChorus.Hub;
 using FracturedChorus.Meta;
 using FracturedChorus.RunMap;
+using FracturedChorus.UI;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -190,7 +192,23 @@ namespace FracturedChorus.Menu
 
         private void Start()
         {
+            if (MainMenuConfigLaunch.ConsumeBootConfigOnly())
+            {
+                EnterConfigFromExternal();
+                StartCoroutine(BootMenuAudioSequence());
+                return;
+            }
+
             StartCoroutine(BootMenuAudioSequence());
+        }
+
+        private void EnterConfigFromExternal()
+        {
+            _attractDismissed = true;
+            _transitioning = false;
+            ApplyLayerState(showAttract: false, immediate: true);
+            menuController?.SetEnabled(false);
+            ShowSettings();
         }
 
         private IEnumerator BootMenuAudioSequence()
@@ -411,6 +429,7 @@ namespace FracturedChorus.Menu
                 mainMenuUi.interactable = false;
                 mainMenuUi.blocksRaycasts = false;
             }
+
         }
 
         private void SetSettingsEditorVisible(bool visible)
@@ -519,6 +538,23 @@ namespace FracturedChorus.Menu
             settingsOverlay.blocksRaycasts = false;
             settingsOverlay.gameObject.SetActive(false);
             configOverlayController?.SetActive(false);
+
+            if (MainMenuConfigLaunch.TryConsumeReturn(out var returnScene, out var openMenu, out var openSystem))
+            {
+                menuController?.SetEnabled(false);
+                MainMenuConfigLaunch.ApplyReturnFlags(returnScene, openMenu, openSystem);
+                if (!RunMapSceneLoader.LoadByName(returnScene))
+                {
+                    MainMenuConfigLaunch.Clear();
+                    TownMapView.OpenStatusMenuOnNextShow = false;
+                    TownMapView.OpenSystemSubmenuOnNextShow = false;
+                    Debug.LogError($"[MainMenuConfig] Failed to return to '{returnScene}'.");
+                    menuController?.SetEnabled(true);
+                }
+
+                return;
+            }
+
             menuController?.SetEnabled(true);
         }
 
@@ -805,6 +841,8 @@ namespace FracturedChorus.Menu
                 SetMainMenuRuntimeActive(true);
                 SetMainMenuAlpha(1f, interactable: true, blocksRaycasts: true);
             }
+
+            TitleScreenUiGuard.SuppressStrayResonanceDiveButtons();
         }
 
         private void SetMainMenuRuntimeActive(bool active)
@@ -818,6 +856,7 @@ namespace FracturedChorus.Menu
             {
                 mainMenuUi.gameObject.SetActive(active);
             }
+
         }
 
         private void SetMainMenuAlpha(float alpha, bool interactable, bool blocksRaycasts)
@@ -835,6 +874,7 @@ namespace FracturedChorus.Menu
                 mainMenuUi.interactable = interactable;
                 mainMenuUi.blocksRaycasts = blocksRaycasts;
             }
+
         }
 
         private void EnsureSceneFadeOverlay()

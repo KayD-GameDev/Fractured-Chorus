@@ -8,6 +8,7 @@ namespace FracturedChorus.RunMap
         public const string OpeningInvestigation = "OpeningInvestigation";
         public const string CampusHub = "CampusHub";
         public const string CharacterBuild = "CharacterBuild";
+        public const string Bonds = "Bonds";
         public const string FlowerShopWork = "FlowerShopWork";
         public const string RunMapPrototype = "RunMapPrototype";
         public const string CombatPrototype = "CombatPrototype";

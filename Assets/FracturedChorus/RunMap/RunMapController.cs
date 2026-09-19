@@ -343,6 +343,23 @@ namespace FracturedChorus.RunMap
             legendView.Apply();
         }
 
+        public bool TryHandleCancel()
+        {
+            if (!Application.isPlaying)
+            {
+                return false;
+            }
+
+            var panel = nodeInfoPanel ?? EnsureNodeInfoPanel();
+            if (panel != null && panel.IsOpen)
+            {
+                CancelNodePreview();
+                return true;
+            }
+
+            return false;
+        }
+
         private void Update()
         {
             if (!Application.isPlaying || Graph == null)

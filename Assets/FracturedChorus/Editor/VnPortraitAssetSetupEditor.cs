@@ -22,6 +22,7 @@ namespace FracturedChorus.Editor
         private static readonly Color RenShadow = new Color(0.05f, 0.12f, 0.35f, 0.92f);
         private static readonly Color HarutoShadow = new Color(0.08f, 0.14f, 0.28f, 0.9f);
         private static readonly Color RyoShadow = new Color(0.06f, 0.18f, 0.14f, 0.9f);
+        private static readonly Color CharlotteShadow = new Color(0.28f, 0.08f, 0.06f, 0.9f);
         private static readonly Color MeiLinShadow = new Color(0.22f, 0.08f, 0.14f, 0.9f);
 
         private static string AutoInstallFlagPath =>
@@ -102,6 +103,18 @@ namespace FracturedChorus.Editor
             BindMeiLinExpressions();
             BindRyoExpressions();
             BindRenExpressions();
+            BindCharlotteExpressions();
+        }
+
+        [MenuItem("Fractured Chorus/Narrative/Bind Charlotte Expression Sprites")]
+        public static void BindCharlotteExpressions()
+        {
+            BindExpressionSet(
+                "Speaker_Charlotte.asset",
+                "Assets/FracturedChorus/Art/Characters/Charlotte/VnBust",
+                "charlotte_bust_",
+                "Assets/FracturedChorus/Art/Characters/Charlotte/VnBust/charlotte_bust_neutral_v1.png",
+                new[] { "neutral", "startled", "curious", "grim" });
         }
 
         private static void BindExpressionSet(
@@ -220,6 +233,14 @@ namespace FracturedChorus.Editor
                 MeiLinShadow,
                 VnDialoguePortraitLayout.DefaultShadowOffset);
 
+            var charlotte = UpsertSpeaker(
+                SpeakersFolder + "/Speaker_Charlotte.asset",
+                VnSpeakerIds.Charlotte,
+                "Charlotte",
+                "Assets/FracturedChorus/Art/Characters/Charlotte/VnBust/charlotte_bust_neutral_v1.png",
+                CharlotteShadow,
+                VnDialoguePortraitLayout.DefaultShadowOffset);
+
             var catalog = AssetDatabase.LoadAssetAtPath<VnSpeakerCatalogSO>(CatalogPath);
             if (catalog == null)
             {
@@ -227,7 +248,7 @@ namespace FracturedChorus.Editor
                 AssetDatabase.CreateAsset(catalog, CatalogPath);
             }
 
-            catalog.EditorReplaceAll(new List<VnSpeakerDefinitionSO> { ren, haruto, ryo, mei });
+            catalog.EditorReplaceAll(new List<VnSpeakerDefinitionSO> { ren, haruto, ryo, mei, charlotte });
             EditorUtility.SetDirty(catalog);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
