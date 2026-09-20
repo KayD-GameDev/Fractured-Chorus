@@ -171,51 +171,53 @@ namespace FracturedChorus.Editor
         /// </summary>
         public static void RebuildModularPartyCardTemplateInScene()
         {
-            var partyBar = Object.FindAnyObjectByType<PartyStatusBarUIView>(FindObjectsInactive.Include);
-            if (partyBar == null)
+            RebuildBarCardTemplate<PartyStatusBarUIView>(enemySide: false);
+            RebuildBarCardTemplate<EnemyStatusBarUIView>(enemySide: true);
+            Debug.Log("[Fractured Chorus] Party + Enemy CardTemplate side-tube ready. Save scene (Ctrl+S).");
+        }
+
+        private static void RebuildBarCardTemplate<TBar>(bool enemySide)
+            where TBar : MonoBehaviour
+        {
+            var bar = Object.FindAnyObjectByType<TBar>(FindObjectsInactive.Include);
+            if (bar == null)
             {
-                Debug.LogWarning("[Fractured Chorus] PartyStatusBarUI not found.");
+                Debug.LogWarning($"[Fractured Chorus] {typeof(TBar).Name} not found.");
                 return;
             }
 
-            var templateTransform = partyBar.transform.Find("CardTemplate");
-            PartyMemberCardView template;
-            if (templateTransform == null || templateTransform.Find("CardBg") == null)
+            var templateTransform = bar.transform.Find("CardTemplate");
+            if (templateTransform != null)
             {
-                if (templateTransform != null)
-                {
-                    Undo.DestroyObjectImmediate(templateTransform.gameObject);
-                }
-
-                template = TimelineHierarchyBuilder.CreateModularPartyCardTemplate(partyBar.transform);
-                template.gameObject.SetActive(true);
-                EnsurePrepPipsSegmentStrip(template.transform);
-            }
-            else
-            {
-                template = templateTransform.GetComponent<PartyMemberCardView>();
-                EnsureModularPartyCardNodes(templateTransform, overwriteAuthored: false);
+                Undo.DestroyObjectImmediate(templateTransform.gameObject);
             }
 
-            SetPartyBarField(partyBar, "cardTemplate", template);
-            if (template != null)
+            var template = TimelineHierarchyBuilder.CreateModularPartyCardTemplate(
+                bar.transform,
+                "CardTemplate",
+                enemySide);
+            template.gameObject.SetActive(true);
+
+            var so = new SerializedObject(bar);
+            var templateProp = so.FindProperty("cardTemplate");
+            if (templateProp != null)
             {
-                template.WireReferences();
-                WireCardViewFields(template);
-                AssignPartyCardPreviewPresets(template);
-                template.ApplyInspectorPreview();
-                EditorUtility.SetDirty(template);
+                templateProp.objectReferenceValue = template;
+                so.ApplyModifiedPropertiesWithoutUndo();
             }
 
-            EditorUtility.SetDirty(partyBar);
+            template.WireReferences();
+            WireCardViewFields(template);
+            AssignPartyCardPreviewPresets(template);
+            template.ApplyInspectorPreview();
+            EditorUtility.SetDirty(template);
+            EditorUtility.SetDirty(bar);
 
             var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
             if (scene.IsValid() && scene.isLoaded)
             {
                 EditorSceneManager.MarkSceneDirty(scene);
             }
-
-            Debug.Log("[Fractured Chorus] Party CardTemplate modular ready. Save scene (Ctrl+S).");
         }
 
         private static void EnsureModularPartyCardNodes(Transform cardRoot, bool overwriteAuthored)
@@ -261,6 +263,7 @@ namespace FracturedChorus.Editor
             }
 
             EnsureElementBadge(card.transform, IsEnemyCardTemplate(card));
+            EnsureAstraTvMoodIcon(card.transform);
             UpgradeHealthBar(card.transform);
             EnsureModularPartyCardNodes(card.transform, overwriteAuthored: false);
             if (IsEnemyCardTemplate(card))
@@ -368,6 +371,35 @@ namespace FracturedChorus.Editor
             iconImage.type = Image.Type.Simple;
             iconImage.preserveAspect = true;
             iconImage.raycastTarget = false;
+        }
+
+        /// <summary>Tạo BuffAstraTv trên CardTemplate nếu thiếu — không ghi đè Rect đã author.</summary>
+        private static void EnsureAstraTvMoodIcon(Transform cardRoot)
+        {
+            if (cardRoot == null)
+            {
+                return;
+            }
+
+            var existing = cardRoot.Find("BuffAstraTv") as RectTransform;
+            if (existing != null)
+            {
+                return;
+            }
+
+            var go = new GameObject("BuffAstraTv", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            Undo.RegisterCreatedObjectUndo(go, "Create BuffAstraTv");
+            var rt = go.GetComponent<RectTransform>();
+            rt.SetParent(cardRoot, false);
+            PartyCardLayout.ApplyAstraTvMoodIconRect(rt);
+
+            var image = go.GetComponent<Image>();
+            image.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(
+                "Assets/FracturedChorus/Resources/UI/Combat/Buffs/astra_tv_mood_joy_v1.png");
+            image.type = Image.Type.Simple;
+            image.preserveAspect = true;
+            image.raycastTarget = false;
+            image.color = Color.white;
         }
 
         /// <summary>Hierarchy: PrepPips = 3 đoạn chữ nhật (Pip_0..2), không còn pip tròn.</summary>
@@ -554,23 +586,7 @@ namespace FracturedChorus.Editor
             }
 
             Undo.RecordObject(barStack, "BarStack authored rect");
-            barStack.anchorMin = new Vector2(0f, 0f);
-            barStack.anchorMax = new Vector2(0f, 0f);
-            barStack.pivot = new Vector2(0.5f, 0.5f);
-            barStack.localScale = Vector3.one;
-
-            if (enemySide)
-            {
-                barStack.anchoredPosition = new Vector2(73.41f, 28.1f);
-                barStack.sizeDelta = new Vector2(124.53f, 32.98f);
-                barStack.localRotation = Quaternion.Euler(0f, 0f, -10.141f);
-            }
-            else
-            {
-                barStack.anchoredPosition = new Vector2(75.51f, 41.75f);
-                barStack.sizeDelta = new Vector2(124.59f, 37.09f);
-                barStack.localRotation = Quaternion.Euler(0f, 0f, -12.07f);
-            }
+            PartyCardLayout.ApplyModularBarStackRect(barStack, enemySide);
         }
 
         private static void ReparentHealthAndPrepIntoBarStack(Transform cardRoot)
@@ -632,6 +648,11 @@ namespace FracturedChorus.Editor
                        ?? card.transform.Find("HealthBarBg/HealthBarFill")?.GetComponent<Image>();
             SetObjectRef(so, "healthBarFill", fill);
             SetObjectRef(so, "healthBarFillRect", fill != null ? fill.rectTransform : null);
+            SetObjectRef(so, "gaugeBarBg",
+                card.transform.Find("BarStack/GaugeSlot/GaugeBarBg")?.GetComponent<Image>());
+            SetObjectRef(so, "gaugeBarFill",
+                card.transform.Find("BarStack/GaugeSlot/GaugeBarBg/GaugeBarFill")?.GetComponent<Image>()
+                ?? card.transform.Find("BarStack/GaugeSlot/GaugeBarFill")?.GetComponent<Image>());
             so.ApplyModifiedPropertiesWithoutUndo();
             AssignPartyCardPreviewPresets(card);
         }

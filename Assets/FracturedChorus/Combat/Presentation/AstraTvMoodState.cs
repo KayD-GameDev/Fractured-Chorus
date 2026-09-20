@@ -1,4 +1,5 @@
 using FracturedChorus.Combat.Units;
+using System;
 using UnityEngine;
 
 namespace FracturedChorus.Combat.Presentation
@@ -20,6 +21,8 @@ namespace FracturedChorus.Combat.Presentation
         public static float SpotlightOutgoingMult { get; private set; } = 1f;
         public static int ExtraRedCoreNotes { get; private set; }
         public static int ExtraMiniAttacks { get; private set; }
+
+        public static event Action OnChanged;
 
         public static bool HasMood => Mood != AstraTvMood.None;
 
@@ -62,6 +65,7 @@ namespace FracturedChorus.Combat.Presentation
             SpotlightOutgoingMult = 1f;
             ExtraRedCoreNotes = 0;
             ExtraMiniAttacks = 0;
+            OnChanged?.Invoke();
         }
 
         public static float ResolveOutgoingMult(CombatUnit source, CombatUnit target)
@@ -119,6 +123,23 @@ namespace FracturedChorus.Combat.Presentation
             ExtraMiniAttacks = mood == AstraTvMood.Sorrow && config != null
                 ? Mathf.Max(0, config.SorrowExtraMiniAttacks)
                 : 0;
+            OnChanged?.Invoke();
+        }
+
+        public static string MoodSpriteResourcePath
+        {
+            get
+            {
+                return Mood switch
+                {
+                    AstraTvMood.Joy => "UI/Combat/Buffs/astra_tv_mood_joy_v1",
+                    AstraTvMood.Anger => "UI/Combat/Buffs/astra_tv_mood_anger_v1",
+                    AstraTvMood.Love => "UI/Combat/Buffs/astra_tv_mood_love_v1",
+                    AstraTvMood.Hate => "UI/Combat/Buffs/astra_tv_mood_hate_v1",
+                    AstraTvMood.Sorrow => "UI/Combat/Buffs/astra_tv_mood_sorrow_v1",
+                    _ => null
+                };
+            }
         }
 
         public static AstraTvMood FromFaceIndex(int faceIndex)

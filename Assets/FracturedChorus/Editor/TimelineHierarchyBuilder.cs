@@ -15,11 +15,11 @@ namespace FracturedChorus.Editor
         public const float SlotWidth = TimelineLayoutLock.SlotWidth;
         public const float SlotHeight = TimelineLayoutLock.SlotHeight;
 
-        public const float PartyCardWidth = 240f;
+        public const float PartyCardWidth = 160f;
         public const float PartyCardHeight = 118f;
-        public const float EnemyCardWidth = 240f;
+        public const float EnemyCardWidth = 160f;
         public const float EnemyCardHeight = 118f;
-        public const float PartyBarWidth = 713f;
+        public const float PartyBarWidth = 798f;
         private const float DefaultSkillPanelSize = 300f;
         private const float RadialSlotSize = 96f;
         private const float RadialRootSize = 248f;
@@ -192,7 +192,7 @@ namespace FracturedChorus.Editor
             barRect.anchorMax = new Vector2(0f, 1f);
             barRect.pivot = new Vector2(0f, 1f);
             barRect.anchoredPosition = new Vector2(12f, -12f);
-            barRect.sizeDelta = new Vector2(PartyBarWidth, PartyCardHeight);
+            barRect.sizeDelta = new Vector2(PartyBarWidth, 128f);
 
             var cardsRowGo = CreateUiObject("CardsRow", barGo.transform);
             var cardsRowRect = cardsRowGo.GetComponent<RectTransform>();
@@ -230,7 +230,7 @@ namespace FracturedChorus.Editor
             barRect.anchorMax = new Vector2(1f, 1f);
             barRect.pivot = new Vector2(1f, 1f);
             barRect.anchoredPosition = new Vector2(-12f, -12f);
-            barRect.sizeDelta = new Vector2(PartyBarWidth, PartyCardHeight);
+            barRect.sizeDelta = new Vector2(PartyBarWidth, 128f);
 
             var cardsRowGo = CreateUiObject("CardsRow", barGo.transform);
             var cardsRowRect = cardsRowGo.GetComponent<RectTransform>();
@@ -284,8 +284,9 @@ namespace FracturedChorus.Editor
 
             var bgSprite = LoadPartyCardSprite("party_card_bg_jagged_v1.png");
             var accentSprite = LoadPartyCardSprite("party_card_accent_diamond_v1.png");
-            var trackSprite = LoadPartyCardSprite("party_card_bar_track_v1.png");
-            var hpColor = enemySide ? FcColorTokens.Brand.RedSelection : FcColorTokens.Brand.CyanNeonCore;
+            var trackSprite = LoadPartyCardSprite("party_card_side_tube_track_v1.png");
+            var fillSprite = LoadPartyCardSprite("party_card_side_tube_fill_v1.png");
+            var hpColor = PartyMemberCardView.SharedHealthFillColor;
             var accentColor = enemySide
                 ? new Color(0.85f, 0.12f, 0.22f, 0.82f)
                 : new Color(0.18f, 0.43f, 1f, 0.72f);
@@ -293,10 +294,6 @@ namespace FracturedChorus.Editor
             var cardBg = CreateCardImage(cardGo.transform, "CardBg", bgSprite);
             PartyCardLayout.ApplyModularCardBgRect(cardBg.rectTransform);
             cardBg.preserveAspect = false;
-            if (enemySide)
-            {
-                cardBg.rectTransform.localScale = new Vector3(-1f, 1f, 1f);
-            }
 
             var accent = CreateCardImage(cardGo.transform, "AccentShard", accentSprite);
             PartyCardLayout.ApplyModularAccentRect(accent.rectTransform, enemySide);
@@ -309,11 +306,8 @@ namespace FracturedChorus.Editor
             var nameGo = CreateUiObject("NameLabel", cardGo.transform);
             var nameLabel = nameGo.AddComponent<Text>();
             PartyCardLayout.ApplyModularNameRect(nameGo.GetComponent<RectTransform>(), enemySide);
-            ApplyModularLabel(nameLabel, 16, "NAME", FcColorTokens.Brand.TextPrimary);
-            if (enemySide)
-            {
-                nameLabel.alignment = TextAnchor.MiddleRight;
-            }
+            ApplyModularLabel(nameLabel, 14, "NAME", FcColorTokens.Brand.TextPrimary);
+            nameLabel.alignment = TextAnchor.MiddleLeft;
 
             var barGo = CreateUiObject("BarStack", cardGo.transform);
             var barStack = barGo.GetComponent<RectTransform>();
@@ -325,48 +319,20 @@ namespace FracturedChorus.Editor
             var gaugeSlot = gaugeSlotGo.GetComponent<RectTransform>();
             PartyCardLayout.ApplyModularHealthGaugeSlots(healthSlot, gaugeSlot);
 
-            var hpLabelGo = CreateUiObject("HpLabel", healthSlot);
-            var hpLabel = hpLabelGo.AddComponent<Text>();
-            PartyCardLayout.ApplyModularHpLabelRect(hpLabelGo.GetComponent<RectTransform>());
-            ApplyModularLabel(hpLabel, 10, "HP", hpColor);
+            var healthBgImage = CreateSideTubeTrack(healthSlot, "HealthBarBg", trackSprite);
+            var healthFillImage = CreateSideTubeFill(
+                healthBgImage.rectTransform,
+                "HealthBarFill",
+                fillSprite,
+                hpColor);
 
-            var hpValueGo = CreateUiObject("HpValue", healthSlot);
-            var hpValue = hpValueGo.AddComponent<Text>();
-            PartyCardLayout.ApplyModularHpValueRect(hpValueGo.GetComponent<RectTransform>());
-            ApplyModularLabel(hpValue, 20, "80", hpColor);
-
-            var healthBgGo = CreateUiObject("HealthBarBg", healthSlot);
-            var healthBgRect = healthBgGo.GetComponent<RectTransform>();
-            PartyCardLayout.ApplyModularHealthBarRect(healthBgRect);
-            var healthBgImage = healthBgGo.AddComponent<Image>();
-            healthBgImage.sprite = trackSprite != null ? trackSprite : UiCircleSpriteUtil.White;
-            healthBgImage.type = Image.Type.Simple;
-            healthBgImage.color = Color.white;
-            healthBgImage.raycastTarget = false;
-            healthBgImage.preserveAspect = false;
-
-            var healthFillGo = CreateUiObject("HealthBarFill", healthBgGo.transform);
-            var healthFillRect = healthFillGo.GetComponent<RectTransform>();
-            healthFillRect.anchorMin = Vector2.zero;
-            healthFillRect.anchorMax = Vector2.one;
-            healthFillRect.pivot = new Vector2(0f, 0.5f);
-            healthFillRect.offsetMin = new Vector2(3f, 2f);
-            healthFillRect.offsetMax = new Vector2(-3f, -2f);
-            var healthFillImage = healthFillGo.AddComponent<Image>();
-            healthFillImage.sprite = UiCircleSpriteUtil.White;
-            healthFillImage.type = Image.Type.Simple;
-            healthFillImage.color = hpColor;
-            healthFillImage.raycastTarget = false;
-
-            var prepLabelGo = CreateUiObject("PrepLabel", gaugeSlot);
-            var prepLabel = prepLabelGo.AddComponent<Text>();
-            PartyCardLayout.ApplyModularPrepLabelRect(prepLabelGo.GetComponent<RectTransform>());
-            ApplyModularLabel(prepLabel, 10, "PREP", FcColorTokens.Brand.MagentaAccent);
-
-            var prepValueGo = CreateUiObject("PrepValue", gaugeSlot);
-            var prepValue = prepValueGo.AddComponent<Text>();
-            PartyCardLayout.ApplyModularPrepValueRect(prepValueGo.GetComponent<RectTransform>());
-            ApplyModularLabel(prepValue, 16, "0", FcColorTokens.Brand.MagentaAccent);
+            var gaugeBgImage = CreateSideTubeTrack(gaugeSlot, "GaugeBarBg", trackSprite);
+            var gaugeFillImage = CreateSideTubeFill(
+                gaugeBgImage.rectTransform,
+                "GaugeBarFill",
+                fillSprite,
+                FcColorTokens.Brand.MagentaAccent);
+            CreateGaugeTicks(gaugeSlot);
 
             var elementGo = CreateUiObject("ElementBadge", cardGo.transform);
             var elementRect = elementGo.GetComponent<RectTransform>();
@@ -387,27 +353,74 @@ namespace FracturedChorus.Editor
             elementIconImage.preserveAspect = true;
             elementIconImage.raycastTarget = false;
 
+            var moodSprite = AssetDatabase.LoadAssetAtPath<Sprite>(
+                "Assets/FracturedChorus/Resources/UI/Combat/Buffs/astra_tv_mood_joy_v1.png");
+            var moodIcon = CreateCardImage(cardGo.transform, "BuffAstraTv", moodSprite);
+            PartyCardLayout.ApplyAstraTvMoodIconRect(moodIcon.rectTransform);
+
             var cardView = cardGo.AddComponent<PartyMemberCardView>();
             SetField(cardView, "cardBg", cardBg);
             SetField(cardView, "accentShard", accent);
             SetField(cardView, "avatarImage", avatar);
             SetField(cardView, "nameLabel", nameLabel);
-            SetField(cardView, "hpLabel", hpLabel);
-            SetField(cardView, "hpValue", hpValue);
-            SetField(cardView, "prepLabel", prepLabel);
-            SetField(cardView, "prepValue", prepValue);
             SetField(cardView, "barStack", barStack);
             SetField(cardView, "healthSlot", healthSlot);
             SetField(cardView, "gaugeSlot", gaugeSlot);
             SetField(cardView, "healthBarBg", healthBgImage);
             SetField(cardView, "healthBarFill", healthFillImage);
-            SetField(cardView, "healthBarFillRect", healthFillRect);
+            SetField(cardView, "healthBarFillRect", healthFillImage.rectTransform);
+            SetField(cardView, "gaugeBarBg", gaugeBgImage);
+            SetField(cardView, "gaugeBarFill", gaugeFillImage);
             SetField(cardView, "elementBadgeRing", elementRingImage);
             SetField(cardView, "elementIcon", elementIconImage);
             cardView.WireReferences();
             CombatUiHierarchy.AssignPartyCardPreviewPresets(cardView);
             cardView.ApplyInspectorPreview();
             return cardView;
+        }
+
+        private static Image CreateSideTubeTrack(RectTransform parent, string name, Sprite sprite)
+        {
+            var image = CreateCardImage(parent, name, sprite);
+            PartyCardLayout.ApplyModularHealthBarRect(image.rectTransform);
+            image.preserveAspect = false;
+            image.type = Image.Type.Simple;
+            image.color = Color.white;
+            return image;
+        }
+
+        private static Image CreateSideTubeFill(RectTransform parent, string name, Sprite sprite, Color color)
+        {
+            var image = CreateCardImage(parent, name, sprite != null ? sprite : UiCircleSpriteUtil.White);
+            var rt = image.rectTransform;
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = Vector2.zero;
+            image.preserveAspect = false;
+            image.type = Image.Type.Filled;
+            image.fillMethod = Image.FillMethod.Vertical;
+            image.fillOrigin = (int)Image.OriginVertical.Bottom;
+            image.fillAmount = 1f;
+            image.color = color;
+            return image;
+        }
+
+        private static void CreateGaugeTicks(RectTransform gaugeSlot)
+        {
+            for (var i = 0; i < 2; i++)
+            {
+                var tick = CreateCardImage(gaugeSlot, $"GaugeTick_{i}", UiCircleSpriteUtil.White);
+                var t = (i + 1) / 3f;
+                var rt = tick.rectTransform;
+                rt.anchorMin = new Vector2(0.18f, t);
+                rt.anchorMax = new Vector2(0.82f, t);
+                rt.pivot = new Vector2(0.5f, 0.5f);
+                rt.anchoredPosition = Vector2.zero;
+                rt.sizeDelta = new Vector2(0f, 1.5f);
+                tick.color = new Color(1f, 1f, 1f, 0.35f);
+            }
         }
 
         private static Image CreateCardImage(Transform parent, string name, Sprite sprite)

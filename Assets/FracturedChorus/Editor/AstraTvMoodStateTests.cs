@@ -143,5 +143,17 @@ namespace FracturedChorus.Tests
             Assert.AreEqual(0, AstraTvMoodState.JoyS2ReduceBeats);
             Assert.AreEqual(1f, AstraTvMoodState.CoverCostMult);
         }
+
+        [Test]
+        public void MoodSpriteResourcePath_MatchesLockedFace()
+        {
+            Assert.IsNull(AstraTvMoodState.MoodSpriteResourcePath);
+            AstraTvMoodState.Apply(AstraTvMood.Joy, 0, _config, null);
+            Assert.AreEqual("UI/Combat/Buffs/astra_tv_mood_joy_v1", AstraTvMoodState.MoodSpriteResourcePath);
+            AstraTvMoodState.Apply(AstraTvMood.Hate, 0, _config, null);
+            Assert.AreEqual("UI/Combat/Buffs/astra_tv_mood_hate_v1", AstraTvMoodState.MoodSpriteResourcePath);
+            AstraTvMoodState.Clear();
+            Assert.IsNull(AstraTvMoodState.MoodSpriteResourcePath);
+        }
     }
 }
