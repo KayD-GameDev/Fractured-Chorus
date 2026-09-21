@@ -16,7 +16,11 @@ namespace FracturedChorus.Editor
         private const string ScenePath = "Assets/FracturedChorus/Scenes/PrologueVN.unity";
         private const string ButterflyBgPath = "Assets/FracturedChorus/Art/Backgrounds/PrologueVN_ButterflyVoid_v1.png";
         private const string DialogueFramePath = "Assets/FracturedChorus/Art/UI/Narrative/DialogueBox_Frame_LightBlueHolo_v1.png";
-        private const string ContractPath = "Assets/FracturedChorus/Art/UI/Narrative/Contract_Document_Realistic_v2.png";
+        private const string ContractPath = "Assets/FracturedChorus/Art/UI/Narrative/prologue_contract_bg_v1.jpg";
+        private const string ChoiceYesNormalPath = "Assets/FracturedChorus/Art/UI/Narrative/prologue_choice_yes_normal_v1.png";
+        private const string ChoiceYesSelectedPath = "Assets/FracturedChorus/Art/UI/Narrative/prologue_choice_yes_selected_v1.png";
+        private const string ChoiceNoNormalPath = "Assets/FracturedChorus/Art/UI/Narrative/prologue_choice_no_normal_v1.png";
+        private const string ChoiceNoSelectedPath = "Assets/FracturedChorus/Art/UI/Narrative/prologue_choice_no_selected_v1.png";
         private const string BgmPath = "Assets/FracturedChorus/Audio/Music/Velvet_Reverie_BGM.mp3";
         private const string TypingPath = "Assets/FracturedChorus/Audio/SFX/Prologue_Typing.mp3";
         private const string ButterflyPath = "Assets/FracturedChorus/Audio/SFX/Prologue_ButterflyWings.mp3";
@@ -129,6 +133,7 @@ namespace FracturedChorus.Editor
             var butterflyBg = CreateImage("ButterflyBackground", canvasGo.transform, LoadSprite(ButterflyBgPath), Color.white);
             StretchRect(butterflyBg.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             butterflyBg.gameObject.SetActive(false);
+            butterflyBg.raycastTarget = false;
 
             var disclaimerGo = CreateUiObject("DisclaimerText", canvasGo.transform);
             StretchRect(disclaimerGo, new Vector2(0.1f, 0.3f), new Vector2(0.9f, 0.7f), Vector2.zero, Vector2.zero);
@@ -181,21 +186,21 @@ namespace FracturedChorus.Editor
 
             var agreeRow = CreateUiObject("AgreeRow", choiceRoot.transform);
             StretchRect(agreeRow, new Vector2(0.28f, 0.3f), new Vector2(0.72f, 0.41f), Vector2.zero, Vector2.zero);
-            var agreeHighlight = CreateImage("AgreeHighlight", agreeRow.transform, null,
-                FcColorTokens.WithAlpha(FcColorTokens.Selection.VnChoiceHighlight, 0f));
+            var agreeHighlight = CreateImage("AgreeHighlight", agreeRow.transform, LoadSprite(ChoiceYesNormalPath), Color.white);
             StretchRect(agreeHighlight.gameObject, Vector2.zero, Vector2.one, new Vector2(8f, 6f), new Vector2(-8f, -6f));
-            agreeHighlight.rectTransform.localRotation = Quaternion.Euler(0f, 0f, -2f);
-            var agreeText = CreateText("AgreeLabel", agreeRow.transform, "I agree.", 36, TextAnchor.MiddleCenter);
+            agreeHighlight.preserveAspect = true;
+            var agreeText = CreateText("AgreeLabel", agreeRow.transform, "I agree", 36, TextAnchor.MiddleCenter);
             StretchRect(agreeText.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            agreeText.color = new Color(0.10f, 0.14f, 0.28f, 1f);
 
             var disagreeRow = CreateUiObject("DisagreeRow", choiceRoot.transform);
             StretchRect(disagreeRow, new Vector2(0.28f, 0.15f), new Vector2(0.72f, 0.26f), Vector2.zero, Vector2.zero);
-            var disagreeHighlight = CreateImage("DisagreeHighlight", disagreeRow.transform, null,
-                FcColorTokens.WithAlpha(FcColorTokens.Selection.VnChoiceHighlight, 0f));
+            var disagreeHighlight = CreateImage("DisagreeHighlight", disagreeRow.transform, LoadSprite(ChoiceNoNormalPath), Color.white);
             StretchRect(disagreeHighlight.gameObject, Vector2.zero, Vector2.one, new Vector2(8f, 6f), new Vector2(-8f, -6f));
-            disagreeHighlight.rectTransform.localRotation = Quaternion.Euler(0f, 0f, 2f);
-            var disagreeText = CreateText("DisagreeLabel", disagreeRow.transform, "I do not agree.", 36, TextAnchor.MiddleCenter);
+            disagreeHighlight.preserveAspect = true;
+            var disagreeText = CreateText("DisagreeLabel", disagreeRow.transform, "I do not agree", 36, TextAnchor.MiddleCenter);
             StretchRect(disagreeText.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            disagreeText.color = new Color(0.96f, 0.97f, 1f, 1f);
 
             SetSerializedField(choiceView, "root", choiceGroup);
             SetSerializedField(choiceView, "promptText", choicePrompt);
@@ -203,6 +208,10 @@ namespace FracturedChorus.Editor
             SetSerializedField(choiceView, "disagreeLabel", disagreeText);
             SetSerializedField(choiceView, "agreeHighlight", agreeHighlight);
             SetSerializedField(choiceView, "disagreeHighlight", disagreeHighlight);
+            SetSerializedField(choiceView, "agreeNormalSprite", LoadSprite(ChoiceYesNormalPath));
+            SetSerializedField(choiceView, "agreeSelectedSprite", LoadSprite(ChoiceYesSelectedPath));
+            SetSerializedField(choiceView, "disagreeNormalSprite", LoadSprite(ChoiceNoNormalPath));
+            SetSerializedField(choiceView, "disagreeSelectedSprite", LoadSprite(ChoiceNoSelectedPath));
 
             var contractRoot = CreateUiObject("ContractPanel", canvasGo.transform);
             StretchRect(contractRoot, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
@@ -260,14 +269,16 @@ namespace FracturedChorus.Editor
             var confirmGo = CreateUiObject("ConfirmButton", contractRoot.transform);
             StretchRect(confirmGo, new Vector2(0.38f, 0.03f), new Vector2(0.62f, 0.11f), Vector2.zero, Vector2.zero);
             var confirmImage = confirmGo.AddComponent<Image>();
-            confirmImage.sprite = LoadSprite("Assets/FracturedChorus/Art/UI/Narrative/prologue_contract_confirm_button_holo_v1.png");
+            confirmImage.sprite = LoadSprite(ChoiceYesNormalPath);
             confirmImage.color = Color.white;
             confirmImage.preserveAspect = true;
             var confirmButton = confirmGo.AddComponent<Button>();
             var confirmLabel = CreateText("Label", confirmGo.transform, "Confirm", 28, TextAnchor.MiddleCenter);
             StretchRect(confirmLabel.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-            confirmLabel.color = Color.white;
-            confirmLabel.gameObject.SetActive(false);
+            confirmLabel.color = new Color(0.10f, 0.14f, 0.28f, 1f);
+            confirmLabel.raycastTarget = false;
+            var confirmHover = confirmGo.AddComponent<PrologueContractConfirmButtonView>();
+            confirmHover.Configure(confirmImage, LoadSprite(ChoiceYesNormalPath), LoadSprite(ChoiceYesSelectedPath));
 
             SetSerializedField(contractView, "root", contractGroup);
             SetSerializedField(contractView, "contractPaper", contractPaper);
@@ -295,7 +306,10 @@ namespace FracturedChorus.Editor
             SetSerializedField(audio, "menuTingClip", LoadAudio(MenuTingPath));
 
             SetSerializedField(controller, "fadeOverlay", fadeGroup);
-            SetSerializedField(controller, "butterflyBackground", butterflyBg);
+            var butterflyVfx = ButterflyTransitionPrologueInstaller.EnsureOnPrologueCanvas(
+                canvasGo.GetComponent<RectTransform>(),
+                controller);
+            SetSerializedField(controller, "butterflyVfx", butterflyVfx);
             SetSerializedField(controller, "dialoguePanel", dialogueGroup);
             SetSerializedField(controller, "disclaimerTypewriter", disclaimerTypewriter);
             SetSerializedField(controller, "disclaimerText", disclaimerText);
@@ -383,7 +397,6 @@ namespace FracturedChorus.Editor
                 return;
             }
 
-            choiceView.ApplyChoiceLayout();
             choiceView.ApplyEditorPreview();
 
             var serialized = new SerializedObject(choiceView);
@@ -392,7 +405,7 @@ namespace FracturedChorus.Editor
             serialized.FindProperty("selectedColor").colorValue = FcColorTokens.Selection.VnChoiceHighlight;
             serialized.ApplyModifiedPropertiesWithoutUndo();
             EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
-            Debug.Log("[Fractured Chorus] PrologueVN choice layout + hover updated — Save scene (Ctrl+S).");
+            Debug.Log("[Fractured Chorus] PrologueVN choice preview updated — Save scene (Ctrl+S).");
         }
 
         private static Sprite LoadSprite(string assetPath)

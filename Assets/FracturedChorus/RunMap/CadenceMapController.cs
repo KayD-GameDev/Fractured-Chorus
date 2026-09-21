@@ -2,6 +2,8 @@ using System.Collections;
 using FracturedChorus.Audio;
 using FracturedChorus.Combat.Bootstrap;
 using FracturedChorus.Data;
+using FracturedChorus.Hub;
+using FracturedChorus.Meta;
 using FracturedChorus.RunMap.Core;
 using FracturedChorus.RunMap.UI;
 using FracturedChorus.Tutorial;
@@ -90,7 +92,148 @@ namespace FracturedChorus.RunMap
             }
         }
 
-        // ESC nay mở status menu ở mọi scene; quay về Campus Hub dùng nút "Campus Hub" góc dưới trái.
+        public bool IsInsideVaultRun()
+        {
+            if (!IsInnerMapActive())
+            {
+                return false;
+            }
+
+            if (Progress.RunSeed > 0)
+            {
+                return true;
+            }
+
+            return GameMetaSession.HasSession && GameMetaSession.Current.RunSnapshot.HasActiveRun;
+        }
+
+        public bool TryHandleCancelInput()
+        {
+            if (TryCloseVisibleRoomOverlays())
+            {
+                return true;
+            }
+
+            ResolveLayerReferences();
+
+            if (IsInsideVaultRun())
+            {
+                if (innerController != null && innerController.TryHandleCancel())
+                {
+                    return true;
+                }
+
+                return true;
+            }
+
+            if (IsInnerMapActive() && innerController != null && innerController.TryHandleCancel())
+            {
+                return true;
+            }
+
+            if (IsInnerMapActive())
+            {
+                ShowMacroMap();
+                return true;
+            }
+
+            if (IsMacroMapActive())
+            {
+                RunMapHubBridge.ReturnFromRunMapNavigation();
+                return true;
+            }
+
+            RunMapHubBridge.ReturnFromRunMapNavigation();
+            return true;
+        }
+
+        private bool IsInnerMapActive()
+        {
+            ResolveLayerReferences();
+            if (innerMapRoot != null)
+            {
+                return innerMapRoot.activeSelf;
+            }
+
+            return innerController != null && innerController.enabled;
+        }
+
+        private bool IsMacroMapActive()
+        {
+            ResolveLayerReferences();
+            if (macroMapRoot != null)
+            {
+                return macroMapRoot.activeSelf;
+            }
+
+            return macroView != null && macroView.gameObject.activeSelf;
+        }
+
+        private static bool TryCloseVisibleRoomOverlays()
+        {
+            var closed = false;
+            foreach (var view in UnityEngine.Object.FindObjectsByType<TreasureRoomOverlayUIView>(
+                         FindObjectsInactive.Include))
+            {
+                if (view == null || !view.gameObject.activeSelf)
+                {
+                    continue;
+                }
+
+                view.Hide();
+                closed = true;
+            }
+
+            foreach (var view in UnityEngine.Object.FindObjectsByType<EventRoomOverlayUIView>(
+                         FindObjectsInactive.Include))
+            {
+                if (view == null || !view.gameObject.activeSelf)
+                {
+                    continue;
+                }
+
+                view.Hide();
+                closed = true;
+            }
+
+            foreach (var view in UnityEngine.Object.FindObjectsByType<CampRoomOverlayUIView>(
+                         FindObjectsInactive.Include))
+            {
+                if (view == null || !view.gameObject.activeSelf)
+                {
+                    continue;
+                }
+
+                view.Hide();
+                closed = true;
+            }
+
+            foreach (var view in UnityEngine.Object.FindObjectsByType<ShopRoomOverlayUIView>(
+                         FindObjectsInactive.Include))
+            {
+                if (view == null || !view.gameObject.activeSelf)
+                {
+                    continue;
+                }
+
+                view.Hide();
+                closed = true;
+            }
+
+            foreach (var view in UnityEngine.Object.FindObjectsByType<RunMapBossGateView>(
+                         FindObjectsInactive.Include))
+            {
+                if (view == null || !view.IsVisible)
+                {
+                    continue;
+                }
+
+                view.Hide();
+                closed = true;
+            }
+
+            return closed;
+        }
 
         private void EnsureCampusHubHotkey()
         {
@@ -131,7 +274,18 @@ namespace FracturedChorus.RunMap
 
         public void ReturnToCampusHub()
         {
-            RunMapHubBridge.ReturnToCampusHub();
+            if (IsInsideVaultRun())
+            {
+                return;
+            }
+
+            if (IsMacroMapActive())
+            {
+                RunMapHubBridge.ReturnFromRunMapNavigation();
+                return;
+            }
+
+            RunMapHubBridge.ReturnToCampusHub(forceTownMap: true);
         }
 
         private void ResolveLayerReferences()
@@ -162,6 +316,11 @@ namespace FracturedChorus.RunMap
 
         private void Start()
         {
+            if (!LoadingScreenController.IsBusy)
+            {
+                LoadingScreenController.HideCoverNow();
+            }
+
             if (macroView == null)
             {
                 Debug.LogError(
@@ -226,6 +385,11 @@ namespace FracturedChorus.RunMap
 
             var seed = bootstrap != null ? bootstrap.ResolveSeed() : Random.Range(1, int.MaxValue);
             Progress.BeginPinkyRun(seed);
+            if (GameMetaSession.HasSession)
+            {
+                GameMetaSession.Current.RunSnapshot.HasActiveRun = true;
+            }
+
             RunMapBgmController.StopAll();
             var beatMap = Resources.Load<MusicBeatMapSO>("Music/EternalSpark_Candence_BeatMap");
             RunMusicSession.Ensure().Begin(beatMap != null ? beatMap.Clip : null, beatMap);

@@ -1,0 +1,403 @@
+{
+  "scene": "Assets/FracturedChorus/Scenes/CampusHub.unity",
+  "savedAtUtc": "2026-09-11T12:14:28.727Z",
+  "note": "Reference backup only. Layout SoT is CampusHub.unity — do not re-apply from runtime code.",
+  "nodes": [
+    {
+      "path": "HubCornerInfoHud",
+      "siblingIndex": 0,
+      "activeSelf": true,
+      "anchorMin": {
+        "x": 0,
+        "y": 1
+      },
+      "anchorMax": {
+        "x": 0,
+        "y": 1
+      },
+      "anchoredPosition": {
+        "x": 24,
+        "y": -20
+      },
+      "sizeDelta": {
+        "x": 392,
+        "y": 132
+      },
+      "pivot": {
+        "x": 0,
+        "y": 1
+      },
+      "imageColor": {
+        "r": 1,
+        "g": 1,
+        "b": 1,
+        "a": 0
+      }
+    },
+    {
+      "path": "HubCornerInfoHud/BgSunClouds",
+      "siblingIndex": 0,
+      "activeSelf": true,
+      "anchorMin": {
+        "x": 0,
+        "y": 0
+      },
+      "anchorMax": {
+        "x": 1,
+        "y": 1
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "imageColor": {
+        "r": 1,
+        "g": 1,
+        "b": 1,
+        "a": 0.92
+      }
+    },
+    {
+      "path": "HubCornerInfoHud/BgDark",
+      "siblingIndex": 1,
+      "activeSelf": false,
+      "anchorMin": {
+        "x": 0,
+        "y": 0
+      },
+      "anchorMax": {
+        "x": 0.52,
+        "y": 1
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "imageColor": {
+        "r": 0.04,
+        "g": 0.05,
+        "b": 0.14,
+        "a": 0.82
+      }
+    },
+    {
+      "path": "HubCornerInfoHud/BgLight",
+      "siblingIndex": 2,
+      "activeSelf": false,
+      "anchorMin": {
+        "x": 0.52,
+        "y": 0
+      },
+      "anchorMax": {
+        "x": 1,
+        "y": 1
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "imageColor": {
+        "r": 0.78,
+        "g": 0.74,
+        "b": 0.88,
+        "a": 0.38
+      }
+    },
+    {
+      "path": "HubCornerInfoHud/DecorLineV",
+      "siblingIndex": 3,
+      "activeSelf": true,
+      "anchorMin": {
+        "x": 0,
+        "y": 0.08
+      },
+      "anchorMax": {
+        "x": 0,
+        "y": 0.92
+      },
+      "anchoredPosition": {
+        "x": 18,
+        "y": 0
+      },
+      "sizeDelta": {
+        "x": 2,
+        "y": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "imageColor": {
+        "r": 1,
+        "g": 1,
+        "b": 1,
+        "a": 1
+      }
+    },
+    {
+      "path": "HubCornerInfoHud/DecorLineH",
+      "siblingIndex": 4,
+      "activeSelf": true,
+      "anchorMin": {
+        "x": 0.04,
+        "y": 0.54
+      },
+      "anchorMax": {
+        "x": 0.96,
+        "y": 0.54
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 2
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "imageColor": {
+        "r": 1,
+        "g": 1,
+        "b": 1,
+        "a": 1
+      }
+    },
+    {
+      "path": "HubCornerInfoHud/DecorGlint",
+      "siblingIndex": 5,
+      "activeSelf": true,
+      "anchorMin": {
+        "x": 0,
+        "y": 0.54
+      },
+      "anchorMax": {
+        "x": 0,
+        "y": 0.54
+      },
+      "anchoredPosition": {
+        "x": 14,
+        "y": 0
+      },
+      "sizeDelta": {
+        "x": 12,
+        "y": 12
+      },
+      "pivot": {
+        "x": 0,
+        "y": 0.5
+      },
+      "imageColor": {
+        "r": 1,
+        "g": 1,
+        "b": 1,
+        "a": 0.95
+      }
+    },
+    {
+      "path": "HubCornerInfoHud/DateLabel",
+      "siblingIndex": 6,
+      "activeSelf": true,
+      "anchorMin": {
+        "x": 0.08,
+        "y": 0.58
+      },
+      "anchorMax": {
+        "x": 0.52,
+        "y": 0.98
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "textMeta": {
+        "text": "07 / 09",
+        "fontSize": 34,
+        "fontStyle": 0,
+        "alignment": 3,
+        "color": {
+          "r": 1,
+          "g": 1,
+          "b": 1,
+          "a": 1
+        }
+      }
+    },
+    {
+      "path": "HubCornerInfoHud/DayLabel",
+      "siblingIndex": 7,
+      "activeSelf": true,
+      "anchorMin": {
+        "x": 0.52,
+        "y": 0.58
+      },
+      "anchorMax": {
+        "x": 0.72,
+        "y": 0.98
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "textMeta": {
+        "text": "Tue",
+        "fontSize": 34,
+        "fontStyle": 0,
+        "alignment": 3,
+        "color": {
+          "r": 1,
+          "g": 1,
+          "b": 1,
+          "a": 1
+        }
+      }
+    },
+    {
+      "path": "HubCornerInfoHud/PhaseIcon",
+      "siblingIndex": 8,
+      "activeSelf": true,
+      "anchorMin": {
+        "x": 0.84,
+        "y": 0.62
+      },
+      "anchorMax": {
+        "x": 0.98,
+        "y": 0.96
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "imageColor": {
+        "r": 1,
+        "g": 1,
+        "b": 1,
+        "a": 1
+      }
+    },
+    {
+      "path": "HubCornerInfoHud/LocationLabel",
+      "siblingIndex": 9,
+      "activeSelf": true,
+      "anchorMin": {
+        "x": 0.08,
+        "y": 0.22
+      },
+      "anchorMax": {
+        "x": 0.92,
+        "y": 0.52
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "textMeta": {
+        "text": "HIMA CITY",
+        "fontSize": 22,
+        "fontStyle": 0,
+        "alignment": 0,
+        "color": {
+          "r": 1,
+          "g": 1,
+          "b": 1,
+          "a": 1
+        }
+      }
+    },
+    {
+      "path": "HubCornerInfoHud/TaglineLabel",
+      "siblingIndex": 10,
+      "activeSelf": true,
+      "anchorMin": {
+        "x": 0.08,
+        "y": 0.02
+      },
+      "anchorMax": {
+        "x": 0.92,
+        "y": 0.24
+      },
+      "anchoredPosition": {
+        "x": 0,
+        "y": 0
+      },
+      "sizeDelta": {
+        "x": 0,
+        "y": 0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "textMeta": {
+        "text": "Music Lives in You",
+        "fontSize": 13,
+        "fontStyle": 2,
+        "alignment": 0,
+        "color": {
+          "r": 1,
+          "g": 1,
+          "b": 1,
+          "a": 0.82
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+---
+description: Bonds sandbox layout lives in the scene; never re-hardcode RectTransforms.
+globs:
+  - Assets/FracturedChorus/Editor/BondsSceneSetupEditor.cs
+  - Assets/FracturedChorus/Scenes/Bonds.unity
+  - Assets/FracturedChorus/Hub/BondsMenuUI.cs
+  - Assets/FracturedChorus/Hub/BondRosterChipView.cs
+  - Assets/FracturedChorus/Hub/BondDetailCardView.cs
+  - Assets/FracturedChorus/Hub/BondEpisodeRowView.cs
+alwaysApply: false
+---
+
+# Bonds menu — scene layout is source of truth
+
+Pos / size / anchor and Hierarchy sibling order of `BondsCanvas` live only on `Bonds.unity`.
+
+1. Do not hard-code `anchoredPosition` / `sizeDelta` / Stretch in apply when the object already exists.
+2. Do not `SetSiblingIndex` on existing objects.
+3. Seed Rect only when creating a new GameObject (`created == true`).
+4. User tweaks Hierarchy then Ctrl+S.
+5. Do not OpenScene over an unsaved CampusHub or Bonds scene just to attach missing objects.
+6. Heal / Rebuild requires confirm and is the only reset.
+7. Save layout snapshot is backup only - never apply JSON back onto Rects.

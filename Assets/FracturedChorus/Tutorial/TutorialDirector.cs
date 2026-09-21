@@ -2,7 +2,10 @@ using System.Collections.Generic;
 using FracturedChorus.Combat.Core;
 using FracturedChorus.Meta;
 using FracturedChorus.UI;
+using FracturedChorus.UI.Loading;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 namespace FracturedChorus.Tutorial
 {
@@ -33,6 +36,8 @@ namespace FracturedChorus.Tutorial
         private bool _awaitingDeploy;
         private BoardDragController _boundBoardDrag;
         private CombatController _boundCombat;
+        private Canvas _hostCanvas;
+        private CanvasGroup _hostGroup;
 
         public static bool SuppressFormationHint =>
             s_instance != null && (s_instance._awaitingFormationMove || s_instance._awaitingDeploy);
@@ -67,7 +72,28 @@ namespace FracturedChorus.Tutorial
 
             s_instance = this;
             DontDestroyOnLoad(gameObject);
+            SceneManager.sceneLoaded += OnSceneLoaded;
             EnsureCoach();
+        }
+
+        public static void HideOverlay()
+        {
+            if (s_instance == null)
+            {
+                return;
+            }
+
+            s_instance.coachView?.Hide();
+            s_instance.SetHostBlocking(false);
+        }
+
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            HideOverlay();
+            if (!LoadingScreenController.IsBusy)
+            {
+                LoadingScreenController.HideCoverNow();
+            }
         }
 
         public void StartHubTrack()
@@ -177,10 +203,12 @@ namespace FracturedChorus.Tutorial
                     primaryLabel: isLast ? "Done" : "Next",
                     onBack: RetreatStep,
                     onPrimary: isLast ? CompleteTrack : AdvanceStep);
+                SetHostBlocking(true);
                 return;
             }
 
             coachView.Show(step.bodyCopy, AdvanceStep, step.coachPortrait, step.panelImage);
+            SetHostBlocking(true);
         }
 
         private void EnterFormationPractice(TutorialStepSO step)
@@ -206,6 +234,7 @@ namespace FracturedChorus.Tutorial
             _awaitingFormationMove = true;
             _awaitingDeploy = false;
             coachView?.Hide();
+            SetHostBlocking(false);
             RefreshFormationHintVisibility();
             _boundBoardDrag = FindAnyObjectByType<BoardDragController>();
             if (_boundBoardDrag != null)
@@ -223,10 +252,12 @@ namespace FracturedChorus.Tutorial
             if (!string.IsNullOrEmpty(step.bodyCopy))
             {
                 coachView.ShowFloatingHint(step.bodyCopy);
+                SetHostBlocking(false);
             }
             else
             {
                 coachView.Hide();
+                SetHostBlocking(false);
             }
 
             _boundCombat = FindAnyObjectByType<CombatController>();
@@ -379,11 +410,13 @@ namespace FracturedChorus.Tutorial
             _completionFlag = null;
             _slideshowTrack = false;
             coachView?.Hide();
+            SetHostBlocking(false);
         }
 
         private void OnDestroy()
         {
             UnbindPracticeHooks();
+            SceneManager.sceneLoaded -= OnSceneLoaded;
             if (s_instance == this)
             {
                 s_instance = null;
@@ -392,18 +425,70 @@ namespace FracturedChorus.Tutorial
 
         private void EnsureCoach()
         {
+            EnsureHostCanvas();
             if (coachView != null)
             {
                 return;
             }
 
-            var canvas = FindAnyObjectByType<Canvas>();
-            if (canvas == null)
+            coachView = TutorialCoachView.Ensure(transform);
+            SetHostBlocking(false);
+        }
+
+        private void EnsureHostCanvas()
+        {
+            if (_hostCanvas != null)
             {
                 return;
             }
 
-            coachView = TutorialCoachView.Ensure(canvas.transform);
+            _hostCanvas = GetComponent<Canvas>();
+            if (_hostCanvas == null)
+            {
+                _hostCanvas = gameObject.AddComponent<Canvas>();
+            }
+
+            _hostCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            _hostCanvas.overrideSorting = true;
+            _hostCanvas.sortingOrder = UiCanvasLayers.Tutorial;
+
+            if (GetComponent<CanvasScaler>() == null)
+            {
+                var scaler = gameObject.AddComponent<CanvasScaler>();
+                scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+                scaler.referenceResolution = new Vector2(1920f, 1080f);
+                scaler.matchWidthOrHeight = 0.5f;
+            }
+
+            if (GetComponent<GraphicRaycaster>() == null)
+            {
+                gameObject.AddComponent<GraphicRaycaster>();
+            }
+
+            _hostGroup = GetComponent<CanvasGroup>();
+            if (_hostGroup == null)
+            {
+                _hostGroup = gameObject.AddComponent<CanvasGroup>();
+            }
+
+            SetHostBlocking(false);
+        }
+
+        private void SetHostBlocking(bool blocking)
+        {
+            if (_hostGroup == null)
+            {
+                _hostGroup = GetComponent<CanvasGroup>();
+            }
+
+            if (_hostGroup == null)
+            {
+                return;
+            }
+
+            _hostGroup.alpha = 1f;
+            _hostGroup.blocksRaycasts = blocking;
+            _hostGroup.interactable = blocking;
         }
 
         private static Sprite LoadCodaChibi()

@@ -166,8 +166,7 @@ Chữ *Fractured Chorus*, *PRESS ANY BUTTON*, logo *FC* — **baked** trong PNG.
 
 ## Off-Beat Archive — Play checklist
 
-1. Mở `MainMenuStartGame` → **Fractured Chorus → Upgrade Off-Beat SyncPod Layout** → Save  
-   (stub cũ: **Upgrade Off-Beat Archive Player** trước)
+1. Layout SyncPod (VolumeArc, Controls): chỉnh trên **Hierarchy** → **Ctrl+S** → **Fractured Chorus → Menu → Save Off-Beat SyncPod Layout Snapshot**. Không bật `Apply Layout On Awake` trên `OffBeatVolumeArcView`. Chỉ chạy **Upgrade Off-Beat SyncPod Layout** khi cần rebuild overlay (áp snapshot, không hardcode Rect).
 2. Play → Attract → Main Menu → **OFF-BEAT ARCHIVE**
 3. Catalog trái · SyncPod player phải (`offbeat_syncpod_bg_v2` · cover / title / Shuffle·Play·Repeat · waveform trên mặt đĩa · volume arc đáy)
 4. Click bài hoặc ↑↓ + Enter → Play · Midnight duck · **waveform string cyan trên face**

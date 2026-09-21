@@ -1,0 +1,82 @@
+{
+  "note": "Captured from MainMenuStartGame.unity — SoT vẫn là scene; JSON dùng khi Rebuild SyncPod. Save lại: Fractured Chorus/Menu/Save Off-Beat SyncPod Layout Snapshot.",
+  "nodes": [
+    {
+      "path": "OffBeatArchiveOverlay/ArchivePanel/PlayerRoot/VolumeArcRoot",
+      "anchorMin": { "x": 0.5, "y": 0.5 },
+      "anchorMax": { "x": 0.5, "y": 0.5 },
+      "pivot": { "x": 0.5, "y": 0.5 },
+      "anchoredPosition": { "x": 109.3, "y": 143.1 },
+      "sizeDelta": { "x": 228.89, "y": 208.41 },
+      "offsetMin": { "x": 0.0, "y": 0.0 },
+      "offsetMax": { "x": 0.0, "y": 0.0 },
+      "localEulerZ": -8.746415
+    },
+    {
+      "path": "OffBeatArchiveOverlay/ArchivePanel/PlayerRoot/DiscFace",
+      "anchorMin": { "x": 0.5, "y": 0.5 },
+      "anchorMax": { "x": 0.5, "y": 0.5 },
+      "pivot": { "x": 0.5, "y": 0.5 },
+      "anchoredPosition": { "x": 113.0, "y": -22.7 },
+      "sizeDelta": { "x": 420.0, "y": 420.0 },
+      "offsetMin": { "x": 0.0, "y": 0.0 },
+      "offsetMax": { "x": 0.0, "y": 0.0 },
+      "localEulerZ": 0.0
+    },
+    {
+      "path": "OffBeatArchiveOverlay/ArchivePanel/PlayerRoot/DiscFace/CoverImage",
+      "anchorMin": { "x": 0.5, "y": 0.5 },
+      "anchorMax": { "x": 0.5, "y": 0.5 },
+      "pivot": { "x": 0.5, "y": 0.5 },
+      "anchoredPosition": { "x": -1.7, "y": 136.6 },
+      "sizeDelta": { "x": 77.06, "y": 71.63 },
+      "offsetMin": { "x": 0.0, "y": 0.0 },
+      "offsetMax": { "x": 0.0, "y": 0.0 },
+      "localEulerZ": 0.0
+    },
+    {
+      "path": "OffBeatArchiveOverlay/ArchivePanel/PlayerRoot/DiscFace/SongTitle",
+      "anchorMin": { "x": 0.0, "y": 0.5 },
+      "anchorMax": { "x": 1.0, "y": 0.5 },
+      "pivot": { "x": 0.5, "y": 0.5 },
+      "anchoredPosition": { "x": -4.04, "y": 40.7 },
+      "sizeDelta": { "x": -195.55, "y": 44.0 },
+      "offsetMin": { "x": 0.0, "y": 0.0 },
+      "offsetMax": { "x": 0.0, "y": 0.0 },
+      "localEulerZ": 0.0
+    },
+    {
+      "path": "OffBeatArchiveOverlay/ArchivePanel/PlayerRoot/DiscFace/SongTitle/Label",
+      "anchorMin": { "x": 0.0, "y": 0.0 },
+      "anchorMax": { "x": 1.0, "y": 1.0 },
+      "pivot": { "x": 0.5, "y": 0.5 },
+      "anchoredPosition": { "x": 0.0, "y": 9.7 },
+      "sizeDelta": { "x": 0.0, "y": 0.0 },
+      "offsetMin": { "x": 0.0, "y": 0.0 },
+      "offsetMax": { "x": 0.0, "y": 0.0 },
+      "localEulerZ": 0.0
+    },
+    {
+      "path": "OffBeatArchiveOverlay/ArchivePanel/PlayerRoot/DiscFace/Waveform",
+      "anchorMin": { "x": 0.12, "y": 0.12 },
+      "anchorMax": { "x": 0.88, "y": 0.38 },
+      "pivot": { "x": 0.5, "y": 0.5 },
+      "anchoredPosition": { "x": -5.99, "y": 84.7 },
+      "sizeDelta": { "x": -116.99, "y": 0.0 },
+      "offsetMin": { "x": 0.0, "y": 0.0 },
+      "offsetMax": { "x": 0.0, "y": 0.0 },
+      "localEulerZ": 0.0
+    },
+    {
+      "path": "OffBeatArchiveOverlay/ArchivePanel/PlayerRoot/DiscFace/Controls",
+      "anchorMin": { "x": 0.5, "y": 0.5 },
+      "anchorMax": { "x": 0.5, "y": 0.5 },
+      "pivot": { "x": 0.5, "y": 0.5 },
+      "anchoredPosition": { "x": -1.0, "y": 7.6 },
+      "sizeDelta": { "x": 135.76, "y": 32.6 },
+      "offsetMin": { "x": 0.0, "y": 0.0 },
+      "offsetMax": { "x": 0.0, "y": 0.0 },
+      "localEulerZ": 0.0
+    }
+  ]
+}

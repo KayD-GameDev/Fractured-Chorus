@@ -10,11 +10,13 @@ Unity Editor (đóng batch nếu đang chạy):
 1. Menu **Fractured Chorus → Create PrologueVN Scene** (lần đầu)
    - Hoặc **Setup PrologueVN Scene Hierarchy** (rebuild trên scene đang mở)
 2. Save scene · Build Settings tự thêm index 1
+3. **Fractured Chorus → Narrative → Install Butterfly VFX On PrologueVN** (thay `ButterflyBackground` PNG bằng `FC_ButterflyTransition`)
 
 Batch (Unity **đóng**):
 
 ```powershell
 Unity -batchmode -projectPath "d:\Fractured-Chorus1" -executeMethod FracturedChorus.Editor.PrologueVNSceneSetupEditor.BatchCreatePrologueVNScene -logFile Logs/PrologueVNSceneSetup.log
+Unity -batchmode -projectPath "d:\Fractured-Chorus1" -executeMethod FracturedChorus.Editor.ButterflyTransitionPrologueInstaller.BatchInstall -logFile Logs/ButterflyPrologueInstall.log
 ```
 
 ## Playtest flow

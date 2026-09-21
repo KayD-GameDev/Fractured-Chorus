@@ -28,6 +28,15 @@
 - Path: `Art/Characters/Ren/School/ren_hima_uniform_menu_fullbody_v1.png`
 - Must match Face / Outfit lock (grey eyes + SyncPod on ear)
 
+## Past — Aoto Municipal High (bond flashback)
+- Same face lock (messy black hair, **grey** irises, pale skin, slim)
+- Age look: ~16, slightly younger than HIMA transfer
+- Uniform: charcoal-grey blazer `#3A3D45`, white shirt, **plain black necktie** (no waveform), charcoal trousers, black loafers
+- Blazer slightly rumpled; one hand in pocket
+- **No** SyncPod, **no** gold musical-note pin, **no** cyan collar trim, **no** over-ear headphones
+- Path: `Art/Characters/Ren/Past/ren_aoto_hs_fullbody_v1.png`
+- Pair with Touya: `Art/Characters/Touya/Past/touya_aoto_hs_fullbody_v1.png`
+
 ## Title screen pose
 - Path: `Art/UI/TitleScreen/SheetV1/char_ren_title_pose_v1_alpha.png`
 - Same school identity; reach pose (left palm toward camera, right hand in pocket)

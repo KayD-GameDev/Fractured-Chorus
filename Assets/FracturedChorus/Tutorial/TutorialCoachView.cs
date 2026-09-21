@@ -212,6 +212,8 @@ namespace FracturedChorus.Tutorial
             _onBack = null;
             _slideshowMode = false;
             _blocksCombatUi = false;
+            ApplyDimmer(0f);
+            SetPanelRaycast(false);
             if (root != null)
             {
                 root.SetActive(false);

@@ -1,0 +1,188 @@
+[
+  {
+    "file": "01_Header_Bonds.png",
+    "punched": 9700,
+    "components": 11,
+    "px": 1231449
+  },
+  {
+    "file": "02_Menu_Normal.png",
+    "punched": 3777,
+    "components": 6,
+    "px": 1320022
+  },
+  {
+    "file": "03_Menu_Selected.png",
+    "punched": 378950,
+    "components": 12,
+    "px": 1252071
+  },
+  {
+    "file": "04_Panel_SocialStats.png",
+    "punched": 144,
+    "components": 1,
+    "px": 1247330
+  },
+  {
+    "file": "05_Panel_Episodes.png",
+    "punched": 522,
+    "components": 1,
+    "px": 1384761
+  },
+  {
+    "file": "06_Row_Episode_Normal.png",
+    "punched": 9039,
+    "components": 3,
+    "px": 1395364
+  },
+  {
+    "file": "07_Row_Episode_Selected.png",
+    "punched": 302656,
+    "components": 9,
+    "px": 1201314
+  },
+  {
+    "file": "08_Card_Character_Normal.png",
+    "punched": 246402,
+    "components": 10,
+    "px": 1261776
+  },
+  {
+    "file": "09_Card_Character_Selected.png",
+    "punched": 540667,
+    "components": 16,
+    "px": 1275584
+  },
+  {
+    "file": "10_Panel_CharacterInfo.png",
+    "punched": 167623,
+    "components": 2,
+    "px": 1330104
+  },
+  {
+    "file": "11_Frame_Promo.png",
+    "punched": 10777,
+    "components": 23,
+    "px": 1387831
+  },
+  {
+    "file": "12_Panel_Footer.png",
+    "punched": 5671,
+    "components": 10,
+    "px": 1170336
+  },
+  {
+    "file": "13_Icon_Bonds.png",
+    "punched": 0,
+    "components": 0,
+    "px": 583164
+  },
+  {
+    "file": "14_Icon_SocialStats.png",
+    "punched": 0,
+    "components": 0,
+    "px": 948675
+  },
+  {
+    "file": "15_Icon_Link.png",
+    "punched": 0,
+    "components": 0,
+    "px": 1482500
+  },
+  {
+    "file": "16_Icon_Conversations.png",
+    "punched": 218846,
+    "components": 1,
+    "px": 486494
+  },
+  {
+    "file": "17_Icon_Memories.png",
+    "punched": 234642,
+    "components": 1,
+    "px": 1097163
+  },
+  {
+    "file": "18_Icon_Gallery.png",
+    "punched": 358267,
+    "components": 2,
+    "px": 1018776
+  },
+  {
+    "file": "19_Icon_Pulse.png",
+    "punched": 0,
+    "components": 0,
+    "px": 245614
+  },
+  {
+    "file": "20_Icon_Cadence.png",
+    "punched": 0,
+    "components": 0,
+    "px": 583704
+  },
+  {
+    "file": "21_Icon_Harmony.png",
+    "punched": 135229,
+    "components": 4,
+    "px": 930550
+  },
+  {
+    "file": "22_Icon_Resonance.png",
+    "punched": 160193,
+    "components": 1,
+    "px": 1276900
+  },
+  {
+    "file": "23_Icon_Rhythm.png",
+    "punched": 0,
+    "components": 0,
+    "px": 391672
+  },
+  {
+    "file": "24_Icon_Lock.png",
+    "punched": 52748,
+    "components": 2,
+    "px": 1012517
+  },
+  {
+    "file": "25_Icon_Play.png",
+    "punched": 271874,
+    "components": 1,
+    "px": 559504
+  },
+  {
+    "file": "26_Icon_Arrow.png",
+    "punched": 0,
+    "components": 0,
+    "px": 418215
+  },
+  {
+    "file": "27_Icon_Sun.png",
+    "punched": 92327,
+    "components": 1,
+    "px": 982032
+  },
+  {
+    "file": "28_Icon_Mouse.png",
+    "punched": 168043,
+    "components": 3,
+    "px": 792285
+  },
+  {
+    "file": "29_Icon_Back.png",
+    "punched": 231981,
+    "components": 10,
+    "px": 1321600
+  },
+  {
+    "file": "30_Decor_Spark.png",
+    "punched": 30638,
+    "components": 56,
+    "px": 1484470
+  },
+  {
+    "file": "31_Decor_Divider.png",
+    "punched": 25530,
+    "components": 11,
+    "px": 1170296
+  }
+]

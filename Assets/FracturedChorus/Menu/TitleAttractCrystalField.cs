@@ -27,11 +27,20 @@ namespace FracturedChorus.Menu
 
         public void Bind(Sprite[] boundShards, int shardCount)
         {
+            Bind(boundShards, shardCount, sizeRange, speedRange, spinRange);
+        }
+
+        public void Bind(Sprite[] boundShards, int shardCount, Vector2 size, Vector2 speed, Vector2 spin)
+        {
             shards = boundShards;
             if (shardCount > 0)
             {
                 count = shardCount;
             }
+
+            sizeRange = size;
+            speedRange = speed;
+            spinRange = spin;
 
             if (Application.isPlaying)
             {

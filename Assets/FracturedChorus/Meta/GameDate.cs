@@ -72,6 +72,8 @@ namespace FracturedChorus.Meta
 
         public string ToDisplayString() => $"{Day:00}/{Month:00}";
 
+        public string ToCornerHudDateString() => $"{Day:00} / {Month:00}";
+
         public DayOfWeek GetDayOfWeek(int year = 2026)
         {
             return new DateTime(year, Month, Day).DayOfWeek;

@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: FlowerWorkScenario_get_well
   m_EditorClassIdentifier: 
   id: get_well
+  customerSpeakerId: flower_customer_girl
   customerLine: A friend is recovering at home. Something gentle would help.
   thinkPrompt: Gentle get-well flowers?
   choices:

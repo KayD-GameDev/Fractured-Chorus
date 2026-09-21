@@ -210,10 +210,10 @@ namespace FracturedChorus.Menu
 
             if (syncPodBackground != null && syncPodBackground.sprite == null)
             {
-                syncPodBackground.sprite = Resources.Load<Sprite>("UI/OffBeat/offbeat_syncpod_bg_v2");
+                syncPodBackground.sprite = Resources.Load<Sprite>("UI/OffBeat/offbeat_syncpod_bg_v3");
                 if (syncPodBackground.sprite == null)
                 {
-                    var tex = Resources.Load<Texture2D>("UI/OffBeat/offbeat_syncpod_bg_v2");
+                    var tex = Resources.Load<Texture2D>("UI/OffBeat/offbeat_syncpod_bg_v3");
                     if (tex != null)
                     {
                         syncPodBackground.sprite = Sprite.Create(
@@ -254,7 +254,7 @@ namespace FracturedChorus.Menu
 
                 RelocateWaveformToFace(playerRoot, discFace);
                 RelocateTransportToFace(playerRoot, discFace);
-                ApplySongTitleLayout(discFace);
+                WireSongTitleMarquee(discFace);
             }
 
             if (volumeArcView == null)
@@ -330,55 +330,6 @@ namespace FracturedChorus.Menu
                 return;
             }
 
-            var circle = GetOrCreateCircleSprite();
-            var discPlate = discFace.Find("DiscPlate");
-            if (discPlate == null)
-            {
-                var plateGo = new GameObject("DiscPlate", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-                plateGo.transform.SetParent(discFace, false);
-                plateGo.transform.SetAsFirstSibling();
-                var plateRt = plateGo.GetComponent<RectTransform>();
-                plateRt.anchorMin = new Vector2(0.5f, 1f);
-                plateRt.anchorMax = new Vector2(0.5f, 1f);
-                plateRt.pivot = new Vector2(0.5f, 1f);
-                plateRt.anchoredPosition = new Vector2(0f, -18f);
-                plateRt.sizeDelta = new Vector2(112f, 112f);
-                var plateImg = plateGo.GetComponent<Image>();
-                plateImg.sprite = circle;
-                plateImg.type = Image.Type.Simple;
-                plateImg.preserveAspect = true;
-                plateImg.raycastTarget = false;
-                plateImg.color = new Color(0.1f, 0.14f, 0.2f, 1f);
-
-                var grooveGo = new GameObject("Grooves", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-                grooveGo.transform.SetParent(plateGo.transform, false);
-                var grooveRt = grooveGo.GetComponent<RectTransform>();
-                grooveRt.anchorMin = Vector2.zero;
-                grooveRt.anchorMax = Vector2.one;
-                grooveRt.offsetMin = new Vector2(10f, 10f);
-                grooveRt.offsetMax = new Vector2(-10f, -10f);
-                var grooveImg = grooveGo.GetComponent<Image>();
-                grooveImg.sprite = GetOrCreateRingSprite();
-                grooveImg.type = Image.Type.Simple;
-                grooveImg.preserveAspect = true;
-                grooveImg.raycastTarget = false;
-                grooveImg.color = new Color(0f, 0.75f, 1f, 0.4f);
-
-                var hubGo = new GameObject("Hub", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-                hubGo.transform.SetParent(plateGo.transform, false);
-                var hubRt = hubGo.GetComponent<RectTransform>();
-                hubRt.anchorMin = new Vector2(0.5f, 0.5f);
-                hubRt.anchorMax = new Vector2(0.5f, 0.5f);
-                hubRt.pivot = new Vector2(0.5f, 0.5f);
-                hubRt.sizeDelta = new Vector2(28f, 28f);
-                var hubImg = hubGo.GetComponent<Image>();
-                hubImg.sprite = circle;
-                hubImg.preserveAspect = true;
-                hubImg.raycastTarget = false;
-                hubImg.color = new Color(0.05f, 0.08f, 0.12f, 1f);
-                discPlate = plateGo.transform;
-            }
-
             if (coverImage == null)
             {
                 var coverTf = discFace.Find("CoverImage");
@@ -390,117 +341,15 @@ namespace FracturedChorus.Menu
 
             if (coverImage == null)
             {
-                var coverGo = new GameObject("CoverImage", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-                coverGo.transform.SetParent(discFace, false);
-                if (discPlate != null)
-                {
-                    coverGo.transform.SetSiblingIndex(discPlate.GetSiblingIndex() + 1);
-                }
-
-                var coverRtNew = coverGo.GetComponent<RectTransform>();
-                coverRtNew.anchorMin = new Vector2(0.5f, 1f);
-                coverRtNew.anchorMax = new Vector2(0.5f, 1f);
-                coverRtNew.pivot = new Vector2(0.5f, 1f);
-                coverRtNew.anchoredPosition = new Vector2(0f, -34f);
-                coverRtNew.sizeDelta = new Vector2(64f, 64f);
-                coverImage = coverGo.GetComponent<Image>();
-            }
-
-            if (coverPlaceholder == null)
-            {
-                coverPlaceholder = circle;
+                return;
             }
 
             coverImage.preserveAspect = true;
             coverImage.raycastTarget = false;
-            if (coverImage.sprite == null)
+            if (coverImage.sprite == null && coverPlaceholder != null)
             {
                 coverImage.sprite = coverPlaceholder;
-                coverImage.color = new Color(0.12f, 0.22f, 0.32f, 1f);
             }
-        }
-
-        private static Sprite s_circleSprite;
-        private static Sprite s_ringSprite;
-
-        private static Sprite GetOrCreateCircleSprite()
-        {
-            if (s_circleSprite != null)
-            {
-                return s_circleSprite;
-            }
-
-            const int size = 128;
-            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false)
-            {
-                name = "OffBeatDiscCircle",
-                filterMode = FilterMode.Bilinear,
-                hideFlags = HideFlags.HideAndDontSave
-            };
-            var center = (size - 1) * 0.5f;
-            var pixels = new Color32[size * size];
-            for (var y = 0; y < size; y++)
-            {
-                for (var x = 0; x < size; x++)
-                {
-                    var dx = x - center;
-                    var dy = y - center;
-                    var d = Mathf.Sqrt(dx * dx + dy * dy);
-                    var a = d <= center - 1f ? (byte)255 : (byte)0;
-                    if (d > center - 2f && d <= center)
-                    {
-                        a = (byte)Mathf.Clamp(Mathf.RoundToInt((center - d) * 255f), 0, 255);
-                    }
-
-                    pixels[y * size + x] = new Color32(255, 255, 255, a);
-                }
-            }
-
-            tex.SetPixels32(pixels);
-            tex.Apply(false, false);
-            s_circleSprite = Sprite.Create(tex, new Rect(0f, 0f, size, size), new Vector2(0.5f, 0.5f), 100f);
-            return s_circleSprite;
-        }
-
-        private static Sprite GetOrCreateRingSprite()
-        {
-            if (s_ringSprite != null)
-            {
-                return s_ringSprite;
-            }
-
-            const int size = 128;
-            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false)
-            {
-                name = "OffBeatDiscRing",
-                filterMode = FilterMode.Bilinear,
-                hideFlags = HideFlags.HideAndDontSave
-            };
-            var center = (size - 1) * 0.5f;
-            var outer = center - 2f;
-            var inner = center * 0.55f;
-            var pixels = new Color32[size * size];
-            for (var y = 0; y < size; y++)
-            {
-                for (var x = 0; x < size; x++)
-                {
-                    var dx = x - center;
-                    var dy = y - center;
-                    var d = Mathf.Sqrt(dx * dx + dy * dy);
-                    byte a = 0;
-                    if (d <= outer && d >= inner)
-                    {
-                        a = 180;
-                    }
-
-                    pixels[y * size + x] = new Color32(255, 255, 255, a);
-                }
-            }
-
-            tex.SetPixels32(pixels);
-            tex.Apply(false, false);
-            s_ringSprite = Sprite.Create(tex, new Rect(0f, 0f, size, size), new Vector2(0.5f, 0.5f), 100f);
-            return s_ringSprite;
         }
 
         private void RelocateWaveformToFace(Transform playerRoot, Transform discFace)
@@ -518,7 +367,7 @@ namespace FracturedChorus.Menu
 
             if (wave.parent != discFace)
             {
-                wave.SetParent(discFace, worldPositionStays: true);
+                wave.SetParent(discFace, false);
             }
 
             if (waveformImage == null)
@@ -535,22 +384,13 @@ namespace FracturedChorus.Menu
                 controls = playerRoot.Find("Controls");
                 if (controls != null)
                 {
-                    controls.SetParent(discFace, worldPositionStays: true);
+                    controls.SetParent(discFace, false);
                 }
             }
 
-            if (coverImage != null && coverImage.transform.parent != discFace)
-            {
-                coverImage.transform.SetParent(discFace, worldPositionStays: true);
-            }
-
-            if (songTitleLabel != null && songTitleLabel.transform.parent != discFace)
-            {
-                songTitleLabel.transform.SetParent(discFace, worldPositionStays: true);
-            }
         }
 
-        private void ApplySongTitleLayout(Transform discFace)
+        private void WireSongTitleMarquee(Transform discFace)
         {
             if (songTitleLabel == null || discFace == null)
             {
@@ -558,42 +398,26 @@ namespace FracturedChorus.Menu
             }
 
             var viewportTransform = songTitleLabel.transform;
-            if (viewportTransform.parent != discFace)
+            if (viewportTransform.name == "Label" && viewportTransform.parent != null)
             {
-                viewportTransform.SetParent(discFace, false);
+                viewportTransform = viewportTransform.parent;
             }
 
-            if (viewportTransform is not RectTransform viewport)
+            if (viewportTransform.parent != discFace)
             {
                 return;
             }
 
-            viewport.anchorMin = new Vector2(0f, 0.5f);
-            viewport.anchorMax = new Vector2(1f, 0.5f);
-            viewport.pivot = new Vector2(0.5f, 0.5f);
-            viewport.anchoredPosition = Vector2.zero;
-            viewport.offsetMin = new Vector2(20.1f, -36f);
-            viewport.offsetMax = new Vector2(-19.28f, 36f);
-
-            if (viewport.GetComponent<RectMask2D>() == null)
-            {
-                viewport.gameObject.AddComponent<RectMask2D>();
-            }
-
             _songTitleDisplayLabel = EnsureSongTitleLabelChild(viewportTransform);
-            _songTitleDisplayLabel.resizeTextForBestFit = false;
-            _songTitleDisplayLabel.fontStyle = FontStyle.Bold;
-            _songTitleDisplayLabel.alignment = TextAnchor.MiddleCenter;
-            _songTitleDisplayLabel.color = FcColorTokens.Brand.Cyan;
-            if (_songTitleDisplayLabel.fontSize < 20)
+            if (_songTitleDisplayLabel == null)
             {
-                _songTitleDisplayLabel.fontSize = 22;
+                return;
             }
 
-            _songTitleMarquee = viewport.GetComponent<MarqueeTextUI>();
+            _songTitleMarquee = viewportTransform.GetComponent<MarqueeTextUI>();
             if (_songTitleMarquee == null)
             {
-                _songTitleMarquee = viewport.gameObject.AddComponent<MarqueeTextUI>();
+                _songTitleMarquee = viewportTransform.gameObject.AddComponent<MarqueeTextUI>();
             }
 
             _songTitleMarquee.BindLabel(_songTitleDisplayLabel);
@@ -601,14 +425,6 @@ namespace FracturedChorus.Menu
             if (songTitleLabel.transform == viewportTransform && _songTitleDisplayLabel != songTitleLabel)
             {
                 songTitleLabel.enabled = false;
-            }
-
-            var controls = discFace.Find("Controls");
-            var wave = discFace.Find("Waveform");
-            var insertBefore = controls != null ? controls : wave;
-            if (insertBefore != null)
-            {
-                viewportTransform.SetSiblingIndex(insertBefore.GetSiblingIndex());
             }
         }
 
@@ -1132,7 +948,7 @@ namespace FracturedChorus.Menu
                 }
                 else
                 {
-                    coverImage.sprite = coverPlaceholder != null ? coverPlaceholder : GetOrCreateCircleSprite();
+                    coverImage.sprite = coverPlaceholder;
                     coverImage.color = new Color(0.12f, 0.22f, 0.32f, 1f);
                 }
 

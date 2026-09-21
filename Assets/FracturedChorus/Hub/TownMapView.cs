@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using FracturedChorus.Meta;
-using FracturedChorus.RunMap;
 using FracturedChorus.UI;
 using UnityEngine;
 using UnityEngine.UI;
@@ -16,6 +15,7 @@ namespace FracturedChorus.Hub
         [SerializeField] private TownMapPinView pinTemplate;
         [SerializeField] private DistrictSelectPanel districtPanel;
         [SerializeField] private CalendarSlashBanner slashBanner;
+        [SerializeField] private HubCornerInfoHud cornerInfoHud;
         [SerializeField] private Text selectMapTitle;
         [SerializeField] private Text selectMapSubtitle;
         [SerializeField] private Image headerPinImage;
@@ -61,7 +61,18 @@ namespace FracturedChorus.Hub
             }
 
             EnsureStatusMenu();
+            EnsureCornerInfoHud();
             WireMenuButton();
+        }
+
+        private void EnsureCornerInfoHud()
+        {
+            if (cornerInfoHud == null)
+            {
+                cornerInfoHud = GetComponentInChildren<HubCornerInfoHud>(true);
+            }
+
+            cornerInfoHud?.WireReferences();
         }
 
         private void Update()
@@ -71,9 +82,9 @@ namespace FracturedChorus.Hub
                 return;
             }
 
+            var allowHotkey = statusMenu == null || !statusMenu.IsOpen;
             if (runMapHotkey != null)
             {
-                var allowHotkey = statusMenu == null || !statusMenu.IsOpen;
                 runMapHotkey.SetListening(allowHotkey);
             }
 
@@ -100,6 +111,22 @@ namespace FracturedChorus.Hub
 
         public static bool OpenStatusMenuOnNextShow { get; set; }
 
+        public static bool OpenSystemSubmenuOnNextShow { get; set; }
+
+        public static MetaStatusMenuUI.Tab? OpenStatusMenuTabOnNextShow { get; set; }
+
+        public static void PrepareReturnToHub(
+            bool openStatusMenu,
+            MetaStatusMenuUI.Tab tab = MetaStatusMenuUI.Tab.Stats)
+        {
+            OpenStatusMenuOnNextShow = openStatusMenu;
+            OpenStatusMenuTabOnNextShow = openStatusMenu ? tab : null;
+            if (!openStatusMenu)
+            {
+                OpenSystemSubmenuOnNextShow = false;
+            }
+        }
+
         public void Show(GameMetaState state, DayPhase phase, Action<string> onActivityChosen)
         {
             _state = state;
@@ -110,21 +137,44 @@ namespace FracturedChorus.Hub
             EnsureStatusMenu();
             ApplyBackground(phase);
             slashBanner?.Refresh(state);
+            cornerInfoHud?.Refresh(state);
             statusMenu?.Hide();
             if (OpenStatusMenuOnNextShow)
             {
                 OpenStatusMenuOnNextShow = false;
-                statusMenu?.Show(state);
+                var openSystem = OpenSystemSubmenuOnNextShow;
+                OpenSystemSubmenuOnNextShow = false;
+                var tab = OpenStatusMenuTabOnNextShow ?? MetaStatusMenuUI.Tab.Stats;
+                OpenStatusMenuTabOnNextShow = null;
+                if (openSystem)
+                {
+                    statusMenu?.ShowSystemSubmenu(state);
+                }
+                else
+                {
+                    statusMenu?.Show(state, tab);
+                }
+
+                HubNavigationEscContext.ConsumeReopenAfterRunMapEsc(out _);
+            }
+            else
+            {
+                OpenSystemSubmenuOnNextShow = false;
             }
 
-            if (selectMapTitle != null)
-            {
-                selectMapTitle.text = "SELECT MAP";
-            }
+            FulfillPendingStatusMenuReturn(state);
 
-            if (selectMapSubtitle != null)
+            if (cornerInfoHud == null)
             {
-                selectMapSubtitle.text = "Where should I go?";
+                if (selectMapTitle != null)
+                {
+                    selectMapTitle.text = "SELECT MAP";
+                }
+
+                if (selectMapSubtitle != null)
+                {
+                    selectMapSubtitle.text = "Where should I go?";
+                }
             }
 
             if (wordmarkLabel != null)
@@ -144,7 +194,6 @@ namespace FracturedChorus.Hub
             }
 
             promptBar?.ApplyDefaultLabels();
-            EnsureRunMapHotkey();
 
             EnsurePins();
             RefreshPinVisibility();
@@ -190,6 +239,37 @@ namespace FracturedChorus.Hub
             }
         }
 
+        public void FulfillPendingStatusMenuReturn(GameMetaState state)
+        {
+            if (state == null)
+            {
+                return;
+            }
+
+            if (statusMenu != null && statusMenu.IsOpen)
+            {
+                if (HubNavigationEscContext.HasPendingReopenAfterRunMapEsc)
+                {
+                    HubNavigationEscContext.ConsumeReopenAfterRunMapEsc(out _);
+                }
+
+                return;
+            }
+
+            if (!HubNavigationEscContext.HasPendingReopenAfterRunMapEsc)
+            {
+                return;
+            }
+
+            if (!HubNavigationEscContext.ConsumeReopenAfterRunMapEsc(out var tab))
+            {
+                return;
+            }
+
+            EnsureStatusMenu();
+            statusMenu?.Show(state, tab);
+        }
+
         public void Hide()
         {
             statusMenu?.Hide();
@@ -201,31 +281,6 @@ namespace FracturedChorus.Hub
             }
 
             gameObject.SetActive(false);
-        }
-
-        private void EnsureRunMapHotkey()
-        {
-            var barParent = promptBar != null ? promptBar.transform : transform;
-            runMapHotkey = SceneLinkHotkeyUI.Ensure(
-                barParent,
-                "Run Map",
-                GoToRunMapPrototype,
-                placement: SceneLinkHotkeyPlacement.PromptBarInline,
-                persistInScene: true);
-        }
-
-        private void GoToRunMapPrototype()
-        {
-            if (statusMenu != null && statusMenu.IsOpen)
-            {
-                return;
-            }
-
-            sfx?.PlaySelect();
-            if (!RunMapSceneLoader.LoadRunMapPrototype())
-            {
-                Debug.LogError("[Fractured Chorus] Không load được RunMapPrototype từ Town Map (phím B).");
-            }
         }
 
         public void RefreshCalendar(GameMetaState state)

@@ -162,6 +162,12 @@ namespace FracturedChorus.Hub.CharacterBuild
                 return;
             }
 
+            if (TownMapInput.CancelPressed())
+            {
+                ReturnToCampusHub(openStatusMenu: true);
+                return;
+            }
+
             if (TownMapInput.MonthPrevPressed())
             {
                 CycleMember(-1);
@@ -194,8 +200,10 @@ namespace FracturedChorus.Hub.CharacterBuild
                 nextButton.onClick.AddListener(() => CycleMember(1));
             }
 
+            backButton ??= ResolveBackButton();
             if (backButton != null)
             {
+                backButton.onClick.RemoveListener(ReturnToPreviousMenu);
                 backButton.onClick.AddListener(ReturnToPreviousMenu);
             }
 
@@ -261,6 +269,54 @@ namespace FracturedChorus.Hub.CharacterBuild
 
         private void ReturnToPreviousMenu()
         {
+            ReturnToCampusHub(openStatusMenu: true);
+        }
+
+        private Button ResolveBackButton()
+        {
+            if (backButton != null)
+            {
+                return backButton;
+            }
+
+            var paths = new[]
+            {
+                "CloseBtn",
+                "Header/CloseBtn",
+                "BuildCanvas/CloseBtn",
+                "CloseButton",
+                "Header/CloseButton"
+            };
+
+            foreach (var path in paths)
+            {
+                var found = transform.Find(path);
+                if (found != null && found.TryGetComponent(out Button button))
+                {
+                    return button;
+                }
+            }
+
+            var canvas = GetComponentInChildren<Canvas>(true);
+            if (canvas == null)
+            {
+                return null;
+            }
+
+            foreach (var path in paths)
+            {
+                var found = canvas.transform.Find(path);
+                if (found != null && found.TryGetComponent(out Button button))
+                {
+                    return button;
+                }
+            }
+
+            return null;
+        }
+
+        public static void ReturnToCampusHub(bool openStatusMenu = true)
+        {
             try
             {
                 GameMetaSession.Save();
@@ -273,14 +329,22 @@ namespace FracturedChorus.Hub.CharacterBuild
             var sceneName = string.IsNullOrWhiteSpace(_returnScene)
                 ? RunMapSceneCatalog.CampusHub
                 : _returnScene;
-            if (sceneName == RunMapSceneCatalog.CampusHub)
+            var toCampus = sceneName == RunMapSceneCatalog.CampusHub;
+            if (openStatusMenu && toCampus && !HubNavigationEscContext.HasPending)
             {
-                TownMapView.OpenStatusMenuOnNextShow = true;
+                HubNavigationEscContext.SetReturnToStatusMenu(MetaStatusMenuUI.Tab.Stats);
+            }
+
+            if (toCampus)
+            {
+                HubNavigationEscContext.ApplyBeforeLoadCampusHub(forceTownMap: !openStatusMenu);
             }
 
             if (!RunMapSceneLoader.LoadByName(sceneName))
             {
                 TownMapView.OpenStatusMenuOnNextShow = false;
+                TownMapView.OpenStatusMenuTabOnNextShow = null;
+                HubNavigationEscContext.Clear();
                 Debug.LogError($"[CharacterBuild] Failed to return to '{sceneName}'.");
             }
         }
@@ -919,6 +983,7 @@ namespace FracturedChorus.Hub.CharacterBuild
             BindStatDetailsClose(statDetailsOverlay.transform.Find("Panel/Close"));
             BindStatDetailsClose(statDetailsOverlay.transform.Find("Close"));
             BindStatDetailsClose(statDetailsOverlay.transform.Find("CloseButton"));
+            BindStatDetailsClose(statDetailsOverlay.transform.Find("CloseBtn"));
             if (statDetailsDimmer != null)
             {
                 BindStatDetailsClose(statDetailsDimmer.transform);

@@ -1,3 +1,4 @@
+using System;
 using FracturedChorus.Meta;
 using UnityEngine;
 using UnityEngine.UI;
@@ -50,7 +51,9 @@ namespace FracturedChorus.Hub
         [SerializeField] private TownMapSfxController sfx;
 
         private GameMetaState _state;
+        private Action _onClosed;
         private bool _wired;
+        private bool _allowCancel = true;
 
         public bool IsOpen => root != null && root.activeSelf;
 
@@ -59,14 +62,26 @@ namespace FracturedChorus.Hub
             sfx = controller;
         }
 
-        public void Show(GameMetaState state)
+        public void Show(GameMetaState state, Action onClosed = null, bool allowCancel = true)
         {
             _state = state;
+            _onClosed = onClosed;
+            _allowCancel = allowCancel;
             EnsureRuntimeBindings();
             Wire();
             if (root != null)
             {
                 root.SetActive(true);
+            }
+
+            if (footerLabel != null)
+            {
+                footerLabel.enabled = allowCancel;
+            }
+
+            if (closeButton != null)
+            {
+                closeButton.gameObject.SetActive(allowCancel);
             }
 
             sfx?.PlayOpenPanel();
@@ -84,11 +99,43 @@ namespace FracturedChorus.Hub
             {
                 root.SetActive(false);
             }
+
+            _allowCancel = true;
+            var callback = _onClosed;
+            _onClosed = null;
+            callback?.Invoke();
+        }
+
+        public void RefreshFromState()
+        {
+            Refresh();
+        }
+
+        public RectTransform GetNodeRect(SocialStatType stat)
+        {
+            EnsureRuntimeBindings();
+            var ordered = SocialStatPresentation.OrderedStats;
+            for (var i = 0; i < ordered.Length; i++)
+            {
+                if (ordered[i] != stat)
+                {
+                    continue;
+                }
+
+                if (nodes != null && i < nodes.Length && nodes[i] != null)
+                {
+                    return nodes[i].transform as RectTransform;
+                }
+
+                return null;
+            }
+
+            return null;
         }
 
         private void Update()
         {
-            if (!IsOpen)
+            if (!IsOpen || !_allowCancel)
             {
                 return;
             }
@@ -177,7 +224,12 @@ namespace FracturedChorus.Hub
 
             if (closeButton == null)
             {
-                closeButton = FindButton(transform, "CloseButton");
+                closeButton = FindButton(transform, "CloseButton", "CloseBtn", "Header/CloseButton");
+            }
+
+            if (closeButton == null && root != null)
+            {
+                closeButton = CreateCloseButton(root.transform);
             }
 
             if (nodes == null || nodes.Length != 5)
@@ -345,6 +397,8 @@ namespace FracturedChorus.Hub
             footer.color = FcColorTokens.Brand.Cyan;
             footer.fontStyle = FontStyle.Bold;
 
+            var close = CreateCloseButton(rootGo.transform);
+
             var overlay = rootGo.AddComponent<SocialStatsOverlayUI>();
             overlay.root = rootGo;
             overlay.radar = radarGraphic;
@@ -354,6 +408,7 @@ namespace FracturedChorus.Hub
             overlay.subtitleLabel = subtitle;
             overlay.watermarkLabel = watermark;
             overlay.footerLabel = footer;
+            overlay.closeButton = close;
             overlay.Rewire();
             rootGo.SetActive(false);
             return overlay;
@@ -449,6 +504,23 @@ namespace FracturedChorus.Hub
             }
 #endif
             return null;
+        }
+
+        private static Button CreateCloseButton(Transform parent)
+        {
+            var go = new GameObject("CloseButton", typeof(RectTransform), typeof(Image), typeof(Button));
+            go.transform.SetParent(parent, false);
+            Stretch(go.GetComponent<RectTransform>(), new Vector2(0.86f, 0.78f), new Vector2(0.96f, 0.94f), Vector2.zero, Vector2.zero);
+            var image = go.GetComponent<Image>();
+            image.color = new Color(0f, 0.549f, 0.702f, 1f);
+            image.raycastTarget = true;
+            var button = go.GetComponent<Button>();
+            button.targetGraphic = image;
+            var label = CreateText(go.transform, "Label", "X", 18, TextAnchor.MiddleCenter);
+            Stretch(label.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            label.fontStyle = FontStyle.Bold;
+            label.color = Color.white;
+            return button;
         }
 
         private static Button FindButton(Transform root, params string[] paths)

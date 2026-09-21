@@ -1,17 +1,15 @@
-# SDD Progress - loading-screen
+# SDD Progress - bonds-menu-sandbox
 
 Branch: branch2
-Plan: docs/superpowers/plans/2026-08-13-loading-screen.md
-BASE: 0e0170b
+Plan: docs/superpowers/plans/2026-09-11-bonds-menu-sandbox.md
+BASE: 8e9c3f9
 
-Task 1: complete (commits 0e0170b..0a1065a, review: code ✅; EditMode unverified — Unity.exe missing, Hub stub only). Minor: constants FadeInSec/FadeOutSec/SmoothTime/PercentVisibleMin not pinned in tests.
-Task 8: complete (commits 2b94e74..ae40782, doc only). Play Mode not run (no Unity.exe) — human checklist in LOADING_SCREEN.md.
+User constraint (2026-09-11): objects on scene, no hardcoded Rects in C#.
 
-Final review: controller adjudicated NOT READY claims.
-- LoadingProgress.cs present with all timing constants (false missing-from-diff).
-- Menu fail restore already in 2b94e74 for LoadByName false; mid-async fail leaving _transitioning is rare leftover.
-- Runtime fallback sprites editor-only: prefab is SoT.
+Task 1: complete (commits 8e9c3f9..9da4f4c, review: code ✅; EditMode unverified — Unity.exe missing).
+Task 2: complete (commits 9da4f4c..c7478fc, art + kit fix). Unity ConfigureAll unverified.
+Task 3: complete (commits c7478fc..efe571e, scene seed + ExpFill stretch removed).
+Task 4: complete (c52d7c2, bind-only; Play Mode unverified).
+Task 5: complete (77b8f81, snapshot + Flavor nodes). Play Mode unverified.
 
-Status: code complete for Play Mode QA. Human: open Unity, tick Assets/FracturedChorus/Scenes/LOADING_SCREEN.md.
-
-
+Human remaining: open BondsLayoutSandbox in Unity, Attach Missing if refs empty, layout widgets vs MockGuide, Ctrl+S, EditMode tests, Play Mode checklist. Do not wire CampusHub until sign-off.

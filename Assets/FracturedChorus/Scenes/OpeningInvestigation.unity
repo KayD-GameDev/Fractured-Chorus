@@ -471,8 +471,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 9.119995}
-  m_SizeDelta: {x: 0, y: -18.25}
+  m_AnchoredPosition: {x: -4, y: 8}
+  m_SizeDelta: {x: -30.665, y: 73.91}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &270534869
 MonoBehaviour:
@@ -495,8 +495,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_Sprite: {fileID: 21300000, guid: 061230ada60e33940b4306ef76410ff9, type: 3}
-  m_Type: 1
-  m_PreserveAspect: 0
+  m_Type: 0
+  m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1
@@ -1688,6 +1688,60 @@ MonoBehaviour:
   - id: sfx_footsteps
     sprite: {fileID: 0}
     clip: {fileID: 8300000, guid: 45d8dfa8253844f6ba425836acc7f817, type: 3}
+  - id: lumina_crossing_day
+    sprite: {fileID: 21300000, guid: b17007b853eb44e4874cbdeab3de024d, type: 3}
+    clip: {fileID: 0}
+  - id: stellaworks_hq
+    sprite: {fileID: 21300000, guid: b2b9992ed0754f87adc84b9a61c07c47, type: 3}
+    clip: {fileID: 0}
+  - id: syncpod_ad_wall
+    sprite: {fileID: 21300000, guid: da91c18ed1b9416f83e4a7a8d0631277, type: 3}
+    clip: {fileID: 0}
+  - id: hima_campus_day
+    sprite: {fileID: 21300000, guid: e02f770683cb4a7aa3f49eb443142c8d, type: 3}
+    clip: {fileID: 0}
+  - id: hima_recital_hall
+    sprite: {fileID: 21300000, guid: b2ee946eb7724b9295ffb9b6d0092fd1, type: 3}
+    clip: {fileID: 0}
+  - id: lumina_apartment_tv
+    sprite: {fileID: 21300000, guid: 75447768ecca400887a25efef47223af, type: 3}
+    clip: {fileID: 0}
+  - id: news_drain_cases
+    sprite: {fileID: 21300000, guid: dfff384bd1da4065a11e5c02ce637072, type: 3}
+    clip: {fileID: 0}
+  - id: hima_dorm_morning
+    sprite: {fileID: 21300000, guid: 21ccd2a053f8499c8aa0768bba108221, type: 3}
+    clip: {fileID: 0}
+  - id: cg_ren_mirror_uniform
+    sprite: {fileID: 21300000, guid: 9e560bbf99184f12a7f9b831cbcb92da, type: 3}
+    clip: {fileID: 0}
+  - id: lumina_train_morning
+    sprite: {fileID: 21300000, guid: 39cc0a211da1473b903921772a3d8f09, type: 3}
+    clip: {fileID: 0}
+  - id: hima_hallway_day
+    sprite: {fileID: 21300000, guid: b4ac12b62045418ab9fb502f28dfc18c, type: 3}
+    clip: {fileID: 0}
+  - id: cg_hallway_bump
+    sprite: {fileID: 21300000, guid: 23fde65028e44be5a839645b2011c367, type: 3}
+    clip: {fileID: 0}
+  - id: cg_syncpods_floor
+    sprite: {fileID: 21300000, guid: 93c9679e81f748fea222d2cb25d34ddb, type: 3}
+    clip: {fileID: 0}
+  - id: cg_indie_player_breath
+    sprite: {fileID: 21300000, guid: a65d13e732d548039711c75275a59b52, type: 3}
+    clip: {fileID: 0}
+  - id: hima_classroom_day
+    sprite: {fileID: 21300000, guid: 7871e7ffde2745ecadd277ffdcef1284, type: 3}
+    clip: {fileID: 0}
+  - id: hima_ceremony_hall
+    sprite: {fileID: 21300000, guid: a14af99ce58040069181a7e4ea431fbc, type: 3}
+    clip: {fileID: 0}
+  - id: hima_ceremony_desync
+    sprite: {fileID: 21300000, guid: ac04efa5ec4e40e9871a917f13cb6139, type: 3}
+    clip: {fileID: 0}
+  - id: cadence_fracture_pull
+    sprite: {fileID: 21300000, guid: 73ee74fa27fb419eaa9767a2ac39e0f2, type: 3}
+    clip: {fileID: 0}
 --- !u!114 &773511893
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1713,6 +1767,7 @@ MonoBehaviour:
   fadeOverlay: {fileID: 670845660}
   backgroundImage: {fileID: 1422332664}
   dateHud: {fileID: 910000005}
+  hubCornerInfoHud: {fileID: 0}
   choiceView: {fileID: 0}
   typingClip: {fileID: 8300000, guid: a22f3c74ff44d1344838f84ccdad03be, type: 3}
   defaultFadeSeconds: 0.6
@@ -2450,8 +2505,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.07, y: 0.12}
   m_AnchorMax: {x: 0.93, y: 0.74}
-  m_AnchoredPosition: {x: -3.999878, y: -26}
-  m_SizeDelta: {x: 8.0001, y: -28.118}
+  m_AnchoredPosition: {x: -34.14, y: 17.72}
+  m_SizeDelta: {x: -446.08, y: -74.44}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1281447198
 MonoBehaviour:
@@ -2475,10 +2530,10 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: 787fda44816c480a9cc3cadfdc29ce24, type: 3}
-    m_FontSize: 36
+    m_FontSize: 29
     m_FontStyle: 0
     m_BestFit: 0
-    m_MinSize: 3
+    m_MinSize: 2
     m_MaxSize: 40
     m_Alignment: 0
     m_AlignByGeometry: 0
@@ -2812,8 +2867,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.018, y: 0.9}
   m_AnchorMax: {x: 0.195, y: 1.06}
-  m_AnchoredPosition: {x: 41, y: -50}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 198.21, y: -46}
+  m_SizeDelta: {x: -41.6, y: -3.12}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1643581661
 CanvasRenderer:
@@ -3332,7 +3387,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.04, y: 0.03}
   m_AnchorMax: {x: 0.96, y: 0.36}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: -6.9999695}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!225 &1786227494

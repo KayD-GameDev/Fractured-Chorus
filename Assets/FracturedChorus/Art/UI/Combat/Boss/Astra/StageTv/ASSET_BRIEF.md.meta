@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:Assets/FracturedChorus/Scenes/Bonds.unity.meta
+guid: de13cc7e2588ca244bd02b8c8014d890
+========
 guid: c47a0e318f5306a712c9d4e15768a079
+>>>>>>>> main:Assets/FracturedChorus/Art/UI/Combat/Boss/Astra/StageTv/ASSET_BRIEF.md.meta
 DefaultImporter:
   externalObjects: {}
   userData: 

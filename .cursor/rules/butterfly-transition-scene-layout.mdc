@@ -1,0 +1,17 @@
+---
+description: Butterfly transition sandbox — scene layout is source of truth
+globs: Assets/FracturedChorus/VFX/ButterflyTransition/**/*.cs,Assets/FracturedChorus/Editor/ButterflyTransition*.cs
+alwaysApply: false
+---
+
+# Butterfly transition — scene layout is source of truth
+
+Pos / size / anchor of `FC_ButterflyTransition` live on the prefab instance in `PrologueVN.unity` (or prefab asset); không dùng scene sandbox.
+
+1. Do not hard-code `anchoredPosition` / `sizeDelta` / Stretch in runtime apply when the object already exists.
+2. Do not `SetSiblingIndex` on existing objects.
+3. Seed Rect only when creating a new GameObject.
+4. User tweaks Hierarchy then Ctrl+S.
+5. Do not OpenScene over an unsaved sandbox just to attach missing objects.
+6. Create missing children only — never rebuild/overwrite existing layout.
+7. Do not add this sandbox to Build Settings.

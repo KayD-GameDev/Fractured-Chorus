@@ -38,7 +38,11 @@
 
 ## Bust framing
 - Prefer 1024×1536 PNG transparent; clean alpha
-- VN bust neutral: `Art/Characters/Charlotte/VnBust/charlotte_bust_neutral_v1.png` (PortraitPanel)
+- VN busts (`Art/Characters/Charlotte/VnBust/`):
+  - `charlotte_bust_neutral_v1.png` — PortraitPanel default
+  - `charlotte_bust_startled_v1.png`
+  - `charlotte_bust_curious_v1.png`
+  - `charlotte_bust_grim_v1.png`
 - Stat chip icon: `Art/UI/Combat/Timeline/LeftRail/Avatars/charlotte_chibi_avatar_v1.png`
 - Combat icon ref: `Art/UI/Combat/Characters/charlotte_character_icon_bars_white_v1.png`
 

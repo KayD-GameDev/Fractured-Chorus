@@ -1,4 +1,6 @@
 #if UNITY_EDITOR
+using System;
+using System.IO;
 using FracturedChorus.Combat.Bootstrap;
 using FracturedChorus.Hub;
 using FracturedChorus.UI;
@@ -15,6 +17,8 @@ namespace FracturedChorus.Editor
         private const string DayBgPath = "Assets/FracturedChorus/Art/Backgrounds/lumina-city-town-map-bg_v1.png";
         private const string NightBgPath = "Assets/FracturedChorus/Art/Backgrounds/lumina-city-town-map-bg_night_v1.png";
         private const string UiRoot = "Assets/FracturedChorus/Art/UI/TownMap/";
+        private const string CornerHudSnapshotPath =
+            "Assets/FracturedChorus/Art/UI/TownMap/hub_corner_info_hud_layout_snapshot.json";
 
         public static void CreateCampusHubScene()
         {
@@ -106,6 +110,286 @@ namespace FracturedChorus.Editor
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
             Debug.Log("[Fractured Chorus] Wired Town Map MENU button + Status panel (v6 art). Save the scene.");
+        }
+
+        [MenuItem("Fractured Chorus/Meta/CampusHub — Seed System Submenu + Config Overlay")]
+        public static void SeedSystemSubmenuMenuItem()
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+            {
+                EditorUtility.DisplayDialog(
+                    "Seed System Submenu",
+                    "Không thể seed khi đang Play Mode.\nExit Play Mode rồi chạy lại.",
+                    "OK");
+                return;
+            }
+
+            if (!SeedSystemSubmenuInActiveScene())
+            {
+                EditorUtility.DisplayDialog(
+                    "Seed System Submenu",
+                    "Không tìm thấy StatusMenu / MenuList trong scene CampusHub.",
+                    "OK");
+                return;
+            }
+
+            EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
+            EditorSceneManager.SaveOpenScenes();
+            Debug.Log("[Fractured Chorus] SystemMenuList + HubConfigOverlay seeded. Adjust layout in Hierarchy.");
+        }
+
+        [MenuItem("Fractured Chorus/Meta/CampusHub — Seed Hub Corner Info HUD")]
+        public static void SeedHubCornerInfoHudMenuItem()
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+            {
+                EditorUtility.DisplayDialog(
+                    "Seed Hub Corner Info HUD",
+                    "Không thể seed khi đang Play Mode.\nExit Play Mode rồi chạy lại.",
+                    "OK");
+                return;
+            }
+
+            var townMap = UnityEngine.Object.FindAnyObjectByType<TownMapView>();
+            if (townMap == null)
+            {
+                EditorUtility.DisplayDialog(
+                    "Seed Hub Corner Info HUD",
+                    "Không tìm thấy TownMapView trong scene.",
+                    "OK");
+                return;
+            }
+
+            var hud = EnsureHubCornerInfoHud(townMap);
+            if (hud == null)
+            {
+                EditorUtility.DisplayDialog(
+                    "Seed Hub Corner Info HUD",
+                    "Không tìm thấy HubCornerInfoHud trong scene.\nChạy Tools/seed-hub-corner-info-hud.mjs hoặc Setup Hierarchy mới.",
+                    "OK");
+                return;
+            }
+
+            EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
+            EditorSceneManager.SaveOpenScenes();
+            Debug.Log("[Fractured Chorus] HubCornerInfoHud wired. Layout SoT = scene Hierarchy.");
+        }
+
+        [MenuItem("Fractured Chorus/Meta/CampusHub — Save Hub Corner HUD Layout Snapshot")]
+        public static void SaveHubCornerHudLayoutSnapshotMenuItem()
+        {
+            RunNodeTool("Tools/save-hub-corner-info-hud-layout-snapshot.mjs", "Save Hub Corner HUD Layout");
+        }
+
+        [MenuItem("Fractured Chorus/Meta/CampusHub — Save Status Menu Layout Snapshot")]
+        public static void SaveStatusMenuLayoutSnapshotMenuItem()
+        {
+            var scenePath = EditorSceneManager.GetActiveScene().path;
+            if (string.IsNullOrEmpty(scenePath) || !scenePath.EndsWith("CampusHub.unity"))
+            {
+                EditorUtility.DisplayDialog(
+                    "Save Status Menu Layout",
+                    "Mở và focus scene CampusHub, Ctrl+S trước, rồi chạy lại.",
+                    "OK");
+                return;
+            }
+
+            if (EditorSceneManager.GetActiveScene().isDirty)
+            {
+                EditorSceneManager.SaveOpenScenes();
+            }
+
+            RunNodeTool(
+                "Tools/save-campushub-status-menu-layout-snapshot.mjs",
+                "Save Status Menu Layout",
+                out var stdout,
+                out var stderr,
+                out var exitCode);
+            if (exitCode != 0)
+            {
+                Debug.LogError($"[Fractured Chorus] Snapshot failed: {stderr}\n{stdout}");
+                return;
+            }
+
+            AssetDatabase.Refresh();
+            Debug.Log(
+                "[Fractured Chorus] Saved StatusMenu layout snapshot → " +
+                "Assets/FracturedChorus/Art/UI/HubMenu/status_menu_layout_snapshot.json\n" +
+                stdout);
+        }
+
+        private static void RunNodeTool(string relativeToolPath, string label)
+        {
+            RunNodeTool(relativeToolPath, label, out _, out _, out _);
+        }
+
+        private static void RunNodeTool(
+            string relativeToolPath,
+            string label,
+            out string stdout,
+            out string stderr,
+            out int exitCode)
+        {
+            stdout = string.Empty;
+            stderr = string.Empty;
+            exitCode = -1;
+
+            var tool = Path.GetFullPath(relativeToolPath);
+            if (!File.Exists(tool))
+            {
+                Debug.LogError($"[Fractured Chorus] Missing tool: {tool}");
+                return;
+            }
+
+            var psi = new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = "node",
+                Arguments = $"\"{tool}\"",
+                WorkingDirectory = Path.GetFullPath("."),
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true,
+            };
+            using (var proc = System.Diagnostics.Process.Start(psi))
+            {
+                stdout = proc.StandardOutput.ReadToEnd();
+                stderr = proc.StandardError.ReadToEnd();
+                proc.WaitForExit();
+                exitCode = proc.ExitCode;
+            }
+
+            if (exitCode != 0)
+            {
+                Debug.LogError($"[Fractured Chorus] {label} failed: {stderr}\n{stdout}");
+                return;
+            }
+
+            AssetDatabase.Refresh();
+            Debug.Log($"[Fractured Chorus] {label} OK.\n{stdout}");
+        }
+
+        public static void BatchSeedSystemSubmenu()
+        {
+            if (!System.IO.File.Exists(ScenePath))
+            {
+                Debug.LogError($"[Fractured Chorus] Scene not found: {ScenePath}");
+                EditorApplication.Exit(1);
+                return;
+            }
+
+            var scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            if (!SeedSystemSubmenuInActiveScene())
+            {
+                Debug.LogError("[Fractured Chorus] Seed System Submenu failed.");
+                EditorApplication.Exit(1);
+                return;
+            }
+
+            EditorSceneManager.SaveScene(scene);
+            AssetDatabase.SaveAssets();
+            Debug.Log("[Fractured Chorus] CampusHub System submenu + Config overlay saved.");
+            EditorApplication.Exit(0);
+        }
+
+        private static bool SeedSystemSubmenuInActiveScene()
+        {
+            var menu = UnityEngine.Object.FindAnyObjectByType<MetaStatusMenuUI>(UnityEngine.FindObjectsInactive.Include);
+            if (menu == null)
+            {
+                return false;
+            }
+
+            var statusRoot = menu.transform;
+            var menuList = statusRoot.Find("MenuList");
+            if (menuList == null)
+            {
+                return false;
+            }
+
+            Undo.RegisterFullObjectHierarchyUndo(statusRoot.gameObject, "Seed System Submenu");
+
+            var systemList = statusRoot.Find("SystemMenuList");
+            if (systemList == null)
+            {
+                var systemGo = new GameObject("SystemMenuList", typeof(RectTransform));
+                Undo.RegisterCreatedObjectUndo(systemGo, "Create SystemMenuList");
+                systemGo.transform.SetParent(statusRoot, false);
+                systemList = systemGo.transform;
+                CopyRectTransform(menuList.GetComponent<RectTransform>(), systemList.GetComponent<RectTransform>());
+                systemList.SetSiblingIndex(menuList.GetSiblingIndex() + 1);
+            }
+
+            var save = EnsureClonedRow(systemList, "BtnSave", "SAVE", menuList.Find("BtnStats"));
+            var load = EnsureClonedRow(systemList, "BtnLoad", "LOAD", menuList.Find("BtnBonds"));
+            var config = EnsureClonedRow(systemList, "BtnConfig", "CONFIG", menuList.Find("BtnCalendar"));
+            var returnTitle = EnsureClonedRow(systemList, "BtnReturnToTitle", "TO TITLE", menuList.Find("BtnSystem"));
+            systemList.gameObject.SetActive(false);
+
+            var so = new SerializedObject(menu);
+            so.FindProperty("menuListRoot").objectReferenceValue = menuList.gameObject;
+            so.FindProperty("systemMenuListRoot").objectReferenceValue = systemList.gameObject;
+            so.FindProperty("saveButton").objectReferenceValue = save != null ? save.GetComponent<Button>() : null;
+            so.FindProperty("loadButton").objectReferenceValue = load != null ? load.GetComponent<Button>() : null;
+            so.FindProperty("configButton").objectReferenceValue = config != null ? config.GetComponent<Button>() : null;
+            so.FindProperty("returnToTitleButton").objectReferenceValue =
+                returnTitle != null ? returnTitle.GetComponent<Button>() : null;
+            so.FindProperty("saveImage").objectReferenceValue = save != null ? save.GetComponent<Image>() : null;
+            so.FindProperty("loadImage").objectReferenceValue = load != null ? load.GetComponent<Image>() : null;
+            so.FindProperty("configImage").objectReferenceValue = config != null ? config.GetComponent<Image>() : null;
+            so.FindProperty("returnToTitleImage").objectReferenceValue =
+                returnTitle != null ? returnTitle.GetComponent<Image>() : null;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            return true;
+        }
+
+        private static Transform EnsureClonedRow(Transform systemList, string name, string caption, Transform source)
+        {
+            var existing = systemList.Find(name);
+            if (existing != null)
+            {
+                var label = existing.Find("Label")?.GetComponent<Text>();
+                if (label != null)
+                {
+                    label.text = caption;
+                }
+
+                return existing;
+            }
+
+            if (source == null)
+            {
+                return null;
+            }
+
+            var clone = UnityEngine.Object.Instantiate(source.gameObject, systemList, false);
+            Undo.RegisterCreatedObjectUndo(clone, "Clone " + name);
+            clone.name = name;
+            var cloneLabel = clone.transform.Find("Label")?.GetComponent<Text>();
+            if (cloneLabel != null)
+            {
+                cloneLabel.text = caption;
+            }
+
+            return clone.transform;
+        }
+
+        private static void CopyRectTransform(RectTransform from, RectTransform to)
+        {
+            if (from == null || to == null)
+            {
+                return;
+            }
+
+            to.anchorMin = from.anchorMin;
+            to.anchorMax = from.anchorMax;
+            to.pivot = from.pivot;
+            to.anchoredPosition = from.anchoredPosition;
+            to.sizeDelta = from.sizeDelta;
+            to.offsetMin = from.offsetMin;
+            to.offsetMax = from.offsetMax;
+            to.localRotation = from.localRotation;
+            to.localScale = from.localScale;
         }
 
         public static void WireRunMapHotkey()
@@ -317,16 +601,7 @@ namespace FracturedChorus.Editor
 
             var pinTemplate = CreatePinTemplate(mapRoot.transform);
 
-            var header = CreatePanel("SelectMapHeader", townMapGo.transform, Color.clear);
-            Stretch(header, new Vector2(0f, 1f), new Vector2(0.42f, 1f), new Vector2(24f, -140f), new Vector2(-8f, -16f));
-            var headerPin = CreateImage("HeaderPin", header, LoadSprite(UiRoot + "townmap_header_pin.png"), Color.white);
-            Stretch(headerPin.rectTransform, new Vector2(0f, 0.55f), new Vector2(0f, 1f), new Vector2(0f, -8f), new Vector2(72f, 0f));
-            var selectTitle = CreateText("SelectTitle", header, "SELECT MAP", 42, TextAnchor.MiddleLeft);
-            Stretch(selectTitle.rectTransform, new Vector2(0f, 0.55f), new Vector2(1f, 1f), new Vector2(84f, 0f), Vector2.zero);
-            selectTitle.fontStyle = FontStyle.Bold;
-            var selectSubtitle = CreateText("SelectSubtitle", header, "Where should I go?", 20, TextAnchor.UpperLeft);
-            Stretch(selectSubtitle.rectTransform, new Vector2(0f, 0f), new Vector2(1f, 0.55f), new Vector2(84f, 0f), new Vector2(0f, -4f));
-            selectSubtitle.color = new Color(0.7f, 0.9f, 0.95f);
+            var cornerHud = EnsureHubCornerInfoHud(townMap);
 
             var wordmark = CreateText("Wordmark", townMapGo.transform, "TOWNMAP", 72, TextAnchor.LowerLeft);
             Stretch(wordmark.rectTransform, new Vector2(0f, 0f), new Vector2(0.45f, 0f), new Vector2(16f, 8f), new Vector2(0f, 96f));
@@ -360,9 +635,10 @@ namespace FracturedChorus.Editor
             townSo.FindProperty("pinTemplate").objectReferenceValue = pinTemplate;
             townSo.FindProperty("districtPanel").objectReferenceValue = district.Panel;
             townSo.FindProperty("slashBanner").objectReferenceValue = slash.Banner;
-            townSo.FindProperty("selectMapTitle").objectReferenceValue = selectTitle;
-            townSo.FindProperty("selectMapSubtitle").objectReferenceValue = selectSubtitle;
-            townSo.FindProperty("headerPinImage").objectReferenceValue = headerPin;
+            townSo.FindProperty("cornerInfoHud").objectReferenceValue = cornerHud;
+            townSo.FindProperty("selectMapTitle").objectReferenceValue = null;
+            townSo.FindProperty("selectMapSubtitle").objectReferenceValue = null;
+            townSo.FindProperty("headerPinImage").objectReferenceValue = null;
             townSo.FindProperty("wordmarkLabel").objectReferenceValue = wordmark;
             townSo.FindProperty("wordmarkImage").objectReferenceValue = wordmarkImage;
             townSo.FindProperty("promptBar").objectReferenceValue = promptBar;
@@ -677,6 +953,225 @@ namespace FracturedChorus.Editor
             EditorBuildSettings.scenes = buildScenes;
         }
 
+        public static HubCornerInfoHud EnsureHubCornerInfoHud(TownMapView townMap)
+        {
+            if (townMap == null)
+            {
+                return null;
+            }
+
+            var existing = townMap.GetComponentInChildren<HubCornerInfoHud>(true);
+            if (existing != null)
+            {
+                existing.WireReferences();
+                WireCornerInfoHud(townMap, existing);
+                HideLegacySelectMapHeader(townMap.transform);
+                return existing;
+            }
+
+            return SeedCornerHudFromSnapshot(townMap);
+        }
+
+        private static HubCornerInfoHud SeedCornerHudFromSnapshot(TownMapView townMap)
+        {
+            var nodes = LoadCornerHudSnapshotNodes();
+            if (nodes == null || nodes.Length == 0)
+            {
+                Debug.LogError(
+                    $"[Fractured Chorus] Missing {CornerHudSnapshotPath}. Run save-hub-corner-info-hud-layout-snapshot.mjs.");
+                return null;
+            }
+
+            HubCornerInfoHud hud = null;
+            Text dateLabel = null;
+            Text dayLabel = null;
+            Image phaseIcon = null;
+            Text locationLabel = null;
+            Text taglineLabel = null;
+
+            for (var i = 0; i < nodes.Length; i++)
+            {
+                var node = nodes[i];
+                var name = System.IO.Path.GetFileName(node.path);
+                var parent = ResolveCornerHudParent(townMap.transform, node.path);
+                if (parent == null)
+                {
+                    continue;
+                }
+
+                if (node.textMeta != null)
+                {
+                    var meta = node.textMeta;
+                    var text = CreateText(
+                        name,
+                        parent,
+                        meta.text ?? string.Empty,
+                        meta.fontSize > 0 ? meta.fontSize : 14,
+                        (TextAnchor)meta.alignment);
+                    if (meta.color != null)
+                    {
+                        text.color = new Color(meta.color.r, meta.color.g, meta.color.b, meta.color.a);
+                    }
+
+                    text.fontStyle = (FontStyle)meta.fontStyle;
+                    text.raycastTarget = false;
+                    ApplyCornerHudRect(text.rectTransform, node);
+                    UiFontCatalog.ApplyAutomatic(text);
+
+                    switch (name)
+                    {
+                        case "DateLabel":
+                            dateLabel = text;
+                            break;
+                        case "DayLabel":
+                            dayLabel = text;
+                            break;
+                        case "LocationLabel":
+                            locationLabel = text;
+                            break;
+                        case "TaglineLabel":
+                            taglineLabel = text;
+                            break;
+                    }
+
+                    continue;
+                }
+
+                var color = node.imageColor != null
+                    ? new Color(node.imageColor.r, node.imageColor.g, node.imageColor.b, node.imageColor.a)
+                    : Color.white;
+                Sprite sprite = null;
+                if (name == "PhaseIcon")
+                {
+                    sprite = LoadSprite(UiRoot + "townmap_icon_sun.png");
+                }
+
+                if (name == "HubCornerInfoHud")
+                {
+                    var root = CreatePanel(name, parent, color);
+                    root.gameObject.GetComponent<Image>().raycastTarget = false;
+                    ApplyCornerHudRect(root, node);
+                    hud = root.gameObject.AddComponent<HubCornerInfoHud>();
+                    continue;
+                }
+
+                var image = CreateImage(name, parent, sprite, color);
+                image.raycastTarget = false;
+                if (name == "PhaseIcon")
+                {
+                    image.preserveAspect = true;
+                    phaseIcon = image;
+                }
+
+                ApplyCornerHudRect(image.rectTransform, node);
+            }
+
+            if (hud == null)
+            {
+                Debug.LogError("[Fractured Chorus] Corner HUD snapshot seed failed — root missing.");
+                return null;
+            }
+
+            var hudSo = new SerializedObject(hud);
+            hudSo.FindProperty("dateLabel").objectReferenceValue = dateLabel;
+            hudSo.FindProperty("dayLabel").objectReferenceValue = dayLabel;
+            hudSo.FindProperty("phaseIcon").objectReferenceValue = phaseIcon;
+            hudSo.FindProperty("locationLabel").objectReferenceValue = locationLabel;
+            hudSo.FindProperty("taglineLabel").objectReferenceValue = taglineLabel;
+            hudSo.FindProperty("sunSprite").objectReferenceValue = LoadSprite(UiRoot + "townmap_icon_sun.png");
+            hudSo.FindProperty("moonSprite").objectReferenceValue = LoadSprite(UiRoot + "townmap_icon_moon.png");
+            hudSo.FindProperty("dawnSprite").objectReferenceValue = LoadSprite(UiRoot + "townmap_icon_dawn.png");
+            hudSo.ApplyModifiedPropertiesWithoutUndo();
+
+            WireCornerInfoHud(townMap, hud);
+            HideLegacySelectMapHeader(townMap.transform);
+            EditorUtility.SetDirty(hud);
+            return hud;
+        }
+
+        private static CornerHudSnapshotNode[] LoadCornerHudSnapshotNodes()
+        {
+            var fullPath = Path.GetFullPath(CornerHudSnapshotPath);
+            if (!File.Exists(fullPath))
+            {
+                return null;
+            }
+
+            var file = JsonUtility.FromJson<CornerHudSnapshotFile>(File.ReadAllText(fullPath));
+            return file?.nodes;
+        }
+
+        private static Transform ResolveCornerHudParent(Transform townMap, string nodePath)
+        {
+            if (nodePath == "HubCornerInfoHud")
+            {
+                return townMap;
+            }
+
+            var parts = nodePath.Split('/');
+            var current = townMap;
+            for (var i = 0; i < parts.Length - 1; i++)
+            {
+                current = current.Find(parts[i]);
+                if (current == null)
+                {
+                    return null;
+                }
+            }
+
+            return current;
+        }
+
+        private static void ApplyCornerHudRect(RectTransform rect, CornerHudSnapshotNode node)
+        {
+            if (rect == null || node == null)
+            {
+                return;
+            }
+
+            if (node.anchorMin != null)
+            {
+                rect.anchorMin = new Vector2(node.anchorMin.x, node.anchorMin.y);
+            }
+
+            if (node.anchorMax != null)
+            {
+                rect.anchorMax = new Vector2(node.anchorMax.x, node.anchorMax.y);
+            }
+
+            if (node.anchoredPosition != null)
+            {
+                rect.anchoredPosition = new Vector2(node.anchoredPosition.x, node.anchoredPosition.y);
+            }
+
+            if (node.sizeDelta != null)
+            {
+                rect.sizeDelta = new Vector2(node.sizeDelta.x, node.sizeDelta.y);
+            }
+
+            if (node.pivot != null)
+            {
+                rect.pivot = new Vector2(node.pivot.x, node.pivot.y);
+            }
+        }
+
+        private static void WireCornerInfoHud(TownMapView townMap, HubCornerInfoHud hud)
+        {
+            var townSo = new SerializedObject(townMap);
+            townSo.FindProperty("cornerInfoHud").objectReferenceValue = hud;
+            townSo.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(townMap);
+        }
+
+        private static void HideLegacySelectMapHeader(Transform townMap)
+        {
+            var legacy = townMap.Find("SelectMapHeader");
+            if (legacy != null)
+            {
+                legacy.gameObject.SetActive(false);
+            }
+        }
+
         private static Sprite LoadSprite(string path)
         {
             return AssetDatabase.LoadAssetAtPath<Sprite>(path);
@@ -743,6 +1238,53 @@ namespace FracturedChorus.Editor
             rect.anchorMax = anchorMax;
             rect.offsetMin = offsetMin;
             rect.offsetMax = offsetMax;
+        }
+
+        [Serializable]
+        private sealed class CornerHudSnapshotFile
+        {
+            public CornerHudSnapshotNode[] nodes;
+        }
+
+        [Serializable]
+        private sealed class CornerHudSnapshotNode
+        {
+            public string path;
+            public int siblingIndex;
+            public bool activeSelf = true;
+            public CornerHudVector2 anchorMin;
+            public CornerHudVector2 anchorMax;
+            public CornerHudVector2 anchoredPosition;
+            public CornerHudVector2 sizeDelta;
+            public CornerHudVector2 pivot;
+            public CornerHudColor imageColor;
+            public CornerHudTextMeta textMeta;
+        }
+
+        [Serializable]
+        private sealed class CornerHudVector2
+        {
+            public float x;
+            public float y;
+        }
+
+        [Serializable]
+        private sealed class CornerHudColor
+        {
+            public float r;
+            public float g;
+            public float b;
+            public float a;
+        }
+
+        [Serializable]
+        private sealed class CornerHudTextMeta
+        {
+            public string text;
+            public int fontSize;
+            public int fontStyle;
+            public int alignment;
+            public CornerHudColor color;
         }
     }
 }

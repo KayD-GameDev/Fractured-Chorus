@@ -111,7 +111,7 @@ namespace FracturedChorus.Hub
         {
             for (var i = 0; i < AxisCount; i++)
             {
-                var angleDeg = -90f + (i - 2) * 72f;
+                var angleDeg = 90f + (i - 2) * 72f;
                 var rad = angleDeg * Mathf.Deg2Rad;
                 _axisDirs[i] = new Vector2(Mathf.Cos(rad), Mathf.Sin(rad));
             }

@@ -119,16 +119,27 @@ namespace FracturedChorus.UI
 
         private static bool IsDisplay(string name, Transform transform)
         {
+            if (name == "Bio"
+                || name == "Quote"
+                || name == "Hint"
+                || (name == "Label" && IsUnder(transform, "LinkEpisodes")))
+            {
+                return false;
+            }
+
             if (name == "HpValue"
                 || name == "PrepValue"
                 || name == "NameLabel"
                 || name == "HpLabel"
-                || name == "PrepLabel")
+                || name == "PrepLabel"
+                || name == "LabelJp")
             {
                 return true;
             }
 
             if (name == "DateLabel"
+                || name == "DayLabel"
+                || name == "LocationLabel"
                 || name == "LogTitle"
                 || name == "AgreeLabel"
                 || name == "DisagreeLabel"
@@ -169,20 +180,67 @@ namespace FracturedChorus.UI
 
             if (name == "Label" && HasAncestorPrefix(transform, "Row_"))
             {
+                if (IsBondsRowText(transform))
+                {
+                    return false;
+                }
+
                 return true;
             }
 
-            if (name == "Label" && IsUnder(transform, "BtnCalendar"))
+            if (name == "Label" && IsHubMenuButtonLabel(transform))
             {
                 return true;
             }
 
-            if (name == "dateChipLabel" || name == "menuButtonLabel")
+            if (IsStatNodeLabel(name, transform))
+            {
+                return false;
+            }
+
+            if (IsUnder(transform, "HeaderBonds")
+                || IsUnder(transform, "CenterStats")
+                || IsUnder(transform, "DetailCard"))
+            {
+                return true;
+            }
+
+            if (name == "dateChipLabel"
+                || name == "menuButtonLabel"
+                || name == "TitleLabel")
             {
                 return true;
             }
 
             return false;
+        }
+
+        private static bool IsStatNodeLabel(string name, Transform transform)
+        {
+            if (name != "Name" && name != "Rank" && name != "Flavor")
+            {
+                return false;
+            }
+
+            var parent = transform.parent;
+            return parent != null && parent.name.StartsWith("Node_");
+        }
+
+        private static bool IsBondsRowText(Transform transform)
+        {
+            return IsUnder(transform, "LeftNav") || IsUnder(transform, "LinkEpisodes");
+        }
+
+        private static bool IsHubMenuButtonLabel(Transform transform)
+        {
+            return IsUnder(transform, "BtnStats")
+                   || IsUnder(transform, "BtnBonds")
+                   || IsUnder(transform, "BtnCalendar")
+                   || IsUnder(transform, "BtnSystem")
+                   || IsUnder(transform, "BtnSave")
+                   || IsUnder(transform, "BtnLoad")
+                   || IsUnder(transform, "BtnConfig")
+                   || IsUnder(transform, "BtnReturnToTitle");
         }
 
         private static bool IsUnder(Transform transform, string ancestorNameContains)

@@ -30,6 +30,42 @@ namespace FracturedChorus.Editor
             "Assets/FracturedChorus/Art/Backgrounds/luxe_concert_astra_arena_live_v2.png";
         private const string LuminaSquareBgPath =
             "Assets/FracturedChorus/Art/Backgrounds/lumina_square_ren_night_rain_v1.png";
+        private const string LuminaCrossingDayBgPath =
+            "Assets/FracturedChorus/Art/Backgrounds/lumina_crossing_day_v1.png";
+        private const string StellaWorksHqBgPath =
+            "Assets/FracturedChorus/Art/Backgrounds/stellaworks_hq_plaza_v1.png";
+        private const string SyncPodAdWallBgPath =
+            "Assets/FracturedChorus/Art/Backgrounds/syncpod_ad_wall_v1.png";
+        private const string HimaCampusDayBgPath =
+            "Assets/FracturedChorus/Art/Backgrounds/hima_campus_exterior_day_v1.png";
+        private const string HimaRecitalHallBgPath =
+            "Assets/FracturedChorus/Art/Backgrounds/hima_recital_hall_v1.png";
+        private const string LuminaApartmentTvBgPath =
+            "Assets/FracturedChorus/Art/Backgrounds/lumina_apartment_tv_v1.png";
+        private const string NewsDrainCasesBgPath =
+            "Assets/FracturedChorus/Art/Backgrounds/news_drain_cases_v1.png";
+        private const string HimaDormMorningBgPath =
+            "Assets/FracturedChorus/Art/Backgrounds/hima_dorm_morning_v1.png";
+        private const string CgRenMirrorUniformBgPath =
+            "Assets/FracturedChorus/Art/Backgrounds/cg_ren_mirror_uniform_v1.png";
+        private const string LuminaTrainMorningBgPath =
+            "Assets/FracturedChorus/Art/Backgrounds/lumina_train_morning_v1.png";
+        private const string HimaHallwayDayBgPath =
+            "Assets/FracturedChorus/Art/Backgrounds/hima_hallway_day_v1.png";
+        private const string CgHallwayBumpBgPath =
+            "Assets/FracturedChorus/Art/Backgrounds/cg_hallway_bump_v1.png";
+        private const string CgSyncpodsFloorBgPath =
+            "Assets/FracturedChorus/Art/Backgrounds/cg_syncpods_floor_v1.png";
+        private const string CgIndiePlayerBreathBgPath =
+            "Assets/FracturedChorus/Art/Backgrounds/cg_indie_player_breath_v1.png";
+        private const string HimaClassroomDayBgPath =
+            "Assets/FracturedChorus/Art/Backgrounds/hima_classroom_day_v1.png";
+        private const string HimaCeremonyHallBgPath =
+            "Assets/FracturedChorus/Art/Backgrounds/hima_ceremony_hall_v1.png";
+        private const string HimaCeremonyDesyncBgPath =
+            "Assets/FracturedChorus/Art/Backgrounds/hima_ceremony_desync_v1.png";
+        private const string CadenceFracturePullBgPath =
+            "Assets/FracturedChorus/Art/Backgrounds/cadence_fracture_pull_v1.png";
         private const string RainPath = "Assets/FracturedChorus/Audio/SFX/Ambience_Rain_Loop.mp3";
         private const string FootStepPath = "Assets/FracturedChorus/Audio/SFX/Foot_Step.mp3";
         private const string BringMeHomePath = "Assets/FracturedChorus/Audio/Music/Bring_Me_Home.mp3";
@@ -116,22 +152,58 @@ namespace FracturedChorus.Editor
             var harutoBody = LoadSprite(HarutoBodyBgPath);
             var luxeConcert = LoadSprite(LuxeConcertBgPath);
             var luminaSquare = LoadSprite(LuminaSquareBgPath);
+            var crossingDay = LoadSprite(LuminaCrossingDayBgPath);
+            var stellaHq = LoadSprite(StellaWorksHqBgPath);
+            var syncPodAd = LoadSprite(SyncPodAdWallBgPath);
+            var himaCampus = LoadSprite(HimaCampusDayBgPath);
+            var himaHall = LoadSprite(HimaRecitalHallBgPath);
+            var apartmentTv = LoadSprite(LuminaApartmentTvBgPath);
+            var newsDrain = LoadSprite(NewsDrainCasesBgPath);
+            var dormMorning = LoadSprite(HimaDormMorningBgPath);
+            var mirrorUniform = LoadSprite(CgRenMirrorUniformBgPath);
+            var trainMorning = LoadSprite(LuminaTrainMorningBgPath);
+            var hallwayDay = LoadSprite(HimaHallwayDayBgPath);
+            var hallwayBump = LoadSprite(CgHallwayBumpBgPath);
+            var syncpodsFloor = LoadSprite(CgSyncpodsFloorBgPath);
+            var indiePlayer = LoadSprite(CgIndiePlayerBreathBgPath);
+            var classroomDay = LoadSprite(HimaClassroomDayBgPath);
+            var ceremonyHall = LoadSprite(HimaCeremonyHallBgPath);
+            var ceremonyDesync = LoadSprite(HimaCeremonyDesyncBgPath);
+            var cadencePull = LoadSprite(CadenceFracturePullBgPath);
             var rain = AssetDatabase.LoadAssetAtPath<AudioClip>(RainPath);
             var footsteps = AssetDatabase.LoadAssetAtPath<AudioClip>(FootStepPath);
             var bringMeHome = AssetDatabase.LoadAssetAtPath<AudioClip>(BringMeHomePath);
             var eternalSpark = AssetDatabase.LoadAssetAtPath<AudioClip>(EternalSparkPath);
             var so = new SerializedObject(cueResolver);
             var entries = so.FindProperty("entries");
-            entries.arraySize = 9;
+            entries.arraySize = 27;
             SetCueEntry(entries.GetArrayElementAtIndex(0), VnBgIds.LuminaStreetNight, street, null);
             SetCueEntry(entries.GetArrayElementAtIndex(1), VnBgIds.LuminaAlleyNight, alley, null);
             SetCueEntry(entries.GetArrayElementAtIndex(2), VnBgIds.LuminaAlleyHarutoBody, harutoBody, null);
             SetCueEntry(entries.GetArrayElementAtIndex(3), VnBgIds.LuxeConcert, luxeConcert, null);
             SetCueEntry(entries.GetArrayElementAtIndex(4), VnBgIds.LuminaSquareNight, luminaSquare, null);
-            SetCueEntry(entries.GetArrayElementAtIndex(5), VnAudioIds.RainAmbience, null, rain);
-            SetCueEntry(entries.GetArrayElementAtIndex(6), VnAudioIds.BringMeHome, null, bringMeHome);
-            SetCueEntry(entries.GetArrayElementAtIndex(7), VnAudioIds.EternalSpark, null, eternalSpark);
-            SetCueEntry(entries.GetArrayElementAtIndex(8), VnAudioIds.Footsteps, null, footsteps);
+            SetCueEntry(entries.GetArrayElementAtIndex(5), VnBgIds.LuminaCrossingDay, crossingDay, null);
+            SetCueEntry(entries.GetArrayElementAtIndex(6), VnBgIds.StellaWorksHq, stellaHq, null);
+            SetCueEntry(entries.GetArrayElementAtIndex(7), VnBgIds.SyncPodAdWall, syncPodAd, null);
+            SetCueEntry(entries.GetArrayElementAtIndex(8), VnBgIds.HimaCampusDay, himaCampus, null);
+            SetCueEntry(entries.GetArrayElementAtIndex(9), VnBgIds.HimaRecitalHall, himaHall, null);
+            SetCueEntry(entries.GetArrayElementAtIndex(10), VnBgIds.LuminaApartmentTv, apartmentTv, null);
+            SetCueEntry(entries.GetArrayElementAtIndex(11), VnBgIds.NewsDrainCases, newsDrain, null);
+            SetCueEntry(entries.GetArrayElementAtIndex(12), VnAudioIds.RainAmbience, null, rain);
+            SetCueEntry(entries.GetArrayElementAtIndex(13), VnAudioIds.BringMeHome, null, bringMeHome);
+            SetCueEntry(entries.GetArrayElementAtIndex(14), VnAudioIds.EternalSpark, null, eternalSpark);
+            SetCueEntry(entries.GetArrayElementAtIndex(15), VnAudioIds.Footsteps, null, footsteps);
+            SetCueEntry(entries.GetArrayElementAtIndex(16), VnBgIds.HimaDormMorning, dormMorning, null);
+            SetCueEntry(entries.GetArrayElementAtIndex(17), VnBgIds.CgRenMirrorUniform, mirrorUniform, null);
+            SetCueEntry(entries.GetArrayElementAtIndex(18), VnBgIds.LuminaTrainMorning, trainMorning, null);
+            SetCueEntry(entries.GetArrayElementAtIndex(19), VnBgIds.HimaHallwayDay, hallwayDay, null);
+            SetCueEntry(entries.GetArrayElementAtIndex(20), VnBgIds.CgHallwayBump, hallwayBump, null);
+            SetCueEntry(entries.GetArrayElementAtIndex(21), VnBgIds.CgSyncpodsFloor, syncpodsFloor, null);
+            SetCueEntry(entries.GetArrayElementAtIndex(22), VnBgIds.CgIndiePlayerBreath, indiePlayer, null);
+            SetCueEntry(entries.GetArrayElementAtIndex(23), VnBgIds.HimaClassroomDay, classroomDay, null);
+            SetCueEntry(entries.GetArrayElementAtIndex(24), VnBgIds.HimaCeremonyHall, ceremonyHall, null);
+            SetCueEntry(entries.GetArrayElementAtIndex(25), VnBgIds.HimaCeremonyDesync, ceremonyDesync, null);
+            SetCueEntry(entries.GetArrayElementAtIndex(26), VnBgIds.CadenceFracturePull, cadencePull, null);
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(cueResolver);
         }

@@ -114,6 +114,7 @@ namespace FracturedChorus.Hub
                 {
                     option.Apply(state);
                     GameMetaSession.Save();
+                    HubNavigationEscContext.SetReturnToTownMap();
                     RunMapSceneLoader.LoadByName(RunMapSceneCatalog.RunMapPrototype);
                     return;
                 }
@@ -121,6 +122,7 @@ namespace FracturedChorus.Hub
                 if (option.Id == "flower_job")
                 {
                     HubPendingActivity.Set(option.Id);
+                    HubNavigationEscContext.SetReturnToTownMap();
                     GameMetaSession.Save();
                     if (!RunMapSceneLoader.LoadByName(RunMapSceneCatalog.FlowerShopWork))
                     {

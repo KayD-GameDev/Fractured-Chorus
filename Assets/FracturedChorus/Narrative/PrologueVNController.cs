@@ -2,6 +2,7 @@ using System.Collections;
 using FracturedChorus.Meta;
 using FracturedChorus.Narrative.Vn;
 using FracturedChorus.RunMap;
+using FracturedChorus.VFX;
 using UnityEngine;
 using UnityEngine.UI;
 #if UNITY_EDITOR
@@ -53,7 +54,7 @@ namespace FracturedChorus.Narrative
             "Thank you, {0}. The cadence remembers your name.\nMay your melody find its way home.";
 
         [SerializeField] private CanvasGroup fadeOverlay;
-        [SerializeField] private Image butterflyBackground;
+        [SerializeField] private ButterflyTransitionController butterflyVfx;
         [SerializeField] private CanvasGroup dialoguePanel;
         [SerializeField] private PrologueTypewriterView disclaimerTypewriter;
         [SerializeField] private Text disclaimerText;
@@ -80,8 +81,6 @@ namespace FracturedChorus.Narrative
         private string _currentLineReadKey;
         private PrologueTypewriterView _activeTypewriter;
         [SerializeField] private int narrationFontSize = 40;
-        private Color _butterflyBaseColor = Color.white;
-
         private void OnEnable()
         {
             BindConvenience();
@@ -110,11 +109,12 @@ namespace FracturedChorus.Narrative
             BindConvenience();
             convenience?.ResetSession();
 
-            if (butterflyBackground != null)
+            ResolveButterflyVfx();
+            if (butterflyVfx != null)
             {
-                _butterflyBaseColor = butterflyBackground.color;
-                butterflyBackground.gameObject.SetActive(false);
-                SetButterflyAlpha(0f);
+                butterflyVfx.ApplyPrologueBackgroundMode();
+                butterflyVfx.gameObject.SetActive(false);
+                butterflyVfx.SetPresentationAlpha(0f);
             }
 
             if (dialoguePanel != null)
@@ -207,10 +207,11 @@ namespace FracturedChorus.Narrative
 
         private IEnumerator RunButterflyStoryPhase()
         {
-            if (butterflyBackground != null)
+            if (butterflyVfx != null)
             {
-                butterflyBackground.gameObject.SetActive(true);
-                SetButterflyAlpha(0f);
+                butterflyVfx.gameObject.SetActive(true);
+                butterflyVfx.SetPresentationAlpha(0f);
+                butterflyVfx.Play();
             }
 
             audioController?.StartBgm();
@@ -261,10 +262,7 @@ namespace FracturedChorus.Narrative
             _acceptNarrationInput = false;
             audioController?.StopButterflyWings();
 
-            if (butterflyBackground != null)
-            {
-                butterflyBackground.gameObject.SetActive(false);
-            }
+            SetButterflyVfxActive(false);
 
             if (choiceBackdrop != null)
             {
@@ -277,8 +275,8 @@ namespace FracturedChorus.Narrative
             var decided = false;
             var agreed = false;
             choiceView?.ShowOptions(
-                "I agree.",
-                "I do not agree.",
+                "I agree",
+                "I do not agree",
                 result =>
                 {
                     agreed = result;
@@ -393,10 +391,7 @@ namespace FracturedChorus.Narrative
                 dialoguePanel.alpha = 1f;
             }
 
-            if (butterflyBackground != null)
-            {
-                butterflyBackground.gameObject.SetActive(true);
-            }
+            SetButterflyVfxActive(true);
 
             var thankYou = PrologueNarrationText.WrapBalanced(string.Format(ThankYouLine, RunProfile.PlayerName));
             var typed = false;
@@ -547,16 +542,31 @@ namespace FracturedChorus.Narrative
             SetButterflyAlpha(1f);
         }
 
-        private void SetButterflyAlpha(float alpha)
+        private void ResolveButterflyVfx()
         {
-            if (butterflyBackground == null)
+            if (butterflyVfx != null)
             {
                 return;
             }
 
-            var color = _butterflyBaseColor;
-            color.a = _butterflyBaseColor.a * Mathf.Clamp01(alpha);
-            butterflyBackground.color = color;
+            butterflyVfx = GetComponentInChildren<ButterflyTransitionController>(true);
+        }
+
+        private void SetButterflyVfxActive(bool active)
+        {
+            ResolveButterflyVfx();
+            if (butterflyVfx == null)
+            {
+                return;
+            }
+
+            butterflyVfx.gameObject.SetActive(active);
+        }
+
+        private void SetButterflyAlpha(float alpha)
+        {
+            ResolveButterflyVfx();
+            butterflyVfx?.SetPresentationAlpha(alpha);
         }
 
         private void SetFade(float alpha)
@@ -693,10 +703,7 @@ namespace FracturedChorus.Narrative
         {
             SetGameObjectActive(BlackBackground, false);
 
-            if (butterflyBackground != null)
-            {
-                butterflyBackground.gameObject.SetActive(false);
-            }
+            SetButterflyVfxActive(false);
 
             SetCanvasGroupActive(dialoguePanel, false);
             SetGameObjectActive(disclaimerText != null ? disclaimerText.gameObject : null, false);
@@ -726,9 +733,10 @@ namespace FracturedChorus.Narrative
 
         private void PreviewStory()
         {
-            if (butterflyBackground != null)
+            SetButterflyVfxActive(true);
+            if (butterflyVfx != null && !butterflyVfx.IsPlaying)
             {
-                butterflyBackground.gameObject.SetActive(true);
+                butterflyVfx.Play();
             }
 
             SetCanvasGroupActive(dialoguePanel, true);
@@ -738,10 +746,7 @@ namespace FracturedChorus.Narrative
         private void PreviewChoice()
         {
             SetGameObjectActive(BlackBackground, true);
-            if (butterflyBackground != null)
-            {
-                butterflyBackground.gameObject.SetActive(false);
-            }
+            SetButterflyVfxActive(false);
 
             SetCanvasGroupActive(dialoguePanel, true);
             SetDialogueSample(PrologueNarrationText.WrapBalanced(ChoicePrompt));
@@ -772,9 +777,10 @@ namespace FracturedChorus.Narrative
 
         private void PreviewThankYou()
         {
-            if (butterflyBackground != null)
+            SetButterflyVfxActive(true);
+            if (butterflyVfx != null && !butterflyVfx.IsPlaying)
             {
-                butterflyBackground.gameObject.SetActive(true);
+                butterflyVfx.Play();
             }
 
             SetCanvasGroupActive(dialoguePanel, true);
