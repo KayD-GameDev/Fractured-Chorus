@@ -92,7 +92,7 @@ Intro TV drop+reel khóa 1 mặt → **luật arena** trong **2 Execute segment*
 | **Hate** | Cover cost ×2 (8→16; với cap 10 thì Cover không kích được trừ khi hạ multiplier) |
 | **Sorrow** | Thêm 1 telegraph mini (Eye/Mic/Elite) |
 
-Config: `AstraStageTvConfig` · runtime: `AstraTvMoodState` · inject extra note lúc lock (lookahead 3 phase đã plan sẵn).
+Config: `AstraStageTvConfig` · runtime: `AstraTvMoodState` · inject extra note lúc lock (lookahead 3 phase đã plan sẵn). Icon tròn **mặt biểu cảm** `BuffAstraTv` trên **CardTemplate** (party + enemy) — chỉnh Rect trên Hierarchy; hiện khi mặt khóa (`Resources/UI/Combat/Buffs/astra_tv_mood_*_v1`).
 
 ### Luật ra đòn của quái
 

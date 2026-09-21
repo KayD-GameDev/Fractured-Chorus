@@ -1,5 +1,6 @@
 using System.Collections;
 using FracturedChorus.Combat.Damage;
+using FracturedChorus.Combat.Presentation;
 using FracturedChorus.Combat.Units;
 using FracturedChorus.Data;
 using UnityEngine;
@@ -13,8 +14,10 @@ namespace FracturedChorus.UI
     /// </summary>
     public class PartyMemberCardView : MonoBehaviour
     {
-        private static readonly Color HealthFillColor = new Color(0.18f, 0.92f, 0.28f, 1f);
-        private static readonly Color HealthTrackColor = new Color(0.08f, 0.08f, 0.1f, 0.95f);
+        public static readonly Color SharedHealthFillColor = new Color(0.18f, 0.92f, 0.28f, 1f);
+        private static readonly Color HealthFillColor = SharedHealthFillColor;
+        private const string SideTubeTrackResource = "UI/Combat/PartyCard/party_card_side_tube_track_v1";
+        private const string SideTubeFillResource = "UI/Combat/PartyCard/party_card_side_tube_fill_v1";
 
         [SerializeField] private Image healthBarBg;
         [SerializeField] private Image healthBarFill;
@@ -33,6 +36,8 @@ namespace FracturedChorus.UI
         [SerializeField] private RectTransform barStack;
         [SerializeField] private RectTransform healthSlot;
         [SerializeField] private RectTransform gaugeSlot;
+        [SerializeField] private Image gaugeBarBg;
+        [SerializeField] private Image gaugeBarFill;
         [Header("CardTemplate preview")]
         [Tooltip("Presets dùng để đổi Avatar/tên trên CardTemplate trong Edit Mode.")]
         [SerializeField] private UnitPresetSO[] characterCardPresets;
@@ -41,6 +46,7 @@ namespace FracturedChorus.UI
         private CombatUnit _unit;
         private PrepPipsView _prepPips;
         private Image _reduceS2BuffIcon;
+        private Image _astraTvMoodIcon;
         private Coroutine _barPunchRoutine;
         private Vector3 _barPunchBaseScale = Vector3.one;
         private bool _embeddedSkin;
@@ -74,17 +80,17 @@ namespace FracturedChorus.UI
             var portrait = preset.ResolveCombatCardSprite() ?? preset.battleSprite;
             ApplyPortrait(portrait);
             ApplyNameLabel(preset);
-            if (hpValue != null)
-            {
-                hpValue.text = preset.ResolveStats().MaxHp.ToString();
-            }
-
-            if (prepValue != null)
-            {
-                prepValue.text = "0";
-            }
-
+            HideWideResourceLabels();
             ApplyPartyResourceColors();
+            if (healthBarFill != null)
+            {
+                ConfigureVerticalTubeFill(healthBarFill, HealthFillColor, 1f);
+            }
+
+            if (gaugeBarFill != null)
+            {
+                ConfigureVerticalTubeFill(gaugeBarFill, FcColorTokens.Brand.MagentaAccent, 0f);
+            }
         }
 
         public void SetPreviewCharacterIndex(int index)
@@ -210,6 +216,17 @@ namespace FracturedChorus.UI
                 gaugeSlot = transform.Find("BarStack/GaugeSlot") as RectTransform;
             }
 
+            if (gaugeBarBg == null)
+            {
+                gaugeBarBg = transform.Find("BarStack/GaugeSlot/GaugeBarBg")?.GetComponent<Image>();
+            }
+
+            if (gaugeBarFill == null)
+            {
+                gaugeBarFill = transform.Find("BarStack/GaugeSlot/GaugeBarBg/GaugeBarFill")?.GetComponent<Image>()
+                               ?? transform.Find("BarStack/GaugeSlot/GaugeBarFill")?.GetComponent<Image>();
+            }
+
             CacheClassicCardSize();
             if (!_useEnemyTemplateHierarchy)
             {
@@ -218,8 +235,10 @@ namespace FracturedChorus.UI
             }
 
             EnsureHealthBarVisuals();
+            EnsureGaugeBarVisuals();
             EnsureCircleBadgeSprites();
-            EnsurePrepPips();
+            HideWideResourceLabels();
+            HidePrepPipsForSideTubes();
             // Enemy: không tạo BuffReduceS2 nếu template không có — object phải khớp CardTemplate.
             if (!IsEnemyCard())
             {
@@ -229,6 +248,8 @@ namespace FracturedChorus.UI
             {
                 WireExistingBuffIconOnly();
             }
+
+            EnsureAstraTvMoodIcon();
         }
 
         /// <summary>
@@ -243,7 +264,8 @@ namespace FracturedChorus.UI
             {
                 // Giữ nguyên Hierarchy clone từ Enemy CardTemplate.
                 EnsureCircleBadgeSprites();
-                EnsurePrepPips();
+                HidePrepPipsForSideTubes();
+                HideWideResourceLabels();
                 return;
             }
 
@@ -261,6 +283,7 @@ namespace FracturedChorus.UI
 
             EnsurePrepPips();
             _prepPips?.SetLayoutMode(PrepPipsView.LayoutMode.SegmentStrip);
+            HidePrepPipsForSideTubes();
             BringElementBadgeToFront();
         }
 
@@ -282,6 +305,11 @@ namespace FracturedChorus.UI
             RefreshHp();
             RefreshPrep(animate: false);
             RefreshReduceS2BuffIcon();
+            EnsureAstraTvMoodIcon();
+            RefreshAstraTvMoodIcon();
+
+            AstraTvMoodState.OnChanged -= HandleAstraTvMoodChanged;
+            AstraTvMoodState.OnChanged += HandleAstraTvMoodChanged;
 
             if (_unit != null)
             {
@@ -304,6 +332,7 @@ namespace FracturedChorus.UI
 
         private void Unsubscribe()
         {
+            AstraTvMoodState.OnChanged -= HandleAstraTvMoodChanged;
             if (_unit != null)
             {
                 _unit.OnHpChanged -= HandleHpChanged;
@@ -751,19 +780,10 @@ namespace FracturedChorus.UI
                 "NameLabel",
                 rt => PartyCardLayout.ApplyModularNameRect(rt),
                 nameLabel,
-                16,
+                14,
                 "NAME");
-            if (healthSlot != null)
-            {
-                hpLabel = EnsureTextChild(healthSlot, "HpLabel", PartyCardLayout.ApplyModularHpLabelRect, hpLabel, 10, "HP");
-                hpValue = EnsureTextChild(healthSlot, "HpValue", PartyCardLayout.ApplyModularHpValueRect, hpValue, 20, "0");
-            }
-
-            if (gaugeSlot != null)
-            {
-                prepLabel = EnsureTextChild(gaugeSlot, "PrepLabel", PartyCardLayout.ApplyModularPrepLabelRect, prepLabel, 10, "PREP");
-                prepValue = EnsureTextChild(gaugeSlot, "PrepValue", PartyCardLayout.ApplyModularPrepValueRect, prepValue, 16, "0");
-            }
+            EnsureGaugeBarInSlot();
+            HideWideResourceLabels();
 
             if (cardBg != null)
             {
@@ -889,46 +909,19 @@ namespace FracturedChorus.UI
 
         private void ApplyPartyResourceColors()
         {
-            var hpColor = IsEnemyCard()
-                ? FcColorTokens.Brand.RedSelection
-                : FcColorTokens.Brand.CyanNeonCore;
             var prepColor = FcColorTokens.Brand.MagentaAccent;
-            if (hpLabel != null)
-            {
-                hpLabel.color = hpColor;
-                UiFontCatalog.ApplyAutomatic(hpLabel);
-            }
-
-            if (hpValue != null)
-            {
-                hpValue.color = hpColor;
-                UiFontCatalog.ApplyAutomatic(hpValue);
-            }
-
-            if (prepLabel != null)
-            {
-                prepLabel.color = prepColor;
-                UiFontCatalog.ApplyAutomatic(prepLabel);
-            }
-
-            if (prepValue != null)
-            {
-                prepValue.color = prepColor;
-                UiFontCatalog.ApplyAutomatic(prepValue);
-            }
-
-            if (healthBarBg != null && UsesModularChrome())
-            {
-                healthBarBg.color = Color.white;
-            }
-
             if (healthBarFill != null)
             {
-                healthBarFill.color = hpColor;
+                ConfigureVerticalTubeFill(healthBarFill, HealthFillColor, healthBarFill.fillAmount > 0.001f ? healthBarFill.fillAmount : 1f);
+            }
+
+            if (gaugeBarFill != null)
+            {
+                ConfigureVerticalTubeFill(gaugeBarFill, prepColor, gaugeBarFill.fillAmount);
             }
 
             EnsurePrepPips();
-            _prepPips?.SetColors(prepColor, new Color(0.18f, 0.06f, 0.12f, 0.8f));
+            HidePrepPipsForSideTubes();
         }
 
         private void SyncLayoutElementToAuthoredSize()
@@ -1359,12 +1352,9 @@ namespace FracturedChorus.UI
 
             var ratio = Mathf.Clamp01((float)_unit.CurrentHp / Mathf.Max(1, _unit.Stats.MaxHp));
 
-            if (healthBarFillRect != null)
+            if (healthBarFill != null)
             {
-                healthBarFillRect.anchorMin = new Vector2(0f, 0f);
-                healthBarFillRect.anchorMax = new Vector2(ratio, 1f);
-                healthBarFillRect.offsetMin = Vector2.zero;
-                healthBarFillRect.offsetMax = Vector2.zero;
+                ConfigureVerticalTubeFill(healthBarFill, HealthFillColor, ratio);
             }
 
             if (hpValue != null)
@@ -1390,13 +1380,24 @@ namespace FracturedChorus.UI
 
         private void RefreshPrep(bool animate)
         {
-            if (_prepPips == null)
+            if (gaugeBarFill == null && _prepPips == null)
             {
                 EnsurePrepPips();
             }
 
             var prep = _unit != null ? _unit.Prep : 0;
-            _prepPips?.SetPrep(prep, animate);
+            if (gaugeBarFill != null)
+            {
+                HidePrepPipsForSideTubes();
+                ConfigureVerticalTubeFill(
+                    gaugeBarFill,
+                    FcColorTokens.Brand.MagentaAccent,
+                    Mathf.Clamp01(prep / (float)CombatUnit.PrepCap));
+            }
+            else
+            {
+                _prepPips?.SetPrep(prep, animate);
+            }
             if (prepValue != null)
             {
                 prepValue.text = prep.ToString();
@@ -1436,39 +1437,265 @@ namespace FracturedChorus.UI
             ApplyReduceS2BuffVisual(_reduceS2BuffIcon);
         }
 
+        private void HandleAstraTvMoodChanged()
+        {
+            RefreshAstraTvMoodIcon();
+        }
+
+        private void EnsureAstraTvMoodIcon()
+        {
+            var cardRt = transform as RectTransform;
+            if (cardRt == null)
+            {
+                return;
+            }
+
+            var existing = cardRt.Find("BuffAstraTv")?.GetComponent<Image>();
+            if (existing != null)
+            {
+                _astraTvMoodIcon = existing;
+                PlaceAstraTvMoodIcon();
+                return;
+            }
+
+            var go = new GameObject("BuffAstraTv", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            var rt = go.GetComponent<RectTransform>();
+            rt.SetParent(cardRt, false);
+            _astraTvMoodIcon = go.GetComponent<Image>();
+            _astraTvMoodIcon.raycastTarget = false;
+            _astraTvMoodIcon.preserveAspect = true;
+            PlaceAstraTvMoodIcon();
+            go.SetActive(false);
+        }
+
+        private void PlaceAstraTvMoodIcon()
+        {
+            if (_astraTvMoodIcon == null)
+            {
+                return;
+            }
+
+            var rt = _astraTvMoodIcon.rectTransform;
+            // Hierarchy đã author BuffAstraTv trên CardTemplate → giữ nguyên Rect / sibling.
+            if (RectSizeUtil.IsAuthored(rt))
+            {
+                return;
+            }
+
+            rt.SetParent(transform, false);
+            PartyCardLayout.ApplyAstraTvMoodIconRect(rt);
+        }
+
+        private void RefreshAstraTvMoodIcon()
+        {
+            EnsureAstraTvMoodIcon();
+            if (_astraTvMoodIcon == null)
+            {
+                return;
+            }
+
+            PlaceAstraTvMoodIcon();
+            var path = AstraTvMoodState.MoodSpriteResourcePath;
+            if (string.IsNullOrEmpty(path))
+            {
+                _astraTvMoodIcon.gameObject.SetActive(false);
+                return;
+            }
+
+            var sprite = Resources.Load<Sprite>(path);
+            if (sprite == null)
+            {
+                _astraTvMoodIcon.gameObject.SetActive(false);
+                return;
+            }
+
+            _astraTvMoodIcon.sprite = sprite;
+            _astraTvMoodIcon.color = Color.white;
+            _astraTvMoodIcon.gameObject.SetActive(true);
+        }
+
         private void EnsureHealthBarVisuals()
         {
+            var track = LoadSideTubeTrack();
+            var fill = LoadSideTubeFill();
             var white = UiCircleSpriteUtil.White;
 
             if (healthBarBg != null)
             {
-                if (healthBarBg.sprite == null)
-                {
-                    healthBarBg.sprite = white;
-                }
-
+                healthBarBg.sprite = track != null ? track : (healthBarBg.sprite != null ? healthBarBg.sprite : white);
                 healthBarBg.type = Image.Type.Simple;
-                healthBarBg.color = UsesModularChrome() || !IsEnemyCard()
-                    ? Color.white
-                    : HealthTrackColor;
+                healthBarBg.color = Color.white;
                 healthBarBg.raycastTarget = false;
+                healthBarBg.preserveAspect = false;
             }
 
             if (healthBarFill != null)
             {
-                healthBarFill.sprite = white;
-                healthBarFill.type = Image.Type.Simple;
-                healthBarFill.color = UsesModularChrome()
-                    ? (IsEnemyCard() ? FcColorTokens.Brand.RedSelection : FcColorTokens.Brand.CyanNeonCore)
-                    : (IsEnemyCard() ? HealthFillColor : FcColorTokens.Brand.CyanNeonCore);
+                healthBarFill.sprite = fill != null ? fill : white;
+                ConfigureVerticalTubeFill(healthBarFill, HealthFillColor, healthBarFill.fillAmount > 0.001f ? healthBarFill.fillAmount : 1f);
                 healthBarFill.raycastTarget = false;
             }
 
             if (healthBarFillRect != null)
             {
-                healthBarFillRect.pivot = new Vector2(0f, 0.5f);
+                healthBarFillRect.anchorMin = Vector2.zero;
+                healthBarFillRect.anchorMax = Vector2.one;
+                healthBarFillRect.pivot = new Vector2(0.5f, 0.5f);
+                healthBarFillRect.offsetMin = Vector2.zero;
+                healthBarFillRect.offsetMax = Vector2.zero;
             }
         }
+
+        private void EnsureGaugeBarVisuals()
+        {
+            EnsureGaugeBarInSlot();
+            var track = LoadSideTubeTrack();
+            var fill = LoadSideTubeFill();
+            var white = UiCircleSpriteUtil.White;
+
+            if (gaugeBarBg != null)
+            {
+                gaugeBarBg.sprite = track != null ? track : (gaugeBarBg.sprite != null ? gaugeBarBg.sprite : white);
+                gaugeBarBg.type = Image.Type.Simple;
+                gaugeBarBg.color = Color.white;
+                gaugeBarBg.raycastTarget = false;
+                gaugeBarBg.preserveAspect = false;
+            }
+
+            if (gaugeBarFill != null)
+            {
+                gaugeBarFill.sprite = fill != null ? fill : white;
+                ConfigureVerticalTubeFill(
+                    gaugeBarFill,
+                    FcColorTokens.Brand.MagentaAccent,
+                    gaugeBarFill.fillAmount);
+                gaugeBarFill.raycastTarget = false;
+            }
+        }
+
+        private void EnsureGaugeBarInSlot()
+        {
+            if (gaugeSlot == null)
+            {
+                return;
+            }
+
+            if (gaugeBarBg == null)
+            {
+                gaugeBarBg = gaugeSlot.Find("GaugeBarBg")?.GetComponent<Image>();
+            }
+
+            if (gaugeBarBg == null)
+            {
+                var go = new GameObject("GaugeBarBg", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                var rt = go.GetComponent<RectTransform>();
+                rt.SetParent(gaugeSlot, false);
+                PartyCardLayout.ApplyModularHealthBarRect(rt);
+                gaugeBarBg = go.GetComponent<Image>();
+                gaugeBarBg.raycastTarget = false;
+            }
+
+            if (gaugeBarFill == null)
+            {
+                gaugeBarFill = gaugeBarBg.transform.Find("GaugeBarFill")?.GetComponent<Image>();
+            }
+
+            if (gaugeBarFill == null)
+            {
+                var go = new GameObject("GaugeBarFill", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                var rt = go.GetComponent<RectTransform>();
+                rt.SetParent(gaugeBarBg.transform, false);
+                rt.anchorMin = Vector2.zero;
+                rt.anchorMax = Vector2.one;
+                rt.pivot = new Vector2(0.5f, 0.5f);
+                rt.offsetMin = Vector2.zero;
+                rt.offsetMax = Vector2.zero;
+                gaugeBarFill = go.GetComponent<Image>();
+                gaugeBarFill.raycastTarget = false;
+            }
+
+            EnsureGaugeTicks();
+        }
+
+        private void EnsureGaugeTicks()
+        {
+            if (gaugeSlot == null)
+            {
+                return;
+            }
+
+            for (var i = 0; i < 2; i++)
+            {
+                var name = $"GaugeTick_{i}";
+                if (gaugeSlot.Find(name) != null)
+                {
+                    continue;
+                }
+
+                var go = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                var rt = go.GetComponent<RectTransform>();
+                rt.SetParent(gaugeSlot, false);
+                var t = (i + 1) / 3f;
+                rt.anchorMin = new Vector2(0.18f, t);
+                rt.anchorMax = new Vector2(0.82f, t);
+                rt.pivot = new Vector2(0.5f, 0.5f);
+                rt.anchoredPosition = Vector2.zero;
+                rt.sizeDelta = new Vector2(0f, 1.5f);
+                var image = go.GetComponent<Image>();
+                image.sprite = UiCircleSpriteUtil.White;
+                image.color = new Color(1f, 1f, 1f, 0.35f);
+                image.raycastTarget = false;
+            }
+        }
+
+        private static void ConfigureVerticalTubeFill(Image image, Color color, float amount)
+        {
+            if (image == null)
+            {
+                return;
+            }
+
+            image.type = Image.Type.Filled;
+            image.fillMethod = Image.FillMethod.Vertical;
+            image.fillOrigin = (int)Image.OriginVertical.Bottom;
+            image.fillAmount = Mathf.Clamp01(amount);
+            image.color = color;
+            image.preserveAspect = false;
+        }
+
+        private void HideWideResourceLabels()
+        {
+            SetActiveIfExists(hpLabel != null ? hpLabel.gameObject : null, false);
+            SetActiveIfExists(hpValue != null ? hpValue.gameObject : null, false);
+            SetActiveIfExists(prepLabel != null ? prepLabel.gameObject : null, false);
+            SetActiveIfExists(prepValue != null ? prepValue.gameObject : null, false);
+        }
+
+        private void HidePrepPipsForSideTubes()
+        {
+            if (_prepPips == null)
+            {
+                _prepPips = transform.Find("BarStack/GaugeSlot/PrepPips")?.GetComponent<PrepPipsView>()
+                            ?? transform.Find("PrepPips")?.GetComponent<PrepPipsView>();
+            }
+
+            if (_prepPips != null)
+            {
+                _prepPips.gameObject.SetActive(false);
+            }
+        }
+
+        private static void SetActiveIfExists(GameObject go, bool active)
+        {
+            if (go != null)
+            {
+                go.SetActive(active);
+            }
+        }
+
+        private static Sprite LoadSideTubeTrack() => Resources.Load<Sprite>(SideTubeTrackResource);
+
+        private static Sprite LoadSideTubeFill() => Resources.Load<Sprite>(SideTubeFillResource);
 
         private void EnsureCircleBadgeSprites()
         {

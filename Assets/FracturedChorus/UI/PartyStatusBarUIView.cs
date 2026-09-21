@@ -271,7 +271,14 @@ namespace FracturedChorus.UI
             }
 
             var cardScale = GetTemplateCardScale();
+            var cardSize = GetTemplateCardSize();
             var totalCards = activeCards.Count;
+            var fitScale = PartyCardLayout.ComputeRowFitScale(
+                totalCards,
+                cardSize.x * Mathf.Abs(cardScale.x),
+                cardSpacing,
+                ResolveRowWidth());
+            var rowScale = new Vector3(cardScale.x * fitScale, cardScale.y * fitScale, cardScale.z);
             var widths = new float[totalCards];
             for (var cardIndex = 0; cardIndex < totalCards; cardIndex++)
             {
@@ -282,9 +289,9 @@ namespace FracturedChorus.UI
                     continue;
                 }
 
-                var cardSize = card.PreferredCardSize;
-                widths[cardIndex] = cardSize.x * cardScale.x;
-                PrepareCardRectForRowLayout(rect, cardSize, cardScale);
+                var size = card.PreferredCardSize;
+                widths[cardIndex] = size.x * Mathf.Abs(rowScale.x);
+                PrepareCardRectForRowLayout(rect, size, rowScale);
                 rect.SetSiblingIndex(cardIndex);
             }
 
@@ -301,6 +308,17 @@ namespace FracturedChorus.UI
 
                 x += widths[cardIndex] + cardSpacing;
             }
+        }
+
+        private float ResolveRowWidth()
+        {
+            if (cardsRow == null)
+            {
+                return PartyCardLayout.DefaultStatusBarWidth;
+            }
+
+            var width = cardsRow.rect.width;
+            return width > 1f ? width : PartyCardLayout.DefaultStatusBarWidth;
         }
 
         private Vector2 GetTemplateCardSize()

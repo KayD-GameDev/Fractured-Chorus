@@ -8,11 +8,12 @@ namespace FracturedChorus.UI
     /// </summary>
     public static class PartyCardLayout
     {
-        /// <summary>Fallback — modular P5 party card. Scene CardTemplate size wins.</summary>
-        public const float CardWidth = 240f;
+        /// <summary>Fallback — compact portrait + side tubes. Scene CardTemplate size wins.</summary>
+        public const float CardWidth = 160f;
         public const float CardHeight = 118f;
         public const float CardGap = 2.75f;
         public const float CardStepX = CardWidth + CardGap;
+        public const float DefaultStatusBarWidth = 798f;
 
         public static float ComputeCardStepX(float effectiveCardWidth, float cardGap) =>
             effectiveCardWidth + cardGap;
@@ -36,10 +37,22 @@ namespace FracturedChorus.UI
         public const float EmbeddedBadgeAnchorX = -18f;
         public const float EmbeddedBadgeAnchorY = -18f;
 
+        /// <summary>Fallback BuffAstraTv — scene CardTemplate Rect thắng khi đã author.</summary>
+        public const float AstraTvMoodIconSize = 28f;
+        public const float AstraTvMoodIconPosX = -32f;
+        public const float AstraTvMoodIconPosY = -34f;
+
         public const float ModularCardRotationZ = -6f;
         public const float ModularEnemyCardRotationZ = 6f;
-        public const float ModularAvatarWidth = 80f;
-        public const float ModularAvatarHeight = 102f;
+        public const float ModularAvatarWidth = 96f;
+        public const float ModularAvatarHeight = 96f;
+        public const float AvatarLeftPad = 8f;
+        public const float AvatarTubeGap = 4f;
+        public const float SideTubeWidth = 14f;
+        public const float SideTubeGap = 3f;
+        public const float SideTubeHeight = 100f;
+
+        public static float SideTubeStackWidth => SideTubeWidth * 2f + SideTubeGap;
 
         public static void ApplyEmbeddedBarStackRect(RectTransform barStack)
         {
@@ -104,19 +117,27 @@ namespace FracturedChorus.UI
 
             badgeRect.pivot = new Vector2(0.5f, 0.5f);
             badgeRect.localScale = Vector3.one;
-            if (enemySide)
-            {
-                badgeRect.anchorMin = new Vector2(1f, 1f);
-                badgeRect.anchorMax = new Vector2(1f, 1f);
-                badgeRect.anchoredPosition = new Vector2(-16f, -12f);
-                badgeRect.sizeDelta = new Vector2(BadgeSize, BadgeSize);
-                return;
-            }
-
             badgeRect.anchorMin = new Vector2(0f, 1f);
             badgeRect.anchorMax = new Vector2(0f, 1f);
             badgeRect.anchoredPosition = new Vector2(BadgeAnchorX, BadgeAnchorY);
             badgeRect.sizeDelta = new Vector2(BadgeSize, BadgeSize);
+        }
+
+        /// <summary>FALLBACK-ONLY khi Hierarchy chưa author BuffAstraTv.</summary>
+        public static void ApplyAstraTvMoodIconRect(RectTransform rect)
+        {
+            if (rect == null)
+            {
+                return;
+            }
+
+            rect.anchorMin = new Vector2(1f, 1f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.pivot = new Vector2(1f, 1f);
+            rect.anchoredPosition = new Vector2(AstraTvMoodIconPosX, AstraTvMoodIconPosY);
+            rect.sizeDelta = new Vector2(AstraTvMoodIconSize, AstraTvMoodIconSize);
+            rect.localRotation = Quaternion.identity;
+            rect.localScale = Vector3.one;
         }
 
         public static void ApplyElementIconRect(RectTransform iconRect)
@@ -164,21 +185,12 @@ namespace FracturedChorus.UI
             }
 
             rect.pivot = new Vector2(0.5f, 0.5f);
-            rect.sizeDelta = new Vector2(44f, 44f);
+            rect.sizeDelta = new Vector2(36f, 36f);
             rect.localScale = Vector3.one;
-            if (enemySide)
-            {
-                rect.anchorMin = new Vector2(1f, 0.5f);
-                rect.anchorMax = new Vector2(1f, 0.5f);
-                rect.anchoredPosition = new Vector2(-42f, 12f);
-                rect.localRotation = Quaternion.Euler(0f, 0f, -12f);
-                return;
-            }
-
             rect.anchorMin = new Vector2(0f, 0.5f);
             rect.anchorMax = new Vector2(0f, 0.5f);
-            rect.anchoredPosition = new Vector2(42f, 12f);
-            rect.localRotation = Quaternion.Euler(0f, 0f, 12f);
+            rect.anchoredPosition = new Vector2(AvatarLeftPad + 22f, 14f);
+            rect.localRotation = Quaternion.Euler(0f, 0f, enemySide ? -12f : 12f);
         }
 
         public static void ApplyModularAvatarRect(RectTransform rect, bool enemySide = false)
@@ -192,17 +204,11 @@ namespace FracturedChorus.UI
             rect.sizeDelta = new Vector2(ModularAvatarWidth, ModularAvatarHeight);
             rect.localRotation = Quaternion.identity;
             rect.localScale = Vector3.one;
-            if (enemySide)
-            {
-                rect.anchorMin = new Vector2(1f, 0.5f);
-                rect.anchorMax = new Vector2(1f, 0.5f);
-                rect.anchoredPosition = new Vector2(-46f, 6f);
-                return;
-            }
-
             rect.anchorMin = new Vector2(0f, 0.5f);
             rect.anchorMax = new Vector2(0f, 0.5f);
-            rect.anchoredPosition = new Vector2(46f, 6f);
+            rect.anchoredPosition = new Vector2(
+                AvatarLeftPad + ModularAvatarWidth * 0.5f,
+                8f);
         }
 
         public static void ApplyModularNameRect(RectTransform rect, bool enemySide = false)
@@ -212,22 +218,13 @@ namespace FracturedChorus.UI
                 return;
             }
 
-            rect.sizeDelta = new Vector2(88f, 18f);
+            rect.sizeDelta = new Vector2(ModularAvatarWidth, 16f);
             rect.localRotation = Quaternion.identity;
             rect.localScale = Vector3.one;
-            if (enemySide)
-            {
-                rect.anchorMin = new Vector2(1f, 0f);
-                rect.anchorMax = new Vector2(1f, 0f);
-                rect.pivot = new Vector2(1f, 0f);
-                rect.anchoredPosition = new Vector2(-12f, 10f);
-                return;
-            }
-
             rect.anchorMin = new Vector2(0f, 0f);
             rect.anchorMax = new Vector2(0f, 0f);
             rect.pivot = new Vector2(0f, 0f);
-            rect.anchoredPosition = new Vector2(12f, 10f);
+            rect.anchoredPosition = new Vector2(AvatarLeftPad, 4f);
         }
 
         public static void ApplyModularBarStackRect(RectTransform barStack, bool enemySide = false)
@@ -237,50 +234,37 @@ namespace FracturedChorus.UI
                 return;
             }
 
-            barStack.sizeDelta = new Vector2(128f, 84f);
+            barStack.sizeDelta = new Vector2(SideTubeStackWidth, SideTubeHeight);
             barStack.localRotation = Quaternion.identity;
             barStack.localScale = Vector3.one;
-            if (enemySide)
-            {
-                barStack.anchorMin = new Vector2(0f, 0.5f);
-                barStack.anchorMax = new Vector2(0f, 0.5f);
-                barStack.pivot = new Vector2(0f, 0.5f);
-                barStack.anchoredPosition = new Vector2(14f, 2f);
-                return;
-            }
-
-            barStack.anchorMin = new Vector2(1f, 0.5f);
-            barStack.anchorMax = new Vector2(1f, 0.5f);
-            barStack.pivot = new Vector2(1f, 0.5f);
-            barStack.anchoredPosition = new Vector2(-14f, 2f);
+            barStack.anchorMin = new Vector2(0f, 0.5f);
+            barStack.anchorMax = new Vector2(0f, 0.5f);
+            barStack.pivot = new Vector2(0f, 0.5f);
+            barStack.anchoredPosition = new Vector2(
+                AvatarLeftPad + ModularAvatarWidth + AvatarTubeGap,
+                8f);
         }
 
         public static void ApplyModularHealthGaugeSlots(RectTransform healthSlot, RectTransform gaugeSlot)
         {
-            const float split = 0.46f;
-            const float gap = 1.25f;
+            ApplySideTubeColumn(healthSlot, 0f);
+            ApplySideTubeColumn(gaugeSlot, SideTubeWidth + SideTubeGap);
+        }
 
-            if (healthSlot != null)
+        private static void ApplySideTubeColumn(RectTransform slot, float x)
+        {
+            if (slot == null)
             {
-                healthSlot.anchorMin = new Vector2(0f, split);
-                healthSlot.anchorMax = new Vector2(1f, 1f);
-                healthSlot.pivot = new Vector2(0.5f, 0.5f);
-                healthSlot.offsetMin = new Vector2(0f, gap);
-                healthSlot.offsetMax = Vector2.zero;
-                healthSlot.localRotation = Quaternion.identity;
-                healthSlot.localScale = Vector3.one;
+                return;
             }
 
-            if (gaugeSlot != null)
-            {
-                gaugeSlot.anchorMin = new Vector2(0f, 0f);
-                gaugeSlot.anchorMax = new Vector2(1f, split);
-                gaugeSlot.pivot = new Vector2(0.5f, 0.5f);
-                gaugeSlot.offsetMin = Vector2.zero;
-                gaugeSlot.offsetMax = new Vector2(0f, -gap);
-                gaugeSlot.localRotation = Quaternion.identity;
-                gaugeSlot.localScale = Vector3.one;
-            }
+            slot.anchorMin = new Vector2(0f, 0f);
+            slot.anchorMax = new Vector2(0f, 1f);
+            slot.pivot = new Vector2(0f, 0.5f);
+            slot.offsetMin = new Vector2(x, 0f);
+            slot.offsetMax = new Vector2(x + SideTubeWidth, 0f);
+            slot.localRotation = Quaternion.identity;
+            slot.localScale = Vector3.one;
         }
 
         public static void ApplyModularHpLabelRect(RectTransform rect)
@@ -322,11 +306,13 @@ namespace FracturedChorus.UI
                 return;
             }
 
-            rect.anchorMin = new Vector2(0f, 0f);
-            rect.anchorMax = new Vector2(1f, 0f);
-            rect.pivot = new Vector2(0.5f, 0f);
-            rect.anchoredPosition = new Vector2(0f, 2f);
-            rect.sizeDelta = new Vector2(-4f, 8f);
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+            rect.anchoredPosition = Vector2.zero;
+            rect.sizeDelta = Vector2.zero;
             rect.localRotation = Quaternion.identity;
             rect.localScale = Vector3.one;
         }
@@ -377,6 +363,22 @@ namespace FracturedChorus.UI
             rect.sizeDelta = new Vector2(-4f, 11f);
             rect.localRotation = Quaternion.identity;
             rect.localScale = Vector3.one;
+        }
+
+        public static float ComputeRowFitScale(int cardCount, float cardWidth, float cardGap, float barWidth)
+        {
+            if (cardCount <= 0 || cardWidth <= 0f || barWidth <= 0f)
+            {
+                return 1f;
+            }
+
+            var needed = cardCount * cardWidth + Mathf.Max(0, cardCount - 1) * cardGap;
+            if (needed <= barWidth)
+            {
+                return 1f;
+            }
+
+            return barWidth / needed;
         }
 
         public static Vector2 GetCardAnchoredPosition(int cardIndex, int totalCards) =>
