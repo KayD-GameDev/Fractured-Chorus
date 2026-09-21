@@ -13,6 +13,9 @@ namespace FracturedChorus.Editor
         public const string OpeningInvestigationLayoutAssetPath =
             "Assets/FracturedChorus/Data/UI/Vn/vn_dialogue_panel_layout_opening_investigation.json";
 
+        public const string FlowerShopWorkLayoutAssetPath =
+            "Assets/FracturedChorus/Data/UI/Vn/vn_dialogue_panel_layout_flower_shop_work.json";
+
         private static readonly string[] CapturedChildNames =
         {
             "DialogueBodyBacking",
@@ -38,6 +41,18 @@ namespace FracturedChorus.Editor
             var assetPath = ResolveLayoutAssetPath(scenePath);
             WriteLayoutAsset(assetPath, file);
             Debug.Log($"[Fractured Chorus] Captured dialogue panel layout → {assetPath} ({file.nodes.Length} nodes).");
+        }
+
+        public static void CaptureAndWriteDialogueLayout(CanvasGroup dialoguePanel, string layoutAssetPath, string scenePath)
+        {
+            if (dialoguePanel == null || string.IsNullOrEmpty(layoutAssetPath))
+            {
+                return;
+            }
+
+            var file = Capture(dialoguePanel);
+            file.scene = string.IsNullOrEmpty(scenePath) ? dialoguePanel.gameObject.scene.path : scenePath;
+            WriteLayoutAsset(layoutAssetPath, file);
         }
 
         public static bool ApplyLayout(CanvasGroup dialoguePanel, string layoutAssetPath)

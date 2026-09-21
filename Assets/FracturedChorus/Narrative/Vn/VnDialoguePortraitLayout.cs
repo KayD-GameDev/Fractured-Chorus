@@ -7,12 +7,12 @@ namespace FracturedChorus.Narrative.Vn
         public static readonly Vector2 LeftAnchorMin = new Vector2(0f, 0f);
         public static readonly Vector2 LeftAnchorMax = new Vector2(0f, 0f);
         public static readonly Vector2 LeftPivot = new Vector2(0f, 0f);
-        public static readonly Vector2 LeftAnchoredPosition = new Vector2(28f, 420f);
+        public static readonly Vector2 LeftAnchoredPosition = new Vector2(28f, 141f);
 
         public static readonly Vector2 RightAnchorMin = new Vector2(1f, 0f);
         public static readonly Vector2 RightAnchorMax = new Vector2(1f, 0f);
         public static readonly Vector2 RightPivot = new Vector2(1f, 0f);
-        public static readonly Vector2 RightAnchoredPosition = new Vector2(-28f, 420f);
+        public static readonly Vector2 RightAnchoredPosition = new Vector2(-28f, 137f);
 
         public static readonly Vector2 SizeDelta = new Vector2(440f, 600f);
         public static readonly Vector2 DefaultShadowOffset = new Vector2(-16f, 12f);
@@ -51,6 +51,7 @@ namespace FracturedChorus.Narrative.Vn
         public const string HimaCeremonyHall = "hima_ceremony_hall";
         public const string HimaCeremonyDesync = "hima_ceremony_desync";
         public const string CadenceFracturePull = "cadence_fracture_pull";
+        public const string FlowerShop = "flower_shop";
         public const string FlowerArrive = "flower_arrive";
         public const string FlowerCustomer = "flower_customer";
         public const string FlowerThink = "flower_think";

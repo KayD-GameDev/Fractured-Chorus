@@ -6,7 +6,7 @@
       "siblingIndex": 0,
       "anchorMin": { "x": 0.04, "y": 0.03 },
       "anchorMax": { "x": 0.96, "y": 0.36 },
-      "anchoredPosition": { "x": 0, "y": 0 },
+      "anchoredPosition": { "x": 0, "y": -6.9999695 },
       "sizeDelta": { "x": 0, "y": 0 },
       "pivot": { "x": 0.5, "y": 0.5 }
     },
@@ -24,8 +24,8 @@
       "siblingIndex": 1,
       "anchorMin": { "x": 0, "y": 0 },
       "anchorMax": { "x": 1, "y": 1 },
-      "anchoredPosition": { "x": 0, "y": -49.157 },
-      "sizeDelta": { "x": 0, "y": 98.315 },
+      "anchoredPosition": { "x": -15.330017, "y": -14.244995 },
+      "sizeDelta": { "x": -30.67, "y": 28.49 },
       "pivot": { "x": 0.5, "y": 0.5 },
       "imageType": 0,
       "preserveAspect": 1
@@ -35,8 +35,8 @@
       "siblingIndex": 2,
       "anchorMin": { "x": 0.018, "y": 0.9 },
       "anchorMax": { "x": 0.195, "y": 1.06 },
-      "anchoredPosition": { "x": 132.3, "y": -114.56 },
-      "sizeDelta": { "x": -41.63, "y": -3.12 },
+      "anchoredPosition": { "x": 243.28, "y": -89 },
+      "sizeDelta": { "x": -90.5, "y": -3.12 },
       "pivot": { "x": 0.5, "y": 0.5 }
     },
     {
@@ -44,8 +44,8 @@
       "siblingIndex": 3,
       "anchorMin": { "x": 0.07, "y": 0.12 },
       "anchorMax": { "x": 0.93, "y": 0.74 },
-      "anchoredPosition": { "x": -22.89, "y": -41.73 },
-      "sizeDelta": { "x": -372.92, "y": -83.47 },
+      "anchoredPosition": { "x": -46.900024, "y": -21.36 },
+      "sizeDelta": { "x": -582.71, "y": -72.74 },
       "pivot": { "x": 0.5, "y": 0.5 }
     }
   ]

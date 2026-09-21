@@ -132,7 +132,7 @@ namespace FracturedChorus.Editor
             banner.color = Color.white;
             banner.raycastTarget = false;
 
-            var date = GetOrCreateText(go.transform, "DateLabel", "17/08", VnDialoguePanelLayout.DateLabelFontSize, TextAnchor.MiddleRight);
+            var date = GetOrCreateText(go.transform, "DateLabel", "17 / 08", VnDialoguePanelLayout.DateLabelFontSize, TextAnchor.MiddleRight);
             PlaceRect(
                 date.gameObject,
                 VnDialoguePanelLayout.DateLabelAnchorMin,
@@ -156,7 +156,7 @@ namespace FracturedChorus.Editor
             phaseIcon.preserveAspect = true;
             phaseIcon.raycastTarget = false;
 
-            var phase = GetOrCreateText(go.transform, "PhaseLabel", "Late Night", VnDialoguePanelLayout.PhaseLabelFontSize, TextAnchor.MiddleRight);
+            var phase = GetOrCreateText(go.transform, "PhaseLabel", "Mon", VnDialoguePanelLayout.PhaseLabelFontSize, TextAnchor.MiddleRight);
             PlaceRect(
                 phase.gameObject,
                 VnDialoguePanelLayout.PhaseLabelAnchorMin,

@@ -471,8 +471,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -15.330017, y: -14.244995}
-  m_SizeDelta: {x: -30.67, y: 28.49}
+  m_AnchoredPosition: {x: -4, y: 8}
+  m_SizeDelta: {x: -30.665, y: 73.91}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &270534869
 MonoBehaviour:
@@ -1767,6 +1767,7 @@ MonoBehaviour:
   fadeOverlay: {fileID: 670845660}
   backgroundImage: {fileID: 1422332664}
   dateHud: {fileID: 910000005}
+  hubCornerInfoHud: {fileID: 0}
   choiceView: {fileID: 0}
   typingClip: {fileID: 8300000, guid: a22f3c74ff44d1344838f84ccdad03be, type: 3}
   defaultFadeSeconds: 0.6
@@ -2504,8 +2505,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.07, y: 0.12}
   m_AnchorMax: {x: 0.93, y: 0.74}
-  m_AnchoredPosition: {x: -46.900024, y: -21.36}
-  m_SizeDelta: {x: -582.71, y: -72.74}
+  m_AnchoredPosition: {x: -34.14, y: 17.72}
+  m_SizeDelta: {x: -446.08, y: -74.44}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1281447198
 MonoBehaviour:
@@ -2529,10 +2530,10 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: 787fda44816c480a9cc3cadfdc29ce24, type: 3}
-    m_FontSize: 36
+    m_FontSize: 29
     m_FontStyle: 0
     m_BestFit: 0
-    m_MinSize: 3
+    m_MinSize: 2
     m_MaxSize: 40
     m_Alignment: 0
     m_AlignByGeometry: 0
@@ -2866,8 +2867,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.018, y: 0.9}
   m_AnchorMax: {x: 0.195, y: 1.06}
-  m_AnchoredPosition: {x: 243.28, y: -89}
-  m_SizeDelta: {x: -90.5, y: -3.12}
+  m_AnchoredPosition: {x: 198.21, y: -46}
+  m_SizeDelta: {x: -41.6, y: -3.12}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1643581661
 CanvasRenderer:

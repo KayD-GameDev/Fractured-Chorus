@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: FlowerWorkScenario_apology
   m_EditorClassIdentifier: 
   id: apology
+  customerSpeakerId: flower_customer_gentleman
   customerLine: "I want to apologize to someone important\u2026 what flower says
     'sincere apology'?"
   thinkPrompt: Which bouquet fits a sincere apology?

@@ -2,6 +2,9 @@ using System;
 using FracturedChorus.UI;
 using UnityEngine;
 using UnityEngine.UI;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace FracturedChorus.Narrative.Vn
 {
@@ -53,7 +56,7 @@ namespace FracturedChorus.Narrative.Vn
             EnsureUi();
             _options = options ?? Array.Empty<string>();
             _onChosen = onChosen;
-            _selectedIndex = VisibleCount() > 0 ? 0 : -1;
+            _selectedIndex = -1;
             _hoverIndex = -1;
             _ignoreInputUntilFrame = Time.frameCount + 1;
             _active = true;
@@ -93,7 +96,7 @@ namespace FracturedChorus.Narrative.Vn
 
         public void SetPointerHover(int optionIndex)
         {
-            if (!_active || Time.frameCount <= _ignoreInputUntilFrame)
+            if (!_active)
             {
                 return;
             }
@@ -120,7 +123,13 @@ namespace FracturedChorus.Narrative.Vn
 
         private void Update()
         {
-            if (!_active || Time.frameCount <= _ignoreInputUntilFrame)
+            if (!_active)
+            {
+                return;
+            }
+
+            RefreshHoverFromPointer();
+            if (Time.frameCount <= _ignoreInputUntilFrame)
             {
                 return;
             }
@@ -137,6 +146,66 @@ namespace FracturedChorus.Narrative.Vn
             {
                 Confirm();
             }
+        }
+
+        private void RefreshHoverFromPointer()
+        {
+            var next = ResolvePointerOption();
+            if (next == _hoverIndex)
+            {
+                return;
+            }
+
+            _hoverIndex = next;
+            RefreshVisuals();
+        }
+
+        private int ResolvePointerOption()
+        {
+            if (!TryGetPointerScreen(out var screen))
+            {
+                return -1;
+            }
+
+            var canvas = root != null ? root.GetComponentInParent<Canvas>() : GetComponentInParent<Canvas>();
+            var cam = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
+                ? canvas.worldCamera
+                : null;
+            var count = VisibleCount();
+            for (var i = 0; i < count && i < _buttons.Length; i++)
+            {
+                if (_buttons[i] == null || !_buttons[i].gameObject.activeInHierarchy)
+                {
+                    continue;
+                }
+
+                var rect = _buttons[i].transform as RectTransform;
+                if (rect != null && RectTransformUtility.RectangleContainsScreenPoint(rect, screen, cam))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        private static bool TryGetPointerScreen(out Vector2 screen)
+        {
+#if ENABLE_INPUT_SYSTEM
+            var mouse = UnityEngine.InputSystem.Mouse.current;
+            if (mouse != null)
+            {
+                screen = mouse.position.ReadValue();
+                return true;
+            }
+#endif
+#if ENABLE_LEGACY_INPUT_MANAGER
+            screen = Input.mousePosition;
+            return true;
+#else
+            screen = default;
+            return false;
+#endif
         }
 
         private void MoveSelection(int delta)
@@ -208,17 +277,14 @@ namespace FracturedChorus.Narrative.Vn
                     continue;
                 }
 
-                if (_selectedIndex == i)
+                var hovered = _hoverIndex == i;
+                var selected = !hovered && _selectedIndex == i;
+                _backgrounds[i].color = hovered ? _hoverColor : selected ? _selectedColor : _idleColor;
+                if (_labels[i] != null)
                 {
-                    _backgrounds[i].color = _selectedColor;
-                }
-                else if (_hoverIndex == i)
-                {
-                    _backgrounds[i].color = _hoverColor;
-                }
-                else
-                {
-                    _backgrounds[i].color = _idleColor;
+                    _labels[i].color = hovered || selected
+                        ? Color.white
+                        : FcColorTokens.Brand.TextIdle;
                 }
             }
         }
@@ -264,9 +330,9 @@ namespace FracturedChorus.Narrative.Vn
 
         private void NormalizeColors()
         {
-            _selectedColor = FcColorTokens.Selection.VnChoiceHighlight;
-            _hoverColor = FcColorTokens.WithAlpha(FcColorTokens.Brand.CyanHover, 0.88f);
-            _idleColor = FcColorTokens.WithAlpha(FcColorTokens.Surface.Panel, 0f);
+            _selectedColor = FcColorTokens.WithAlpha(FcColorTokens.Selection.VnChoiceHighlight, 0.72f);
+            _hoverColor = FcColorTokens.WithAlpha(FcColorTokens.Brand.CyanHover, 0.94f);
+            _idleColor = FcColorTokens.WithAlpha(FcColorTokens.Surface.Row, 0.55f);
         }
 
         private void EnsureUi()
@@ -324,6 +390,7 @@ namespace FracturedChorus.Narrative.Vn
                 if (_buttons[i] != null)
                 {
                     EnsureRowPointer(_buttons[i].gameObject, i);
+                    ConfigureRowButton(_buttons[i], _backgrounds[i], i);
                     continue;
                 }
 
@@ -357,24 +424,36 @@ namespace FracturedChorus.Narrative.Vn
                 }
 
                 EnsureRowPointer(_buttons[i].gameObject, i);
-
-                var index = i;
-                if (_buttons[i] != null)
-                {
-                    _buttons[i].onClick.RemoveAllListeners();
-                    _buttons[i].onClick.AddListener(() =>
-                    {
-                        if (!_active || Time.frameCount <= _ignoreInputUntilFrame)
-                        {
-                            return;
-                        }
-
-                        _selectedIndex = index;
-                        _hoverIndex = -1;
-                        Confirm();
-                    });
-                }
+                ConfigureRowButton(_buttons[i], _backgrounds[i], i);
             }
+        }
+
+        private void ConfigureRowButton(Button button, Image background, int optionIndex)
+        {
+            if (button == null)
+            {
+                return;
+            }
+
+            button.transition = Selectable.Transition.None;
+            button.navigation = new Navigation { mode = Navigation.Mode.None };
+            if (background != null)
+            {
+                background.raycastTarget = true;
+            }
+
+            var index = optionIndex;
+            button.onClick.RemoveAllListeners();
+            button.onClick.AddListener(() =>
+            {
+                if (!_active || Time.frameCount <= _ignoreInputUntilFrame)
+                {
+                    return;
+                }
+
+                _selectedIndex = index;
+                Confirm();
+            });
         }
 
         private static void EnsureRowPointer(GameObject rowGo, int optionIndex)
@@ -401,5 +480,80 @@ namespace FracturedChorus.Narrative.Vn
             rect.offsetMin = Vector2.zero;
             rect.offsetMax = Vector2.zero;
         }
+
+#if UNITY_EDITOR
+        public void EnsureEditorHierarchy()
+        {
+            if (Application.isPlaying)
+            {
+                return;
+            }
+
+            NormalizeColors();
+            EnsureUi();
+            EditorUtility.SetDirty(this);
+        }
+
+        public void ApplyEditorPreview(string prompt, string[] options)
+        {
+            if (Application.isPlaying)
+            {
+                return;
+            }
+
+            EnsureEditorHierarchy();
+            _options = options ?? Array.Empty<string>();
+            _onChosen = null;
+            _selectedIndex = -1;
+            _hoverIndex = -1;
+            _ignoreInputUntilFrame = -1;
+            _active = true;
+
+            if (promptText != null)
+            {
+                var hasPrompt = !string.IsNullOrWhiteSpace(prompt);
+                promptText.gameObject.SetActive(hasPrompt);
+                promptText.text = hasPrompt ? prompt : string.Empty;
+            }
+
+            for (var i = 0; i < _labels.Length; i++)
+            {
+                var visible = i < _options.Length && !string.IsNullOrWhiteSpace(_options[i]);
+                if (_buttons[i] != null)
+                {
+                    _buttons[i].gameObject.SetActive(visible);
+                }
+
+                if (visible && _labels[i] != null)
+                {
+                    _labels[i].text = _options[i];
+                }
+            }
+
+            LayoutVisibleOptions();
+            RefreshVisuals();
+
+            if (root != null)
+            {
+                root.gameObject.SetActive(true);
+                root.alpha = 1f;
+                root.interactable = false;
+                root.blocksRaycasts = false;
+            }
+
+            EditorUtility.SetDirty(this);
+        }
+
+        public void EditorHidePreview()
+        {
+            if (Application.isPlaying)
+            {
+                return;
+            }
+
+            Hide();
+            EditorUtility.SetDirty(this);
+        }
+#endif
     }
 }

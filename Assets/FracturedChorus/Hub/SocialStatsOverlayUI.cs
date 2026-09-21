@@ -53,6 +53,7 @@ namespace FracturedChorus.Hub
         private GameMetaState _state;
         private Action _onClosed;
         private bool _wired;
+        private bool _allowCancel = true;
 
         public bool IsOpen => root != null && root.activeSelf;
 
@@ -61,15 +62,26 @@ namespace FracturedChorus.Hub
             sfx = controller;
         }
 
-        public void Show(GameMetaState state, Action onClosed = null)
+        public void Show(GameMetaState state, Action onClosed = null, bool allowCancel = true)
         {
             _state = state;
             _onClosed = onClosed;
+            _allowCancel = allowCancel;
             EnsureRuntimeBindings();
             Wire();
             if (root != null)
             {
                 root.SetActive(true);
+            }
+
+            if (footerLabel != null)
+            {
+                footerLabel.enabled = allowCancel;
+            }
+
+            if (closeButton != null)
+            {
+                closeButton.gameObject.SetActive(allowCancel);
             }
 
             sfx?.PlayOpenPanel();
@@ -88,14 +100,42 @@ namespace FracturedChorus.Hub
                 root.SetActive(false);
             }
 
+            _allowCancel = true;
             var callback = _onClosed;
             _onClosed = null;
             callback?.Invoke();
         }
 
+        public void RefreshFromState()
+        {
+            Refresh();
+        }
+
+        public RectTransform GetNodeRect(SocialStatType stat)
+        {
+            EnsureRuntimeBindings();
+            var ordered = SocialStatPresentation.OrderedStats;
+            for (var i = 0; i < ordered.Length; i++)
+            {
+                if (ordered[i] != stat)
+                {
+                    continue;
+                }
+
+                if (nodes != null && i < nodes.Length && nodes[i] != null)
+                {
+                    return nodes[i].transform as RectTransform;
+                }
+
+                return null;
+            }
+
+            return null;
+        }
+
         private void Update()
         {
-            if (!IsOpen)
+            if (!IsOpen || !_allowCancel)
             {
                 return;
             }

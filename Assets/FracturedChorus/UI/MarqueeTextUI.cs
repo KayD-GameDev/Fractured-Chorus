@@ -172,12 +172,13 @@ namespace FracturedChorus.UI
         private void ApplyCenteredLayout()
         {
             label.alignment = TextAnchor.MiddleCenter;
-            _labelRect.anchorMin = Vector2.zero;
-            _labelRect.anchorMax = Vector2.one;
-            _labelRect.pivot = new Vector2(0.5f, 0.5f);
-            _labelRect.offsetMin = Vector2.zero;
-            _labelRect.offsetMax = Vector2.zero;
-            _labelRect.anchoredPosition = Vector2.zero;
+            if (_labelRect == null)
+            {
+                return;
+            }
+
+            var pos = _labelRect.anchoredPosition;
+            _labelRect.anchoredPosition = new Vector2(0f, pos.y);
         }
 
         private void ApplyMarqueeLayout(float textWidth)

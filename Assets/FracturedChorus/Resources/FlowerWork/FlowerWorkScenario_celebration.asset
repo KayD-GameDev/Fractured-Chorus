@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: FlowerWorkScenario_celebration
   m_EditorClassIdentifier: 
   id: celebration
+  customerSpeakerId: flower_customer_woman
   customerLine: They're celebrating a promotion tonight. I need something flashy!
   thinkPrompt: What fits a flashy celebration?
   choices:

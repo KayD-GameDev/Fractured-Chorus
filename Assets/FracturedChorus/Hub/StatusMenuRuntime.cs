@@ -102,7 +102,7 @@ namespace FracturedChorus.Hub
                 yield break;
             }
 
-            var townMap = UnityEngine.Object.FindFirstObjectByType<TownMapView>();
+            var townMap = UnityEngine.Object.FindAnyObjectByType<TownMapView>();
             townMap?.FulfillPendingStatusMenuReturn(GameMetaSession.Current);
         }
 
@@ -122,7 +122,7 @@ namespace FracturedChorus.Hub
             {
                 if (UiEscapeGate.TryConsumeBackground())
                 {
-                    var bonds = UnityEngine.Object.FindFirstObjectByType<BondsMenuUI>();
+                    var bonds = UnityEngine.Object.FindAnyObjectByType<BondsMenuUI>();
                     if (bonds != null && bonds.TryHandleCancelInput())
                     {
                         return;
@@ -291,8 +291,7 @@ namespace FracturedChorus.Hub
         private static bool IsBondsMenuActive()
         {
             var sceneName = SceneManager.GetActiveScene().name;
-            return sceneName == CampusBgmPlayer.BondsScene
-                || sceneName == RunMapSceneCatalog.Bonds
+            return sceneName == RunMapSceneCatalog.Bonds
                 || FindAnyObjectByType<BondsMenuUI>() != null;
         }
 

@@ -1,0 +1,13 @@
+{
+  "scene": "Assets/FracturedChorus/Scenes/FlowerShopWork.unity",
+  "nodes": [
+    {
+      "name": "ChoicePanel",
+      "anchorMin": { "x": 0.52, "y": 0.22 },
+      "anchorMax": { "x": 0.96, "y": 0.78 },
+      "anchoredPosition": { "x": 0, "y": 0 },
+      "sizeDelta": { "x": 0, "y": 0 },
+      "pivot": { "x": 0.5, "y": 0.5 }
+    }
+  ]
+}

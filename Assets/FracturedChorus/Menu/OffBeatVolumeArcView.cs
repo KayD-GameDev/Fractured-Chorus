@@ -21,7 +21,7 @@ namespace FracturedChorus.Menu
         [SerializeField] private Vector2 anchoredPosition = new Vector2(0f, 155.7f);
         [SerializeField] private Vector2 size = new Vector2(228.89f, 208.41f);
         [SerializeField] private float localEulerZ = -368.749f;
-        [SerializeField] private bool applyLayoutOnAwake = true;
+        [SerializeField] private bool applyLayoutOnAwake;
         [SerializeField] [Range(0f, 0.05f)] private float hitAreaAlpha;
 
         [Header("Arc shape")]

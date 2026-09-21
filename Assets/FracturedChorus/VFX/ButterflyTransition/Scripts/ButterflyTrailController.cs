@@ -61,8 +61,6 @@ namespace FracturedChorus.VFX
         private bool _emitting;
         private float _globalFade = 1f;
         private float _waveFade = 1f;
-        private Vector2 _lastOrigin;
-        private bool _hasOrigin;
 
         public void Bind(
             RectTransform stars,
@@ -206,7 +204,6 @@ namespace FracturedChorus.VFX
             _emitting = true;
             _globalFade = 1f;
             _waveFade = 1f;
-            _hasOrigin = false;
             _emitAcc[0] = 0f;
             _emitAcc[1] = 0f;
             _emitAcc[2] = 0f;
@@ -271,9 +268,6 @@ namespace FracturedChorus.VFX
                     _waves[i].Tick(deltaTime, _waveFade);
                 }
             }
-
-            _lastOrigin = origin;
-            _hasOrigin = true;
         }
 
         private void AppendWaves(Vector2 origin)

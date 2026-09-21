@@ -1,3 +1,4 @@
+using FracturedChorus.Narrative.Vn;
 using UnityEngine;
 
 namespace FracturedChorus.Hub.FlowerWork
@@ -8,7 +9,12 @@ namespace FracturedChorus.Hub.FlowerWork
     public sealed class FlowerWorkScenarioSO : ScriptableObject
     {
         public string id;
+        public string customerSpeakerId = VnSpeakerIds.FlowerCustomerGentleman;
         [TextArea(2, 5)] public string customerLine;
+        [TextArea(1, 3)] public string managerReplyToCustomer;
+        [TextArea(1, 3)] public string managerAskRen;
+        [TextArea(1, 3)] public string customerThanks;
+        [TextArea(1, 3)] public string customerUnhappy;
         [TextArea(1, 3)] public string thinkPrompt = "Which flowers fit the request?";
         public string[] choices = new string[3];
         [Range(0, 2)] public int correctIndex;

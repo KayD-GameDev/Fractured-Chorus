@@ -1125,11 +1125,11 @@ namespace FracturedChorus.Editor
             syncBg.raycastTarget = false;
             syncBg.preserveAspect = true;
             var syncBgSprite = AssetDatabase.LoadAssetAtPath<Sprite>(
-                "Assets/FracturedChorus/Art/UI/OffBeat/offbeat_syncpod_bg_v2.png");
+                "Assets/FracturedChorus/Art/UI/OffBeat/offbeat_syncpod_bg_v3.jpg");
             if (syncBgSprite == null)
             {
                 var objs = AssetDatabase.LoadAllAssetsAtPath(
-                    "Assets/FracturedChorus/Art/UI/OffBeat/offbeat_syncpod_bg_v2.png");
+                    "Assets/FracturedChorus/Art/UI/OffBeat/offbeat_syncpod_bg_v3.jpg");
                 foreach (var o in objs)
                 {
                     if (o is Sprite s)
@@ -1146,12 +1146,7 @@ namespace FracturedChorus.Editor
 
             var volRoot = CreateUiObject("VolumeArcRoot", playerRoot.transform);
             var volRt = volRoot.GetComponent<RectTransform>();
-            volRt.anchorMin = new Vector2(0.5f, 0.5f);
-            volRt.anchorMax = new Vector2(0.5f, 0.5f);
-            volRt.pivot = new Vector2(0.5f, 0.5f);
-            volRt.sizeDelta = new Vector2(228.89f, 208.41f);
-            volRt.anchoredPosition = new Vector2(0f, 155.7f);
-            volRt.localEulerAngles = new Vector3(0f, 0f, -368.749f);
+            OffBeatSyncPodLayoutSnapshotEditor.TryApplyVolumeArcRoot(volRt);
             var volTrack = CreateUiObject("Track", volRoot.transform);
             StretchRect(volTrack, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             var volTrackImg = volTrack.AddComponent<Image>();
@@ -1167,6 +1162,7 @@ namespace FracturedChorus.Editor
             volHitImg.raycastTarget = true;
             var volumeArc = volHit.AddComponent<OffBeatVolumeArcView>();
             volumeArc.Bind(volTrackImg, volFill);
+            SetOffBeatVolumeArcSceneLayoutMode(volumeArc);
 
             var discFace = CreateUiObject("DiscFace", playerRoot.transform);
             var discRt = discFace.GetComponent<RectTransform>();
@@ -1223,10 +1219,7 @@ namespace FracturedChorus.Editor
 
             var controls = CreateUiObject("Controls", discFace.transform);
             var controlsRt = controls.GetComponent<RectTransform>();
-            controlsRt.anchorMin = new Vector2(0.5f, 0.5f);
-            controlsRt.anchorMax = new Vector2(0.5f, 0.5f);
-            controlsRt.anchoredPosition = new Vector2(0.4f, -40.8f);
-            controlsRt.sizeDelta = new Vector2(135.76f, 32.6f);
+            OffBeatSyncPodLayoutSnapshotEditor.TryApplyControls(controlsRt);
             var hlg = controls.AddComponent<HorizontalLayoutGroup>();
             hlg.spacing = 12f;
             hlg.childAlignment = TextAnchor.MiddleCenter;
@@ -1316,6 +1309,7 @@ namespace FracturedChorus.Editor
             group.alpha = 0f;
             group.interactable = false;
             group.blocksRaycasts = false;
+            OffBeatSyncPodLayoutSnapshotEditor.TryApplySyncPodLayoutFromSnapshot();
             return group;
         }
 
@@ -2141,6 +2135,25 @@ namespace FracturedChorus.Editor
             rect.sizeDelta = size;
             rect.anchoredPosition = anchoredPosition;
             rect.localScale = Vector3.one;
+        }
+
+        private static void SetOffBeatVolumeArcSceneLayoutMode(OffBeatVolumeArcView volumeArc)
+        {
+            if (volumeArc == null)
+            {
+                return;
+            }
+
+            var so = new SerializedObject(volumeArc);
+            var apply = so.FindProperty("applyLayoutOnAwake");
+            if (apply != null)
+            {
+                apply.boolValue = false;
+            }
+
+            so.ApplyModifiedPropertiesWithoutUndo();
+            volumeArc.CaptureLayoutFromRoot();
+            EditorUtility.SetDirty(volumeArc);
         }
 
         private static void SetSerializedField(Object target, string fieldName, object value)

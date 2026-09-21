@@ -55,7 +55,7 @@ namespace FracturedChorus.Editor
                 return;
             }
 
-            var existing = Object.FindObjectsByType<ButterflyTransitionController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            var existing = Object.FindObjectsByType<ButterflyTransitionController>(FindObjectsInactive.Include);
             if (existing.Length > 0)
             {
                 ButterflyTransitionHierarchy.EnsureMissing(existing[0]);

@@ -24,5 +24,6 @@ namespace FracturedChorus.Narrative.Vn
         public string dateHudDate;
         public string dateHudPhase;
         public bool dateHudFromMeta;
+        public string signalId;
     }
 }

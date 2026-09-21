@@ -33,6 +33,13 @@ namespace FracturedChorus.Narrative.Vn
 
         public void ShowStatic(string date, string phase, bool useMoon = true)
         {
+            var dayPhase = HubDateHudFormat.ResolvePhaseFromLabel(phase, useMoon);
+            if (HubDateHudFormat.TryParseDisplayDate(date, out var gameDate))
+            {
+                ShowCalendar(gameDate, dayPhase);
+                return;
+            }
+
             gameObject.SetActive(true);
             if (dateLabel != null)
             {
@@ -41,16 +48,10 @@ namespace FracturedChorus.Narrative.Vn
 
             if (phaseLabel != null)
             {
-                phaseLabel.text = phase ?? string.Empty;
+                phaseLabel.text = string.Empty;
             }
 
-            if (phaseIcon != null)
-            {
-                phaseIcon.sprite = useMoon
-                    ? (moonSprite != null ? moonSprite : sunSprite)
-                    : (sunSprite != null ? sunSprite : moonSprite);
-                phaseIcon.enabled = phaseIcon.sprite != null;
-            }
+            ApplyPhaseIcon(dayPhase);
         }
 
         public void ShowFromMeta()
@@ -62,23 +63,35 @@ namespace FracturedChorus.Narrative.Vn
             }
 
             var calendar = GameMetaSession.Current.Calendar;
+            ShowCalendar(calendar.CurrentDate, calendar.CurrentPhase);
+        }
+
+        public void ShowCalendar(GameDate date, DayPhase phase)
+        {
             gameObject.SetActive(true);
 
             if (dateLabel != null)
             {
-                dateLabel.text = calendar.CurrentDate.ToDisplayString();
+                dateLabel.text = date.ToCornerHudDateString();
             }
 
             if (phaseLabel != null)
             {
-                phaseLabel.text = PhaseDisplay(calendar.CurrentPhase);
+                phaseLabel.text = HubDateHudFormat.ShortDay(date.GetDayOfWeek());
             }
 
-            if (phaseIcon != null)
+            ApplyPhaseIcon(phase);
+        }
+
+        private void ApplyPhaseIcon(DayPhase phase)
+        {
+            if (phaseIcon == null)
             {
-                phaseIcon.sprite = ResolvePhaseSprite(calendar.CurrentPhase);
-                phaseIcon.enabled = phaseIcon.sprite != null;
+                return;
             }
+
+            phaseIcon.sprite = ResolvePhaseSprite(phase);
+            phaseIcon.enabled = phaseIcon.sprite != null;
         }
 
         private Sprite ResolvePhaseSprite(DayPhase phase) => phase switch
@@ -89,12 +102,5 @@ namespace FracturedChorus.Narrative.Vn
             _ => sunSprite
         };
 
-        private static string PhaseDisplay(DayPhase phase) => phase switch
-        {
-            DayPhase.Morning => "Morning",
-            DayPhase.Day => "After School",
-            DayPhase.Evening => "Evening",
-            _ => phase.ToString()
-        };
     }
 }

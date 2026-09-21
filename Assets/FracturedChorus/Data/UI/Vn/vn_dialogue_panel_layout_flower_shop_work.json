@@ -1,0 +1,43 @@
+{
+  "scene": "Assets/FracturedChorus/Scenes/FlowerShopWork.unity",
+  "nodes": [
+    {
+      "name": "DialoguePanel",
+      "siblingIndex": 0,
+      "anchorMin": { "x": 0.04, "y": 0.03 },
+      "anchorMax": { "x": 0.96, "y": 0.36 },
+      "anchoredPosition": { "x": 0, "y": -6.9999695 },
+      "sizeDelta": { "x": 0, "y": 0 },
+      "pivot": { "x": 0.5, "y": 0.5 }
+    },
+    {
+      "name": "DialogueFrame",
+      "siblingIndex": 0,
+      "anchorMin": { "x": 0, "y": 0 },
+      "anchorMax": { "x": 1, "y": 1 },
+      "anchoredPosition": { "x": -15.330017, "y": -14.244995 },
+      "sizeDelta": { "x": -30.67, "y": 28.49 },
+      "pivot": { "x": 0.5, "y": 0.5 },
+      "imageType": 0,
+      "preserveAspect": 1
+    },
+    {
+      "name": "Nameplate",
+      "siblingIndex": 1,
+      "anchorMin": { "x": 0.018, "y": 0.9 },
+      "anchorMax": { "x": 0.195, "y": 1.06 },
+      "anchoredPosition": { "x": 243.28, "y": -89 },
+      "sizeDelta": { "x": -90.5, "y": -3.12 },
+      "pivot": { "x": 0.5, "y": 0.5 }
+    },
+    {
+      "name": "DialogueBody",
+      "siblingIndex": 2,
+      "anchorMin": { "x": 0.07, "y": 0.12 },
+      "anchorMax": { "x": 0.93, "y": 0.74 },
+      "anchoredPosition": { "x": -46.900024, "y": -21.36 },
+      "sizeDelta": { "x": -582.71, "y": -72.74 },
+      "pivot": { "x": 0.5, "y": 0.5 }
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using FracturedChorus.Meta;
+using FracturedChorus.Narrative;
 using FracturedChorus.Narrative.Vn;
 using FracturedChorus.RunMap;
 using UnityEngine;
@@ -10,10 +11,19 @@ namespace FracturedChorus.Hub.FlowerWork
     {
         public const string ResourcesFolder = "FlowerWork";
         private const string LastScenarioPrefsKey = "fc_flower_last_scenario";
+        public const float EntryDelaySeconds = 1f;
+        public const float TimePassFadeSeconds = 3.5f;
 
-        public const string SpeakerManager = "Shop Manager";
-        public const string SpeakerCustomer = "Customer";
-        public const string SpeakerRen = "ren";
+        public const string SpeakerRen = VnSpeakerIds.Ren;
+
+        private const string DefaultManagerReplyToCustomer =
+            "Of course — let me see what we can do for you.";
+
+        private const string DefaultManagerAskRen = "Ren, what would you recommend?";
+
+        private const string DefaultCustomerThanks = "Thank you so much — they're perfect!";
+
+        private const string DefaultCustomerUnhappy = "...I see. I was hoping for something different.";
 
         public static FlowerWorkScenarioSO PickScenario(IReadOnlyList<FlowerWorkScenarioSO> pool)
         {
@@ -72,30 +82,40 @@ namespace FracturedChorus.Hub.FlowerWork
             script.nextScene = RunMapSceneCatalog.CampusHub;
 
             var beats = new List<VnBeat>();
-            var playIntro = state == null || !state.HasFlag(StoryFlagIds.FlowerJobIntroDone);
-
-            if (playIntro)
+            var customerSpeakerId = FlowerWorkCustomerSpeakers.ResolveSpeakerId(scenario);
+            var playerName = RunProfile.PlayerName;
+            if (string.IsNullOrWhiteSpace(playerName))
             {
-                beats.Add(L(
-                    SpeakerManager,
-                    "Glad you could make it, Ren. We're busy today — listen carefully to each customer.",
-                    VnBgIds.FlowerArrive,
-                    setFlags: new[] { StoryFlagIds.FlowerJobIntroDone }));
-                beats.Add(L(
-                    SpeakerRen,
-                    "Understood. I'll do my best.",
-                    VnBgIds.FlowerArrive,
-                    expression: "neutral"));
-            }
-            else
-            {
-                beats.Add(N("Another shift at the flower shop.", VnBgIds.FlowerArrive));
+                playerName = RunProfile.DefaultNameSuggestion;
             }
 
             beats.Add(L(
-                SpeakerCustomer,
+                VnSpeakerIds.FlowerOwner,
+                $"Good morning, {playerName}. Let's do our best together today.",
+                VnBgIds.FlowerShop,
+                sfxId: VnAudioIds.FlowerShopGreet,
+                setFlags: state == null || !state.HasFlag(StoryFlagIds.FlowerJobIntroDone)
+                    ? new[] { StoryFlagIds.FlowerJobIntroDone }
+                    : null));
+            beats.Add(L(
+                SpeakerRen,
+                "Morning. I'll give it everything I've got.",
+                VnBgIds.FlowerShop,
+                expression: "neutral"));
+            beats.Add(Fade(TimePassFadeSeconds));
+
+            beats.Add(L(
+                customerSpeakerId,
                 scenario != null ? scenario.customerLine : "I'd like flowers for something special…",
-                VnBgIds.FlowerCustomer));
+                VnBgIds.FlowerShop));
+            beats.Add(L(
+                VnSpeakerIds.FlowerOwner,
+                PickScenarioLine(scenario?.managerReplyToCustomer, DefaultManagerReplyToCustomer),
+                VnBgIds.FlowerShop));
+            beats.Add(L(
+                VnSpeakerIds.FlowerOwner,
+                PickScenarioLine(scenario?.managerAskRen, DefaultManagerAskRen),
+                VnBgIds.FlowerShop));
 
             var choiceBeatIndex = beats.Count;
             var choiceLabels = scenario != null && scenario.choices != null && scenario.choices.Length > 0
@@ -104,7 +124,7 @@ namespace FracturedChorus.Hub.FlowerWork
             var correctIndex = scenario != null ? Mathf.Clamp(scenario.correctIndex, 0, choiceLabels.Length - 1) : 0;
 
             var correctBranchIndex = choiceBeatIndex + 1;
-            var wrongBranchIndex = correctBranchIndex + 3;
+            var wrongBranchIndex = correctBranchIndex + 5;
 
             var jumps = new int[choiceLabels.Length];
             for (var i = 0; i < jumps.Length; i++)
@@ -116,7 +136,7 @@ namespace FracturedChorus.Hub.FlowerWork
             {
                 kind = VnBeatKind.Choice,
                 text = scenario != null ? scenario.thinkPrompt : "Which flowers fit the request?",
-                bgId = VnBgIds.FlowerThink,
+                bgId = VnBgIds.FlowerShop,
                 choices = choiceLabels,
                 choiceNextBeatIndex = jumps,
                 showDateHud = true,
@@ -124,24 +144,33 @@ namespace FracturedChorus.Hub.FlowerWork
             });
 
             beats.Add(L(
-                SpeakerManager,
+                customerSpeakerId,
+                PickScenarioLine(scenario?.customerThanks, DefaultCustomerThanks),
+                VnBgIds.FlowerShop));
+            beats.Add(L(
+                VnSpeakerIds.FlowerOwner,
                 scenario != null ? scenario.correctReply : "Perfect match. The customer looks delighted.",
-                VnBgIds.FlowerThink));
+                VnBgIds.FlowerShop));
+            beats.Add(Signal(FlowerWorkSignals.GrantResonance));
             beats.Add(L(
                 SpeakerRen,
                 "…That worked.",
-                VnBgIds.FlowerHappy,
+                VnBgIds.FlowerShop,
                 expression: "smile"));
             beats.Add(End());
 
             beats.Add(L(
-                SpeakerManager,
+                customerSpeakerId,
+                PickScenarioLine(scenario?.customerUnhappy, DefaultCustomerUnhappy),
+                VnBgIds.FlowerShop));
+            beats.Add(L(
+                VnSpeakerIds.FlowerOwner,
                 scenario != null ? scenario.wrongReply : "Not quite. Remember the request next time.",
-                VnBgIds.FlowerThink));
+                VnBgIds.FlowerShop));
             beats.Add(L(
                 SpeakerRen,
                 "I'll remember that.",
-                VnBgIds.FlowerHappy,
+                VnBgIds.FlowerShop,
                 expression: "neutral"));
             beats.Add(End());
 
@@ -149,11 +178,25 @@ namespace FracturedChorus.Hub.FlowerWork
             return script;
         }
 
-        private static VnBeat N(string text, string bgId) => new VnBeat
+        private static string PickScenarioLine(string value, string fallback)
         {
-            kind = VnBeatKind.Narration,
-            text = text,
-            bgId = bgId,
+            return string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
+        }
+
+        private static VnBeat Fade(float duration) => new VnBeat
+        {
+            kind = VnBeatKind.Fade,
+            duration = duration,
+            bgId = VnBgIds.FlowerShop,
+            showDateHud = true,
+            dateHudFromMeta = true
+        };
+
+        private static VnBeat Signal(string signalId) => new VnBeat
+        {
+            kind = VnBeatKind.Cue,
+            bgId = VnBgIds.FlowerShop,
+            signalId = signalId,
             showDateHud = true,
             dateHudFromMeta = true
         };
@@ -163,6 +206,7 @@ namespace FracturedChorus.Hub.FlowerWork
             string text,
             string bgId,
             string expression = null,
+            string sfxId = null,
             string[] setFlags = null) => new VnBeat
         {
             kind = VnBeatKind.Line,
@@ -170,6 +214,7 @@ namespace FracturedChorus.Hub.FlowerWork
             text = text,
             bgId = bgId,
             expression = expression,
+            sfxId = sfxId,
             setFlags = setFlags,
             showDateHud = true,
             dateHudFromMeta = true

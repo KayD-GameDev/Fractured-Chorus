@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using FracturedChorus.Hub;
 using FracturedChorus.Meta;
 using FracturedChorus.RunMap;
 using UnityEngine;
@@ -22,6 +23,7 @@ namespace FracturedChorus.Narrative.Vn
         [SerializeField] private CanvasGroup fadeOverlay;
         [SerializeField] private Image backgroundImage;
         [SerializeField] private VnStoryDateHud dateHud;
+        [SerializeField] private HubCornerInfoHud hubCornerInfoHud;
         [SerializeField] private VnChoiceView choiceView;
         [SerializeField] private AudioClip typingClip;
         [SerializeField] private float defaultFadeSeconds = 0.6f;
@@ -48,9 +50,14 @@ namespace FracturedChorus.Narrative.Vn
         private string _dateHudDate;
         private string _dateHudPhase;
         private AudioSource _textCardTypingSource;
+        private bool _choiceAdvanceHeld;
+        private VnBeat _heldChoiceBeat;
+        private int _heldChoiceIndex = -1;
 
         public event Action<int> ChoiceSelected;
         public event Action Finished;
+
+        public Func<VnBeat, bool> BeatInterceptor { get; set; }
 
         public int LastChoiceIndex { get; private set; } = -1;
         public bool LoadNextSceneOnEnd
@@ -70,8 +77,13 @@ namespace FracturedChorus.Narrative.Vn
         public CanvasGroup DialoguePanel => dialoguePanel;
         public CanvasGroup TextCardPanel => textCardPanel;
         public VnStoryDateHud DateHud => dateHud;
+        public HubCornerInfoHud HubCornerInfoHud => hubCornerInfoHud;
         public Image BackgroundImage => backgroundImage;
         public VnDialoguePortraitView PortraitView => portraitView;
+        public VnSpeakerCatalogSO SpeakerCatalog => speakerCatalog;
+        public string OpeningDateDisplay => openingDateDisplay;
+        public string OpeningPhaseDisplay => openingPhaseDisplay;
+        public VnChoiceView ChoiceView => choiceView;
 
         public void SetScript(VnScriptSO next)
         {
@@ -207,6 +219,9 @@ namespace FracturedChorus.Narrative.Vn
             _index = 0;
             LastChoiceIndex = -1;
             _choiceActive = false;
+            _choiceAdvanceHeld = false;
+            _heldChoiceBeat = null;
+            _heldChoiceIndex = -1;
             _waitingAdvance = false;
             _transitionBusy = false;
             _textCardBusy = false;
@@ -259,7 +274,17 @@ namespace FracturedChorus.Narrative.Vn
             }
 
             ApplyCues(beat);
+            if (BeatInterceptor != null && BeatInterceptor(beat))
+            {
+                return;
+            }
+
             DispatchBeatView(beat);
+        }
+
+        public void AdvanceAfterIntercept()
+        {
+            Advance();
         }
 
         private void StopBeatRoutine()
@@ -397,6 +422,38 @@ namespace FracturedChorus.Narrative.Vn
                 ? script.beats[_index]
                 : null;
 
+            if (_choiceAdvanceHeld)
+            {
+                _heldChoiceBeat = beat;
+                _heldChoiceIndex = choiceIndex;
+                return;
+            }
+
+            ContinueFromChoice(beat, choiceIndex);
+        }
+
+        public void RequestHoldChoiceAdvance()
+        {
+            _choiceAdvanceHeld = true;
+        }
+
+        public void ReleaseHeldChoiceAdvance()
+        {
+            if (!_choiceAdvanceHeld && _heldChoiceBeat == null && _heldChoiceIndex < 0)
+            {
+                return;
+            }
+
+            var beat = _heldChoiceBeat;
+            var choiceIndex = _heldChoiceIndex;
+            _choiceAdvanceHeld = false;
+            _heldChoiceBeat = null;
+            _heldChoiceIndex = -1;
+            ContinueFromChoice(beat, choiceIndex);
+        }
+
+        private void ContinueFromChoice(VnBeat beat, int choiceIndex)
+        {
             if (beat?.choiceNextBeatIndex != null &&
                 choiceIndex >= 0 &&
                 choiceIndex < beat.choiceNextBeatIndex.Length)
@@ -767,7 +824,18 @@ namespace FracturedChorus.Narrative.Vn
 
         private void ApplyDateHud(VnBeat beat)
         {
-            if (dateHud == null || beat == null)
+            if (beat == null)
+            {
+                return;
+            }
+
+            if (hubCornerInfoHud != null)
+            {
+                ApplyHubCornerDateHud(beat);
+                return;
+            }
+
+            if (dateHud == null)
             {
                 return;
             }
@@ -817,6 +885,58 @@ namespace FracturedChorus.Narrative.Vn
             }
 
             dateHud.ShowStatic(_dateHudDate, _dateHudPhase, useMoon: true);
+        }
+
+        private void ApplyHubCornerDateHud(VnBeat beat)
+        {
+            if (hubCornerInfoHud == null)
+            {
+                return;
+            }
+
+            dateHud?.Hide();
+
+            if (beat.hideDateHud
+                || beat.kind == VnBeatKind.TextCard
+                || beat.kind == VnBeatKind.Fade
+                || beat.kind == VnBeatKind.End)
+            {
+                hubCornerInfoHud.gameObject.SetActive(false);
+                return;
+            }
+
+            var showForDialogue = beat.kind == VnBeatKind.Line
+                || beat.kind == VnBeatKind.Narration
+                || beat.kind == VnBeatKind.Choice
+                || beat.showDateHud;
+            if (!showForDialogue)
+            {
+                return;
+            }
+
+            RefreshHubCornerInfoHud(true);
+        }
+
+        public void RefreshHubCornerInfoHud(bool show)
+        {
+            if (hubCornerInfoHud == null)
+            {
+                return;
+            }
+
+            hubCornerInfoHud.gameObject.SetActive(show);
+            if (!show)
+            {
+                return;
+            }
+
+            if (GameMetaSession.HasSession)
+            {
+                hubCornerInfoHud.Refresh(GameMetaSession.Current);
+                return;
+            }
+
+            hubCornerInfoHud.Refresh(GameMetaState.CreateHubStart());
         }
 
         private void ApplyAmbienceForBackground(string bgId)
@@ -981,7 +1101,7 @@ namespace FracturedChorus.Narrative.Vn
                 typewriter.BodyText.text = "Sample dialogue — kéo Nameplate / DialoguePanel / DialogueBody trên Scene.";
             }
 
-            dateHud?.ShowStatic(openingDateDisplay, openingPhaseDisplay, useMoon: true);
+            EditorApplyDateHudPreview();
         }
 
         public void EditorPreviewTextCardSample()
@@ -994,6 +1114,10 @@ namespace FracturedChorus.Narrative.Vn
             }
 
             dateHud?.Hide();
+            if (hubCornerInfoHud != null)
+            {
+                hubCornerInfoHud.gameObject.SetActive(false);
+            }
         }
 
         public void EditorHideSamples()
@@ -1016,7 +1140,97 @@ namespace FracturedChorus.Narrative.Vn
             }
 
             dateHud?.Hide();
+            if (hubCornerInfoHud != null)
+            {
+                hubCornerInfoHud.gameObject.SetActive(false);
+            }
+
             portraitView?.Hide();
+        }
+
+        private void EditorApplyDateHudPreview()
+        {
+            if (hubCornerInfoHud != null)
+            {
+                dateHud?.Hide();
+                RefreshHubCornerInfoHud(true);
+                return;
+            }
+
+            dateHud?.ShowStatic(openingDateDisplay, openingPhaseDisplay, useMoon: true);
+        }
+
+        public void EditorApplyBackground(string bgId)
+        {
+            if (backgroundImage == null)
+            {
+                return;
+            }
+
+            if (cueResolver != null && !string.IsNullOrEmpty(bgId) && cueResolver.TryGetSprite(bgId, out var sprite))
+            {
+                backgroundImage.sprite = sprite;
+            }
+
+            backgroundImage.gameObject.SetActive(true);
+        }
+
+        public void EditorPreviewDialogue(string speakerId, string text, string expression = null)
+        {
+            SetPanel(textCardPanel, false);
+            SetPanel(dialoguePanel, true);
+            choiceView?.EditorHidePreview();
+
+            var isNarration = string.IsNullOrWhiteSpace(speakerId);
+            if (isNarration)
+            {
+                if (nameplateText != null)
+                {
+                    nameplateText.text = string.Empty;
+                }
+
+                portraitView?.DimAll();
+            }
+            else if (speakerCatalog != null && speakerCatalog.TryGet(speakerId, out var speaker))
+            {
+                if (nameplateText != null)
+                {
+                    nameplateText.text = speaker.displayName;
+                }
+
+                portraitView?.Show(speaker, expression);
+            }
+            else
+            {
+                if (nameplateText != null)
+                {
+                    nameplateText.text = speakerId ?? string.Empty;
+                }
+
+                portraitView?.DimAll();
+            }
+
+            if (typewriter != null && typewriter.BodyText != null)
+            {
+                typewriter.BodyText.text = text ?? string.Empty;
+            }
+
+            EditorApplyDateHudPreview();
+        }
+
+        public void EditorPreviewChoice(string prompt, string[] options)
+        {
+            SetPanel(textCardPanel, false);
+            SetPanel(dialoguePanel, false);
+            portraitView?.DimAll();
+            choiceView?.ApplyEditorPreview(prompt, options);
+            EditorApplyDateHudPreview();
+        }
+
+        public void EditorHideEventUi()
+        {
+            EditorHideSamples();
+            choiceView?.EditorHidePreview();
         }
 #endif
     }

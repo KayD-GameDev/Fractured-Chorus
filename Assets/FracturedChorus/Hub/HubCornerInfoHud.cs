@@ -75,7 +75,7 @@ namespace FracturedChorus.Hub
 
             if (dayLabel != null)
             {
-                dayLabel.text = ShortDay(date.GetDayOfWeek());
+                dayLabel.text = HubDateHudFormat.ShortDay(date.GetDayOfWeek());
             }
 
             if (phaseIcon != null)
@@ -93,16 +93,5 @@ namespace FracturedChorus.Hub
             _ => sunSprite
         };
 
-        private static string ShortDay(System.DayOfWeek day) => day switch
-        {
-            System.DayOfWeek.Monday => "Mon",
-            System.DayOfWeek.Tuesday => "Tue",
-            System.DayOfWeek.Wednesday => "Wed",
-            System.DayOfWeek.Thursday => "Thu",
-            System.DayOfWeek.Friday => "Fri",
-            System.DayOfWeek.Saturday => "Sat",
-            System.DayOfWeek.Sunday => "Sun",
-            _ => day.ToString().Substring(0, 3)
-        };
     }
 }

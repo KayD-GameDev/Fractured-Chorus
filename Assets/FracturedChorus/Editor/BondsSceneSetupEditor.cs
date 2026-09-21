@@ -421,6 +421,12 @@ namespace FracturedChorus.Editor
             ConfigureImage(image, LoadSprite(BackgroundPath), Image.Type.Simple, false, Color.white, false);
         }
 
+        public static HubCornerInfoHud SetupCornerHud(Transform canvas)
+        {
+            EnsureCornerHud(canvas);
+            return AttachCornerHud(canvas);
+        }
+
         private static void EnsureCornerHud(Transform canvas)
         {
             var root = EnsurePanel(canvas, "CornerHud", out _);
@@ -1288,7 +1294,7 @@ namespace FracturedChorus.Editor
             so.ApplyModifiedPropertiesWithoutUndo();
         }
 
-        private static HubCornerInfoHud AttachCornerHud(Transform canvas)
+        public static HubCornerInfoHud AttachCornerHud(Transform canvas)
         {
             var root = FindPath(canvas, "CornerHud");
             if (root == null)

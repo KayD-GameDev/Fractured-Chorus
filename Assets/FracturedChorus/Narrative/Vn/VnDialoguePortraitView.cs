@@ -18,8 +18,8 @@ namespace FracturedChorus.Narrative.Vn
         [SerializeField] private bool hideWhenNoSpeaker = true;
 
         [Header("Layout (kéo slot trên Scene → Capture)")]
-        [SerializeField] private Vector2 leftAnchoredPosition = new Vector2(28f, 420f);
-        [SerializeField] private Vector2 rightAnchoredPosition = new Vector2(-28f, 420f);
+        [SerializeField] private Vector2 leftAnchoredPosition = new Vector2(28f, 141f);
+        [SerializeField] private Vector2 rightAnchoredPosition = new Vector2(-28f, 137f);
         [SerializeField] private Vector2 slotSizeDelta = new Vector2(440f, 600f);
 
         [Header("Editor Preview")]

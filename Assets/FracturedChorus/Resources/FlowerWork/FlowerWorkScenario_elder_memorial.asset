@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 36cd7c3b307a4f99bdef54566de4b55c, type: 3}
+  m_Name: FlowerWorkScenario_elder_memorial
+  m_EditorClassIdentifier: 
+  id: elder_memorial
+  customerSpeakerId: flower_customer_elder
+  customerLine: I'd like something quiet for a memorial service. Nothing loud.
+  thinkPrompt: Quiet memorial flowers — your recommendation?
+  choices:
+  - White chrysanthemums
+  - Neon gerbera mix
+  - Party confetti wrap
+  correctIndex: 0
+  correctReply: White chrysanthemums — restrained and respectful.
+  wrongReply: Too bright for a memorial. White chrysanthemums were right.

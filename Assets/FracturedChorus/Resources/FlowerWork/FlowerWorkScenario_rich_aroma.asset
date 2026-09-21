@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: FlowerWorkScenario_rich_aroma
   m_EditorClassIdentifier: 
   id: rich_aroma
+  customerSpeakerId: flower_customer_gentleman
   customerLine: They'd like flashy flowers with a rich aroma.
   thinkPrompt: "Flashy and fragrant \u2014 which do you pick?"
   choices:

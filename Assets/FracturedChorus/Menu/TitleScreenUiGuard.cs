@@ -8,7 +8,7 @@ namespace FracturedChorus.Menu
     {
         public static void SuppressStrayResonanceDiveButtons()
         {
-            var buttons = Object.FindObjectsByType<ResonanceDiveButton>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            var buttons = Object.FindObjectsByType<ResonanceDiveButton>(FindObjectsInactive.Include);
             foreach (var button in buttons)
             {
                 if (button == null)

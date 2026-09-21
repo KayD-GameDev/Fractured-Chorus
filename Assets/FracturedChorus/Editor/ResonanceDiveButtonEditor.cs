@@ -80,7 +80,7 @@ namespace FracturedChorus.Editor
                 return;
             }
 
-            var found = Object.FindObjectsByType<ResonanceDiveButton>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            var found = Object.FindObjectsByType<ResonanceDiveButton>(FindObjectsInactive.Include);
             if (found.Length == 0)
             {
                 EditorUtility.DisplayDialog("Resonance Dive", "Không thấy ResonanceDiveButton trong scene.", "OK");
