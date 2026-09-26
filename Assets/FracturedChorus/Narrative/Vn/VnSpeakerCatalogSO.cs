@@ -20,6 +20,11 @@ namespace FracturedChorus.Narrative.Vn
                 return false;
             }
 
+            if (VnRuntimeSpeakers.TryGet(speakerId, out definition))
+            {
+                return true;
+            }
+
             for (var i = 0; i < speakers.Count; i++)
             {
                 var entry = speakers[i];

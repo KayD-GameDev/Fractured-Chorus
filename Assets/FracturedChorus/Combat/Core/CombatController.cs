@@ -12,6 +12,7 @@ using FracturedChorus.Data;
 using FracturedChorus.Meta;
 using FracturedChorus.RunMap;
 using FracturedChorus.Tutorial;
+using FracturedChorus.Tutorial;
 using FracturedChorus.UI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -183,7 +184,8 @@ namespace FracturedChorus.Combat.Core
             }
 
             _boardDrag?.SetSkillPanelOpenPredicate(
-                () => skillPanelView == null || skillPanelView.CanOpenSkillPanelNow());
+                () => (skillPanelView == null || skillPanelView.CanOpenSkillPanelNow())
+                      && TutorialInteractionGate.AllowsUnitSkillPanelOpen);
             _boardDrag?.SetDeployCellClickHandler(OpenFormationHintFromDeployCell);
 
             timelineView?.RefreshAll();
@@ -421,6 +423,51 @@ namespace FracturedChorus.Combat.Core
 
 
 
+        public bool AreAllPlayerSkillsPlaced()
+        {
+            var grid = _session?.Grid;
+            var timeline = _session?.Timeline;
+            if (grid == null || timeline?.Agenda == null)
+            {
+                return false;
+            }
+
+            var required = 0;
+            foreach (var unit in grid.PlayerUnits)
+            {
+                if (unit == null || !unit.IsAlive || unit.Skills == null)
+                {
+                    continue;
+                }
+
+                foreach (var skill in unit.Skills)
+                {
+                    if (skill == null)
+                    {
+                        continue;
+                    }
+
+                    required++;
+                    var found = false;
+                    foreach (var entry in timeline.Agenda)
+                    {
+                        if (entry != null && entry.Unit == unit && entry.Skill == skill)
+                        {
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return required > 0;
+        }
+
         public void StartRound()
 
         {
@@ -433,10 +480,19 @@ namespace FracturedChorus.Combat.Core
 
             }
 
+            if (!TutorialInteractionGate.AllowsExecute)
+
+            {
+
+                return;
+
+            }
+
             StartExecuteSegment();
         }
 
         public event Action PlayerDeployed;
+        public static event Action<int> PlanningSegmentBegan;
 
         private void StartExecuteSegment()
 
@@ -535,7 +591,8 @@ namespace FracturedChorus.Combat.Core
 
         public void FocusPlayerUnit(CombatUnit unit, UnitView view = null)
         {
-            if (_session == null || !_session.IsPlanningWindowOpen)
+            if (_session == null || !_session.IsPlanningWindowOpen
+                || !TutorialInteractionGate.AllowsUnitSkillPanelOpen)
             {
                 return;
             }
@@ -552,6 +609,10 @@ namespace FracturedChorus.Combat.Core
 
             timelineView?.SetSelectedLaneUnit(unit);
             skillPanelView?.ToggleForUnit(unit, view);
+            if (skillPanelView != null && skillPanelView.IsVisible)
+            {
+                TutorialCombatHooks.NotifySkillPanelOpened();
+            }
         }
 
         private bool BeginRelocateSkill(CombatUnit unit, int beatIndex)
@@ -775,8 +836,10 @@ namespace FracturedChorus.Combat.Core
 
 
 
-            var coachBlocking = TutorialCoachView.FindAnyVisible();
-            var showExecute = !coachBlocking && _session.IsPlanningWindowOpen;
+            var coachBlocking = TutorialInteractionGate.BlocksSlideshowCombatUi;
+            var showExecute = TutorialInteractionGate.AllowsExecute
+                              && !coachBlocking
+                              && _session.IsPlanningWindowOpen;
 
             executeOverlay?.SetVisible(showExecute);
 
@@ -843,6 +906,7 @@ namespace FracturedChorus.Combat.Core
             PlayPlanningTransitionSfx();
             EnsurePhaseBanner()?.PlayPlanning();
             RefreshDeployFormationHint();
+            PlanningSegmentBegan?.Invoke(_session.RoundSegmentIndex);
             _segmentCompleteRoutine = null;
         }
 
@@ -990,6 +1054,14 @@ namespace FracturedChorus.Combat.Core
 
             }
 
+            if (!TutorialInteractionGate.AllowsSkillTimelineDrop)
+
+            {
+
+                return false;
+
+            }
+
 
 
             if (unit == null || skill == null)
@@ -1045,6 +1117,7 @@ namespace FracturedChorus.Combat.Core
             }
 
             timelineView?.RefreshLaneMarkers();
+            TutorialCombatHooks.NotifySkillPlacedOnTimeline();
 
             return true;
 
@@ -1438,6 +1511,11 @@ namespace FracturedChorus.Combat.Core
             deployFormationHint?.ShowForDeploy(BossFormationRuntime.Active);
         }
 
+        private static TutorialDirector ResolveTutorialDirector()
+        {
+            return TutorialDirector.FindInLoadedScenes() ?? TutorialDirector.Ensure();
+        }
+
         private void TryStartCombatTutorial()
         {
             if (_combatTutorialStarted || _session == null || !_session.IsPlanningWindowOpen)
@@ -1450,11 +1528,11 @@ namespace FracturedChorus.Combat.Core
                 || CombatPrototypeBootstrap.IsCombatTutorialSceneStatic())
             {
                 FindAnyObjectByType<CombatFocusDimmer>()?.ReleaseImmediate();
-                TutorialDirector.Ensure().StartCadenceIntroTrack();
+                ResolveTutorialDirector()?.StartCadenceIntroTrack();
                 return;
             }
 
-            TutorialDirector.Ensure().StartCombatTrack();
+            ResolveTutorialDirector()?.StartCombatTrack();
         }
 
         private void OnEnable()

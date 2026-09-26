@@ -8,6 +8,8 @@ namespace FracturedChorus.Narrative.Vn
         public const string MeiLin = "mei_lin";
         public const string Ren = "ren";
         public const string Charlotte = "charlotte";
+        public const string Coda = "coda";
+        public const string Kiki = "kiki";
         public const string FlowerOwner = "flower_owner";
         public const string FlowerCustomerGentleman = "flower_customer_gentleman";
         public const string FlowerCustomerBoy = "flower_customer_boy";

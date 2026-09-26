@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using FracturedChorus.Combat.Core;
+using FracturedChorus.Combat.Qte;
 using FracturedChorus.Meta;
 using FracturedChorus.UI;
 using FracturedChorus.UI.Loading;
@@ -16,17 +17,15 @@ namespace FracturedChorus.Tutorial
         public const string TrackCombat = "combat";
         public const string TrackCadenceIntro = "cadence_intro";
 
-        private const string CodaChibiBustAssetPath =
-            "Assets/FracturedChorus/Art/Characters/Coda/Chibi/coda_cadence_chibi_bust_v1.png";
-        private const string CodaChibiFullbodyAssetPath =
-            "Assets/FracturedChorus/Art/Characters/Coda/Chibi/coda_chibi_fullbody_v1.png";
-        private const string StepImageFolder =
-            "Assets/FracturedChorus/Art/UI/Tutorial/Steps";
-
         private static TutorialDirector s_instance;
-        private static Sprite s_codaChibi;
 
+        [Header("Scene authoring")]
+        [SerializeField] private bool sceneBound;
         [SerializeField] private TutorialCoachView coachView;
+        [SerializeField] private TutorialTrackSO cadenceIntroTrack;
+        [SerializeField] private TutorialTrackSO hubTrack;
+        [SerializeField] private TutorialTrackSO mapTrack;
+        [SerializeField] private TutorialTrackSO combatTrack;
 
         private readonly List<TutorialStepSO> _queue = new List<TutorialStepSO>();
         private int _stepIndex;
@@ -34,13 +33,57 @@ namespace FracturedChorus.Tutorial
         private bool _slideshowTrack;
         private bool _awaitingFormationMove;
         private bool _awaitingDeploy;
+        private bool _awaitingDeployThenQte;
+        private bool _awaitingQte;
+        private bool _awaitingSkillPanel;
+        private bool _awaitingSkillPlaced;
         private BoardDragController _boundBoardDrag;
         private CombatController _boundCombat;
+        private TutorialStepSO _deployQteHintStep;
         private Canvas _hostCanvas;
         private CanvasGroup _hostGroup;
+        private bool _cadenceTrackActive;
+        private bool _encounterTutorialMute;
+        private bool _waitingPlanningSegment;
+        private int _targetPlanningSegment;
+        private bool _awaitingDeployUntilPlanning;
+        private bool _awaitingFullTimeline;
+        private bool _awaitingQteAfterDeploy;
+        private bool _qteExplainPauseActive;
+
+        public static bool IsCadenceIntroActive =>
+            s_instance != null && s_instance._cadenceTrackActive && !s_instance._encounterTutorialMute;
+
+        public static bool IsQteExplainPauseActive =>
+            s_instance != null && s_instance._qteExplainPauseActive;
+
+        public static bool AllowsFormationDrag =>
+            !IsCadenceIntroActive || s_instance._awaitingFormationMove;
+
+        public static bool AllowsUnitSkillPanelOpen =>
+            !IsCadenceIntroActive
+            || s_instance._awaitingSkillPanel
+            || s_instance._awaitingSkillPlaced
+            || s_instance._awaitingFullTimeline;
+
+        public static bool AllowsSkillTimelineDrop =>
+            !IsCadenceIntroActive || s_instance._awaitingSkillPlaced || s_instance._awaitingFullTimeline;
+
+        public static bool AllowsExecute =>
+            !IsCadenceIntroActive
+            || s_instance._awaitingDeploy
+            || s_instance._awaitingDeployThenQte
+            || s_instance._awaitingDeployUntilPlanning;
+
+        public static bool BlocksSlideshowCombatUi =>
+            IsCadenceIntroActive && s_instance.coachView != null && s_instance.coachView.BlocksCombatUi;
 
         public static bool SuppressFormationHint =>
-            s_instance != null && (s_instance._awaitingFormationMove || s_instance._awaitingDeploy);
+            s_instance != null
+            && (s_instance._awaitingFormationMove
+                || s_instance._awaitingDeploy
+                || s_instance._awaitingDeployThenQte
+                || s_instance._awaitingDeployUntilPlanning);
 
         public static TutorialDirector Ensure()
         {
@@ -49,7 +92,7 @@ namespace FracturedChorus.Tutorial
                 return s_instance;
             }
 
-            var existing = FindAnyObjectByType<TutorialDirector>();
+            var existing = FindAnyObjectByType<TutorialDirector>(FindObjectsInactive.Include);
             if (existing != null)
             {
                 s_instance = existing;
@@ -62,6 +105,11 @@ namespace FracturedChorus.Tutorial
             return s_instance;
         }
 
+        public static TutorialDirector FindInLoadedScenes()
+        {
+            return FindAnyObjectByType<TutorialDirector>(FindObjectsInactive.Include);
+        }
+
         private void Awake()
         {
             if (s_instance != null && s_instance != this)
@@ -71,9 +119,13 @@ namespace FracturedChorus.Tutorial
             }
 
             s_instance = this;
-            DontDestroyOnLoad(gameObject);
+            if (!sceneBound)
+            {
+                DontDestroyOnLoad(gameObject);
+            }
+
             SceneManager.sceneLoaded += OnSceneLoaded;
-            EnsureCoach();
+            ResolveCoachReference();
         }
 
         public static void HideOverlay()
@@ -103,7 +155,10 @@ namespace FracturedChorus.Tutorial
                 return;
             }
 
-            StartTrack(TrackHub, TutorialStepCatalog.HubSteps(), StoryFlagIds.TutorialHubDone);
+            if (!TryStartTrack(hubTrack, StoryFlagIds.TutorialHubDone))
+            {
+                StartTrack(TrackHub, TutorialStepCatalog.HubSteps(), StoryFlagIds.TutorialHubDone);
+            }
         }
 
         public void StartMapTrack()
@@ -113,7 +168,10 @@ namespace FracturedChorus.Tutorial
                 return;
             }
 
-            StartTrack(TrackMap, TutorialStepCatalog.MapSteps(), StoryFlagIds.TutorialMapDone);
+            if (!TryStartTrack(mapTrack, StoryFlagIds.TutorialMapDone))
+            {
+                StartTrack(TrackMap, TutorialStepCatalog.MapSteps(), StoryFlagIds.TutorialMapDone);
+            }
         }
 
         public void StartCombatTrack()
@@ -123,7 +181,10 @@ namespace FracturedChorus.Tutorial
                 return;
             }
 
-            StartTrack(TrackCombat, TutorialStepCatalog.CombatSteps(), StoryFlagIds.TutorialCombatDone);
+            if (!TryStartTrack(combatTrack, StoryFlagIds.TutorialCombatDone))
+            {
+                StartTrack(TrackCombat, TutorialStepCatalog.CombatSteps(), StoryFlagIds.TutorialCombatDone);
+            }
         }
 
         public void StartCadenceIntroTrack()
@@ -134,11 +195,30 @@ namespace FracturedChorus.Tutorial
                 return;
             }
 
+            var track = TutorialCadenceTrackLibrary.ResolveCadenceIntroTrack(cadenceIntroTrack);
+            if (track == null || track.steps == null || track.steps.Length == 0)
+            {
+                Debug.LogError("[Tutorial] Cadence intro track could not be resolved.");
+                return;
+            }
+
             StartTrack(
-                TrackCadenceIntro,
-                TutorialStepCatalog.CadenceIntroSteps(),
-                StoryFlagIds.TutorialCadenceIntroDone,
-                slideshow: true);
+                track.trackId,
+                track.steps,
+                track.completionFlag,
+                track.slideshow);
+        }
+
+        private bool TryStartTrack(TutorialTrackSO track, string fallbackCompletionFlag)
+        {
+            if (track == null || track.steps == null || track.steps.Length == 0)
+            {
+                return false;
+            }
+
+            var flag = string.IsNullOrEmpty(track.completionFlag) ? fallbackCompletionFlag : track.completionFlag;
+            StartTrack(track.trackId, track.steps, flag, track.slideshow);
+            return true;
         }
 
         private void StartTrack(
@@ -154,20 +234,28 @@ namespace FracturedChorus.Tutorial
 
             _completionFlag = completionFlag;
             _slideshowTrack = slideshow;
+            _cadenceTrackActive = trackId == TrackCadenceIntro;
+            if (_cadenceTrackActive)
+            {
+                CombatController.PlanningSegmentBegan += HandlePlanningSegmentBegan;
+            }
+
             UnbindPracticeHooks();
             _queue.Clear();
             _queue.AddRange(steps);
             _stepIndex = 0;
-            EnsureCoach();
+            ResolveCoachReference();
             ShowCurrentStep();
+            RefreshCombatUiGates();
         }
 
         private void ShowCurrentStep()
         {
-            EnsureCoach();
+            ResolveCoachReference();
             if (coachView == null)
             {
-                CompleteTrack();
+                Debug.LogWarning(
+                    "[Tutorial] TutorialCoachView không tìm thấy — thêm TutorialCoach trong scene CombatTutorial.");
                 return;
             }
 
@@ -192,23 +280,60 @@ namespace FracturedChorus.Tutorial
                     return;
                 }
 
+                if (step.kind == TutorialStepKind.AwaitUnitSkillPanel)
+                {
+                    EnterAwaitUnitSkillPanel(step);
+                    return;
+                }
+
+                if (step.kind == TutorialStepKind.AwaitSkillPlaced)
+                {
+                    EnterAwaitSkillPlaced(step);
+                    return;
+                }
+
+                if (step.kind == TutorialStepKind.AwaitDeployThenQte)
+                {
+                    EnterAwaitDeployThenQte(step);
+                    return;
+                }
+
+                if (step.kind == TutorialStepKind.AwaitDeployUntilPlanning)
+                {
+                    EnterAwaitDeployUntilPlanning(step);
+                    return;
+                }
+
+                if (step.kind == TutorialStepKind.BeginPlanningSandbox)
+                {
+                    EnterPlanningSandbox();
+                    return;
+                }
+
                 var isLast = _stepIndex >= _queue.Count - 1;
+                if (_encounterTutorialMute && step.kind == TutorialStepKind.Slide)
+                {
+                    _encounterTutorialMute = false;
+                }
+
                 RefreshFormationHintVisibility();
                 coachView.ShowSlide(
                     step.bodyCopy,
-                    step.coachPortrait,
-                    step.panelImage,
+                    ResolveCoachPortrait(step),
+                    ResolvePanelImage(step),
                     $"{SlideOrdinal(_stepIndex)}/{SlideCount()}",
                     showBack: HasPreviousSlideshowStep(_stepIndex),
                     primaryLabel: isLast ? "Done" : "Next",
                     onBack: RetreatStep,
                     onPrimary: isLast ? CompleteTrack : AdvanceStep);
                 SetHostBlocking(true);
+                RefreshCombatUiGates();
                 return;
             }
 
-            coachView.Show(step.bodyCopy, AdvanceStep, step.coachPortrait, step.panelImage);
+            coachView.Show(step.bodyCopy, AdvanceStep, ResolveCoachPortrait(step), ResolvePanelImage(step));
             SetHostBlocking(true);
+            RefreshCombatUiGates();
         }
 
         private void EnterFormationPractice(TutorialStepSO step)
@@ -219,13 +344,14 @@ namespace FracturedChorus.Tutorial
             RefreshFormationHintVisibility();
             coachView.ShowSlide(
                 step.bodyCopy,
-                step.coachPortrait,
-                step.panelImage,
+                ResolveCoachPortrait(step),
+                ResolvePanelImage(step),
                 $"{SlideOrdinal(_stepIndex)}/{SlideCount()}",
                 showBack: HasPreviousSlideshowStep(_stepIndex),
                 primaryLabel: "Next",
                 onBack: RetreatStep,
                 onPrimary: BeginSilentFormationPractice);
+            RefreshCombatUiGates();
         }
 
         private void BeginSilentFormationPractice()
@@ -241,30 +367,180 @@ namespace FracturedChorus.Tutorial
             {
                 _boundBoardDrag.AddFormationChangedHandler(HandleFormationMoved);
             }
+
+            RefreshCombatUiGates();
         }
 
         private void EnterAwaitDeploy(TutorialStepSO step)
         {
             UnbindPracticeHooks();
             _awaitingDeploy = true;
+            _awaitingDeployThenQte = false;
+            _awaitingDeployUntilPlanning = false;
             _awaitingFormationMove = false;
             RefreshFormationHintVisibility();
-            if (!string.IsNullOrEmpty(step.bodyCopy))
-            {
-                coachView.ShowFloatingHint(step.bodyCopy);
-                SetHostBlocking(false);
-            }
-            else
-            {
-                coachView.Hide();
-                SetHostBlocking(false);
-            }
+            coachView?.Hide();
+            SetHostBlocking(false);
 
             _boundCombat = FindAnyObjectByType<CombatController>();
             if (_boundCombat != null)
             {
                 _boundCombat.PlayerDeployed += HandlePlayerDeployed;
             }
+
+            RefreshCombatUiGates();
+        }
+
+        private void EnterPlanningSandbox()
+        {
+            UnbindPracticeHooks();
+            _awaitingFullTimeline = true;
+            _encounterTutorialMute = false;
+            coachView?.Hide();
+            SetHostBlocking(false);
+            TutorialCombatHooks.SkillPlacedOnTimeline += HandleFullTimelineSkillPlaced;
+            RefreshCombatUiGates();
+            TryCompleteFullTimeline();
+        }
+
+        private void HandleFullTimelineSkillPlaced()
+        {
+            TryCompleteFullTimeline();
+        }
+
+        private void TryCompleteFullTimeline()
+        {
+            if (!_awaitingFullTimeline)
+            {
+                return;
+            }
+
+            var combat = FindAnyObjectByType<CombatController>();
+            if (combat == null || !combat.AreAllPlayerSkillsPlaced())
+            {
+                RefreshCombatUiGates();
+                return;
+            }
+
+            _awaitingFullTimeline = false;
+            TutorialCombatHooks.SkillPlacedOnTimeline -= HandleFullTimelineSkillPlaced;
+            AdvanceStep();
+        }
+
+        private void EnterAwaitDeployUntilPlanning(TutorialStepSO step)
+        {
+            UnbindPracticeHooks();
+            _awaitingDeployUntilPlanning = true;
+            _awaitingDeploy = false;
+            _awaitingDeployThenQte = false;
+            _targetPlanningSegment = step.planningSegmentToContinue > 0 ? step.planningSegmentToContinue : 1;
+            coachView?.Hide();
+            SetHostBlocking(false);
+
+            _boundCombat = FindAnyObjectByType<CombatController>();
+            if (_boundCombat != null)
+            {
+                _boundCombat.PlayerDeployed += HandlePlayerDeployed;
+            }
+
+            RefreshCombatUiGates();
+        }
+
+        private void EnterAwaitUnitSkillPanel(TutorialStepSO step)
+        {
+            UnbindPracticeHooks();
+            _awaitingSkillPanel = true;
+            coachView?.Hide();
+            SetHostBlocking(false);
+            TutorialCombatHooks.SkillPanelOpened += HandleSkillPanelOpened;
+            RefreshCombatUiGates();
+        }
+
+        private void EnterAwaitSkillPlaced(TutorialStepSO step)
+        {
+            UnbindPracticeHooks();
+            _awaitingSkillPlaced = true;
+            coachView?.Hide();
+            SetHostBlocking(false);
+            TutorialCombatHooks.SkillPlacedOnTimeline += HandleSkillPlacedOnTimeline;
+            RefreshCombatUiGates();
+        }
+
+        private void EnterAwaitDeployThenQte(TutorialStepSO step)
+        {
+            UnbindPracticeHooks();
+            _awaitingDeployThenQte = true;
+            _deployQteHintStep = step;
+            RefreshFormationHintVisibility();
+            coachView?.Hide();
+            SetHostBlocking(false);
+            _awaitingQteAfterDeploy = false;
+
+            _boundCombat = FindAnyObjectByType<CombatController>();
+            if (_boundCombat != null)
+            {
+                _boundCombat.PlayerDeployed += HandlePlayerDeployed;
+            }
+
+            RefreshCombatUiGates();
+        }
+
+        public static void NotifyQtePromptVisible()
+        {
+            if (s_instance == null || !s_instance._awaitingQteAfterDeploy || s_instance._qteExplainPauseActive)
+            {
+                return;
+            }
+
+            s_instance.BeginQteExplainPause();
+        }
+
+        private void BeginQteExplainPause()
+        {
+            _qteExplainPauseActive = true;
+            var copy = _deployQteHintStep?.qteHintCopy;
+            if (string.IsNullOrWhiteSpace(copy))
+            {
+                copy = "Đây là QTE — khi bạn bấm Space đúng lúc sẽ tăng thêm sát thương.";
+            }
+
+            coachView?.ShowSlide(
+                copy,
+                ResolveCoachPortrait(_deployQteHintStep),
+                ResolvePanelImage(_deployQteHintStep),
+                null,
+                showBack: false,
+                primaryLabel: "Next",
+                onBack: null,
+                onPrimary: DismissQteExplainPause);
+            SetHostBlocking(true);
+        }
+
+        private void DismissQteExplainPause()
+        {
+            _qteExplainPauseActive = false;
+            coachView?.Hide();
+            SetHostBlocking(false);
+            RefreshCombatUiGates();
+        }
+
+        private void HandlePlanningSegmentBegan(int segmentIndex)
+        {
+            if (!_waitingPlanningSegment || segmentIndex < _targetPlanningSegment)
+            {
+                return;
+            }
+
+            _waitingPlanningSegment = false;
+            _encounterTutorialMute = false;
+            AdvanceStep();
+            RefreshCombatUiGates();
+        }
+
+        private static void RefreshCombatUiGates()
+        {
+            var combat = FindAnyObjectByType<CombatController>();
+            combat?.RefreshExecuteOverlayVisibility();
         }
 
         private static void RefreshFormationHintVisibility()
@@ -296,6 +572,41 @@ namespace FracturedChorus.Tutorial
 
         private void HandlePlayerDeployed()
         {
+            if (_awaitingDeployUntilPlanning)
+            {
+                _awaitingDeployUntilPlanning = false;
+                if (_boundCombat != null)
+                {
+                    _boundCombat.PlayerDeployed -= HandlePlayerDeployed;
+                    _boundCombat = null;
+                }
+
+                _encounterTutorialMute = true;
+                _waitingPlanningSegment = true;
+                coachView?.Hide();
+                SetHostBlocking(false);
+                RefreshCombatUiGates();
+                return;
+            }
+
+            if (_awaitingDeployThenQte)
+            {
+                _awaitingDeployThenQte = false;
+                if (_boundCombat != null)
+                {
+                    _boundCombat.PlayerDeployed -= HandlePlayerDeployed;
+                    _boundCombat = null;
+                }
+
+                _awaitingQte = true;
+                _awaitingQteAfterDeploy = true;
+                coachView?.Hide();
+                SetHostBlocking(false);
+                TutorialCombatHooks.QteResolved += HandleQteResolved;
+                RefreshCombatUiGates();
+                return;
+            }
+
             if (!_awaitingDeploy)
             {
                 return;
@@ -303,7 +614,44 @@ namespace FracturedChorus.Tutorial
 
             _awaitingDeploy = false;
             UnbindPracticeHooks();
-            CompleteTrack();
+            AdvanceStep();
+        }
+
+        private void HandleSkillPanelOpened()
+        {
+            if (!_awaitingSkillPanel)
+            {
+                return;
+            }
+
+            _awaitingSkillPanel = false;
+            UnbindPracticeHooks();
+            AdvanceStep();
+        }
+
+        private void HandleSkillPlacedOnTimeline()
+        {
+            if (!_awaitingSkillPlaced)
+            {
+                return;
+            }
+
+            _awaitingSkillPlaced = false;
+            UnbindPracticeHooks();
+            AdvanceStep();
+        }
+
+        private void HandleQteResolved(CombatQteGrade grade)
+        {
+            if (!_awaitingQte)
+            {
+                return;
+            }
+
+            _awaitingQte = false;
+            _awaitingQteAfterDeploy = false;
+            UnbindPracticeHooks();
+            AdvanceStep();
         }
 
         private void UnbindPracticeHooks()
@@ -320,8 +668,25 @@ namespace FracturedChorus.Tutorial
                 _boundCombat = null;
             }
 
+            TutorialCombatHooks.SkillPanelOpened -= HandleSkillPanelOpened;
+            TutorialCombatHooks.SkillPlacedOnTimeline -= HandleSkillPlacedOnTimeline;
+            TutorialCombatHooks.SkillPlacedOnTimeline -= HandleFullTimelineSkillPlaced;
+            TutorialCombatHooks.QteResolved -= HandleQteResolved;
+
             _awaitingFormationMove = false;
             _awaitingDeploy = false;
+            _awaitingDeployThenQte = false;
+            _awaitingQte = false;
+            _awaitingSkillPanel = false;
+            _awaitingSkillPlaced = false;
+            _deployQteHintStep = null;
+            _encounterTutorialMute = false;
+            _waitingPlanningSegment = false;
+            _awaitingDeployUntilPlanning = false;
+            _awaitingFullTimeline = false;
+            _awaitingQteAfterDeploy = false;
+            _qteExplainPauseActive = false;
+            TutorialCombatHooks.ResetCadenceIntroOverrides();
         }
 
         private void AdvanceStep()
@@ -409,8 +774,34 @@ namespace FracturedChorus.Tutorial
             _stepIndex = 0;
             _completionFlag = null;
             _slideshowTrack = false;
+            _cadenceTrackActive = false;
+            CombatController.PlanningSegmentBegan -= HandlePlanningSegmentBegan;
             coachView?.Hide();
             SetHostBlocking(false);
+        }
+
+        private static Sprite ResolveCoachPortrait(TutorialStepSO step)
+        {
+            if (step == null)
+            {
+                return TutorialCadenceTrackLibrary.LoadCodaPortrait();
+            }
+
+            return step.coachPortrait != null
+                ? step.coachPortrait
+                : TutorialCadenceTrackLibrary.LoadCodaPortrait();
+        }
+
+        private static Sprite ResolvePanelImage(TutorialStepSO step)
+        {
+            if (step == null || string.IsNullOrEmpty(step.stepId))
+            {
+                return step?.panelImage;
+            }
+
+            return step.panelImage != null
+                ? step.panelImage
+                : TutorialCadenceTrackLibrary.LoadPanelImage(step.stepId);
         }
 
         private void OnDestroy()
@@ -423,14 +814,20 @@ namespace FracturedChorus.Tutorial
             }
         }
 
-        private void EnsureCoach()
+        private void ResolveCoachReference()
         {
-            EnsureHostCanvas();
-            if (coachView != null)
+            if (coachView == null)
             {
+                coachView = FindAnyObjectByType<TutorialCoachView>(FindObjectsInactive.Include);
+            }
+
+            if (coachView != null || sceneBound)
+            {
+                SetHostBlocking(false);
                 return;
             }
 
+            EnsureHostCanvas();
             coachView = TutorialCoachView.Ensure(transform);
             SetHostBlocking(false);
         }
@@ -491,70 +888,6 @@ namespace FracturedChorus.Tutorial
             _hostGroup.interactable = blocking;
         }
 
-        private static Sprite LoadCodaChibi()
-        {
-            if (s_codaChibi != null)
-            {
-                return s_codaChibi;
-            }
-
-            s_codaChibi = Resources.Load<Sprite>("Characters/Coda/coda_cadence_chibi_bust_v1")
-                          ?? Resources.Load<Sprite>("Characters/Coda/coda_chibi_fullbody_v1");
-            if (s_codaChibi != null)
-            {
-                return s_codaChibi;
-            }
-
-#if UNITY_EDITOR
-            s_codaChibi = LoadSpriteAtPath(CodaChibiBustAssetPath)
-                          ?? LoadSpriteAtPath(CodaChibiFullbodyAssetPath);
-#endif
-            return s_codaChibi;
-        }
-
-        private static Sprite LoadStepPanelImage(string stepId)
-        {
-            if (string.IsNullOrEmpty(stepId))
-            {
-                return null;
-            }
-
-            var resources = Resources.Load<Sprite>($"UI/Tutorial/Steps/{stepId}_v1");
-            if (resources != null)
-            {
-                return resources;
-            }
-
-#if UNITY_EDITOR
-            return LoadSpriteAtPath($"{StepImageFolder}/{stepId}_v1.png");
-#else
-            return null;
-#endif
-        }
-
-#if UNITY_EDITOR
-        private static Sprite LoadSpriteAtPath(string assetPath)
-        {
-            var sprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(assetPath);
-            if (sprite != null)
-            {
-                return sprite;
-            }
-
-            var tex = UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
-            if (tex == null)
-            {
-                return null;
-            }
-
-            return Sprite.Create(
-                tex,
-                new Rect(0f, 0f, tex.width, tex.height),
-                new Vector2(0.5f, 0.5f),
-                100f);
-        }
-#endif
-
         private static class TutorialStepCatalog
         {
             public static List<TutorialStepSO> HubSteps() => new List<TutorialStepSO>
@@ -588,60 +921,6 @@ namespace FracturedChorus.Tutorial
                 Step(TrackCombat, "combat_done",
                     "Hướng dẫn combat ngắn xong. Giữ nhịp.")
             };
-
-            public static List<TutorialStepSO> CadenceIntroSteps()
-            {
-                var coda = LoadCodaChibi();
-                return new List<TutorialStepSO>
-                {
-                    StepVi("meet_danger",
-                        "Hiện tại ở đây rất nguy hiểm. Tôi là Coda — tôi sẽ hướng dẫn cậu thoát khỏi đây. Nghe kỹ từng bước, đừng nóng vội.",
-                        coda),
-                    StepVi("formation_grid",
-                        "Đầu tiên hãy đến với phần Formation — đội hình chia thành 6 ô tương ứng với BACK, MID và FRONT.",
-                        coda),
-                    StepVi("formation_buff_intro",
-                        "Mỗi vị trí sẽ có buff khác nhau dựa vào tình huống nhất định.",
-                        coda),
-                    StepVi("formation_front",
-                        "FRONT giảm sát thương nhận vào.",
-                        coda),
-                    StepVi("formation_mid_back",
-                        "MID tăng sát thương. BACK tăng khả năng buff và né.",
-                        coda),
-                    StepVi("formation_situational",
-                        "Hãy dựa vào đội hình hiện tại và tình huống để đặt sao cho hợp lý.",
-                        coda),
-                    PracticeVi("formation_practice",
-                        "Hãy di chuyển Ren và Coda giữa các ô.",
-                        coda),
-                    StepVi("formation_lock",
-                        "Làm tốt lắm. Khi bạn đã chốt xong vị trí, hãy nhấn Execute.",
-                        coda),
-                    AwaitDeployVi("formation_await_deploy",
-                        "Nhấn Execute để bắt đầu round.")
-                };
-            }
-
-            private static TutorialStepSO StepVi(string stepId, string bodyVi, Sprite coda)
-            {
-                return Step(TrackCadenceIntro, stepId, bodyVi, coda, LoadStepPanelImage(stepId));
-            }
-
-            private static TutorialStepSO PracticeVi(string stepId, string bodyVi, Sprite coda)
-            {
-                var step = Step(TrackCadenceIntro, stepId, bodyVi, coda, LoadStepPanelImage(stepId));
-                step.kind = TutorialStepKind.PracticeFormation;
-                return step;
-            }
-
-            private static TutorialStepSO AwaitDeployVi(string stepId, string bodyVi)
-            {
-                var step = Step(TrackCadenceIntro, stepId, bodyVi);
-                step.kind = TutorialStepKind.AwaitDeploy;
-                step.requiresConfirm = false;
-                return step;
-            }
 
             private static TutorialStepSO Step(
                 string trackId,

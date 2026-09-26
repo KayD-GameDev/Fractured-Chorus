@@ -253,7 +253,8 @@ namespace FracturedChorus.Narrative.Vn
 
             var flip = left == !speaker.facesRight;
             var tint = active ? Color.white : VnDialoguePortraitLayout.InactiveTint;
-            var faceScale = flip ? new Vector3(-1f, 1f, 1f) : Vector3.one;
+            var fit = speaker.portraitScale > 0.01f ? speaker.portraitScale : 1f;
+            var faceScale = flip ? new Vector3(-fit, fit, 1f) : new Vector3(fit, fit, 1f);
             var offset = speaker.shadowOffsetPixels.sqrMagnitude > 0.01f
                 ? speaker.shadowOffsetPixels
                 : VnDialoguePortraitLayout.DefaultShadowOffset;

@@ -103,6 +103,24 @@ namespace FracturedChorus.Hub
         {
             try
             {
+                if (activityId == HimaEnrollmentGate.ActivityId)
+                {
+                    if (HimaEnrollmentLaunch.IsPending)
+                    {
+                        return;
+                    }
+
+                    HimaEnrollmentLaunch.Arm();
+                    GameMetaSession.Save();
+                    if (!RunMapSceneLoader.LoadByName(RunMapSceneCatalog.OpeningInvestigation))
+                    {
+                        HimaEnrollmentLaunch.Cancel();
+                        _host.ShowStatus("Không thể mở phân cảnh nhập học.");
+                    }
+
+                    return;
+                }
+
                 var state = GameMetaSession.Current;
                 if (!HubActivityCatalog.TryGet(activityId, state.Calendar.CurrentPhase, out var option))
                 {

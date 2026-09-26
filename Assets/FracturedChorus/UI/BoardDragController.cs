@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using FracturedChorus.Combat.Core;
+using FracturedChorus.Tutorial;
 using FracturedChorus.Combat.Grid;
 using FracturedChorus.Combat.Units;
 using UnityEngine;
@@ -117,6 +118,11 @@ namespace FracturedChorus.UI
                 return false;
             }
 
+            if (!TutorialInteractionGate.AllowsFormationDrag)
+            {
+                return false;
+            }
+
             return true;
         }
 
@@ -207,7 +213,8 @@ namespace FracturedChorus.UI
             else if (_pointerDownCell != null
                      && BoardPointerGesture.IsClick(_pointerDownScreen, screenPos, clickDragThresholdPx)
                      && _session != null
-                     && _session.IsPlanningWindowOpen)
+                     && _session.IsPlanningWindowOpen
+                     && TutorialInteractionGate.AllowsFormationDrag)
             {
                 _onDeployCellClicked?.Invoke();
             }
@@ -230,6 +237,11 @@ namespace FracturedChorus.UI
             }
 
             if (_canOpenSkillPanel != null && !_canOpenSkillPanel())
+            {
+                return false;
+            }
+
+            if (!TutorialInteractionGate.AllowsUnitSkillPanelOpen)
             {
                 return false;
             }
