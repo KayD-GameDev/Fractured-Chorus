@@ -1,0 +1,66 @@
+<mxfile host="app.diagrams.net" modified="2026-09-24T04:00:00.000Z" agent="cursor-skill" version="22.1.0" type="device">
+  <diagram name="UseCase" id="uc-fc">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="sys" value="Fractured Chorus" style="swimlane;html=1;startSize=28;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="220" y="40" width="980" height="820" as="geometry"/>
+        </mxCell>
+        <mxCell id="aPlayer" value="Người chơi" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="380" width="40" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="aMusic" value="Đồng hồ nhạc" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1260" y="620" width="40" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc1" value="Chọn độ khó" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="sys">
+          <mxGeometry x="40" y="50" width="160" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc2" value="Bắt đầu một ngày" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="sys">
+          <mxGeometry x="240" y="50" width="170" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc3" value="Làm hoạt động đời sống" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="sys">
+          <mxGeometry x="450" y="50" width="190" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc4" value="Tăng bond" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="sys">
+          <mxGeometry x="680" y="50" width="150" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc5" value="Đi node trên map" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="sys">
+          <mxGeometry x="40" y="180" width="170" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc6" value="Vào trận" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="sys">
+          <mxGeometry x="250" y="180" width="150" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc7" value="Suy nghĩ trong planning" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="sys">
+          <mxGeometry x="440" y="180" width="190" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="ucFoot" value="Kiểm tra footprint" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="sys">
+          <mxGeometry x="680" y="180" width="170" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc8" value="Chạy một phase" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="sys">
+          <mxGeometry x="250" y="360" width="170" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc9" value="Đỡ đúng lúc" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="sys">
+          <mxGeometry x="480" y="360" width="150" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc10" value="Kết thúc trận hoặc ngày" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="sys">
+          <mxGeometry x="250" y="520" width="200" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="eInc" value="«include»" style="endArrow=open;dashed=1;html=1;fontSize=11;" edge="1" parent="sys" source="uc7" target="ucFoot">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="eExt" value="«extend»" style="endArrow=open;dashed=1;html=1;fontSize=11;" edge="1" parent="sys" source="uc9" target="uc8">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="p1" style="endArrow=none;html=1;" edge="1" parent="1" source="aPlayer" target="uc1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="p2" style="endArrow=none;html=1;" edge="1" parent="1" source="aPlayer" target="uc2"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="p3" style="endArrow=none;html=1;" edge="1" parent="1" source="aPlayer" target="uc5"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="p4" style="endArrow=none;html=1;" edge="1" parent="1" source="aPlayer" target="uc7"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="p5" style="endArrow=none;html=1;" edge="1" parent="1" source="aPlayer" target="uc8"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="p6" style="endArrow=none;html=1;" edge="1" parent="1" source="aPlayer" target="uc9"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="p7" style="endArrow=none;html=1;" edge="1" parent="1" source="aPlayer" target="uc10"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="p8" style="endArrow=none;html=1;" edge="1" parent="1" source="aMusic" target="uc8"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

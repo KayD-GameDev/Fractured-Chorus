@@ -16,7 +16,7 @@ Run after implementing polish epics. Mark each scene pair.
 
 - [ ] Save slot 0–9 independent; legacy `fc_meta_save.json` migrates to slot 0
 - [ ] Skill equip in hub → combat kit matches
-- [ ] Difficulty OnBeat vs OffBeat enemy HP/dmg differs
+- [ ] Difficulty OnBeat vs OffBeat: enemy HP/dmg + effective level (−2 / 0 / +2) differs
 - [ ] Boss Despair pressure text visible in Deploy; weighted front targeting
 - [ ] Tutorial flags persist after complete
 

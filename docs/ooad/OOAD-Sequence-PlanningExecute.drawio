@@ -1,0 +1,62 @@
+<mxfile host="app.diagrams.net" modified="2026-09-24T04:00:00.000Z" agent="cursor-skill" version="22.1.0" type="device">
+  <diagram name="Sequence-PlanningExecute" id="seq-pe">
+    <mxGraphModel dx="1100" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="oPlayer" value=":Người chơi" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="120" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="oCtrl" value=":CombatController" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="220" y="40" width="150" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="oSes" value=":CombatSession" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="430" y="40" width="140" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="oTime" value=":BeatTimelineEngine" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="630" y="40" width="160" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="oUnit" value=":CombatUnit" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="850" y="40" width="120" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="oMus" value=":ICombatMusicSync" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="40" width="150" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="l1" style="endArrow=none;dashed=1;html=1;" edge="1" parent="1" source="oPlayer" target="pBot"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="pBot" value="" style="ellipse;fillColor=#FFFFFF;strokeColor=#FFFFFF;html=1;" vertex="1" parent="1">
+          <mxGeometry x="90" y="820" width="10" height="10" as="geometry"/>
+        </mxCell>
+        <mxCell id="cBot" value="" style="ellipse;fillColor=#FFFFFF;strokeColor=#FFFFFF;html=1;" vertex="1" parent="1">
+          <mxGeometry x="290" y="820" width="10" height="10" as="geometry"/>
+        </mxCell>
+        <mxCell id="sBot" value="" style="ellipse;fillColor=#FFFFFF;strokeColor=#FFFFFF;html=1;" vertex="1" parent="1">
+          <mxGeometry x="490" y="820" width="10" height="10" as="geometry"/>
+        </mxCell>
+        <mxCell id="tBot" value="" style="ellipse;fillColor=#FFFFFF;strokeColor=#FFFFFF;html=1;" vertex="1" parent="1">
+          <mxGeometry x="700" y="820" width="10" height="10" as="geometry"/>
+        </mxCell>
+        <mxCell id="uBot" value="" style="ellipse;fillColor=#FFFFFF;strokeColor=#FFFFFF;html=1;" vertex="1" parent="1">
+          <mxGeometry x="900" y="820" width="10" height="10" as="geometry"/>
+        </mxCell>
+        <mxCell id="mBot" value="" style="ellipse;fillColor=#FFFFFF;strokeColor=#FFFFFF;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1085" y="820" width="10" height="10" as="geometry"/>
+        </mxCell>
+        <mxCell id="l2" style="endArrow=none;dashed=1;html=1;" edge="1" parent="1" source="oCtrl" target="cBot"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="l3" style="endArrow=none;dashed=1;html=1;" edge="1" parent="1" source="oSes" target="sBot"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="l4" style="endArrow=none;dashed=1;html=1;" edge="1" parent="1" source="oTime" target="tBot"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="l5" style="endArrow=none;dashed=1;html=1;" edge="1" parent="1" source="oUnit" target="uBot"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="l6" style="endArrow=none;dashed=1;html=1;" edge="1" parent="1" source="oMus" target="mBot"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="m1" value="mở planning" style="endArrow=block;html=1;fontSize=11;" edge="1" parent="1" source="oCtrl" target="oSes"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="295" y="140"/><mxPoint x="500" y="140"/></Array></mxGeometry></mxCell>
+        <mxCell id="m2" value="kéo quân / thả chiêu" style="endArrow=block;html=1;fontSize=11;" edge="1" parent="1" source="oPlayer" target="oCtrl"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="100" y="200"/><mxPoint x="295" y="200"/></Array></mxGeometry></mxCell>
+        <mxCell id="m3" value="TryAssignPlayerAction" style="endArrow=block;html=1;fontSize=11;" edge="1" parent="1" source="oCtrl" target="oSes"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="295" y="260"/><mxPoint x="500" y="260"/></Array></mxGeometry></mxCell>
+        <mxCell id="m4" value="thêm AgendaEntry" style="endArrow=block;html=1;fontSize=11;" edge="1" parent="1" source="oSes" target="oTime"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="500" y="320"/><mxPoint x="710" y="320"/></Array></mxGeometry></mxCell>
+        <mxCell id="m5" value="GainPrep / Delay" style="endArrow=block;html=1;fontSize=11;" edge="1" parent="1" source="oSes" target="oUnit"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="500" y="390"/><mxPoint x="910" y="390"/></Array></mxGeometry></mxCell>
+        <mxCell id="m6" value="ConfirmPlanningAndExecute" style="endArrow=block;html=1;fontSize=11;" edge="1" parent="1" source="oCtrl" target="oSes"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="295" y="470"/><mxPoint x="500" y="470"/></Array></mxGeometry></mxCell>
+        <mxCell id="m7" value="beat tuyệt đối" style="endArrow=block;html=1;fontSize=11;" edge="1" parent="1" source="oSes" target="oMus"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="500" y="540"/><mxPoint x="1095" y="540"/></Array></mxGeometry></mxCell>
+        <mxCell id="m8" value="neo và quét beat" style="endArrow=block;html=1;fontSize=11;" edge="1" parent="1" source="oSes" target="oTime"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="500" y="610"/><mxPoint x="710" y="610"/></Array></mxGeometry></mxCell>
+        <mxCell id="m9" value="Execute" style="endArrow=block;html=1;fontSize=11;" edge="1" parent="1" source="oSes" target="oUnit"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="500" y="680"/><mxPoint x="910" y="680"/></Array></mxGeometry></mxCell>
+        <mxCell id="m10" value="OnUnitHpChanged" style="endArrow=open;dashed=1;html=1;fontSize=11;" edge="1" parent="1" source="oSes" target="oCtrl"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="500" y="750"/><mxPoint x="295" y="750"/></Array></mxGeometry></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,52 @@
+<mxfile host="Electron" agent="cursor-skill">
+  <diagram name="TrangThai-CombatSession" id="st-session">
+    <mxGraphModel dx="1030" dy="626" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="900" pageHeight="700" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="text;html=1;align=left;fontSize=14;" value="&lt;b&gt;Trạng thái của CombatSession&lt;/b&gt;" vertex="1">
+          <mxGeometry height="30" width="320" x="40" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="init" parent="1" style="ellipse;fillColor=#000000;strokeColor=#000000;html=1;" value="" vertex="1">
+          <mxGeometry height="20" width="20" x="70" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="intro" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="Intro&lt;br&gt;12 beat, không tính phase" vertex="1">
+          <mxGeometry height="60" width="180" x="160" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="plan" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="Planning&lt;br&gt;dời quân và gán chiêu&lt;br&gt;nhạc duck" vertex="1">
+          <mxGeometry height="80" width="190" x="420" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="exec" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="Execute&lt;br&gt;quét 22 beat&lt;br&gt;giải chiêu và đòn" vertex="1">
+          <mxGeometry height="80" width="190" x="130" y="210" as="geometry" />
+        </mxCell>
+        <mxCell id="over" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="Kết thúc trận&lt;br&gt;một phe hết người sống" vertex="1">
+          <mxGeometry height="60" width="200" x="414" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="final" parent="1" style="ellipse;html=1;strokeWidth=3;fillColor=#FFFFFF;" value="" vertex="1">
+          <mxGeometry height="28" width="28" x="501" y="310" as="geometry" />
+        </mxCell>
+        <mxCell id="t1" edge="1" parent="1" source="init" style="endArrow=block;html=1;fontSize=11;" target="intro" value="vào trận">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="t2" edge="1" parent="1" source="intro" style="endArrow=block;html=1;fontSize=11;" target="plan" value="hết intro">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="t3" edge="1" parent="1" source="plan" style="endArrow=block;html=1;fontSize=11;" target="exec" value="Execute">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="t4" edge="1" parent="1" source="exec" style="endArrow=block;html=1;fontSize=11;" target="plan" value="hết 22 beat, trận còn">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="t5" edge="1" parent="1" source="exec" style="endArrow=block;html=1;fontSize=11;" target="over" value="hết quân">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="t6" edge="1" parent="1" source="plan" style="endArrow=block;html=1;fontSize=11;" target="over" value="hết quân">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="t7" edge="1" parent="1" source="over" style="endArrow=block;html=1;" target="final">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

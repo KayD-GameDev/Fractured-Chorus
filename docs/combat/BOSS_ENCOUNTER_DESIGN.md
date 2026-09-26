@@ -271,7 +271,7 @@ Chi tiết effect: [SKILL_KIT.md](./SKILL_KIT.md)
 
 > **SoT đầy đủ (XP + soft-cap + bảng từng Lv):** [2026-07-19-combat-level-xp-progression-design.md](../superpowers/specs/2026-07-19-combat-level-xp-progression-design.md) · [CHARACTER_LEVEL_PROGRESS.md](./CHARACTER_LEVEL_PROGRESS.md)
 >
-> **Mục tiêu:** Soft target **Lv15** trước boss · Cap arc 1 = **Lv18** (boss XP dump hoặc grind chậm).
+> **Mục tiêu:** Soft target **Lv15** trước boss **trên Cadence** · Cap arc 1 = **Lv18**. On Beat / Off Beat chỉ lệch level kẻ địch (−2 / +2) — [DIFFICULTY.md](./DIFFICULTY.md).
 > **Mỗi level = 1 stat point / nhân vật** → STR, Ma, EN (+1) hoặc HB (+5).
 > **HB quy đổi:** 1 point = +5 HB → tăng beat bar W, giảm planning latency, cải thiện telegraph intel
 

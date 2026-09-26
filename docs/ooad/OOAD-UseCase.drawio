@@ -1,0 +1,96 @@
+<mxfile host="Electron" agent="cursor-skill">
+  <diagram name="UseCase" id="uc-fc">
+    <mxGraphModel dx="1717" dy="1043" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="qvVRyri9OnyBv01tORUV-8" edge="1" parent="1" source="aPlayer" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2" edge="1" parent="1" source="aPlayer" style="endArrow=none;html=1;" target="uc2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sys" parent="1" style="swimlane;html=1;startSize=28;fillColor=#FFFFFF;strokeColor=#1B2A4A;fontStyle=1;fontSize=14;" value="Fractured Chorus" vertex="1">
+          <mxGeometry height="820" width="980" x="240" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="uc1" parent="sys" style="ellipse;whiteSpace=wrap;html=1;" value="Chọn độ khó" vertex="1">
+          <mxGeometry height="60" width="160" x="40" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="uc2" parent="sys" style="ellipse;whiteSpace=wrap;html=1;" value="Bắt đầu một ngày" vertex="1">
+          <mxGeometry height="60" width="170" x="240" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="qvVRyri9OnyBv01tORUV-1" edge="1" parent="sys" source="uc3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" target="uc4" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="qvVRyri9OnyBv01tORUV-6" connectable="0" parent="qvVRyri9OnyBv01tORUV-1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="&amp;lt;&amp;lt;include&amp;gt;&amp;gt;" vertex="1">
+          <mxGeometry relative="1" x="-0.1964" y="-1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="uc3" parent="sys" style="ellipse;whiteSpace=wrap;html=1;" value="Làm hoạt động đời sống" vertex="1">
+          <mxGeometry height="60" width="190" x="260" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="uc4" parent="sys" style="ellipse;whiteSpace=wrap;html=1;" value="Tăng bond" vertex="1">
+          <mxGeometry height="60" width="150" x="560" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="uc6" parent="sys" style="ellipse;whiteSpace=wrap;html=1;" value="Vào trận" vertex="1">
+          <mxGeometry height="60" width="150" x="470" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="uc7" parent="sys" style="ellipse;whiteSpace=wrap;html=1;" value="Suy nghĩ trong planning" vertex="1">
+          <mxGeometry height="60" width="190" x="440" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="ucFoot" parent="sys" style="ellipse;whiteSpace=wrap;html=1;" value="Kiểm tra footprint" vertex="1">
+          <mxGeometry height="60" width="170" x="710" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="uc8" parent="sys" style="ellipse;whiteSpace=wrap;html=1;" value="Chạy một phase" vertex="1">
+          <mxGeometry height="60" width="170" x="390" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="uc9" parent="sys" style="ellipse;whiteSpace=wrap;html=1;" value="Đỡ đúng lúc" vertex="1">
+          <mxGeometry height="60" width="150" x="570" y="270" as="geometry" />
+        </mxCell>
+        <mxCell id="uc10" parent="sys" style="ellipse;whiteSpace=wrap;html=1;" value="Kết thúc trận hoặc ngày" vertex="1">
+          <mxGeometry height="60" width="200" x="390" y="620" as="geometry" />
+        </mxCell>
+        <mxCell id="eInc" edge="1" parent="sys" source="uc7" style="endArrow=open;dashed=1;html=1;fontSize=11;" target="ucFoot" value="«include»">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eExt" edge="1" parent="sys" source="uc9" style="endArrow=open;dashed=1;html=1;fontSize=11;" target="uc8" value="«extend»">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="uc5" parent="sys" style="ellipse;whiteSpace=wrap;html=1;" value="Đi node trên map" vertex="1">
+          <mxGeometry height="60" width="170" x="60" y="200" as="geometry" />
+        </mxCell>
+        <mxCell id="qvVRyri9OnyBv01tORUV-3" edge="1" parent="1" source="aPlayer" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="aPlayer" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" value="Người chơi" vertex="1">
+          <mxGeometry height="80" width="40" x="40" y="380" as="geometry" />
+        </mxCell>
+        <mxCell id="aMusic" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" value="Timeline Beat" vertex="1">
+          <mxGeometry height="80" width="40" x="1270" y="380" as="geometry" />
+        </mxCell>
+        <mxCell id="p1" edge="1" parent="1" source="aPlayer" style="endArrow=none;html=1;" target="uc1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p3" edge="1" parent="1" source="aPlayer" style="endArrow=none;html=1;" target="uc5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p4" edge="1" parent="1" source="aPlayer" style="endArrow=none;html=1;" target="uc7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p5" edge="1" parent="1" source="aPlayer" style="endArrow=none;html=1;" target="uc8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p6" edge="1" parent="1" source="aPlayer" style="endArrow=none;html=1;" target="uc9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p7" edge="1" parent="1" source="aPlayer" style="endArrow=none;html=1;" target="uc10">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p8" edge="1" parent="1" source="aMusic" style="endArrow=none;html=1;" target="uc8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
