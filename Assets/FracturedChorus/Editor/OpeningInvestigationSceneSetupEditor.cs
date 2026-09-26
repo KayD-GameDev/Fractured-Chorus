@@ -66,10 +66,18 @@ namespace FracturedChorus.Editor
             "Assets/FracturedChorus/Art/Backgrounds/hima_ceremony_desync_v1.png";
         private const string CadenceFracturePullBgPath =
             "Assets/FracturedChorus/Art/Backgrounds/cadence_fracture_pull_v1.png";
+        private const string CgDesyncDetectBgPath =
+            "Assets/FracturedChorus/Art/Backgrounds/cg_desync_detect_v1.jpg";
+        private const string CgResonanceDiveBgPath =
+            "Assets/FracturedChorus/Art/Backgrounds/cg_resonance_dive_v1.jpg";
+        private const string CadenceFirstLookBgPath =
+            "Assets/FracturedChorus/Art/Backgrounds/bg_cadence_first_look_v1.jpg";
         private const string RainPath = "Assets/FracturedChorus/Audio/SFX/Ambience_Rain_Loop.mp3";
         private const string FootStepPath = "Assets/FracturedChorus/Audio/SFX/Foot_Step.mp3";
         private const string BringMeHomePath = "Assets/FracturedChorus/Audio/Music/Bring_Me_Home.mp3";
         private const string EternalSparkPath = "Assets/FracturedChorus/Audio/Music/EternalSpark.mp3";
+        private const string InvestigationPath = "Assets/FracturedChorus/Audio/Music/Investigation.mp3";
+        private const string BumpPath = "Assets/FracturedChorus/Audio/SFX/Bump.mp3";
         private const string TownMapUiRoot = "Assets/FracturedChorus/Art/UI/TownMap/";
 
         [MenuItem("Fractured Chorus/Narrative/Populate Opening Investigation Script")]
@@ -170,13 +178,18 @@ namespace FracturedChorus.Editor
             var ceremonyHall = LoadSprite(HimaCeremonyHallBgPath);
             var ceremonyDesync = LoadSprite(HimaCeremonyDesyncBgPath);
             var cadencePull = LoadSprite(CadenceFracturePullBgPath);
+            var desyncDetect = LoadSprite(CgDesyncDetectBgPath);
+            var resonanceDive = LoadSprite(CgResonanceDiveBgPath);
+            var cadenceFirstLook = LoadSprite(CadenceFirstLookBgPath);
             var rain = AssetDatabase.LoadAssetAtPath<AudioClip>(RainPath);
             var footsteps = AssetDatabase.LoadAssetAtPath<AudioClip>(FootStepPath);
             var bringMeHome = AssetDatabase.LoadAssetAtPath<AudioClip>(BringMeHomePath);
             var eternalSpark = AssetDatabase.LoadAssetAtPath<AudioClip>(EternalSparkPath);
+            var investigation = AssetDatabase.LoadAssetAtPath<AudioClip>(InvestigationPath);
+            var bump = AssetDatabase.LoadAssetAtPath<AudioClip>(BumpPath);
             var so = new SerializedObject(cueResolver);
             var entries = so.FindProperty("entries");
-            entries.arraySize = 27;
+            entries.arraySize = 32;
             SetCueEntry(entries.GetArrayElementAtIndex(0), VnBgIds.LuminaStreetNight, street, null);
             SetCueEntry(entries.GetArrayElementAtIndex(1), VnBgIds.LuminaAlleyNight, alley, null);
             SetCueEntry(entries.GetArrayElementAtIndex(2), VnBgIds.LuminaAlleyHarutoBody, harutoBody, null);
@@ -204,6 +217,11 @@ namespace FracturedChorus.Editor
             SetCueEntry(entries.GetArrayElementAtIndex(24), VnBgIds.HimaCeremonyHall, ceremonyHall, null);
             SetCueEntry(entries.GetArrayElementAtIndex(25), VnBgIds.HimaCeremonyDesync, ceremonyDesync, null);
             SetCueEntry(entries.GetArrayElementAtIndex(26), VnBgIds.CadenceFracturePull, cadencePull, null);
+            SetCueEntry(entries.GetArrayElementAtIndex(27), VnBgIds.CgDesyncDetect, desyncDetect, null);
+            SetCueEntry(entries.GetArrayElementAtIndex(28), VnBgIds.CgResonanceDive, resonanceDive, null);
+            SetCueEntry(entries.GetArrayElementAtIndex(29), VnBgIds.CadenceFirstLook, cadenceFirstLook, null);
+            SetCueEntry(entries.GetArrayElementAtIndex(30), VnAudioIds.Investigation, null, investigation);
+            SetCueEntry(entries.GetArrayElementAtIndex(31), VnAudioIds.Bump, null, bump);
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(cueResolver);
         }

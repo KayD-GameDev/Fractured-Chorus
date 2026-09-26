@@ -56,7 +56,10 @@ namespace FracturedChorus.Hub
 
                 _phaseDriver.BeginCurrentPhase();
                 townMapView?.FulfillPendingStatusMenuReturn(GameMetaSession.Current);
-                TutorialDirector.Ensure().StartHubTrack();
+                if (!HimaEnrollmentGate.IsActive(GameMetaSession.Current))
+                {
+                    TutorialDirector.Ensure().StartHubTrack();
+                }
                 CampusBgmPlayer.Play();
                 var canvas = Object.FindAnyObjectByType<Canvas>();
                 if (canvas != null)

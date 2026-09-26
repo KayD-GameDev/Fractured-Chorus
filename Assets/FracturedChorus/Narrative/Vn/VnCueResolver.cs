@@ -24,14 +24,21 @@ namespace FracturedChorus.Narrative.Vn
             }
 
             var entry = Find(id);
-            if (entry == null || entry.sprite == null)
+            if (entry != null && entry.sprite != null)
             {
-                Debug.LogError($"[VnCueResolver] Missing sprite cue id '{id}'.");
-                return false;
+                sprite = entry.sprite;
+                return true;
             }
 
-            sprite = entry.sprite;
-            return true;
+            var fallback = Resources.Load<Sprite>("VN/Backgrounds/" + id);
+            if (fallback != null)
+            {
+                sprite = fallback;
+                return true;
+            }
+
+            Debug.LogError($"[VnCueResolver] Missing sprite cue id '{id}'.");
+            return false;
         }
 
         public bool TryGetClip(string id, out AudioClip clip)
@@ -43,14 +50,21 @@ namespace FracturedChorus.Narrative.Vn
             }
 
             var entry = Find(id);
-            if (entry == null || entry.clip == null)
+            if (entry != null && entry.clip != null)
             {
-                Debug.LogError($"[VnCueResolver] Missing audio cue id '{id}'.");
-                return false;
+                clip = entry.clip;
+                return true;
             }
 
-            clip = entry.clip;
-            return true;
+            var fallback = Resources.Load<AudioClip>("VN/Audio/" + id);
+            if (fallback != null)
+            {
+                clip = fallback;
+                return true;
+            }
+
+            Debug.LogError($"[VnCueResolver] Missing audio cue id '{id}'.");
+            return false;
         }
 
         private VnCueEntry Find(string id)

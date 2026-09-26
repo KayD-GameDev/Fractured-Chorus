@@ -54,6 +54,14 @@ namespace FracturedChorus.Hub
             SetSelected(false);
         }
 
+        public void SetLabel(string label)
+        {
+            if (labelText != null)
+            {
+                labelText.text = label ?? string.Empty;
+            }
+        }
+
         public void SetSelected(bool selected)
         {
             _selected = selected;

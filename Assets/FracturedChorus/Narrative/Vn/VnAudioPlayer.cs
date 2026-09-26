@@ -109,6 +109,12 @@ namespace FracturedChorus.Narrative.Vn
                 return;
             }
 
+            if (cueId == VnAudioIds.StopSfx)
+            {
+                StopSfx();
+                return;
+            }
+
             EnsureSources();
             if (cueResolver == null || !cueResolver.TryGetClip(cueId, out var clip))
             {
@@ -116,6 +122,14 @@ namespace FracturedChorus.Narrative.Vn
             }
 
             sfxSource.PlayOneShot(clip);
+        }
+
+        public void StopSfx()
+        {
+            if (sfxSource != null)
+            {
+                sfxSource.Stop();
+            }
         }
 
         private void EnsureSources()

@@ -5,6 +5,7 @@ using FracturedChorus.Audio;
 using FracturedChorus.Combat.Core;
 using FracturedChorus.Combat.Units;
 using FracturedChorus.Data;
+using FracturedChorus.Tutorial;
 using UnityEngine;
 using UnityEngine.UI;
 using FracturedChorus.UI;
@@ -153,6 +154,11 @@ namespace FracturedChorus.UI
             }
 
             if (_isTimelinePlaybackActive != null && _isTimelinePlaybackActive())
+            {
+                return false;
+            }
+
+            if (!TutorialInteractionGate.AllowsUnitSkillPanelOpen)
             {
                 return false;
             }
@@ -434,6 +440,16 @@ namespace FracturedChorus.UI
 
         public bool EndSkillDrag(SkillDefinitionSO skill, Vector2 screenPos)
         {
+            if (!TutorialInteractionGate.AllowsSkillTimelineDrop)
+            {
+                DestroyDragGhost();
+                _draggingSkill = null;
+                _keyboardDragActive = false;
+                SetDismissBackdropRaycast(true);
+                _onSkillDragEnd?.Invoke();
+                return false;
+            }
+
             DestroyDragGhost();
             _draggingSkill = null;
             _keyboardDragActive = false;

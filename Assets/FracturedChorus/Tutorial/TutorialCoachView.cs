@@ -23,6 +23,7 @@ namespace FracturedChorus.Tutorial
         [Tooltip("Bật: không ghi đè RectTransform Panel/Body khi Show (chỉnh tay Hierarchy rồi Ctrl+S).")]
         [SerializeField] private bool preserveSceneLayout = true;
         [SerializeField] [Range(0f, 1f)] private float slideshowDimmerAlpha = 0.12f;
+        [SerializeField] private Sprite defaultCoachPortrait;
 
         private Action _onNext;
         private Action _onBack;
@@ -132,7 +133,7 @@ namespace FracturedChorus.Tutorial
             SetVisible(true);
         }
 
-        public void ShowFloatingHint(string bodyCopy)
+        public void ShowFloatingHint(string bodyCopy, Sprite portrait = null)
         {
             EnsureBuilt();
             EnsureSlideshowControls();
@@ -142,14 +143,11 @@ namespace FracturedChorus.Tutorial
             _onNext = null;
 
             SetPanelVisible(true);
-            ApplyContent(bodyCopy, null, null, null);
+            var bust = portrait ?? defaultCoachPortrait ?? TutorialCadenceTrackLibrary.LoadCodaPortrait();
+            ApplyContent(bodyCopy, bust, null, null);
             ApplyDimmer(0f);
             SetBackVisible(false);
             SetPrimaryVisible(false);
-            if (coachPortrait != null)
-            {
-                coachPortrait.enabled = false;
-            }
 
             if (panelImage != null)
             {
@@ -237,7 +235,8 @@ namespace FracturedChorus.Tutorial
                 bodyLabel.text = bodyCopy ?? string.Empty;
             }
 
-            ApplySprite(coachPortrait, portrait, preserveAspect: true);
+            var bust = portrait ?? defaultCoachPortrait ?? TutorialCadenceTrackLibrary.LoadCodaPortrait();
+            ApplySprite(coachPortrait, bust, preserveAspect: true);
             ApplySprite(panelImage, panel, preserveAspect: true);
 
             if (progressLabel != null)

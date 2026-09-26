@@ -129,7 +129,7 @@ namespace FracturedChorus.Narrative.Vn
                 typewriter?.BindTypingClip(typingClip);
             }
 
-            if (playOnStart)
+            if (playOnStart && ApplySceneScript())
             {
                 Begin();
             }
@@ -201,6 +201,41 @@ namespace FracturedChorus.Narrative.Vn
 
             _waitingAdvance = false;
             Advance();
+        }
+
+        private bool ApplySceneScript()
+        {
+            if (gameObject.scene.name != RunMapSceneCatalog.OpeningInvestigation)
+            {
+                return true;
+            }
+
+            BeatInterceptor = CadenceIntroFlow.TryIntercept;
+            if (CadenceIntroFlow.ShouldResumeTutorial())
+            {
+                CadenceIntroFlow.LaunchTutorial();
+                return false;
+            }
+
+            if (CadenceIntroFlow.TryTakeEscapeScript(out var escape))
+            {
+                SetScript(escape);
+                beginHubOnEnd = false;
+                CadenceIntroCast.Install();
+                return true;
+            }
+
+            if (HimaEnrollmentLaunch.TryConsume(out var enrollment))
+            {
+                SetScript(enrollment);
+                beginHubOnEnd = false;
+                CadenceIntroCast.Install();
+                return true;
+            }
+
+            VnRuntimeSpeakers.Clear();
+            SetScript(OpeningInvestigationScriptBuilder.CreateRuntimeInstance());
+            return true;
         }
 
         public void Begin()
@@ -322,6 +357,21 @@ namespace FracturedChorus.Narrative.Vn
             return IsDramaticBackground(_currentBgId) || IsDramaticBackground(beat.bgId);
         }
 
+        private bool ShouldHidePortraitsForBeat(VnBeat beat)
+        {
+            var bgId = beat != null && !string.IsNullOrWhiteSpace(beat.bgId) ? beat.bgId : _currentBgId;
+            return !string.IsNullOrEmpty(bgId) && IsCadenceFallBackground(bgId);
+        }
+
+        private static bool IsCadenceFallBackground(string bgId)
+        {
+            return bgId == VnBgIds.HimaCeremonyDesync
+                || bgId == VnBgIds.CgDesyncDetect
+                || bgId == VnBgIds.CgResonanceDive
+                || bgId == VnBgIds.CadenceFracturePull
+                || bgId == VnBgIds.CadenceFirstLook;
+        }
+
         private static bool IsDramaticBackground(string bgId)
         {
             return bgId == VnBgIds.Black
@@ -331,7 +381,10 @@ namespace FracturedChorus.Narrative.Vn
                 || bgId == VnBgIds.LuminaSquareNight
                 || bgId == VnBgIds.HimaCeremonyDesync
                 || bgId == VnBgIds.CadenceFracturePull
-                || bgId == VnBgIds.CgHallwayBump;
+                || bgId == VnBgIds.CgHallwayBump
+                || bgId == VnBgIds.CgDesyncDetect
+                || bgId == VnBgIds.CgResonanceDive
+                || bgId == VnBgIds.CadenceFirstLook;
         }
 
         private IEnumerator PlayBeatWithBgCrossfade(VnBeat beat)
@@ -494,7 +547,14 @@ namespace FracturedChorus.Narrative.Vn
                     nameplateText.text = string.Empty;
                 }
 
-                portraitView?.DimAll();
+                if (ShouldHidePortraitsForBeat(beat))
+                {
+                    portraitView?.Hide();
+                }
+                else
+                {
+                    portraitView?.DimAll();
+                }
             }
             else if (speakerCatalog != null && speakerCatalog.TryGet(beat.speakerId, out var speaker))
             {
@@ -802,6 +862,11 @@ namespace FracturedChorus.Narrative.Vn
 
                 _currentBgId = beat.bgId;
                 ApplyAmbienceForBackground(beat.bgId);
+                if (IsCadenceFallBackground(beat.bgId)
+                    && (beat.kind == VnBeatKind.Narration || string.IsNullOrWhiteSpace(beat.speakerId)))
+                {
+                    portraitView?.Hide();
+                }
             }
 
             if (!string.IsNullOrWhiteSpace(beat.bgmId))
@@ -969,7 +1034,10 @@ namespace FracturedChorus.Narrative.Vn
                 || bgId == VnBgIds.HimaClassroomDay
                 || bgId == VnBgIds.HimaCeremonyHall
                 || bgId == VnBgIds.HimaCeremonyDesync
-                || bgId == VnBgIds.CadenceFracturePull)
+                || bgId == VnBgIds.CadenceFracturePull
+                || bgId == VnBgIds.CgDesyncDetect
+                || bgId == VnBgIds.CgResonanceDive
+                || bgId == VnBgIds.CadenceFirstLook)
             {
                 audioPlayer?.StopAmbience();
             }
@@ -997,12 +1065,26 @@ namespace FracturedChorus.Narrative.Vn
             audioPlayer?.StopBgm();
             audioPlayer?.StopAmbience();
 
+            var enRoute = EndSets(endBeat, StoryFlagIds.RenEnRouteHima);
+            var enrollmentDone = EndSets(endBeat, StoryFlagIds.HimaEnrollmentDone);
             if (beginHubOnEnd)
             {
-                GameMetaSession.BeginHubAfterOpening();
+                if (enRoute)
+                {
+                    GameMetaSession.BeginHubEnRouteToHima();
+                }
+                else
+                {
+                    GameMetaSession.BeginHubAfterOpening();
+                }
             }
 
             ApplyFlags(endBeat?.setFlags);
+            if (enRoute || enrollmentDone)
+            {
+                GameMetaSession.RememberEntryScene(RunMapSceneCatalog.CampusHub);
+            }
+
             Finished?.Invoke();
 
             if (!loadNextSceneOnEnd)
@@ -1020,6 +1102,25 @@ namespace FracturedChorus.Narrative.Vn
             {
                 Debug.LogError($"[VnRuntime] Failed to load next scene '{next}'.");
             }
+        }
+
+        private static bool EndSets(VnBeat beat, string flagId)
+        {
+            var flags = beat?.setFlags;
+            if (flags == null || string.IsNullOrEmpty(flagId))
+            {
+                return false;
+            }
+
+            for (var i = 0; i < flags.Length; i++)
+            {
+                if (flags[i] == flagId)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static void ApplyFlags(string[] flags)
