@@ -77,6 +77,37 @@ namespace FracturedChorus.Meta
             GameMetaSaveLoad.TrySave(s_state, s_activeSlotIndex);
         }
 
+        public static GameMetaState CreateEnRouteToHima()
+        {
+            var state = GameMetaState.CreateNew();
+            state.Flags.SetBool(StoryFlagIds.ContractSigned, true);
+            state.Flags.SetBool(StoryFlagIds.OpeningInvestigationDone, true);
+            state.Flags.SetBool(StoryFlagIds.RenEnRouteHima, true);
+            state.Calendar.ResetForNewDay(new GameDate(9, 2));
+            state.Calendar.SkipMorningForForcedDay();
+            state.LastSceneName = "CampusHub";
+            return state;
+        }
+
+        public static void BeginHubEnRouteToHima()
+        {
+            SetState(CreateEnRouteToHima());
+            s_state.Difficulty = ResolveDefaultDifficulty();
+            GameMetaSaveLoad.TrySave(s_state, s_activeSlotIndex);
+        }
+
+        public static void RememberEntryScene(string sceneName)
+        {
+            if (s_state == null || string.IsNullOrWhiteSpace(sceneName))
+            {
+                return;
+            }
+
+            FlushLiveState();
+            s_state.LastSceneName = sceneName;
+            GameMetaSaveLoad.TrySave(s_state, s_activeSlotIndex);
+        }
+
         public static void Load()
         {
             LoadSlot(s_activeSlotIndex);

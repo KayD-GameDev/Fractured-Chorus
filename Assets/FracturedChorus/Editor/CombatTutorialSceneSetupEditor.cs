@@ -52,6 +52,8 @@ namespace FracturedChorus.Editor
             ApplyTutorialAuthoringDefaults();
             StripLegacyTutorialLayers();
             RestoreCombatTutorialVisuals();
+            CombatQteOverlaySetupEditor.SetupQteOverlay();
+            TutorialCadenceTrackSetupEditor.EnsureTutorialDirectorInCombatTutorialScene();
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
             EnsureInBuildSettings();
@@ -76,6 +78,8 @@ namespace FracturedChorus.Editor
 
             var scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
             RestoreCombatTutorialVisuals();
+            CombatQteOverlaySetupEditor.SetupQteOverlay();
+            TutorialCadenceTrackSetupEditor.EnsureTutorialDirectorInCombatTutorialScene();
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
             SceneView.RepaintAll();
@@ -202,13 +206,15 @@ namespace FracturedChorus.Editor
                 var key = view.DemoUnitKey?.ToLowerInvariant() ?? string.Empty;
                 var name = view.gameObject.name.ToLowerInvariant();
                 var isKiki = name.Contains("kiki") || key.Contains("kiki");
-                var isParty = view.Side == GridSide.Player
-                              || key.Contains("ren")
-                              || key.Contains("coda")
-                              || key.Contains("mage")
-                              || name.Contains("ren")
-                              || name.Contains("mage");
-                var hide = name.Contains("boss") || name.Contains("tank") || name.Contains("grunt");
+                var isCharlotte = key.Contains("charl") || name.Contains("charlott") || name.Contains("charlotte");
+                var isParty = !isCharlotte
+                              && (view.Side == GridSide.Player
+                                  || key.Contains("ren")
+                                  || key.Contains("coda")
+                                  || key.Contains("mage")
+                                  || name.Contains("ren")
+                                  || name.Contains("mage"));
+                var hide = name.Contains("boss") || name.Contains("grunt") || name.Contains("tank") || isCharlotte;
                 var keep = (isParty || isKiki) && !hide;
                 if (isKiki)
                 {
@@ -305,6 +311,8 @@ namespace FracturedChorus.Editor
 
                 EditorUtility.SetDirty(coach.gameObject);
             }
+
+            RefreshBootstrapUnitViews();
         }
 
         private static void StripLegacyTutorialLayers()
@@ -491,12 +499,25 @@ namespace FracturedChorus.Editor
                     continue;
                 }
 
-                if (key.Contains("tank") || key.Contains("charlotte") || key.Contains("charlott")
+                if (IsCharlotteUnitView(view)
+                    || key.Contains("tank") || key.Contains("charlotte") || key.Contains("charlott")
                     || unitId.Contains("tank") || unitId.Contains("charlotte"))
                 {
                     Undo.DestroyObjectImmediate(view.gameObject);
                 }
             }
+        }
+
+        private static bool IsCharlotteUnitView(UnitView view)
+        {
+            if (view == null)
+            {
+                return false;
+            }
+
+            var key = view.DemoUnitKey?.ToLowerInvariant() ?? string.Empty;
+            var name = view.gameObject.name.ToLowerInvariant();
+            return key.Contains("charl") || name.Contains("charlott") || name.Contains("charlotte");
         }
 
         private static void RefreshBootstrapUnitViews()

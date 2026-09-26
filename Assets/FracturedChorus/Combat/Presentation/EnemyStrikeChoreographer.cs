@@ -1015,12 +1015,6 @@ namespace FracturedChorus.Combat.Presentation
                 }
             }
 
-            if (bodyEntry?.Skill == null
-                || bodyEntry.Skill.slotKind is not (SkillSlotKind.Skill or SkillSlotKind.Ultimate))
-            {
-                attackerView.PlayBeCounteredHold();
-            }
-
             var mid = ResolveMidStaging(attackerView);
             var knockback = StartCoroutine(
                 attackerView.MoveFeetToRoutine(
@@ -1043,6 +1037,12 @@ namespace FracturedChorus.Combat.Presentation
             if (skillImpactDelay > 0f)
             {
                 yield return new WaitForSeconds(skillImpactDelay);
+            }
+
+            if (bodyEntry?.Skill == null
+                || bodyEntry.Skill.slotKind is not (SkillSlotKind.Skill or SkillSlotKind.Ultimate))
+            {
+                attackerView.PlayBeCounteredHold();
             }
 
             FlushHpFeedback(report.Attacker);
@@ -1075,7 +1075,6 @@ namespace FracturedChorus.Combat.Presentation
         {
             yield return CharlotteCounterShieldView.DismissAllAndWait();
             bodyView.PlayCounterHold();
-            attackerView.PlayBeCounteredHold();
 
             var mid = ResolveMidStaging(attackerView);
             yield return attackerView.MoveFeetToRoutine(
@@ -1087,7 +1086,11 @@ namespace FracturedChorus.Combat.Presentation
                     bodyView,
                     attackerView,
                     bodyEntry.Skill,
-                    () => FlushHpFeedback(report.Attacker),
+                    () =>
+                    {
+                        attackerView.PlayBeCounteredHold();
+                        FlushHpFeedback(report.Attacker);
+                    },
                     out var engageRoutine)
                 && engageRoutine != null)
             {
@@ -1104,6 +1107,7 @@ namespace FracturedChorus.Combat.Presentation
                 }
 
                 FindAnyObjectByType<CombatSfxController>()?.PlaySkillSfxImmediate(bodyEntry.Skill);
+                attackerView.PlayBeCounteredHold();
                 FlushHpFeedback(report.Attacker);
                 var tail = Mathf.Max(impactHoldSeconds, clipLength * (1f - skillImpactNormalizedTime));
                 if (tail > 0f)

@@ -51,6 +51,9 @@ namespace FracturedChorus.Narrative.Vn
         public const string HimaCeremonyHall = "hima_ceremony_hall";
         public const string HimaCeremonyDesync = "hima_ceremony_desync";
         public const string CadenceFracturePull = "cadence_fracture_pull";
+        public const string CgDesyncDetect = "cg_desync_detect";
+        public const string CgResonanceDive = "cg_resonance_dive";
+        public const string CadenceFirstLook = "bg_cadence_first_look";
         public const string FlowerShop = "flower_shop";
         public const string FlowerArrive = "flower_arrive";
         public const string FlowerCustomer = "flower_customer";

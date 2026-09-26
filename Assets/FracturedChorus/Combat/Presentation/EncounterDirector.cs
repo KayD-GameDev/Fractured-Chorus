@@ -706,7 +706,6 @@ namespace FracturedChorus.Combat.Presentation
             if (countered)
             {
                 playerView.PlayCounterHold();
-                enemyView.PlayBeCounteredHold();
                 CharlotteCounterShieldView.TrySpawnFor(
                     playerView,
                     enemyView.FeetWorldPosition,
@@ -907,11 +906,6 @@ namespace FracturedChorus.Combat.Presentation
 
             if (playPlayerAttack)
             {
-                if (countered && !IsUltimateSkill(playerSkill))
-                {
-                    enemyView.PlayBeCounteredHold();
-                }
-
                 if (playerSkill != null && !IsOwnedShotSkill(playerSkill))
                 {
                     if (IsSkillOrUltimate(playerSkill))
@@ -939,12 +933,12 @@ namespace FracturedChorus.Combat.Presentation
                             }
 
                             resolveFired = true;
-                            ResolveImpactHp(beatIndex, playerView, enemyView, playerSkill);
+                            ResolveImpactHp(beatIndex, playerView, enemyView, playerSkill, playHitReaction: true);
                         });
 
                     if (!resolveFired)
                     {
-                        ResolveImpactHp(beatIndex, playerView, enemyView, playerSkill);
+                        ResolveImpactHp(beatIndex, playerView, enemyView, playerSkill, playHitReaction: true);
                     }
 
                     yield break;
@@ -958,7 +952,7 @@ namespace FracturedChorus.Combat.Presentation
                     yield return new WaitForSeconds(impactAt);
                 }
 
-                ResolveAndShowHp(beatIndex, playerView, enemyView);
+                ResolveAndShowHp(beatIndex, playerView, enemyView, playHitReaction: true);
                 var tail = wait - impactAt;
                 if (tail > 0f)
                 {
@@ -996,12 +990,12 @@ namespace FracturedChorus.Combat.Presentation
                     }
 
                     resolveFired = true;
-                    ResolveAndShowHp(beatIndex, playerView, enemyView);
+                    ResolveAndShowHp(beatIndex, playerView, enemyView, playHitReaction: true);
                 });
 
             if (!resolveFired)
             {
-                ResolveAndShowHp(beatIndex, playerView, enemyView);
+                ResolveAndShowHp(beatIndex, playerView, enemyView, playHitReaction: true);
             }
         }
 
@@ -1032,12 +1026,12 @@ namespace FracturedChorus.Combat.Presentation
                     }
 
                     resolved = true;
-                    ResolveAndShowHp(beatIndex, playerView, enemyView, playHitReaction: true);
+                    ResolveAndShowHp(beatIndex, playerView, enemyView);
                 });
 
             if (!resolved)
             {
-                ResolveAndShowHp(beatIndex, playerView, enemyView, playHitReaction: true);
+                ResolveAndShowHp(beatIndex, playerView, enemyView);
             }
         }
 
@@ -1152,23 +1146,41 @@ namespace FracturedChorus.Combat.Presentation
             SkillDefinitionSO skill,
             bool playHitReaction = false)
         {
-            Action show = () => ResolveAndShowHp(beatIndex, playerView, enemyView, playHitReaction);
-            if (IsUltimateSkill(skill) && TryQueueArmedVictimHit(show))
+            if (IsUltimateSkill(skill)
+                && TryQueueArmedVictimHit(() => ResolveAndShowHp(beatIndex, playerView, enemyView)))
             {
                 return;
             }
 
-            show();
+            ResolveAndShowHp(beatIndex, playerView, enemyView, playHitReaction);
         }
 
         private void ResolveAndShowHp(int beatIndex, UnitView playerView, UnitView enemyView, bool playHitReaction = false)
         {
-            _ = playHitReaction;
             ResolveBeatWithPresentationPair(
                 beatIndex,
                 playerView != null ? playerView.Unit : null,
                 enemyView != null ? enemyView.Unit : null);
-            // HP popups spawn from CombatController.OnUnitHpChanged during this resolve.
+            if (playHitReaction)
+            {
+                PlayImpactReaction(enemyView);
+            }
+        }
+
+        private static void PlayImpactReaction(UnitView view)
+        {
+            if (view == null)
+            {
+                return;
+            }
+
+            if (view.Unit != null && !view.Unit.IsAlive)
+            {
+                view.PlayDeathAnimation();
+                return;
+            }
+
+            view.PlayBeCounteredHold();
         }
 
         private void ResolveBeatWithPresentationPair(int beatIndex, CombatUnit player, CombatUnit enemy)

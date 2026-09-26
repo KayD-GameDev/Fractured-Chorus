@@ -21,6 +21,7 @@ namespace FracturedChorus.Narrative.Vn
         public VnExpressionSprite[] expressionSprites;
         public Color shadowColor = new Color(0.05f, 0.12f, 0.35f, 0.92f);
         public Vector2 shadowOffsetPixels = new Vector2(-18f, 14f);
+        public float portraitScale = 1f;
         public bool facesRight;
 
         public Sprite ResolveBust(string expressionId)

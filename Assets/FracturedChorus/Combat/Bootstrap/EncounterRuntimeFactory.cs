@@ -71,9 +71,22 @@ namespace FracturedChorus.Combat.Bootstrap
 
         public static EncounterUnitSpawn[] CreateTutorialPartySpawns() => new[]
         {
-            CreateSpawn(GetPresetByKey("ren"), GridSide.Player, 2, 2),
-            CreateSpawn(GetPresetByKey("mage"), GridSide.Player, 2, 3)
+            CreateSpawn(NamedCopy("ren", "Ren"), GridSide.Player, 2, 2),
+            CreateSpawn(NamedCopy("mage", "Coda"), GridSide.Player, 2, 3)
         };
+
+        private static UnitPresetSO NamedCopy(string key, string displayName)
+        {
+            var source = GetPresetByKey(key);
+            if (source == null)
+            {
+                return null;
+            }
+
+            var copy = Object.Instantiate(source);
+            copy.displayName = displayName;
+            return copy;
+        }
 
         public static EncounterUnitSpawn[] CreateBattleEnemySpawns() =>
             CreatePooledBattleEnemySpawns(null);

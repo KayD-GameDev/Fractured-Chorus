@@ -6,6 +6,9 @@ namespace FracturedChorus.Meta
         public const string ContractSigned = "contract_signed";
         public const string OpeningInvestigationDone = "opening_investigation_done";
         public const string RenArrivedHima = "ren_arrived_hima";
+        public const string RenEnRouteHima = "ren_en_route_hima";
+        public const string HimaEnrollmentDone = "hima_enrollment_done";
+        public const string CadenceTutorialPending = "cadence_tutorial_pending";
         public const string AstraMet = "astra_met";
         public const string HimaTourDone = "hima_tour_done";
         public const string OpeningCeremony = "opening_ceremony";

@@ -2,6 +2,7 @@ using System.Collections;
 using FracturedChorus.Combat.Core;
 using FracturedChorus.Combat.Presentation;
 using FracturedChorus.Combat.Timeline;
+using FracturedChorus.Tutorial;
 using FracturedChorus.UI;
 using UnityEngine;
 #if ENABLE_INPUT_SYSTEM
@@ -64,6 +65,7 @@ namespace FracturedChorus.Combat.Qte
         public IEnumerator TryRunIfCounterBeat(CombatSession session, int beatIndex)
         {
             CombatQteModifiers.Clear();
+            EnsureProfile();
             if (profile == null)
             {
                 Debug.LogWarning("[QTE] Missing CombatQteProfileSO — skip.");
@@ -83,7 +85,14 @@ namespace FracturedChorus.Combat.Qte
 
             var phaseIndex = TimelineConstants.GetPhaseIndex(beatIndex);
             var chance = profile.GetChance(phaseIndex, defaultChance);
-            if (Random.value > chance)
+            if (TutorialQtePolicy.TryDecide(phaseIndex, chance, out var runTutorialQte))
+            {
+                if (!runTutorialQte)
+                {
+                    yield break;
+                }
+            }
+            else if (Random.value > chance)
             {
                 yield break;
             }
@@ -101,6 +110,13 @@ namespace FracturedChorus.Combat.Qte
             }
 
             overlay.ShowPrompt(profile);
+            TutorialQtePolicy.NotifyIntroShown();
+            TutorialDirector.NotifyQtePromptVisible();
+            while (TutorialDirector.IsQteExplainPauseActive)
+            {
+                yield return null;
+            }
+
             var grade = CombatQteGrade.Miss;
             yield return RunPrompt(resolved => grade = resolved);
 
@@ -118,6 +134,8 @@ namespace FracturedChorus.Combat.Qte
             {
                 overlay.Hide();
             }
+
+            TutorialCombatHooks.NotifyQteResolved(grade);
 
             Debug.Log(
                 $"[QTE] {grade} @ beat {beatIndex} phase {phaseIndex + 1} " +
@@ -163,6 +181,23 @@ namespace FracturedChorus.Combat.Qte
             }
 
             onResolved(CombatQteGrade.Miss);
+        }
+
+        private void EnsureProfile()
+        {
+            if (profile != null)
+            {
+                return;
+            }
+
+            profile = Resources.Load<CombatQteProfileSO>("UI/Combat/CombatQteProfile");
+#if UNITY_EDITOR
+            if (profile == null)
+            {
+                profile = UnityEditor.AssetDatabase.LoadAssetAtPath<CombatQteProfileSO>(
+                    "Assets/FracturedChorus/Data/ScriptableObjects/CombatQteProfile.asset");
+            }
+#endif
         }
 
         private void EnsureOverlay()

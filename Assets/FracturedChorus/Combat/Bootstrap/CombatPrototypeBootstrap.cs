@@ -11,6 +11,7 @@ using FracturedChorus.Combat.Units;
 using FracturedChorus.Data;
 using FracturedChorus.Meta;
 using FracturedChorus.RunMap;
+using FracturedChorus.Tutorial;
 using FracturedChorus.UI;
 using UnityEngine.Serialization;
 using System.Collections.Generic;
@@ -122,7 +123,7 @@ namespace FracturedChorus.Combat.Bootstrap
                                     && CombatPoolRoll.IsPooledEncounterId(encounterId);
             var isBossEncounter = encounterId == EncounterCatalog.BossDespair;
 
-            if (isPooledEncounter)
+            if (isPooledEncounter || isTutorial)
             {
                 CombatTimelineProfile.ApplyRun();
             }
@@ -133,6 +134,7 @@ namespace FracturedChorus.Combat.Bootstrap
 
             if (isTutorial)
             {
+                TutorialQtePolicy.Begin();
                 ApplyTutorialUnitVisibility();
                 if (respectSceneVisuals)
                 {
@@ -142,6 +144,10 @@ namespace FracturedChorus.Combat.Bootstrap
                 {
                     ApplyTutorialBackground();
                 }
+            }
+            else
+            {
+                TutorialQtePolicy.End();
             }
 
             if (HasSceneUnits())
@@ -156,6 +162,11 @@ namespace FracturedChorus.Combat.Bootstrap
                 else
                 {
                     RegisterSceneUnits(isTutorial);
+                    if (isTutorial)
+                    {
+                        DisableTutorialCharlottePartyUnits();
+                    }
+
                     if (handoffEncounter != null && !respectSceneVisuals)
                     {
                         ApplyHandoffToSceneEnemies(handoffEncounter);
@@ -202,25 +213,33 @@ namespace FracturedChorus.Combat.Bootstrap
 
             combatController.SetActiveEncounter(encounterId);
 
-            if (isPooledEncounter)
-            {
-                AstraStageTvView.HideIfPresent();
-            }
-            else
+            var useBossStage = isBossEncounter && !isTutorial;
+            if (useBossStage)
             {
                 EnsureAstraStageTv();
             }
+            else
+            {
+                AstraStageTvView.HideIfPresent();
+            }
 
             ICombatMusicSync musicSync;
-            if (isPooledEncounter && RunMusicSession.Instance != null && RunMusicSession.Instance.IsActive)
+            if (!useBossStage && (isTutorial || (isPooledEncounter && RunMusicSession.Instance != null)))
             {
-                RunMusicSession.Instance.SetMode(RunMusicMode.Combat);
+                var session = RunMusicSession.Ensure();
+                if (!session.IsActive)
+                {
+                    session.Begin();
+                }
+
+                session.SetMode(RunMusicMode.Combat);
+                StopSceneBossMusic();
                 musicSync = RunCombatMusicBridge.Attach(transform);
             }
             else
             {
                 EnsureMusicController();
-                if (isBossEncounter && RunMusicSession.Instance != null && RunMusicSession.Instance.IsActive)
+                if (useBossStage && RunMusicSession.Instance != null && RunMusicSession.Instance.IsActive)
                 {
                     RunMusicSession.Instance.PauseForBoss();
                 }
@@ -402,13 +421,107 @@ namespace FracturedChorus.Combat.Bootstrap
                 return true;
             }
 
-            if (key.Contains("tank") || key.Contains("charlotte") || key.Contains("charlott")
-                || unitId.Contains("tank") || unitId.Contains("charlotte") || unitId.Contains("charlott"))
+            return false;
+        }
+
+        private void DisableTutorialCharlottePartyUnits()
+        {
+            RemoveBrokenTutorialCharlotteSpawns();
+            var views = unitsRoot != null
+                ? unitsRoot.GetComponentsInChildren<UnitView>(true)
+                : GetComponentsInChildren<UnitView>(true);
+            if (views == null)
             {
-                return true;
+                return;
             }
 
-            return false;
+            foreach (var view in views)
+            {
+                if (view == null || !IsTutorialCharlotteView(view) || view.Side != GridSide.Player)
+                {
+                    continue;
+                }
+
+                view.gameObject.SetActive(false);
+            }
+        }
+
+        private static bool IsTutorialCharlotteView(UnitView view)
+        {
+            if (view == null)
+            {
+                return false;
+            }
+
+            var key = (view.DemoUnitKey ?? string.Empty).ToLowerInvariant();
+            var name = view.gameObject.name.ToLowerInvariant();
+            return key.Contains("charl") || name.Contains("charlott") || name.Contains("charlotte");
+        }
+
+        private void RemoveBrokenTutorialCharlotteSpawns()
+        {
+            var views = unitsRoot != null
+                ? unitsRoot.GetComponentsInChildren<UnitView>(true)
+                : GetComponentsInChildren<UnitView>(true);
+            if (views == null)
+            {
+                return;
+            }
+
+            foreach (var view in views)
+            {
+                if (view == null || !IsTutorialCharlotteView(view))
+                {
+                    continue;
+                }
+
+                if (view.FeetAnchor != null)
+                {
+                    continue;
+                }
+
+                Destroy(view.gameObject);
+            }
+        }
+
+        private void ApplyTutorialPlayerScale(UnitView view)
+        {
+            if (view == null)
+            {
+                return;
+            }
+
+            var views = unitsRoot != null
+                ? unitsRoot.GetComponentsInChildren<UnitView>(true)
+                : GetComponentsInChildren<UnitView>(true);
+            if (views != null)
+            {
+                foreach (var refView in views)
+                {
+                    if (refView == null || refView == view || refView.Side != GridSide.Player)
+                    {
+                        continue;
+                    }
+
+                    var scale = refView.transform.localScale;
+                    view.transform.localScale = new Vector3(scale.x, scale.y, scale.z > 0.001f ? scale.z : scale.x);
+                    view.RefitBodyColliderToSprite();
+                    return;
+                }
+            }
+
+            view.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
+            view.RefitBodyColliderToSprite();
+        }
+
+        private void StopSceneBossMusic()
+        {
+            if (musicController == null)
+            {
+                musicController = FindAnyObjectByType<CombatMusicController>();
+            }
+
+            musicController?.StopMusic();
         }
 
         private void ApplyTutorialBackground()
@@ -878,7 +991,20 @@ namespace FracturedChorus.Combat.Bootstrap
 
             var overlay = FindAnyObjectByType<CombatQteOverlayView>(FindObjectsInactive.Include)
                           ?? CombatQteOverlayView.EnsureCreated();
-            qte.Configure(qte.Profile, overlay, qteDefaultChance, qteMissDamageReduction);
+            var qteProfile = qte.Profile;
+#if UNITY_EDITOR
+            if (qteProfile == null)
+            {
+                qteProfile = UnityEditor.AssetDatabase.LoadAssetAtPath<CombatQteProfileSO>(
+                    "Assets/FracturedChorus/Data/ScriptableObjects/CombatQteProfile.asset");
+            }
+#endif
+            qteProfile ??= Resources.Load<CombatQteProfileSO>("UI/Combat/CombatQteProfile");
+            qte.Configure(qteProfile, overlay, qteDefaultChance, qteMissDamageReduction);
+            if (qteProfile != null)
+            {
+                overlay?.ApplyProfile(qteProfile);
+            }
         }
 
         private void EnsureAudioListener()
@@ -1589,6 +1715,11 @@ namespace FracturedChorus.Combat.Bootstrap
             view.ConfigureDemo(unitKey, spawn.side);
             view.PlaceOnGrid(pos);
             view.Bind(unit);
+            if (tutorialBasics && spawn.side == GridSide.Player)
+            {
+                ApplyTutorialPlayerScale(view);
+            }
+
             if (isPoolUnit)
             {
                 CombatPoolUnitVisuals.PlayIdle(view, unitKey);
@@ -1635,12 +1766,21 @@ namespace FracturedChorus.Combat.Bootstrap
 
         private void HandleUnitSelected(CombatUnit unit, UnitView view)
         {
+            if (!TutorialInteractionGate.AllowsUnitSkillPanelOpen)
+            {
+                return;
+            }
+
             if (skillPanelView != null && !skillPanelView.CanOpenSkillPanelNow())
             {
                 return;
             }
 
             skillPanelView?.ToggleForUnit(unit, view);
+            if (skillPanelView != null && skillPanelView.IsVisible)
+            {
+                TutorialCombatHooks.NotifySkillPanelOpened();
+            }
         }
 
         private void RefreshPartyStatusBar()
