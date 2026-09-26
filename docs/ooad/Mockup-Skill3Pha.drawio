@@ -1,0 +1,46 @@
+<mxfile host="app.diagrams.net" modified="2026-09-26T03:00:00.000Z" agent="cursor-skill" version="22.1.0" type="device">
+  <diagram name="Mockup-Skill3Pha" id="mock-skill">
+    <mxGraphModel dx="1200" dy="760" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1160" pageHeight="760" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="bg" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#12141C;strokeColor=#12141C;" vertex="1" parent="1">
+          <mxGeometry x="20" y="20" width="1120" height="720" as="geometry"/>
+        </mxCell>
+        <mxCell id="title" value="&lt;font color=&quot;#F4F1EA&quot;&gt;&lt;b&gt;Mockup — Skill 3 pha (S1 · S · S2)&lt;/b&gt;&lt;/font&gt;" style="text;html=1;align=left;fontSize=18;" vertex="1" parent="1">
+          <mxGeometry x="48" y="36" width="560" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="sub" value="&lt;font color=&quot;#A8B0C0&quot;&gt;Mọi chiêu có ba pha. Beat đặt là beat đầu của pha dùng chiêu. S1 đứng trước, S2 đứng sau.&lt;/font&gt;" style="text;html=1;align=left;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="48" y="70" width="820" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="ex" value="&lt;font color=&quot;#F4F1EA&quot;&gt;&lt;b&gt;Ví dụ Ren — Crosscut&lt;/b&gt; · 2-2-2&lt;/font&gt;" style="text;html=1;align=left;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="48" y="120" width="360" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="lane" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1C2230;strokeColor=#2C3548;" vertex="1" parent="1">
+          <mxGeometry x="48" y="170" width="1040" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="s1a" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#6E7686;strokeColor=#C5CAD3;" vertex="1" parent="1"><mxGeometry x="120" y="190" width="36" height="36" as="geometry"/></mxCell>
+        <mxCell id="s1b" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#6E7686;strokeColor=#C5CAD3;" vertex="1" parent="1"><mxGeometry x="210" y="190" width="36" height="36" as="geometry"/></mxCell>
+        <mxCell id="sa" value="&lt;font color=&quot;#06281A&quot;&gt;&lt;b&gt;S&lt;/b&gt;&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3DDC97;strokeColor=#B8FFE0;fontSize=16;" vertex="1" parent="1"><mxGeometry x="300" y="182" width="150" height="52" as="geometry"/></mxCell>
+        <mxCell id="sb" value="&lt;font color=&quot;#06281A&quot;&gt;&lt;b&gt;S&lt;/b&gt;&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3DDC97;strokeColor=#B8FFE0;fontSize=16;" vertex="1" parent="1"><mxGeometry x="460" y="182" width="150" height="52" as="geometry"/></mxCell>
+        <mxCell id="s2a" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#6E7686;strokeColor=#C5CAD3;" vertex="1" parent="1"><mxGeometry x="660" y="190" width="36" height="36" as="geometry"/></mxCell>
+        <mxCell id="s2b" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#6E7686;strokeColor=#C5CAD3;" vertex="1" parent="1"><mxGeometry x="750" y="190" width="36" height="36" as="geometry"/></mxCell>
+        <mxCell id="cap1" value="&lt;font color=&quot;#C5CAD3&quot;&gt;&lt;b&gt;S1&lt;/b&gt; · đứng trước&lt;br&gt;2 beat&lt;/font&gt;" style="text;html=1;align=center;fontSize=12;" vertex="1" parent="1"><mxGeometry x="100" y="270" width="160" height="40" as="geometry"/></mxCell>
+        <mxCell id="capS" value="&lt;font color=&quot;#3DDC97&quot;&gt;&lt;b&gt;S&lt;/b&gt; · đang dùng chiêu&lt;br&gt;2 beat · beat đặt = ô đầu của S&lt;/font&gt;" style="text;html=1;align=center;fontSize=12;" vertex="1" parent="1"><mxGeometry x="300" y="250" width="310" height="40" as="geometry"/></mxCell>
+        <mxCell id="cap2" value="&lt;font color=&quot;#C5CAD3&quot;&gt;&lt;b&gt;S2&lt;/b&gt; · hồi&lt;br&gt;2 beat&lt;/font&gt;" style="text;html=1;align=center;fontSize=12;" vertex="1" parent="1"><mxGeometry x="640" y="270" width="160" height="40" as="geometry"/></mxCell>
+        <mxCell id="rule" value="&lt;font color=&quot;#F4F1EA&quot;&gt;Cùng một người, S1, S và S2 không được đè lên nhau.&lt;br&gt;Chip xanh là màu người chơi. Nút tròn xám là hai pha đứng.&lt;br&gt;Đòn đỡ tính trên từng beat của pha S khi beat đó trùng nốt địch.&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=12;spacingTop=8;fillColor=#1C2230;strokeColor=#3DDC97;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="48" y="360" width="500" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="table" value="&lt;font color=&quot;#F4F1EA&quot;&gt;&lt;b&gt;Ba chiêu của Ren&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#A8B0C0&quot;&gt;Strike&amp;nbsp;&amp;nbsp;1-1-1&lt;br&gt;Crosscut&amp;nbsp;&amp;nbsp;2-2-2&lt;br&gt;Finale&amp;nbsp;&amp;nbsp;2-3-3&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=12;spacingTop=8;fillColor=#1C2230;strokeColor=#2C3548;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="580" y="360" width="280" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="flow" value="&lt;font color=&quot;#A8B0C0&quot;&gt;S1 đứng&amp;nbsp;→&amp;nbsp;S dùng chiêu&amp;nbsp;→&amp;nbsp;S2 hồi&lt;/font&gt;" style="text;html=1;align=left;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="48" y="500" width="420" height="28" as="geometry"/>
+        </mxCell>
+        <mxCell id="foot" value="&lt;font color=&quot;#8E98AA&quot;&gt;Số beat mỗi pha lấy từ định nghĩa chiêu: standingBeatsBefore, activeBeats, standingBeatsAfter. Toàn bộ pha S phải nằm trong cửa sổ planning.&lt;/font&gt;" style="text;html=1;align=left;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="48" y="560" width="980" height="36" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

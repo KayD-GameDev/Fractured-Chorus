@@ -1,0 +1,70 @@
+<mxfile host="Electron" agent="cursor-skill">
+  <diagram name="Mockup-QTE" id="mock-qte">
+    <mxGraphModel dx="1288" dy="783" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="780" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="bg" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#12141C;strokeColor=#12141C;" value="" vertex="1">
+          <mxGeometry height="640" width="910" x="20" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="title" parent="1" style="text;html=1;align=left;fontSize=18;" value="&lt;font color=&quot;#F4F1EA&quot;&gt;&lt;b&gt;Mockup — QTE đỡ đòn&lt;/b&gt;&lt;/font&gt;" vertex="1">
+          <mxGeometry height="30" width="400" x="48" y="36" as="geometry" />
+        </mxCell>
+        <mxCell id="sub" parent="1" style="text;html=1;align=left;fontSize=13;" value="&lt;font color=&quot;#A8B0C0&quot;&gt;Chỉ mở khi Execute đang chạy và pha Active trùng nốt địch. Bấm Space lúc vòng hồng khớp khung cyan.&lt;/font&gt;" vertex="1">
+          <mxGeometry height="24" width="860" x="48" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="stage" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0C0E14;strokeColor=#2C3548;" value="" vertex="1">
+          <mxGeometry height="460" width="520" x="48" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="outer" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#FF4F8B;strokeWidth=8;" value="" vertex="1">
+          <mxGeometry height="280" width="280" x="168" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="frame" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#3EE0FF;strokeWidth=4;dashed=1;" value="" vertex="1">
+          <mxGeometry height="160" width="160" x="228" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="c1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#3EE0FF;strokeColor=#3EE0FF;" value="" vertex="1">
+          <mxGeometry height="4" width="22" x="228" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="c2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#3EE0FF;strokeColor=#3EE0FF;" value="" vertex="1">
+          <mxGeometry height="22" width="4" x="228" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="c3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#3EE0FF;strokeColor=#3EE0FF;" value="" vertex="1">
+          <mxGeometry height="4" width="22" x="366" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="c4" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#3EE0FF;strokeColor=#3EE0FF;" value="" vertex="1">
+          <mxGeometry height="22" width="4" x="384" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="c5" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#3EE0FF;strokeColor=#3EE0FF;" value="" vertex="1">
+          <mxGeometry height="4" width="22" x="228" y="406" as="geometry" />
+        </mxCell>
+        <mxCell id="c6" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#3EE0FF;strokeColor=#3EE0FF;" value="" vertex="1">
+          <mxGeometry height="22" width="4" x="228" y="388" as="geometry" />
+        </mxCell>
+        <mxCell id="c7" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#3EE0FF;strokeColor=#3EE0FF;" value="" vertex="1">
+          <mxGeometry height="4" width="22" x="366" y="406" as="geometry" />
+        </mxCell>
+        <mxCell id="c8" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#3EE0FF;strokeColor=#3EE0FF;" value="" vertex="1">
+          <mxGeometry height="22" width="4" x="384" y="388" as="geometry" />
+        </mxCell>
+        <mxCell id="space" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3EE0FF;strokeColor=#B8F6FF;fontSize=16;" value="&lt;font color=&quot;#062026&quot;&gt;&lt;b&gt;SPACE&lt;/b&gt;&lt;/font&gt;" vertex="1">
+          <mxGeometry height="48" width="120" x="248" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="hint" parent="1" style="text;html=1;align=center;fontSize=12;" value="&lt;font color=&quot;#A8B0C0&quot;&gt;Vòng hồng co vào. Khung cyan là cửa Perfect.&lt;/font&gt;" vertex="1">
+          <mxGeometry height="24" width="460" x="80" y="500" as="geometry" />
+        </mxCell>
+        <mxCell id="g1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3EE0FF;strokeColor=#B8F6FF;fontSize=13;" value="&lt;font color=&quot;#062026&quot;&gt;&lt;b&gt;Perfect&lt;/b&gt;&lt;br&gt;hủy nốt địch&lt;br&gt;sát thương ×1,50&lt;/font&gt;" vertex="1">
+          <mxGeometry height="90" width="200" x="620" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="g2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1C2230;strokeColor=#7FD4FF;fontSize=13;" value="&lt;font color=&quot;#F4F1EA&quot;&gt;&lt;b&gt;Good&lt;/b&gt;&lt;br&gt;hủy nốt địch&lt;br&gt;sát thương ×1,20&lt;/font&gt;" vertex="1">
+          <mxGeometry height="90" width="200" x="620" y="270" as="geometry" />
+        </mxCell>
+        <mxCell id="g3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2A1818;strokeColor=#E85D4C;fontSize=13;" value="&lt;font color=&quot;#F4F1EA&quot;&gt;&lt;b&gt;Miss&lt;/b&gt;&lt;br&gt;đòn địch vẫn trúng&lt;br&gt;sát thương giảm&lt;/font&gt;" vertex="1">
+          <mxGeometry height="90" width="200" x="620" y="390" as="geometry" />
+        </mxCell>
+        <mxCell id="foot" parent="1" style="text;html=1;align=left;fontSize=12;" value="&lt;font color=&quot;#8E98AA&quot;&gt;Một nốt chồng chỉ mở một QTE. Perfect và Good hủy nốt một lần. Miss không hủy nốt. Phím là Space hoặc click. Encounter tạm dừng để Space dành cho QTE.&lt;/font&gt;" vertex="1">
+          <mxGeometry height="40" width="960" x="48" y="620" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

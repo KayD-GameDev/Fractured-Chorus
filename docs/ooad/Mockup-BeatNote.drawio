@@ -1,0 +1,69 @@
+<mxfile host="app.diagrams.net" modified="2026-09-26T03:00:00.000Z" agent="cursor-skill" version="22.1.0" type="device">
+  <diagram name="Mockup-BeatNote" id="mock-beat">
+    <mxGraphModel dx="1200" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1160" pageHeight="720" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="bg" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#12141C;strokeColor=#12141C;" vertex="1" parent="1">
+          <mxGeometry x="20" y="20" width="1120" height="680" as="geometry"/>
+        </mxCell>
+        <mxCell id="title" value="&lt;font color=&quot;#F4F1EA&quot;&gt;&lt;b&gt;Mockup — Beat note trên timeline&lt;/b&gt;&lt;/font&gt;" style="text;html=1;align=left;fontSize=18;" vertex="1" parent="1">
+          <mxGeometry x="48" y="36" width="420" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="sub" value="&lt;font color=&quot;#A8B0C0&quot;&gt;Mỗi ô dài bằng nhau. Nốt địch và nốt người chơi cùng ngồi trên một beat. Vạch quét chạy từ trái sang phải.&lt;/font&gt;" style="text;html=1;align=left;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="48" y="68" width="760" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="laneE" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1C2230;strokeColor=#2C3548;" vertex="1" parent="1">
+          <mxGeometry x="160" y="160" width="920" height="72" as="geometry"/>
+        </mxCell>
+        <mxCell id="laneR" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1C2230;strokeColor=#2C3548;" vertex="1" parent="1">
+          <mxGeometry x="160" y="250" width="920" height="72" as="geometry"/>
+        </mxCell>
+        <mxCell id="labE" value="&lt;font color=&quot;#E85D4C&quot;&gt;&lt;b&gt;Địch&lt;/b&gt;&lt;/font&gt;" style="text;html=1;align=right;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="48" y="178" width="100" height="28" as="geometry"/>
+        </mxCell>
+        <mxCell id="labR" value="&lt;font color=&quot;#3DDC97&quot;&gt;&lt;b&gt;Ren&lt;/b&gt;&lt;/font&gt;" style="text;html=1;align=right;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="48" y="268" width="100" height="28" as="geometry"/>
+        </mxCell>
+        <mxCell id="b0" value="&lt;font color=&quot;#8E98AA&quot;&gt;12&lt;/font&gt;" style="text;html=1;align=center;fontSize=11;" vertex="1" parent="1"><mxGeometry x="168" y="128" width="80" height="20" as="geometry"/></mxCell>
+        <mxCell id="b1" value="&lt;font color=&quot;#8E98AA&quot;&gt;13&lt;/font&gt;" style="text;html=1;align=center;fontSize=11;" vertex="1" parent="1"><mxGeometry x="268" y="128" width="80" height="20" as="geometry"/></mxCell>
+        <mxCell id="b2" value="&lt;font color=&quot;#8E98AA&quot;&gt;14&lt;/font&gt;" style="text;html=1;align=center;fontSize=11;" vertex="1" parent="1"><mxGeometry x="368" y="128" width="80" height="20" as="geometry"/></mxCell>
+        <mxCell id="b3" value="&lt;font color=&quot;#8E98AA&quot;&gt;15&lt;/font&gt;" style="text;html=1;align=center;fontSize=11;" vertex="1" parent="1"><mxGeometry x="468" y="128" width="80" height="20" as="geometry"/></mxCell>
+        <mxCell id="b4" value="&lt;font color=&quot;#F4F1EA&quot;&gt;&lt;b&gt;16&lt;/b&gt;&lt;/font&gt;" style="text;html=1;align=center;fontSize=12;" vertex="1" parent="1"><mxGeometry x="568" y="124" width="80" height="24" as="geometry"/></mxCell>
+        <mxCell id="b5" value="&lt;font color=&quot;#8E98AA&quot;&gt;17&lt;/font&gt;" style="text;html=1;align=center;fontSize=11;" vertex="1" parent="1"><mxGeometry x="668" y="128" width="80" height="20" as="geometry"/></mxCell>
+        <mxCell id="b6" value="&lt;font color=&quot;#8E98AA&quot;&gt;18&lt;/font&gt;" style="text;html=1;align=center;fontSize=11;" vertex="1" parent="1"><mxGeometry x="768" y="128" width="80" height="20" as="geometry"/></mxCell>
+        <mxCell id="b7" value="&lt;font color=&quot;#8E98AA&quot;&gt;19&lt;/font&gt;" style="text;html=1;align=center;fontSize=11;" vertex="1" parent="1"><mxGeometry x="868" y="128" width="80" height="20" as="geometry"/></mxCell>
+        <mxCell id="b8" value="&lt;font color=&quot;#8E98AA&quot;&gt;20&lt;/font&gt;" style="text;html=1;align=center;fontSize=11;" vertex="1" parent="1"><mxGeometry x="968" y="128" width="80" height="20" as="geometry"/></mxCell>
+        <mxCell id="div1" value="" style="endArrow=none;html=1;strokeColor=#2C3548;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="260" y="168" as="sourcePoint"/><mxPoint x="260" y="224" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="div2" value="" style="endArrow=none;html=1;strokeColor=#2C3548;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="360" y="168" as="sourcePoint"/><mxPoint x="360" y="224" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="div3" value="" style="endArrow=none;html=1;strokeColor=#2C3548;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="460" y="168" as="sourcePoint"/><mxPoint x="460" y="224" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="div4" value="" style="endArrow=none;html=1;strokeColor=#2C3548;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="560" y="168" as="sourcePoint"/><mxPoint x="560" y="224" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="div5" value="" style="endArrow=none;html=1;strokeColor=#2C3548;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="660" y="168" as="sourcePoint"/><mxPoint x="660" y="224" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="div6" value="" style="endArrow=none;html=1;strokeColor=#2C3548;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="760" y="168" as="sourcePoint"/><mxPoint x="760" y="224" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="div7" value="" style="endArrow=none;html=1;strokeColor=#2C3548;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="860" y="168" as="sourcePoint"/><mxPoint x="860" y="224" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="div8" value="" style="endArrow=none;html=1;strokeColor=#2C3548;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="960" y="168" as="sourcePoint"/><mxPoint x="960" y="224" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="noteEnemy" value="&lt;font color=&quot;#1A0E0C&quot;&gt;&lt;b&gt;♪&lt;/b&gt;&lt;/font&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E85D4C;strokeColor=#FFB4A8;fontSize=18;" vertex="1" parent="1">
+          <mxGeometry x="588" y="174" width="44" height="44" as="geometry"/>
+        </mxCell>
+        <mxCell id="notePlayer" value="&lt;font color=&quot;#06281A&quot;&gt;&lt;b&gt;♪&lt;/b&gt;&lt;/font&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#3DDC97;strokeColor=#B8FFE0;fontSize=18;" vertex="1" parent="1">
+          <mxGeometry x="588" y="264" width="44" height="44" as="geometry"/>
+        </mxCell>
+        <mxCell id="scan" value="" style="endArrow=none;html=1;strokeColor=#F4F1EA;strokeWidth=3;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="610" y="148" as="sourcePoint"/><mxPoint x="610" y="336" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="scanLab" value="&lt;font color=&quot;#F4F1EA&quot;&gt;vạch quét&lt;/font&gt;" style="text;html=1;align=center;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="560" y="338" width="100" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="callE" value="&lt;font color=&quot;#F4F1EA&quot;&gt;Nốt địch ngồi trên beat 16.&lt;br&gt;Đây là báo đòn, hiện trước khi đòn chạm.&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=8;fillColor=#2A1818;strokeColor=#E85D4C;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="160" y="400" width="420" height="64" as="geometry"/>
+        </mxCell>
+        <mxCell id="callP" value="&lt;font color=&quot;#F4F1EA&quot;&gt;Nốt người chơi cùng beat 16.&lt;br&gt;Pha Active trùng nốt địch thì beat này là nhịp đỡ.&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=8;fillColor=#10241C;strokeColor=#3DDC97;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="620" y="400" width="440" height="64" as="geometry"/>
+        </mxCell>
+        <mxCell id="foot" value="&lt;font color=&quot;#8E98AA&quot;&gt;Ô beat rộng bằng nhau vì mọi nhịp dài 60/BPM. Boss remix: 152 BPM, một phase 22 beat. Planning đóng băng vạch quét. Execute mới cho vạch chạy.&lt;/font&gt;" style="text;html=1;align=left;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="48" y="500" width="1000" height="40" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

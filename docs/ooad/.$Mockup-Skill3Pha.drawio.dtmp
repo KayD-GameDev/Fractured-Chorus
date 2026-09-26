@@ -1,0 +1,64 @@
+<mxfile host="Electron" agent="cursor-skill">
+  <diagram name="Mockup-Skill3Pha" id="mock-skill">
+    <mxGraphModel dx="1212" dy="736" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1160" pageHeight="760" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="bg" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#12141C;strokeColor=#12141C;" value="" vertex="1">
+          <mxGeometry height="720" width="1120" x="20" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="title" parent="1" style="text;html=1;align=left;fontSize=18;" value="&lt;font color=&quot;#F4F1EA&quot;&gt;&lt;b&gt;Mockup — Skill 3 pha (S1 · S · S2)&lt;/b&gt;&lt;/font&gt;" vertex="1">
+          <mxGeometry height="30" width="560" x="48" y="36" as="geometry" />
+        </mxCell>
+        <mxCell id="sub" parent="1" style="text;html=1;align=left;fontSize=13;" value="&lt;font color=&quot;#A8B0C0&quot;&gt;Mọi chiêu có ba pha. Beat đặt là beat đầu của pha dùng chiêu. S1 đứng trước, S2 đứng sau.&lt;/font&gt;" vertex="1">
+          <mxGeometry height="24" width="820" x="48" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="ex" parent="1" style="text;html=1;align=left;fontSize=14;" value="&lt;font color=&quot;#F4F1EA&quot;&gt;&lt;b&gt;Ví dụ Ren — Crosscut&lt;/b&gt; · 2-2-2&lt;/font&gt;" vertex="1">
+          <mxGeometry height="24" width="360" x="48" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="lane" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1C2230;strokeColor=#2C3548;" value="" vertex="1">
+          <mxGeometry height="90" width="812" x="48" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="s1a" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#6E7686;strokeColor=#C5CAD3;" value="" vertex="1">
+          <mxGeometry height="36" width="36" x="120" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="s1b" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#6E7686;strokeColor=#C5CAD3;" value="" vertex="1">
+          <mxGeometry height="36" width="36" x="210" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="sa" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3DDC97;strokeColor=#B8FFE0;fontSize=16;" value="&lt;font color=&quot;#06281A&quot;&gt;&lt;b&gt;S&lt;/b&gt;&lt;/font&gt;" vertex="1">
+          <mxGeometry height="52" width="150" x="300" y="182" as="geometry" />
+        </mxCell>
+        <mxCell id="sb" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3DDC97;strokeColor=#B8FFE0;fontSize=16;" value="&lt;font color=&quot;#06281A&quot;&gt;&lt;b&gt;S&lt;/b&gt;&lt;/font&gt;" vertex="1">
+          <mxGeometry height="52" width="150" x="460" y="182" as="geometry" />
+        </mxCell>
+        <mxCell id="s2a" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#6E7686;strokeColor=#C5CAD3;" value="" vertex="1">
+          <mxGeometry height="36" width="36" x="660" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="s2b" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#6E7686;strokeColor=#C5CAD3;" value="" vertex="1">
+          <mxGeometry height="36" width="36" x="750" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="cap1" parent="1" style="text;html=1;align=center;fontSize=12;" value="&lt;font color=&quot;#C5CAD3&quot;&gt;&lt;b&gt;S1&lt;/b&gt; · đứng trước&lt;br&gt;2 beat&lt;/font&gt;" vertex="1">
+          <mxGeometry height="40" width="160" x="100" y="270" as="geometry" />
+        </mxCell>
+        <mxCell id="capS" parent="1" style="text;html=1;align=center;fontSize=12;" value="&lt;font color=&quot;#3DDC97&quot;&gt;&lt;b&gt;S&lt;/b&gt; · đang dùng chiêu&lt;br&gt;2 beat · beat đặt = ô đầu của S&lt;/font&gt;" vertex="1">
+          <mxGeometry height="40" width="310" x="300" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="cap2" parent="1" style="text;html=1;align=center;fontSize=12;" value="&lt;font color=&quot;#C5CAD3&quot;&gt;&lt;b&gt;S2&lt;/b&gt; · hồi&lt;br&gt;2 beat&lt;/font&gt;" vertex="1">
+          <mxGeometry height="40" width="160" x="640" y="270" as="geometry" />
+        </mxCell>
+        <mxCell id="rule" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=12;spacingTop=8;fillColor=#1C2230;strokeColor=#3DDC97;fontSize=13;" value="&lt;font color=&quot;#F4F1EA&quot;&gt;Cùng một người, S1, S và S2 không được đè lên nhau.&lt;br&gt;Chip xanh là màu người chơi. Nút tròn xám là hai pha đứng.&lt;br&gt;Đòn đỡ tính trên từng beat của pha S khi beat đó trùng nốt địch.&lt;/font&gt;" vertex="1">
+          <mxGeometry height="100" width="500" x="48" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="table" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=12;spacingTop=8;fillColor=#1C2230;strokeColor=#2C3548;fontSize=13;" value="&lt;font color=&quot;#F4F1EA&quot;&gt;&lt;b&gt;Ba chiêu của Ren&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#A8B0C0&quot;&gt;Strike&amp;nbsp;&amp;nbsp;1-1-1&lt;br&gt;Crosscut&amp;nbsp;&amp;nbsp;2-2-2&lt;br&gt;Finale&amp;nbsp;&amp;nbsp;2-3-3&lt;/font&gt;" vertex="1">
+          <mxGeometry height="110" width="280" x="580" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="flow" parent="1" style="text;html=1;align=left;fontSize=14;" value="&lt;font color=&quot;#A8B0C0&quot;&gt;S1 đứng&amp;nbsp;→&amp;nbsp;S dùng chiêu&amp;nbsp;→&amp;nbsp;S2 hồi&lt;/font&gt;" vertex="1">
+          <mxGeometry height="28" width="420" x="48" y="500" as="geometry" />
+        </mxCell>
+        <mxCell id="foot" parent="1" style="text;html=1;align=left;fontSize=12;" value="&lt;font color=&quot;#8E98AA&quot;&gt;Số beat mỗi pha lấy từ định nghĩa chiêu: standingBeatsBefore, activeBeats, standingBeatsAfter. Toàn bộ pha S phải nằm trong cửa sổ planning.&lt;/font&gt;" vertex="1">
+          <mxGeometry height="36" width="980" x="48" y="560" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
