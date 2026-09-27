@@ -213,6 +213,7 @@ namespace FracturedChorus.UI
 
         public void ApplyLeftRailPublic() => EnsureLeftRailVisuals();
         private readonly List<RectTransform> _laneLines = new();
+        private readonly Dictionary<(int layer, int lane), float> _laneYCache = new();
         private readonly Dictionary<(CombatUnit unit, int beat), Image> _footprintDots = new();
         private readonly Dictionary<(CombatUnit unit, int beat), TimelineLaneMarkerView> _laneMarkers = new();
         private TimelineLaneMarkerView _dropGhost;
@@ -1869,6 +1870,297 @@ namespace FracturedChorus.UI
         }
 
         public RectTransform TryGetBossNoteRect(int absoluteBeat) => TryGetBeatSlotRect(absoluteBeat);
+
+        public bool TryGetLaneLine(CombatUnit unit, out RectTransform lane)
+        {
+            lane = null;
+            if (unit == null || !_laneIndex.TryGetValue(unit, out var index))
+            {
+                return false;
+            }
+
+            if (index < 0 || index >= _laneLines.Count)
+            {
+                return false;
+            }
+
+            lane = _laneLines[index];
+            return lane != null && lane.gameObject.activeInHierarchy;
+        }
+
+        /// <summary>Earliest impact telegraph at or after the planning horizon that is on screen.</summary>
+        public bool TryGetEarliestVisibleImpactBeat(out int beatIndex)
+        {
+            beatIndex = -1;
+            if (_timeline == null)
+            {
+                return false;
+            }
+
+            var best = int.MaxValue;
+            var horizon = _timeline.PlanningHorizonBeat;
+            var telegraphs = _timeline.Telegraphs;
+            for (var i = 0; i < telegraphs.Count; i++)
+            {
+                var telegraph = telegraphs[i];
+                if (telegraph == null || telegraph.IsWindupOnly || telegraph.BeatIndex < horizon)
+                {
+                    continue;
+                }
+
+                if (TryGetBeatSlotRect(telegraph.BeatIndex) == null)
+                {
+                    continue;
+                }
+
+                if (telegraph.BeatIndex < best)
+                {
+                    best = telegraph.BeatIndex;
+                }
+            }
+
+            if (best == int.MaxValue)
+            {
+                return false;
+            }
+
+            beatIndex = best;
+            return true;
+        }
+
+        /// <summary>First impact beat in the phase that contains the planning horizon.</summary>
+        public bool TryGetFirstPhaseImpactBeat(out int beatIndex)
+        {
+            beatIndex = -1;
+            if (_timeline == null)
+            {
+                return false;
+            }
+
+            var phase = TimelineConstants.GetPhaseIndex(_timeline.PlanningHorizonBeat);
+            TimelineConstants.GetPhaseBeatRange(phase, out var startBeat, out var count);
+            var endBeat = startBeat + count;
+            var best = int.MaxValue;
+            var telegraphs = _timeline.Telegraphs;
+            for (var i = 0; i < telegraphs.Count; i++)
+            {
+                var telegraph = telegraphs[i];
+                if (telegraph == null
+                    || telegraph.IsWindupOnly
+                    || telegraph.BeatIndex < startBeat
+                    || telegraph.BeatIndex >= endBeat)
+                {
+                    continue;
+                }
+
+                if (telegraph.BeatIndex < best)
+                {
+                    best = telegraph.BeatIndex;
+                }
+            }
+
+            if (best == int.MaxValue)
+            {
+                return false;
+            }
+
+            beatIndex = best;
+            return true;
+        }
+
+        /// <summary>First impact note spawned in the phase that contains the planning horizon.</summary>
+        public bool TryGetFirstPhaseImpactNote(out RectTransform note)
+        {
+            note = null;
+            if (_bossNoteClusters == null || !TryGetFirstPhaseImpactBeat(out var beat))
+            {
+                return false;
+            }
+
+            note = _bossNoteClusters.FindNoteRect(beat);
+            return note != null;
+        }
+
+        /// <summary>Beat frame graphic on the first impact beat of the current phase.</summary>
+        public bool TryGetFirstPhaseBeatFrame(out RectTransform frame)
+        {
+            frame = null;
+            if (!TryGetFirstPhaseImpactBeat(out var beat))
+            {
+                return false;
+            }
+
+            var slot = TryGetSlotView(beat);
+            frame = slot != null ? slot.BeatFrameRect : null;
+            return frame != null;
+        }
+
+        public readonly struct SkillLaneAnchor
+        {
+            public readonly RectTransform Rect;
+            public readonly Vector2 Screen;
+
+            public SkillLaneAnchor(RectTransform rect, Vector2 screen)
+            {
+                Rect = rect;
+                Screen = screen;
+            }
+        }
+
+        /// <summary>Screen center where this unit's skill marker or footprint should sit on its lane.</summary>
+        public void CollectUnitSkillLaneAnchors(CombatUnit unit, List<SkillLaneAnchor> into)
+        {
+            if (into == null)
+            {
+                return;
+            }
+
+            into.Clear();
+            if (unit == null || _timeline == null || viewport == null)
+            {
+                return;
+            }
+
+            if (!_laneIndex.TryGetValue(unit, out var laneIdx))
+            {
+                return;
+            }
+
+            var camera = CanvasCamera(this);
+            var height = viewport.rect.height;
+            var laneY = ResolveLaneYInLayer(_footprintLayer, laneIdx, height);
+            var markerLaneY = ResolveLaneYInLayer(_laneMarkersLayer, laneIdx, height);
+            foreach (var entry in _timeline.Agenda)
+            {
+                if (entry?.Unit != unit || entry.Skill == null)
+                {
+                    continue;
+                }
+
+                var beat = entry.BeatIndex;
+                if (beat < 0 || beat >= TotalBeats)
+                {
+                    continue;
+                }
+
+                if (_laneMarkersLayer != null
+                    && _laneMarkers.TryGetValue((unit, beat), out var marker)
+                    && marker != null)
+                {
+                    var markerPos = new Vector2(ContentXForActiveCenter(entry.Skill, beat), markerLaneY);
+                    into.Add(new SkillLaneAnchor(
+                        marker.transform as RectTransform,
+                        LayerPointToScreen(_laneMarkersLayer, markerPos, camera)));
+                }
+
+                foreach (var info in SkillFootprintUtil.EnumerateFootprintBeats(entry.Skill, beat, null, entry))
+                {
+                    if (info.BeatIndex < 0 || info.BeatIndex >= TotalBeats)
+                    {
+                        continue;
+                    }
+
+                    if (_footprintLayer == null
+                        || !_footprintDots.TryGetValue((unit, info.BeatIndex), out var dot)
+                        || dot == null)
+                    {
+                        continue;
+                    }
+
+                    var dotPos = new Vector2(ContentXForBeat(info.BeatIndex), laneY);
+                    into.Add(new SkillLaneAnchor(
+                        dot.rectTransform,
+                        LayerPointToScreen(_footprintLayer, dotPos, camera)));
+                }
+            }
+        }
+
+        private static Vector2 LayerPointToScreen(RectTransform layer, Vector2 anchored, Camera camera)
+        {
+            if (layer == null)
+            {
+                return anchored;
+            }
+
+            var local = new Vector3(layer.rect.xMin + anchored.x, layer.rect.yMin + anchored.y, 0f);
+            return RectTransformUtility.WorldToScreenPoint(camera, layer.TransformPoint(local));
+        }
+
+        private static Camera CanvasCamera(Component source)
+        {
+            var canvas = source != null ? source.GetComponentInParent<Canvas>() : null;
+            if (canvas == null || canvas.renderMode == RenderMode.ScreenSpaceOverlay)
+            {
+                return null;
+            }
+
+            var root = canvas.rootCanvas != null ? canvas.rootCanvas : canvas;
+            return root.worldCamera;
+        }
+
+        /// <summary>Ghost and footprint notes shown while a skill is dragged across the lane.</summary>
+        public void CollectDropPreviewRects(List<RectTransform> into)
+        {
+            if (into == null)
+            {
+                return;
+            }
+
+            into.Clear();
+            if (_dropGhost != null && _dropGhost.gameObject.activeInHierarchy)
+            {
+                into.Add(_dropGhost.transform as RectTransform);
+            }
+
+            for (var i = 0; i < _dropPreviewDots.Count; i++)
+            {
+                var dot = _dropPreviewDots[i];
+                if (dot != null)
+                {
+                    into.Add(dot.rectTransform);
+                }
+            }
+
+            for (var i = 0; i < _dropCoverOverlays.Count; i++)
+            {
+                var cover = _dropCoverOverlays[i];
+                if (cover != null)
+                {
+                    into.Add(cover.rectTransform);
+                }
+            }
+        }
+
+        /// <summary>Skill marker and footprint notes of <paramref name="unit"/> currently on the timeline.</summary>
+        public void CollectUnitSkillVisuals(CombatUnit unit, List<RectTransform> into)
+        {
+            if (into == null)
+            {
+                return;
+            }
+
+            into.Clear();
+            if (unit == null)
+            {
+                return;
+            }
+
+            foreach (var pair in _laneMarkers)
+            {
+                if (pair.Key.unit == unit && pair.Value != null)
+                {
+                    into.Add(pair.Value.transform as RectTransform);
+                }
+            }
+
+            foreach (var pair in _footprintDots)
+            {
+                if (pair.Key.unit == unit && pair.Value != null)
+                {
+                    into.Add(pair.Value.rectTransform);
+                }
+            }
+        }
 
         /// <summary>Scan chạy tiếp từ vị trí đã đóng băng, bám vào mốc bar kế của nhạc đang chạy.</summary>
         public void ResumeRoundPlayback()
@@ -3532,7 +3824,7 @@ namespace FracturedChorus.UI
             // Redistribute active party lanes + boss rail evenly across the scene band.
             for (var i = 0; i < _laneLines.Count; i++)
             {
-                if (_laneLines[i] == null)
+                if (_laneLines[i] == null || FracturedChorus.Tutorial.TutorialFocusOverlay.IsLifted(_laneLines[i]))
                 {
                     continue;
                 }
@@ -3830,10 +4122,12 @@ namespace FracturedChorus.UI
         /// </summary>
         private float ResolveLaneYInLayer(RectTransform layer, int laneIndex, float viewportHeight)
         {
+            var cacheKey = (layer != null ? layer.GetEntityId().GetHashCode() : 0, laneIndex);
             if (layer != null &&
                 laneIndex >= 0 &&
                 laneIndex < _laneLines.Count &&
-                _laneLines[laneIndex] != null)
+                _laneLines[laneIndex] != null &&
+                !FracturedChorus.Tutorial.TutorialFocusOverlay.IsLifted(_laneLines[laneIndex]))
             {
                 Canvas.ForceUpdateCanvases();
                 if (layer.rect.height > 1f)
@@ -3841,8 +4135,15 @@ namespace FracturedChorus.UI
                     var world = _laneLines[laneIndex].TransformPoint(Vector3.zero);
                     var localY = layer.InverseTransformPoint(world).y;
                     // Children use bottom-left anchors (0,0): anchoredPosition.y from layer bottom.
-                    return localY - layer.rect.yMin;
+                    var y = localY - layer.rect.yMin;
+                    _laneYCache[cacheKey] = y;
+                    return y;
                 }
+            }
+
+            if (_laneYCache.TryGetValue(cacheKey, out var cached))
+            {
+                return cached;
             }
 
             return GetLaneYFromBottom(laneIndex, viewportHeight);
@@ -4330,6 +4631,11 @@ namespace FracturedChorus.UI
             var pos = new Vector2(ContentXForBeat(beat), laneY);
             if (_footprintDots.TryGetValue(key, out var dot) && dot != null)
             {
+                if (FracturedChorus.Tutorial.TutorialFocusOverlay.IsLifted(dot.rectTransform))
+                {
+                    return;
+                }
+
                 ApplyFootprintVisual(dot, color, size, sprite);
                 dot.rectTransform.anchoredPosition = pos;
                 ConfigureFootprintDotInteraction(dot, unit, placementBeat, enableDrag);
@@ -4829,6 +5135,12 @@ namespace FracturedChorus.UI
 
             if (skillActiveSprite == null)
             {
+                if (_dropGhost != null && _dropGhost.transform.parent != _laneMarkersLayer)
+                {
+                    Destroy(_dropGhost.gameObject);
+                    _dropGhost = null;
+                }
+
                 if (_dropGhost == null)
                 {
                     _dropGhost = CreateLaneMarker(unit, beat, enableDrag: false);

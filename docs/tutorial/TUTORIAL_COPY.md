@@ -50,14 +50,15 @@ Floating hint không chặn Execute/board drag. Timeline slides cũ tạm deferr
 
 **Luồng CombatTutorial (Formation)**
 1. Slides: meet → Formation 6 ô → buff theo vị trí → FRONT / MID·BACK → đặt hợp lý  
-2. Slide “Hãy di chuyển Ren và Coda…” + **Next**  
-3. Next → tắt coach + badge hint · người chơi kéo unit tự do  
-4. Đổi ô ≥1 lần → slide “Làm tốt lắm… nhấn Execute”  
+2. Slide “Hãy di chuyển Ren sang ô FRONT cùng hàng.” + **Next**  
+3. Next → tắt coach · nền đen · chỉ kéo Ren từ R1C1 sang R1C0  
+4. Ren đứng ở R1C0 → slide “Làm tốt lắm… nhấn Execute”  
 5. Next → floating Execute · bấm Execute → flag `tutorial_cadence_intro_done` · free play  
 6. Victory → RunMap  
 
 - Runner: `TutorialDirector.StartCadenceIntroTrack()`  
 - Chỉ còn **một** nút duy nhất: **Execute**. Deploy không còn là phase riêng — dời unit và gán skill dùng chung cửa sổ Planning.
+- QTE lần đầu: bong bóng vòng ngoài → bong bóng vòng trong → vòng chạy → dừng khi hai vòng chạm → bấm ngoài bong bóng để Perfect.
 
 ### Step table (SoT — Formation pass)
 
@@ -71,7 +72,7 @@ Floating hint không chặn Execute/board drag. Timeline slides cũ tạm deferr
 | 03 | `formation_front` | Slide | FRONT giảm sát thương nhận vào. | FRONT reduces damage taken. | FRONT callout |
 | 04 | `formation_mid_back` | Slide | MID tăng sát thương. BACK tăng khả năng buff và né. | MID boosts damage. BACK boosts buff power and evasion. | MID + BACK |
 | 05 | `formation_situational` | Slide | Hãy dựa vào đội hình hiện tại và tình huống để đặt sao cho hợp lý. | Read the current formation and situation, then place units sensibly. | Party vs foe |
-| 06 | `formation_practice` | PracticeFormation | Hãy di chuyển Ren và Coda giữa các ô. | Move Ren and Coda between cells. | Next → ẩn UI → chờ kéo |
+| 06 | `formation_practice` | PracticeFormation | Hãy di chuyển Ren sang ô FRONT cùng hàng. | Move Ren into the FRONT cell on the same row. | Next → nền tối · chỉ nhận Ren vào R1C0 |
 | 07 | `formation_lock` | Slide | Làm tốt lắm. Khi bạn đã chốt xong vị trí, hãy nhấn Execute. | Nice work. When positions are set, press Execute. | Execute button |
 | 08 | `formation_await_deploy` | AwaitDeploy | Nhấn Execute để bắt đầu round. | Press Execute to start the round. | — (floating hint) |
 
@@ -80,7 +81,7 @@ Floating hint không chặn Execute/board drag. Timeline slides cũ tạm deferr
 - Id: `Encounter_Tutorial`
 - **Scene:** `Assets/FracturedChorus/Scenes/CombatTutorial.unity`
 - Party: Ren + Coda; skills = basic only
-- Enemy: **Kiki Ueda** (Lv1 Elite visual)
+- Enemy: **Mimi** (Lv1 Elite visual; card art `mimi_*`, rig vẫn dùng asset `kiki_ueda_*`)
 - BG: `cadence_smoke_war_front_bg_v1`
-- Entry (test): CampusHub **Tutorial Fight** → `CombatTutorial`
+- Entry (test): Play trực tiếp `CombatTutorial` (nút CampusHub **Tutorial Fight** đã gỡ)
 - Editor: **Fractured Chorus → Open / Prepare Combat Tutorial Scene** (Prepare cũng xóa legacy TutorialEditCanvas / Director layers)

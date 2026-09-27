@@ -1,7 +1,6 @@
 using FracturedChorus.Combat.Bootstrap;
 using FracturedChorus.Meta;
 using FracturedChorus.Meta.Economy;
-using FracturedChorus.RunMap;
 using FracturedChorus.Tutorial;
 using FracturedChorus.UI;
 using UnityEngine;
@@ -65,51 +64,12 @@ namespace FracturedChorus.Hub
                 if (canvas != null)
                 {
                     NotesHudView.Ensure(canvas.transform);
-                    EnsureTutorialCombatHotkey(canvas.transform);
                 }
             }
             catch (System.Exception error)
             {
                 Debug.LogError($"[Fractured Chorus] CampusHub start failed: {error}");
                 ShowStatus("Không thể khởi tạo campus hub.");
-            }
-        }
-
-        private void EnsureTutorialCombatHotkey(Transform canvasRoot)
-        {
-            if (canvasRoot == null)
-            {
-                return;
-            }
-
-            var overlay = SceneLinkHotkeyUI.EnsureSceneLinkOverlay(canvasRoot);
-            var link = SceneLinkHotkeyUI.Ensure(
-                overlay != null ? overlay : canvasRoot,
-                "Tutorial Fight",
-                LaunchTutorialCombat,
-                objectName: "TutorialCombatHotkey",
-                placement: SceneLinkHotkeyPlacement.TopRight,
-                persistInScene: false);
-            link?.SetListening(false);
-        }
-
-        private void LaunchTutorialCombat()
-        {
-            try
-            {
-                CombatEncounterHandoff.SetPending(
-                    EncounterCatalog.Tutorial,
-                    RunMapSceneCatalog.CampusHub);
-                if (!RunMapSceneLoader.LoadCombatTutorial())
-                {
-                    Debug.LogError("[Fractured Chorus] Failed to load CombatTutorial for tutorial fight.");
-                    ShowStatus("Không thể mở tutorial combat.");
-                }
-            }
-            catch (System.Exception error)
-            {
-                Debug.LogError($"[Fractured Chorus] Tutorial combat launch failed: {error}");
-                ShowStatus("Không thể mở tutorial combat.");
             }
         }
 

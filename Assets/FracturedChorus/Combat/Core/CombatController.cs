@@ -12,7 +12,6 @@ using FracturedChorus.Data;
 using FracturedChorus.Meta;
 using FracturedChorus.RunMap;
 using FracturedChorus.Tutorial;
-using FracturedChorus.Tutorial;
 using FracturedChorus.UI;
 using UnityEngine;
 using UnityEngine.SceneManagement;

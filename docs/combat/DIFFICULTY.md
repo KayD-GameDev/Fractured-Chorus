@@ -56,5 +56,21 @@ Kẻ địch mạnh hơn 2 level, máu ×1.15, đòn ×1.20, chặn lệch nhị
 | `PartyLoadoutApplicator.ApplyDifficultyToEnemy` | `ResolvedEnemyHp` |
 | `CombatSession` (đòn địch) | `ResolvedEnemyDamage` |
 | `BossFormationRuntime.ApplyDifficultyScale` | `PierceFrontBias` |
+| `CombatSession` (chặn Early/Late) | `EarlyLateBlockPenalty` |
 | `CombatRewardService` | `NotesEarn` |
 | Config copy | `MainMenuGameSettings.GetDifficultyDescription` |
+
+## Chốt và khóa bậc
+
+| Mốc | Chỗ |
+|-----|-----|
+| Chip On Beat / Cadence / Off Beat ở Config | `MainMenuConfigOverlayController` → `MainMenuGameSettings.SetDifficulty` (PlayerPrefs, chỉ là bậc cho ván mới) |
+| Xác nhận lúc bấm NEW GAME | `MainMenuStartGameMenuController.AskNewGameDifficulty` |
+| Chốt bậc | `MainMenuStartGameController.BeginNewGame` → `GameMetaSession.PendingNewGameDifficulty` |
+| Ghi vào save | `GameMetaSession.BeginHubAfterOpening` / `BeginHubEnRouteToHima` → `GameMetaState.Difficulty` |
+| Giữ bậc qua các mốc Prologue | `GameMetaSession.ResolveContinuedDifficulty` |
+| Read-only khi đang chơi | `MainMenuConfigOverlayController.IsDifficultyLocked` (`MainMenuConfigLaunch.HasReturnTarget` hoặc `GameMetaSession.HasSession`) |
+
+Config mở từ Campus Hub (`MetaStatusMenuUI.OpenConfig` → `MainMenuConfigLaunch.OpenFromCampusHub`) dùng chính overlay của Main Menu, nên chip ở đó hiện bậc đã khóa và không bấm được.
+
+Số chốt trong `Assets/FracturedChorus/Editor/DifficultyRuntimeTests.cs`.

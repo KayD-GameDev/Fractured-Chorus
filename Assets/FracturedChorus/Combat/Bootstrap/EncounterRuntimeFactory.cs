@@ -327,7 +327,7 @@ namespace FracturedChorus.Combat.Bootstrap
         {
             var preset = ScriptableObject.CreateInstance<UnitPresetSO>();
             preset.unitId = "kiki_ueda";
-            preset.displayName = "Kiki Ueda";
+            preset.displayName = "Mimi";
             preset.role = UnitRole.Elite;
             preset.stats = UnitStats.CreateKikiUedaLv1Preset();
             preset.placeholderColor = new Color(0.55f, 0.12f, 0.14f);

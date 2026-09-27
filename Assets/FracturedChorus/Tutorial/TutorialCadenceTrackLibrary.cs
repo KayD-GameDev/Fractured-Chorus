@@ -52,7 +52,7 @@ namespace FracturedChorus.Tutorial
                 "MID tăng sát thương. BACK tăng khả năng buff và né.", TutorialStepKind.Slide, true),
             new("formation_situational",
                 "Hãy dựa vào đội hình hiện tại và tình huống để đặt sao cho hợp lý.", TutorialStepKind.Slide, true),
-            new("formation_practice", "Hãy di chuyển Coda sang vị trí của Ren.",
+            new("formation_practice", "Hãy di chuyển Ren sang ô FRONT cùng hàng.",
                 TutorialStepKind.PracticeFormation, true),
             new("formation_good", "Tốt lắm.", TutorialStepKind.Slide, true),
             new("boss_note_total",

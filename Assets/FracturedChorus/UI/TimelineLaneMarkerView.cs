@@ -233,6 +233,13 @@ namespace FracturedChorus.UI
                 return;
             }
 
+            if (FracturedChorus.Tutorial.TutorialFocusOverlay.IsLifted(_rect))
+            {
+                _animating = false;
+                _animT = 1f;
+                return;
+            }
+
             if (animate)
             {
                 _animT = 0f;
@@ -251,7 +258,7 @@ namespace FracturedChorus.UI
 
         private void Update()
         {
-            if (!_animating || _rect == null)
+            if (!_animating || _rect == null || FracturedChorus.Tutorial.TutorialFocusOverlay.IsLifted(_rect))
             {
                 return;
             }

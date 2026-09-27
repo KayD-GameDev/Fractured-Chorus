@@ -76,7 +76,8 @@ Copy/step SoT: `docs/tutorial/TUTORIAL_COPY.md`.
 | Runtime | `tutorialSceneMode` = true; `TutorialDirector` chạy text VI + Coda chibi; bấm Next |
 | Ảnh step (optional) | `Art/UI/Tutorial/Steps/{stepId}_v1.png` — thiếu file = chỉ text |
 | Exit | Victory → `tutorial_cadence_intro_done` + RunMap; chết → reload scene |
-| Test | CampusHub → **Tutorial Fight**, hoặc Play trực tiếp scene |
+| Test | Play trực tiếp scene (nút Tutorial Fight ở CampusHub đã gỡ) |
+| Sync UI | **Fractured Chorus → Tutorial → Sync CombatTutorial UI With CombatPrototype** (TLB rect/note size, lane + avatar, boss rail, card side-tube) |
 
 ---
 

@@ -80,6 +80,7 @@ namespace FracturedChorus.Combat.Presentation
         private CombatSession _session;
         private Coroutine _routine;
         private bool _enabled;
+        private bool _palmSfxAlreadyPlayed;
 
         public bool IsBusy =>
             _enabled && (_routine != null || _pending.Count > 0 || ActiveAttackers.Count > 0);
@@ -326,6 +327,12 @@ namespace FracturedChorus.Combat.Presentation
 
             attackerView.ArriveAtCombatCell();
             attackerView.PlayCastHold(report.Skill);
+            if (!IsAstraSwordAttack(attackerView, report.Skill))
+            {
+                PlayEnemyPalmNow();
+                _palmSfxAlreadyPlayed = true;
+            }
+
             if (castHoldSeconds > 0f)
             {
                 yield return new WaitForSeconds(castHoldSeconds);
@@ -400,6 +407,8 @@ namespace FracturedChorus.Combat.Presentation
                 SpawnCharlotteCounterShields(beatIndex, receiverView, attackerView, shieldHold);
             }
 
+            PlayEnemyAttackSfx(attackerView, skill);
+            _palmSfxAlreadyPlayed = false;
             if (SkillVfxShotView.HasRenderableProfile(profile))
             {
                 var profileMode = SkillVfxShotView.ResolveMode(profile, countered);
@@ -466,10 +475,11 @@ namespace FracturedChorus.Combat.Presentation
             }
 
             var cameraFired = false;
+            var attackerIsEnemy = attackerView != null && attackerView.Side == GridSide.Enemy;
             Action onImpact = () =>
             {
                 extraOnImpact?.Invoke();
-                if (mode == BossSwordShotMode.Hit)
+                if (mode == BossSwordShotMode.Hit && !attackerIsEnemy)
                 {
                     FindAnyObjectByType<CombatSfxController>()?.PlayDamageHitFallback();
                 }
@@ -581,6 +591,7 @@ namespace FracturedChorus.Combat.Presentation
             var profile = SkillVfxShotView.ResolveProfile(
                 ResolveUnitSkill(attackerView),
                 attackerView != null ? attackerView.Unit : null);
+            PlayEnemyAttackSfx(attackerView, ResolveUnitSkill(attackerView));
             if (SkillVfxShotView.HasRenderableProfile(profile))
             {
                 yield return PlayProfileVolley(attackerView, receiverView, swordCount, mode, profile, null, null);
@@ -629,6 +640,48 @@ namespace FracturedChorus.Combat.Presentation
             return EnemyProjectileKit.MicBolt;
         }
 
+        private static void PlayEnemyAttackSfx(UnitView attackerView, SkillDefinitionSO skill)
+        {
+            var host = ActiveInstance;
+            if (host != null && host._palmSfxAlreadyPlayed && !IsAstraSwordAttack(attackerView, skill))
+            {
+                return;
+            }
+
+            var sfx = FindAnyObjectByType<CombatSfxController>();
+            if (sfx == null)
+            {
+                return;
+            }
+
+            if (IsAstraSwordAttack(attackerView, skill))
+            {
+                sfx.PlayAstraSword();
+                return;
+            }
+
+            sfx.PlayEnemyPalm();
+        }
+
+        private static void PlayEnemyPalmNow()
+        {
+            FindAnyObjectByType<CombatSfxController>()?.PlayEnemyPalm();
+        }
+
+        private static bool IsAstraSwordAttack(UnitView attackerView, SkillDefinitionSO skill)
+        {
+            if (skill != null
+                && string.Equals(skill.skillId, "boss_despair_core", StringComparison.Ordinal))
+            {
+                return true;
+            }
+
+            var unitId = attackerView != null && attackerView.Unit != null
+                ? attackerView.Unit.UnitId
+                : null;
+            return unitId == BossDespairUnitId;
+        }
+
         private IEnumerator PlayEnemyVolley(
             UnitView attackerView,
             UnitView receiverView,
@@ -640,15 +693,6 @@ namespace FracturedChorus.Combat.Presentation
             if (settings.Sword == null)
             {
                 yield break;
-            }
-
-            if (mode == BossSwordShotMode.Hit)
-            {
-                var sfx = FindAnyObjectByType<CombatSfxController>();
-                if (sfx != null)
-                {
-                    settings.OnImpact = sfx.PlayDamageHitFallback;
-                }
             }
 
             var from = ResolveAim(attackerView);

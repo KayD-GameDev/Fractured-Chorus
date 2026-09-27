@@ -60,6 +60,44 @@ namespace FracturedChorus.UI
 
         public bool IsVisible => panelRect != null && panelRect.gameObject.activeSelf;
 
+        public CombatUnit CurrentUnit => IsVisible ? _currentUnit : null;
+
+        public bool TryGetBasicAttackSlot(out RectTransform slotRect)
+        {
+            slotRect = null;
+            if (!IsVisible)
+            {
+                return false;
+            }
+
+            WireReferences();
+            SkillRadialSlotView fallback = null;
+            for (var i = 0; i < _slots.Count; i++)
+            {
+                var slot = _slots[i];
+                if (slot == null || !slot.HasSkill)
+                {
+                    continue;
+                }
+
+                fallback ??= slot;
+                if (slot.Skill.slotKind == SkillSlotKind.BasicAttack)
+                {
+                    slotRect = slot.Rect != null ? slot.Rect : slot.transform as RectTransform;
+                    return slotRect != null;
+                }
+            }
+
+            var chosen = fallback != null ? fallback : slotTop;
+            if (chosen == null || !chosen.HasSkill)
+            {
+                return false;
+            }
+
+            slotRect = chosen.Rect != null ? chosen.Rect : chosen.transform as RectTransform;
+            return slotRect != null;
+        }
+
         private void Awake()
         {
             WireReferences();
@@ -429,6 +467,11 @@ namespace FracturedChorus.UI
             EnsureDragGhost(skill);
         }
 
+        public RectTransform DragGhostRect =>
+            _dragGhost != null && _dragGhost.activeInHierarchy
+                ? _dragGhost.transform as RectTransform
+                : null;
+
         public void UpdateSkillDrag(Vector2 screenPos)
         {
             MoveDragGhost(screenPos);
@@ -670,14 +713,18 @@ namespace FracturedChorus.UI
                 return;
             }
 
-            var canvasRect = GetRootCanvasRectTransform();
-            if (canvasRect == null)
+            var parent = _dragGhost.transform.parent as RectTransform;
+            if (parent == null)
             {
                 return;
             }
 
+            var canvas = parent.GetComponentInParent<Canvas>();
+            var camera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
+                ? canvas.rootCanvas != null ? canvas.rootCanvas.worldCamera : canvas.worldCamera
+                : null;
             if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                    canvasRect, screenPos, GetUiCamera(), out var local))
+                    parent, screenPos, camera, out var local))
             {
                 ((RectTransform)_dragGhost.transform).anchoredPosition = local;
             }

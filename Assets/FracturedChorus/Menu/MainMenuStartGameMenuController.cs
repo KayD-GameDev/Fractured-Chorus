@@ -1,4 +1,5 @@
 using FracturedChorus.Meta;
+using FracturedChorus.UI;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -10,6 +11,8 @@ namespace FracturedChorus.Menu
 {
     public class MainMenuStartGameMenuController : MonoBehaviour
     {
+        private const string DialogHolderName = "NewGameConfirmHolder";
+
         [SerializeField] private MainMenuStartGameController screenController;
         [SerializeField] private RectTransform highlightBar;
         [SerializeField] private MenuOption[] options;
@@ -18,6 +21,9 @@ namespace FracturedChorus.Menu
         private int _selectedIndex;
         private bool _enabled;
         private SaveLoadSlotListView _saveLoadView;
+        private ConfirmDialogView _confirmDialog;
+
+        public bool IsConfirmDialogOpen => _confirmDialog != null && _confirmDialog.IsOpen;
 
         [System.Serializable]
         private class MenuOption
@@ -254,10 +260,7 @@ namespace FracturedChorus.Menu
                     }
 
                     screenController.PlayButtonPressSfx();
-                    if (screenController.BeginNewGame())
-                    {
-                        SetStatus("Starting new run…");
-                    }
+                    AskNewGameDifficulty();
                     break;
                 case MenuAction.LoadGame:
                     OpenLoadGameSlots();
@@ -272,6 +275,75 @@ namespace FracturedChorus.Menu
                     QuitGame();
                     break;
             }
+        }
+
+        /// <summary>
+        /// Bậc khó khoá theo file lưu, nên đây là chỗ cuối người chơi còn đổi được — báo rõ bậc
+        /// đang chọn trước khi rơi vào Prologue.
+        /// </summary>
+        private void AskNewGameDifficulty()
+        {
+            var difficulty = MainMenuGameSettings.Difficulty;
+            var message =
+                $"Độ khó: {MainMenuGameSettings.GetDifficultyLabel(difficulty)}\n" +
+                $"{MainMenuGameSettings.GetDifficultyDescription(difficulty)}\n\n" +
+                "Khóa theo file lưu, không đổi được sau. Đổi bậc trong CONFIG.";
+
+            // Phải so bằng toán tử của Unity: dialog bị Destroy vẫn khác null theo nghĩa C#.
+            if (_confirmDialog == null)
+            {
+                _confirmDialog = ConfirmDialogView.Ensure(ResolveDialogParent());
+            }
+
+            if (_confirmDialog == null)
+            {
+                StartNewGame();
+                return;
+            }
+
+            SetEnabled(false);
+            _confirmDialog.Ask(
+                "NEW GAME",
+                message,
+                StartNewGame,
+                () => SetEnabled(true),
+                "BẮT ĐẦU",
+                "HỦY");
+        }
+
+        private void StartNewGame()
+        {
+            if (screenController != null && screenController.BeginNewGame())
+            {
+                SetStatus("Starting new run…");
+                return;
+            }
+
+            SetEnabled(true);
+        }
+
+        /// <summary>
+        /// Holder riêng luôn bật. Ensure() quét cả cây con, mà dialog của panel Load nằm dưới một
+        /// GameObject tắt — bắt trúng cái đó thì modal SetActive(true) vẫn không hiện ra được.
+        /// </summary>
+        private Transform ResolveDialogParent()
+        {
+            var canvas = GetComponentInParent<Canvas>();
+            var host = canvas != null ? canvas.transform : transform;
+            var holder = host.Find(DialogHolderName);
+            if (holder != null)
+            {
+                return holder;
+            }
+
+            var holderGo = new GameObject(DialogHolderName, typeof(RectTransform));
+            var rect = (RectTransform)holderGo.transform;
+            rect.SetParent(host, false);
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+            return rect;
         }
 
         private static void QuitGame()

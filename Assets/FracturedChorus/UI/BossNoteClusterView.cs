@@ -16,6 +16,7 @@ namespace FracturedChorus.UI
 
         private readonly List<GameObject> _spawned = new();
         private readonly List<GameObject> _livingNoteRoots = new();
+        private readonly List<GameObject> _heldWhileLifted = new();
         private readonly Dictionary<int, RectTransform> _numberSlots = new();
         private RectTransform _layer;
         private TimelineNoteVisualCatalog _catalog;
@@ -49,14 +50,57 @@ namespace FracturedChorus.UI
             _layout.EnsureSingleHeadNormByVariant();
         }
 
+        public RectTransform FindNoteRect(int beatIndex)
+        {
+            var noteName = "NoteSingle_" + beatIndex;
+            if (_layer != null)
+            {
+                var onLayer = _layer.Find(noteName) as RectTransform;
+                if (onLayer != null)
+                {
+                    return onLayer;
+                }
+            }
+
+            return FindNamedRect(_livingNoteRoots, noteName) ?? FindNamedRect(_heldWhileLifted, noteName);
+        }
+
         public void Clear()
         {
+            for (var i = _heldWhileLifted.Count - 1; i >= 0; i--)
+            {
+                var held = _heldWhileLifted[i];
+                if (held != null && IsUnderLiftedNote(held.transform))
+                {
+                    continue;
+                }
+
+                if (held != null)
+                {
+                    Destroy(held);
+                }
+
+                _heldWhileLifted.RemoveAt(i);
+            }
+
             foreach (var go in _spawned)
             {
-                if (go != null)
+                if (go == null)
                 {
-                    Destroy(go);
+                    continue;
                 }
+
+                if (IsUnderLiftedNote(go.transform))
+                {
+                    if (!_heldWhileLifted.Contains(go))
+                    {
+                        _heldWhileLifted.Add(go);
+                    }
+
+                    continue;
+                }
+
+                Destroy(go);
             }
 
             _spawned.Clear();
@@ -340,7 +384,7 @@ namespace FracturedChorus.UI
         {
             foreach (var root in _livingNoteRoots)
             {
-                if (root != null)
+                if (root != null && !IsUnderLiftedNote(root.transform))
                 {
                     root.transform.SetAsLastSibling();
                 }
@@ -349,6 +393,11 @@ namespace FracturedChorus.UI
 
         private void SpawnSingle(BossNoteHead head, float y)
         {
+            if (TryReuseLiftedNote(head))
+            {
+                return;
+            }
+
             var x = _contentXForBeat(head.BeatIndex);
             var size = ResolveSingleNoteSize();
             var w = size.x;
@@ -580,6 +629,135 @@ namespace FracturedChorus.UI
             }
 
             return new Vector2(normFromCenter.x * drawW, normFromCenter.y * drawH);
+        }
+
+        private bool TryReuseLiftedNote(BossNoteHead head)
+        {
+            var noteName = "NoteSingle_" + head.BeatIndex;
+            for (var i = 0; i < _heldWhileLifted.Count; i++)
+            {
+                var go = _heldWhileLifted[i];
+                if (go == null || go.name != noteName)
+                {
+                    continue;
+                }
+
+                _heldWhileLifted.RemoveAt(i);
+                _spawned.Add(go);
+                _livingNoteRoots.Add(go);
+                var number = FindNamedRect(go.transform, "NoteNum_" + head.BeatIndex);
+                if (number != null)
+                {
+                    _numberSlots[head.BeatIndex] = number;
+                }
+
+                ApplyLiftedNoteState(go, number, head);
+                return true;
+            }
+
+            return false;
+        }
+
+        private void ApplyLiftedNoteState(GameObject note, RectTransform number, BossNoteHead head)
+        {
+            var noteImage = note != null ? note.GetComponent<Image>() : null;
+            var perfect = FindNamedRect(note != null ? note.transform : null, "NotePerfect_" + head.BeatIndex);
+            var text = number != null ? number.GetComponent<Text>() : null;
+
+            if (head.IsCleared)
+            {
+                if (noteImage != null)
+                {
+                    noteImage.enabled = false;
+                }
+
+                if (text != null)
+                {
+                    text.enabled = false;
+                }
+
+                if (perfect == null)
+                {
+                    SpawnPerfectOnSlot(
+                        number,
+                        head.BeatIndex,
+                        _catalog != null ? _catalog.CoverPerfect : null,
+                        preview: false);
+                }
+                else
+                {
+                    perfect.gameObject.SetActive(true);
+                }
+
+                return;
+            }
+
+            if (noteImage != null)
+            {
+                noteImage.enabled = true;
+                ApplyNoteAlpha(noteImage);
+            }
+
+            if (perfect != null)
+            {
+                perfect.gameObject.SetActive(false);
+            }
+
+            if (text != null)
+            {
+                text.enabled = true;
+            }
+
+            FillNumberText(number, head);
+        }
+
+        private static RectTransform FindNamedRect(List<GameObject> objects, string objectName)
+        {
+            for (var i = 0; i < objects.Count; i++)
+            {
+                var go = objects[i];
+                if (go != null && go.name == objectName)
+                {
+                    return go.transform as RectTransform;
+                }
+            }
+
+            return null;
+        }
+
+        private static RectTransform FindNamedRect(Transform root, string objectName)
+        {
+            if (root == null)
+            {
+                return null;
+            }
+
+            var transforms = root.GetComponentsInChildren<Transform>(true);
+            for (var i = 0; i < transforms.Length; i++)
+            {
+                if (transforms[i] != null && transforms[i].name == objectName)
+                {
+                    return transforms[i] as RectTransform;
+                }
+            }
+
+            return null;
+        }
+
+        private static bool IsUnderLiftedNote(Transform target)
+        {
+            var current = target;
+            while (current != null)
+            {
+                if (FracturedChorus.Tutorial.TutorialFocusOverlay.IsLifted(current))
+                {
+                    return true;
+                }
+
+                current = current.parent;
+            }
+
+            return false;
         }
 
         private Image CreateImage(string name, Sprite sprite, Vector2 anchored, Vector2 size)

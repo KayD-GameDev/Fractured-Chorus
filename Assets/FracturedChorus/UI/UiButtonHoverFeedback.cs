@@ -67,7 +67,15 @@ namespace FracturedChorus.UI
                 return;
             }
 
-            FindAnyObjectByType<CombatSfxController>()?.PlayUiClick();
+            var sfx = FindAnyObjectByType<CombatSfxController>();
+            if (gameObject.name == "ExecuteButton")
+            {
+                sfx?.PlayExecute();
+            }
+            else
+            {
+                sfx?.PlayUiClick();
+            }
             ResetHoverState();
         }
 

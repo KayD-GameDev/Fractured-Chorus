@@ -1,3 +1,4 @@
+using FracturedChorus.Meta;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -9,6 +10,8 @@ namespace FracturedChorus.Menu
 {
     public class MainMenuConfigOverlayController : MonoBehaviour
     {
+        private const float LockedChipAlpha = 0.35f;
+
         [SerializeField] private MainMenuStartGameController screenController;
         [SerializeField] private RectTransform highlightBar;
         [SerializeField] private Text infoText;
@@ -31,6 +34,18 @@ namespace FracturedChorus.Menu
 
         private int _selectedIndex;
         private bool _active;
+
+        /// <summary>
+        /// GDD khoá bậc khó theo file lưu. Config mở từ Campus Hub có sẵn scene để quay về, đó là
+        /// dấu hiệu chắc chắn nhất rằng người chơi đang ở giữa một lượt chơi.
+        /// </summary>
+        private static bool IsDifficultyLocked =>
+            MainMenuConfigLaunch.HasReturnTarget || GameMetaSession.HasSession;
+
+        private static GameDifficulty ActiveDifficulty =>
+            IsDifficultyLocked
+                ? (GameDifficulty)Mathf.Clamp(GameMetaSession.Current.Difficulty, 0, 2)
+                : MainMenuGameSettings.Difficulty;
 
         [System.Serializable]
         private class ConfigRow
@@ -152,6 +167,7 @@ namespace FracturedChorus.Menu
 
             UpdateDifficultyLabel();
             RefreshDifficultyChips();
+            RefreshDifficultyInteractable();
         }
 
         public void HandleInput()
@@ -173,7 +189,7 @@ namespace FracturedChorus.Menu
             {
                 skipUnreadToggle?.Toggle();
             }
-            else if (_selectedIndex == 3)
+            else if (_selectedIndex == 3 && !IsDifficultyLocked)
             {
                 if (WasMoveLeftPressed())
                 {
@@ -188,6 +204,11 @@ namespace FracturedChorus.Menu
 
         private void ChangeDifficulty(int direction)
         {
+            if (IsDifficultyLocked)
+            {
+                return;
+            }
+
             MainMenuGameSettings.CycleDifficulty(direction);
             UpdateDifficultyLabel();
             RefreshDifficultyChips();
@@ -196,6 +217,11 @@ namespace FracturedChorus.Menu
 
         private void SetDifficulty(GameDifficulty value)
         {
+            if (IsDifficultyLocked)
+            {
+                return;
+            }
+
             MainMenuGameSettings.SetDifficulty(value);
             UpdateDifficultyLabel();
             RefreshDifficultyChips();
@@ -206,7 +232,39 @@ namespace FracturedChorus.Menu
         {
             if (difficultyValueText != null)
             {
-                difficultyValueText.text = MainMenuGameSettings.GetDifficultyLabel(MainMenuGameSettings.Difficulty);
+                difficultyValueText.text = MainMenuGameSettings.GetDifficultyLabel(ActiveDifficulty);
+            }
+        }
+
+        private void RefreshDifficultyInteractable()
+        {
+            // Preview trong Editor cũng gọi RefreshFromSettings. Ghi interactable lúc đó là nguy cơ
+            // đóng băng luôn ba chip vào scene khi người ta bấm Save.
+            if (!Application.isPlaying)
+            {
+                return;
+            }
+
+            var unlocked = !IsDifficultyLocked;
+            SetInteractable(difficultyPrevButton, unlocked);
+            SetInteractable(difficultyNextButton, unlocked);
+
+            if (difficultyChipButtons == null)
+            {
+                return;
+            }
+
+            for (var i = 0; i < difficultyChipButtons.Length; i++)
+            {
+                SetInteractable(difficultyChipButtons[i], unlocked);
+            }
+        }
+
+        private static void SetInteractable(Selectable target, bool value)
+        {
+            if (target != null)
+            {
+                target.interactable = value;
             }
         }
 
@@ -265,7 +323,8 @@ namespace FracturedChorus.Menu
                 return;
             }
 
-            var selected = (int)MainMenuGameSettings.Difficulty;
+            var selected = (int)ActiveDifficulty;
+            var locked = IsDifficultyLocked;
             for (var i = 0; i < difficultyChipGraphics.Length; i++)
             {
                 var graphic = difficultyChipGraphics[i];
@@ -274,12 +333,18 @@ namespace FracturedChorus.Menu
                     continue;
                 }
 
-                var sprite = i == selected ? chipSelectedSprite : chipNormalSprite;
+                var isSelected = i == selected;
+                var sprite = isSelected ? chipSelectedSprite : chipNormalSprite;
                 if (sprite != null)
                 {
                     graphic.sprite = sprite;
-                    graphic.color = Color.white;
                 }
+
+                // Bậc đã khoá thì chỉ chip đang chọn còn sáng, hai chip kia mờ đi để thấy ngay
+                // là đang xem chứ không phải đang chọn.
+                graphic.color = locked && !isSelected
+                    ? new Color(1f, 1f, 1f, LockedChipAlpha)
+                    : Color.white;
             }
         }
 
@@ -444,7 +509,11 @@ namespace FracturedChorus.Menu
                         : "Only skip dialogue you have already read.";
                     break;
                 case 3:
-                    infoText.text = MainMenuGameSettings.GetDifficultyDescription(MainMenuGameSettings.Difficulty);
+                    var difficulty = ActiveDifficulty;
+                    var description = MainMenuGameSettings.GetDifficultyDescription(difficulty);
+                    infoText.text = IsDifficultyLocked
+                        ? $"Locked to this save · {MainMenuGameSettings.GetDifficultyLabel(difficulty)} — {description}"
+                        : $"{description} Applies to a new game.";
                     break;
             }
         }

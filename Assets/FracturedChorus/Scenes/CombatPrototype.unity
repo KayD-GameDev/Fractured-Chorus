@@ -7542,7 +7542,7 @@ MonoBehaviour:
   enemyStrikeChoreographer: {fileID: 707156463}
   playerSkillShotChoreographer: {fileID: 707156464}
   encounterDirector: {fileID: 707156465}
-  qteDefaultChance: 1
+  qteDefaultChance: 0.3
   qteMissDamageReduction: 0.25
   sideGap: 3.5
   applyStartResourcesOnPlay: 1
@@ -9124,7 +9124,15 @@ MonoBehaviour:
   uiClickVolume: 0.9
   skillPlaceSource: {fileID: 0}
   skillPlaceClip: {fileID: 0}
-  skillPlaceVolume: 0.9
+  skillPlaceVolume: 0.8
+  executeSource: {fileID: 0}
+  executeClip: {fileID: 0}
+  executeVolume: 0.9
+  enemyAttackSource: {fileID: 0}
+  enemyPalmClip: {fileID: 0}
+  enemyPalmVolume: 1
+  astraSwordClip: {fileID: 0}
+  astraSwordVolume: 0.8
 --- !u!1 &890010001
 GameObject:
   m_ObjectHideFlags: 0
@@ -14796,7 +14804,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1413621199
 RectTransform:
   m_ObjectHideFlags: 0
@@ -14813,7 +14821,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 86, y: -8}
+  m_AnchoredPosition: {x: 19.9, y: -70.6}
   m_SizeDelta: {x: 18, y: 18}
   m_Pivot: {x: 1, y: 1}
 --- !u!114 &1413621200
@@ -18285,7 +18293,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -53, y: -96.9}
+  m_AnchoredPosition: {x: -132.1, y: -29.2}
   m_SizeDelta: {x: 30, y: 30}
   m_Pivot: {x: 1, y: 1}
 --- !u!114 &1830421503
@@ -19266,7 +19274,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -130.1, y: -89.5}
+  m_AnchoredPosition: {x: -133.8, y: -32.7}
   m_SizeDelta: {x: 30, y: 30}
   m_Pivot: {x: 1, y: 1}
 --- !u!114 &1923000503
