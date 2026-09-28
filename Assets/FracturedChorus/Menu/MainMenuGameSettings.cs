@@ -1,4 +1,5 @@
 using System;
+using FracturedChorus.Localization;
 using UnityEngine;
 
 namespace FracturedChorus.Menu
@@ -98,11 +99,11 @@ namespace FracturedChorus.Menu
             switch (value)
             {
                 case GameDifficulty.OnBeat:
-                    return "Enemy −2 lv · HP/dmg ×0.85 · Notes ×1.1 · target party Lv13.";
+                    return GameLoc.Get("settings.difficulty.onbeat");
                 case GameDifficulty.Cadence:
-                    return "Baseline tune · party Lv15 vs boss Lv18.";
+                    return GameLoc.Get("settings.difficulty.cadence");
                 case GameDifficulty.OffBeat:
-                    return "Enemy +2 lv · HP ×1.15 · dmg ×1.2 · target party Lv17.";
+                    return GameLoc.Get("settings.difficulty.offbeat");
                 default:
                     return string.Empty;
             }

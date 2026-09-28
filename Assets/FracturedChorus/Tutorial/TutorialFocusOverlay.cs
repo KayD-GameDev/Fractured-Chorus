@@ -88,6 +88,18 @@ namespace FracturedChorus.Tutorial
             view.LiftParty();
         }
 
+        public static void SyncFirstImpactNote()
+        {
+            var view = Ensure();
+            if (view == null)
+            {
+                return;
+            }
+
+            view.ShowDimmer();
+            view.LiftFirstImpactNote();
+        }
+
         public static void Release()
         {
             if (s_active == null)
@@ -164,6 +176,48 @@ namespace FracturedChorus.Tutorial
             LiftWorld(FindCell(CellFrom));
             LiftWorld(FindCell(CellTo));
             LiftWorld(FindRen());
+        }
+
+        private void LiftFirstImpactNote()
+        {
+            var timeline = FindAnyObjectByType<BeatTimelineUIView>();
+            if (timeline == null)
+            {
+                return;
+            }
+
+            EnsureGuideOverlays();
+            timeline.TryGetFirstPhaseImpactNote(out var note);
+            timeline.TryGetFirstPhaseBeatFrame(out var frame);
+            LiftUi(frame, _frameOverlay, keepScreen: true);
+            LiftUi(note, _counterOverlay, keepScreen: true);
+            BringToFront(note);
+
+            var views = FindObjectsByType<UnitView>(FindObjectsInactive.Exclude);
+            for (var i = 0; i < views.Length; i++)
+            {
+                var unitView = views[i];
+                if (unitView == null || unitView.Side != GridSide.Player || unitView.Unit == null)
+                {
+                    continue;
+                }
+
+                timeline.CollectUnitSkillVisuals(unitView.Unit, _skillVisuals);
+                if (_skillVisuals.Count == 0)
+                {
+                    continue;
+                }
+
+                timeline.TryGetLaneLine(unitView.Unit, out var lane);
+                LiftUi(lane, _laneOverlay, keepScreen: true);
+                for (var s = 0; s < _skillVisuals.Count; s++)
+                {
+                    LiftUi(_skillVisuals[s], _counterOverlay, keepScreen: true);
+                    BringToFront(_skillVisuals[s]);
+                }
+
+                SnapSkillsOntoLane(timeline, unitView.Unit);
+            }
         }
 
         private void LiftParty()

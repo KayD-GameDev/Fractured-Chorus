@@ -1,4 +1,5 @@
 using FracturedChorus.Combat.Core;
+using FracturedChorus.Localization;
 using FracturedChorus.Combat.Cover;
 using UnityEngine;
 using UnityEngine.UI;
@@ -357,7 +358,7 @@ namespace FracturedChorus.UI
                 coverButtonImage.color = new Color(0.35f, 0.4f, 0.55f, 0.95f);
                 if (coverButtonLabel != null)
                 {
-                    coverButtonLabel.text = "COVER";
+                    coverButtonLabel.text = GameLoc.Get("combat.cover");
                     coverButtonLabel.alignment = TextAnchor.MiddleCenter;
                     coverButtonLabel.fontStyle = FontStyle.Bold;
                 }
@@ -461,7 +462,7 @@ namespace FracturedChorus.UI
                 }
                 else if (cover.IsPending)
                 {
-                    statusLabel.text = "PENDING";
+                    statusLabel.text = GameLoc.Get("combat.pending");
                 }
                 else
                 {

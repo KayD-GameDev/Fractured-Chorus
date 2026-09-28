@@ -207,14 +207,14 @@ namespace FracturedChorus.UI
             panelRect.anchorMin = new Vector2(0.5f, 0.5f);
             panelRect.anchorMax = new Vector2(0.5f, 0.5f);
             panelRect.pivot = new Vector2(0.5f, 0.5f);
-            panelRect.sizeDelta = new Vector2(560f, 260f);
+            panelRect.sizeDelta = new Vector2(1120f, 520f);
             panelGo.GetComponent<Image>().color = FcColorTokens.Surface.Modal;
 
-            var title = CreateText(panelGo.transform, "Title", "CONFIRM", 26, TextAnchor.MiddleCenter, FontStyle.Bold);
+            var title = CreateText(panelGo.transform, "Title", "CONFIRM", 52, TextAnchor.MiddleCenter, FontStyle.Bold);
             Stretch(title.rectTransform, new Vector2(0.06f, 0.74f), new Vector2(0.94f, 0.92f));
             title.color = FcColorTokens.Brand.Cyan;
 
-            var message = CreateText(panelGo.transform, "Message", string.Empty, 20, TextAnchor.UpperCenter);
+            var message = CreateText(panelGo.transform, "Message", string.Empty, 40, TextAnchor.UpperCenter);
             Stretch(message.rectTransform, new Vector2(0.08f, 0.34f), new Vector2(0.92f, 0.72f));
             message.color = FcColorTokens.Brand.TextPrimary;
             message.horizontalOverflow = HorizontalWrapMode.Wrap;
@@ -253,7 +253,7 @@ namespace FracturedChorus.UI
             var button = go.GetComponent<Button>();
             button.targetGraphic = image;
 
-            var label = CreateText(go.transform, "Label", labelText, 20, TextAnchor.MiddleCenter, FontStyle.Bold);
+            var label = CreateText(go.transform, "Label", labelText, 40, TextAnchor.MiddleCenter, FontStyle.Bold);
             Stretch(label.rectTransform, Vector2.zero, Vector2.one);
             label.color = FcColorTokens.Brand.Cyan;
             return (button, label);

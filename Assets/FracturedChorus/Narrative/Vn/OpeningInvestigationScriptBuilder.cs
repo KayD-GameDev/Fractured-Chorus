@@ -176,6 +176,7 @@ namespace FracturedChorus.Narrative.Vn
         {
             kind = VnBeatKind.Narration,
             text = text,
+            textVi = VnLineCatalog.Lookup(text),
             bgId = bgId,
             bgmId = bgmId,
             bgmPitch = bgmPitch,
@@ -196,6 +197,7 @@ namespace FracturedChorus.Narrative.Vn
             kind = VnBeatKind.Line,
             speakerId = speakerId,
             text = text,
+            textVi = VnLineCatalog.Lookup(text),
             expression = expression,
             bgId = bgId,
             bgmId = bgmId,
@@ -212,6 +214,7 @@ namespace FracturedChorus.Narrative.Vn
         {
             kind = VnBeatKind.TextCard,
             text = text,
+            textVi = VnLineCatalog.Lookup(text),
             duration = duration,
             bgId = bgId,
             bgmId = bgmId,

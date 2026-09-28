@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using FracturedChorus.Localization;
 using FracturedChorus.Meta;
 using UnityEngine;
 using UnityEngine.UI;
@@ -30,7 +31,9 @@ namespace FracturedChorus.Hub
 
             if (headerLabel != null)
             {
-                headerLabel.text = phase == DayPhase.Day ? "Chọn hoạt động — Ban ngày" : "Chọn hoạt động — Buổi tối";
+                headerLabel.text = phase == DayPhase.Day
+                    ? GameLoc.Get("hub.activity.day")
+                    : GameLoc.Get("hub.activity.night");
             }
 
             ClearButtons();

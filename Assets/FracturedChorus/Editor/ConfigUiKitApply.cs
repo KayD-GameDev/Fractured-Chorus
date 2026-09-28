@@ -11,7 +11,7 @@ namespace FracturedChorus.Editor
     {
         private const string KitDir = "Assets/FracturedChorus/Art/UI/ConfigMenu/Kit/";
         private const string PanelPath = KitDir + "ui_config_panel_v1.png";
-        private const string SliderTrackPath = KitDir + "ui_config_slider_track_v1.png";
+        private const string SliderTrackPath = KitDir + "ui_config_slider_track_bg_v1.png";
         private const string SliderFillPath = KitDir + "ui_config_slider_fill_v1.png";
         private const string SliderHandlePath = KitDir + "ui_config_slider_handle_v1.png";
         private const string ToggleOnPath = KitDir + "ui_config_toggle_on_v1.png";
@@ -185,9 +185,9 @@ namespace FracturedChorus.Editor
             SetActive(row.Find("Gt"), false);
             SetActive(row.Find("Value"), false);
 
-            EnsureChip(row, "Chip_OnBeat", "ON BEAT", new Vector2(196f, 0f));
-            EnsureChip(row, "Chip_Cadence", "CADENCE", new Vector2(396f, 0f));
-            EnsureChip(row, "Chip_OffBeat", "OFF-BEAT", new Vector2(596f, 0f));
+            EnsureChip(row, "Chip_OnBeat", "ON BEAT", new Vector2(304f, 0f));
+            EnsureChip(row, "Chip_Cadence", "CADENCE", new Vector2(472f, 0f));
+            EnsureChip(row, "Chip_OffBeat", "OFF-BEAT", new Vector2(640f, 0f));
         }
 
         private static void StyleHighlight(Transform list)
@@ -304,12 +304,12 @@ namespace FracturedChorus.Editor
         private static void EnsureChip(Transform row, string name, string label, Vector2 pos)
         {
             var image = EnsureImageChild(row, name, out var created);
-            BindSprite(image, ChipNormalPath, Image.Type.Simple, preserveAspect: true, raycast: true);
             var button = image.GetComponent<Button>() ?? image.gameObject.AddComponent<Button>();
             button.targetGraphic = image;
             if (created)
             {
-                SetFree(image.rectTransform, new Vector2(0f, 0.5f), new Vector2(176f, 64f), pos);
+                BindSprite(image, ChipNormalPath, Image.Type.Simple, preserveAspect: false, raycast: true);
+                SetFree(image.rectTransform, new Vector2(0f, 0.5f), new Vector2(148f, 64f), pos);
             }
 
             var text = image.transform.Find("Label")?.GetComponent<Text>();

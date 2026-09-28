@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using FracturedChorus.Hub;
+using FracturedChorus.Localization;
 using FracturedChorus.UI;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -8,17 +10,23 @@ using UnityEngine.UI;
 namespace FracturedChorus.Tutorial
 {
     /// <summary>
-    /// Manga bubbles and a simplified hand for the first tutorial QTE.
+    /// Manga bubbles and a pointing hand for the first tutorial QTE.
     /// Bubble 1 and 2 advance on a click inside the bubble. Bubble 3 waits for a click outside it.
     /// </summary>
     public sealed class TutorialQteGuideView : MonoBehaviour
     {
-        public const string OuterCopy = "Vòng ngoài đang thu nhỏ. Đây là vòng đếm nhịp.";
-        public const string InnerCopy = "Vòng trong là mốc. Hai vòng chạm nhau là lúc Perfect.";
-        public const string ContactCopy = "Canh đúng lúc này và bấm chuột bên ngoài bong bóng để được Perfect.";
+        public const string OuterCopy = "The outer ring is shrinking. That's the beat timer.";
+        public const string InnerCopy = "The inner ring is the mark. Perfect is when the two rings meet.";
+        public const string ContactCopy = "Hit it now. Click outside the bubble for a Perfect.";
 
         private const string BubbleResource = "UI/Tutorial/tutorial_qte_bubble_v1";
-        private const string HandResource = "UI/Tutorial/tutorial_qte_hand_v1";
+        private const string HandResource = "UI/Tutorial/tutorial_point_hand_v1";
+
+        // Sprite fingertip is upper-right (~50°). Pivot there and rotate so the finger points right.
+        private static readonly Vector2 HandPivot = new Vector2(0.771f, 0.857f);
+        private const float HandPointRightDegrees = -50f;
+        private static readonly Vector2 OuterHandPosition = new Vector2(-165f, 73f);
+        private static readonly Vector2 InnerHandPosition = new Vector2(-93f, 73f);
 
         private static TutorialQteGuideView s_active;
 
@@ -40,9 +48,9 @@ namespace FracturedChorus.Tutorial
                 yield break;
             }
 
-            view.Show(OuterCopy, qte.OuterRing, outsideConfirms: false);
+            view.Show(GameLoc.Tr(OuterCopy), qte.OuterRing, outsideConfirms: false);
             yield return view.WaitUntilBubbleClicked();
-            view.Show(InnerCopy, qte.InnerRing, outsideConfirms: false);
+            view.Show(GameLoc.Tr(InnerCopy), qte.InnerRing, outsideConfirms: false);
             yield return view.WaitUntilBubbleClicked();
             view.HideChrome();
         }
@@ -55,7 +63,7 @@ namespace FracturedChorus.Tutorial
                 yield break;
             }
 
-            view.Show(ContactCopy, qte.OuterRing, outsideConfirms: true);
+            view.Show(GameLoc.Tr(ContactCopy), qte.OuterRing, outsideConfirms: true);
             yield return null;
             yield return view.WaitUntilOutsideClicked();
             view.HideChrome();
@@ -187,9 +195,7 @@ namespace FracturedChorus.Tutorial
             if (_hand != null)
             {
                 var innerRing = target != null && target.name == "InnerRing";
-                _hand.anchoredPosition = innerRing
-                    ? new Vector2(-120f, 216f)
-                    : new Vector2(-162f, 216f);
+                _hand.anchoredPosition = innerRing ? InnerHandPosition : OuterHandPosition;
             }
 
             if (_bubble != null)
@@ -223,6 +229,11 @@ namespace FracturedChorus.Tutorial
 
         private static bool WasClickThisFrame()
         {
+            if (MetaStatusMenuUI.IsAnyOpen)
+            {
+                return false;
+            }
+
 #if ENABLE_INPUT_SYSTEM
             var mouse = UnityEngine.InputSystem.Mouse.current;
             if (mouse != null && mouse.leftButton.wasPressedThisFrame)
@@ -319,8 +330,9 @@ namespace FracturedChorus.Tutorial
             _hand = handGo.GetComponent<RectTransform>();
             _hand.SetParent(_root, false);
             _hand.anchorMin = _hand.anchorMax = new Vector2(0.5f, 0.5f);
-            _hand.pivot = new Vector2(0.92f, 0.45f);
-            _hand.sizeDelta = new Vector2(168f, 168f);
+            _hand.pivot = HandPivot;
+            _hand.sizeDelta = new Vector2(232f, 232f);
+            _hand.localRotation = Quaternion.Euler(0f, 0f, HandPointRightDegrees);
             var handImage = handGo.GetComponent<Image>();
             handImage.sprite = handSprite;
             handImage.preserveAspect = true;

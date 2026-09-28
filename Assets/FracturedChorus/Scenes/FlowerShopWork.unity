@@ -4600,7 +4600,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 01 / 09
+  m_Text: 02 / 09
 --- !u!222 &1991000016
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -4642,7 +4642,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Tue
+  m_Text: Wed
 --- !u!222 &1991000018
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -4671,7 +4671,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: cae5be8b83eb4708b3224b4d18c55966, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 01667d25060e423ea7cb957281a474cc, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1

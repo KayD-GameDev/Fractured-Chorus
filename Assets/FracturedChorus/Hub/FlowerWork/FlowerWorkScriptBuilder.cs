@@ -93,6 +93,7 @@ namespace FracturedChorus.Hub.FlowerWork
                 VnSpeakerIds.FlowerOwner,
                 $"Good morning, {playerName}. Let's do our best together today.",
                 VnBgIds.FlowerShop,
+                textVi: $"Chào buổi sáng, {playerName}. Hôm nay cùng cố gắng nhé.",
                 sfxId: VnAudioIds.FlowerShopGreet,
                 setFlags: state == null || !state.HasFlag(StoryFlagIds.FlowerJobIntroDone)
                     ? new[] { StoryFlagIds.FlowerJobIntroDone }
@@ -132,12 +133,15 @@ namespace FracturedChorus.Hub.FlowerWork
                 jumps[i] = i == correctIndex ? correctBranchIndex : wrongBranchIndex;
             }
 
+            var choicePrompt = scenario != null ? scenario.thinkPrompt : "Which flowers fit the request?";
             beats.Add(new VnBeat
             {
                 kind = VnBeatKind.Choice,
-                text = scenario != null ? scenario.thinkPrompt : "Which flowers fit the request?",
+                text = choicePrompt,
+                textVi = VnLineCatalog.Lookup(choicePrompt),
                 bgId = VnBgIds.FlowerShop,
                 choices = choiceLabels,
+                choicesVi = MapChoices(choiceLabels),
                 choiceNextBeatIndex = jumps,
                 showDateHud = true,
                 dateHudFromMeta = true
@@ -201,17 +205,35 @@ namespace FracturedChorus.Hub.FlowerWork
             dateHudFromMeta = true
         };
 
+        private static string[] MapChoices(string[] labels)
+        {
+            if (labels == null)
+            {
+                return null;
+            }
+
+            var mapped = new string[labels.Length];
+            for (var i = 0; i < labels.Length; i++)
+            {
+                mapped[i] = VnLineCatalog.Lookup(labels[i]) ?? labels[i];
+            }
+
+            return mapped;
+        }
+
         private static VnBeat L(
             string speakerId,
             string text,
             string bgId,
             string expression = null,
             string sfxId = null,
-            string[] setFlags = null) => new VnBeat
+            string[] setFlags = null,
+            string textVi = null) => new VnBeat
         {
             kind = VnBeatKind.Line,
             speakerId = speakerId,
             text = text,
+            textVi = textVi ?? VnLineCatalog.Lookup(text),
             bgId = bgId,
             expression = expression,
             sfxId = sfxId,

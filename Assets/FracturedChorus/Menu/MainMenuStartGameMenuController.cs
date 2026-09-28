@@ -1,3 +1,4 @@
+using FracturedChorus.Localization;
 using FracturedChorus.Meta;
 using FracturedChorus.UI;
 using UnityEngine;
@@ -241,7 +242,7 @@ namespace FracturedChorus.Menu
                     screenController?.PlayButtonPressSfx();
                 }
 
-                SetStatus("No save data found.");
+                SetStatus(GameLoc.Get("menu.status.nosave"));
                 return;
             }
 
@@ -284,10 +285,9 @@ namespace FracturedChorus.Menu
         private void AskNewGameDifficulty()
         {
             var difficulty = MainMenuGameSettings.Difficulty;
-            var message =
-                $"Độ khó: {MainMenuGameSettings.GetDifficultyLabel(difficulty)}\n" +
-                $"{MainMenuGameSettings.GetDifficultyDescription(difficulty)}\n\n" +
-                "Khóa theo file lưu, không đổi được sau. Đổi bậc trong CONFIG.";
+            var message = GameLoc.Get("menu.newgame.difficulty")
+                .Replace("{label}", MainMenuGameSettings.GetDifficultyLabel(difficulty))
+                .Replace("{desc}", MainMenuGameSettings.GetDifficultyDescription(difficulty));
 
             // Phải so bằng toán tử của Unity: dialog bị Destroy vẫn khác null theo nghĩa C#.
             if (_confirmDialog == null)
@@ -303,19 +303,19 @@ namespace FracturedChorus.Menu
 
             SetEnabled(false);
             _confirmDialog.Ask(
-                "NEW GAME",
+                GameLoc.Tr("NEW GAME"),
                 message,
                 StartNewGame,
                 () => SetEnabled(true),
-                "BẮT ĐẦU",
-                "HỦY");
+                GameLoc.Tr("START"),
+                GameLoc.Tr("CANCEL"));
         }
 
         private void StartNewGame()
         {
             if (screenController != null && screenController.BeginNewGame())
             {
-                SetStatus("Starting new run…");
+                SetStatus(GameLoc.Get("menu.status.starting"));
                 return;
             }
 
@@ -510,7 +510,7 @@ namespace FracturedChorus.Menu
         {
             if (!GameMetaSaveLoad.HasAnySave())
             {
-                SetStatus("No save data found.");
+                SetStatus(GameLoc.Get("menu.status.nosave"));
                 return;
             }
 
@@ -522,7 +522,7 @@ namespace FracturedChorus.Menu
                 {
                     if (screenController != null && screenController.LoadGame(slot))
                     {
-                        SetStatus($"Loading slot {slot + 1:00}…");
+                        SetStatus(GameLoc.Get("menu.status.loading").Replace("{slot}", $"{slot + 1:00}"));
                     }
                 });
         }

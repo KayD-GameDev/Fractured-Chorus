@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using FracturedChorus.Localization;
 using FracturedChorus.RunMap;
 using FracturedChorus.UI;
 using UnityEngine;
@@ -21,6 +22,7 @@ namespace FracturedChorus.UI.Loading
         [SerializeField] private CanvasGroup canvasGroup;
 
         private bool _busy;
+        private string _chainScene;
         private Coroutine _loadRoutine;
         private float _displayedFill;
         private float _fillVelocity;
@@ -96,7 +98,7 @@ namespace FracturedChorus.UI.Loading
             loadingLabel.rectTransform.pivot = new Vector2(0.5f, 0.5f);
             loadingLabel.rectTransform.sizeDelta = new Vector2(720f, 32f);
             loadingLabel.rectTransform.anchoredPosition = new Vector2(0f, 28f);
-            loadingLabel.text = "LOADING...";
+            loadingLabel.text = GameLoc.Get("combat.loading");
             loadingLabel.alignment = TextAnchor.MiddleCenter;
             loadingLabel.fontSize = 28;
             loadingLabel.fontStyle = FontStyle.Bold;
@@ -228,6 +230,27 @@ namespace FracturedChorus.UI.Loading
             HideImmediate();
         }
 
+        /// <summary>
+        /// Start a load, or if a load is already fading in, switch to this scene
+        /// before the cover comes down. Used when a scene's Start must immediately
+        /// enter another scene (tutorial resume) while this controller is still busy.
+        /// </summary>
+        public bool BeginLoadOrChain(string sceneName)
+        {
+            if (!RunMapSceneLoader.CanLoad(sceneName))
+            {
+                return false;
+            }
+
+            if (!_busy)
+            {
+                return BeginLoad(sceneName, LoadSceneMode.Single);
+            }
+
+            _chainScene = sceneName;
+            return true;
+        }
+
         public bool BeginLoad(string sceneName, LoadSceneMode mode)
         {
             if (_busy)
@@ -268,60 +291,78 @@ namespace FracturedChorus.UI.Loading
 
             yield return FadeTo(1f, LoadingProgress.FadeInSec);
 
-            var holdStart = Time.unscaledTime;
-            AsyncOperation operation;
-            try
+            while (true)
             {
-                var scenePath = RunMapSceneLoader.ResolveScenePath(sceneName);
-                var buildIndex = SceneUtility.GetBuildIndexByScenePath(scenePath);
-                operation = buildIndex >= 0
-                    ? SceneManager.LoadSceneAsync(buildIndex, mode)
-                    : SceneManager.LoadSceneAsync(sceneName, mode);
-            }
-            catch (Exception error)
-            {
-                Debug.LogError($"[Fractured Chorus] LoadingScreen LoadSceneAsync failed: {error}");
-                FinishLoad();
-                yield break;
-            }
+                var holdStart = Time.unscaledTime;
+                AsyncOperation operation;
+                try
+                {
+                    var scenePath = RunMapSceneLoader.ResolveScenePath(sceneName);
+                    var buildIndex = SceneUtility.GetBuildIndexByScenePath(scenePath);
+                    operation = buildIndex >= 0
+                        ? SceneManager.LoadSceneAsync(buildIndex, mode)
+                        : SceneManager.LoadSceneAsync(sceneName, mode);
+                }
+                catch (Exception error)
+                {
+                    Debug.LogError($"[Fractured Chorus] LoadingScreen LoadSceneAsync failed: {error}");
+                    FinishLoad();
+                    yield break;
+                }
 
-            if (operation == null)
-            {
-                Debug.LogError($"[Fractured Chorus] LoadSceneAsync returned null for '{sceneName}'.");
-                FinishLoad();
-                yield break;
-            }
+                if (operation == null)
+                {
+                    Debug.LogError($"[Fractured Chorus] LoadSceneAsync returned null for '{sceneName}'.");
+                    FinishLoad();
+                    yield break;
+                }
 
-            operation.allowSceneActivation = false;
+                operation.allowSceneActivation = false;
 
-            while (!LoadingProgress.CanActivate(_displayedFill, Time.unscaledTime - holdStart))
-            {
-                var targetFill = LoadingProgress.MapAsyncProgress(operation.progress);
-                _displayedFill = Mathf.SmoothDamp(
-                    _displayedFill,
-                    targetFill,
-                    ref _fillVelocity,
-                    LoadingProgress.SmoothTime,
-                    Mathf.Infinity,
-                    Time.unscaledDeltaTime);
+                while (!LoadingProgress.CanActivate(_displayedFill, Time.unscaledTime - holdStart))
+                {
+                    var targetFill = LoadingProgress.MapAsyncProgress(operation.progress);
+                    _displayedFill = Mathf.SmoothDamp(
+                        _displayedFill,
+                        targetFill,
+                        ref _fillVelocity,
+                        LoadingProgress.SmoothTime,
+                        Mathf.Infinity,
+                        Time.unscaledDeltaTime);
+
+                    if (view != null)
+                    {
+                        view.SetProgress(_displayedFill);
+                    }
+
+                    yield return null;
+                }
 
                 if (view != null)
                 {
-                    view.SetProgress(_displayedFill);
+                    view.SetProgress(1f);
                 }
 
-                yield return null;
-            }
+                operation.allowSceneActivation = true;
+                while (!operation.isDone)
+                {
+                    yield return null;
+                }
 
-            if (view != null)
-            {
-                view.SetProgress(1f);
-            }
+                if (string.IsNullOrEmpty(_chainScene))
+                {
+                    break;
+                }
 
-            operation.allowSceneActivation = true;
-            while (!operation.isDone)
-            {
-                yield return null;
+                sceneName = _chainScene;
+                _chainScene = null;
+                mode = LoadSceneMode.Single;
+                _displayedFill = 0f;
+                _fillVelocity = 0f;
+                if (view != null)
+                {
+                    view.SetProgress(0f);
+                }
             }
 
             yield return FadeTo(0f, LoadingProgress.FadeOutSec);
@@ -350,6 +391,7 @@ namespace FracturedChorus.UI.Loading
 
         private void FinishLoad()
         {
+            _chainScene = null;
             HideImmediate();
             _busy = false;
             _loadRoutine = null;

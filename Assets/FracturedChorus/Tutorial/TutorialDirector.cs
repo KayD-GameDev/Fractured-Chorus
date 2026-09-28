@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using FracturedChorus.Combat.Core;
 using FracturedChorus.Combat.Grid;
@@ -17,6 +18,9 @@ namespace FracturedChorus.Tutorial
         public const string TrackMap = "map";
         public const string TrackCombat = "combat";
         public const string TrackCadenceIntro = "cadence_intro";
+        private const float CharacterHandPullBack = 0.12f;
+        private const float PostQteTimelineRunSeconds = 0.01f;
+        private const float CounterExplainPanelY = 82f;
 
         private static TutorialDirector s_instance;
 
@@ -51,6 +55,8 @@ namespace FracturedChorus.Tutorial
         private bool _awaitingFullTimeline;
         private bool _awaitingQteAfterDeploy;
         private bool _qteExplainPauseActive;
+        private bool _holdingTimelineForCoachRead;
+        private Coroutine _coachReadHoldRoutine;
 
         public static bool IsCadenceIntroActive =>
             s_instance != null && s_instance._cadenceTrackActive && !s_instance._encounterTutorialMute;
@@ -153,30 +159,53 @@ namespace FracturedChorus.Tutorial
                 return;
             }
 
+            s_instance.ForgetDestroyedCoach();
             s_instance.coachView?.Hide();
             s_instance.SetHostBlocking(false);
             TutorialGuidePathView.HideActive();
             TutorialFocusOverlay.Release();
+            TutorialPointHandView.HideActive();
         }
 
         private void LateUpdate()
         {
+            ForgetDestroyedCoach();
             RefreshGameplayGuide();
+        }
+
+        private void ForgetDestroyedCoach()
+        {
+            if (coachView == null)
+            {
+                coachView = null;
+            }
         }
 
         private void RefreshGameplayGuide()
         {
             if (!_cadenceTrackActive)
             {
+                coachView?.RestorePanelPosition();
                 TutorialGuidePathView.HideActive();
                 TutorialFocusOverlay.Release();
+                TutorialPointHandView.HideActive();
                 return;
+            }
+
+            if (IsCurrentStep("boss_counter_explain"))
+            {
+                coachView?.PlacePanelY(CounterExplainPanelY);
+            }
+            else
+            {
+                coachView?.RestorePanelPosition();
             }
 
             if (_awaitingFormationMove)
             {
                 TutorialGuidePathView.ShowFormationArrow();
                 TutorialFocusOverlay.SyncFormation();
+                RefreshFormationHand();
                 return;
             }
 
@@ -184,6 +213,15 @@ namespace FracturedChorus.Tutorial
             {
                 TutorialGuidePathView.HideActive();
                 TutorialFocusOverlay.SyncParty();
+                RefreshPartyHands();
+                return;
+            }
+
+            if (IsCurrentStep("boss_counter_explain"))
+            {
+                TutorialGuidePathView.HideActive();
+                TutorialFocusOverlay.SyncFirstImpactNote();
+                RefreshCounterHand();
                 return;
             }
 
@@ -191,11 +229,82 @@ namespace FracturedChorus.Tutorial
             {
                 TutorialFocusOverlay.SyncSkillDrag();
                 TutorialGuidePathView.ShowSkillDragArrow();
+                TutorialPointHandView.HideActive();
                 return;
+            }
+
+            if (_awaitingFullTimeline)
+            {
+                TryCompleteFullTimeline();
             }
 
             TutorialGuidePathView.HideActive();
             TutorialFocusOverlay.Release();
+            TutorialPointHandView.HideActive();
+        }
+
+        private void RefreshFormationHand()
+        {
+            var ren = FindRenView();
+            var drag = _boundBoardDrag != null
+                ? _boundBoardDrag
+                : FindAnyObjectByType<BoardDragController>();
+            if (ren == null || (drag != null && drag.IsHoldingUnit(ren)))
+            {
+                TutorialPointHandView.HideActive();
+                return;
+            }
+
+            TutorialPointHandView.ShowAtWorld(PointBesideCharacter(ren.GetCameraBounds()));
+        }
+
+        private static void RefreshPartyHands()
+        {
+            var views = FindObjectsByType<UnitView>(FindObjectsInactive.Exclude);
+            var points = new List<Vector3>(2);
+            for (var i = 0; i < views.Length; i++)
+            {
+                var view = views[i];
+                if (view == null || view.Side != GridSide.Player || view.Unit == null)
+                {
+                    continue;
+                }
+
+                points.Add(PointBesideCharacter(view.GetCameraBounds()));
+            }
+
+            TutorialPointHandView.ShowAtWorlds(points);
+        }
+
+        private static void RefreshCounterHand()
+        {
+            var timeline = FindAnyObjectByType<BeatTimelineUIView>();
+            if (timeline == null || !timeline.TryGetFirstPhaseImpactNote(out var note) || note == null)
+            {
+                TutorialPointHandView.HideActive();
+                return;
+            }
+
+            TutorialPointHandView.ShowAtRect(note);
+        }
+
+        private static Vector3 PointBesideCharacter(Bounds bounds)
+        {
+            return new Vector3(bounds.min.x - CharacterHandPullBack, bounds.center.y, bounds.center.z);
+        }
+
+        private static UnitView FindRenView()
+        {
+            var views = FindObjectsByType<UnitView>(FindObjectsInactive.Exclude);
+            for (var i = 0; i < views.Length; i++)
+            {
+                if (IsRenUnit(views[i]))
+                {
+                    return views[i];
+                }
+            }
+
+            return null;
         }
 
         private bool IsCurrentStep(string stepId)
@@ -211,6 +320,7 @@ namespace FracturedChorus.Tutorial
 
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
+            ForgetDestroyedCoach();
             HideOverlay();
             if (!LoadingScreenController.IsBusy)
             {
@@ -297,7 +407,7 @@ namespace FracturedChorus.Tutorial
             string completionFlag,
             bool slideshow = false)
         {
-            if (steps == null || steps.Count == 0 || coachView != null && coachView.IsVisible)
+            if (steps == null || steps.Count == 0 || _queue.Count > 0)
             {
                 return;
             }
@@ -395,13 +505,19 @@ namespace FracturedChorus.Tutorial
                     showBack: HasPreviousSlideshowStep(_stepIndex),
                     primaryLabel: isLast ? "Done" : "Next",
                     onBack: RetreatStep,
-                    onPrimary: isLast ? CompleteTrack : AdvanceStep);
+                    onPrimary: isLast ? CompleteTrack : AdvanceStep,
+                    panelClip: TutorialCadenceTrackLibrary.LoadPanelClip(step.stepId));
                 SetHostBlocking(true);
                 RefreshCombatUiGates();
                 return;
             }
 
-            coachView.Show(step.bodyCopy, AdvanceStep, ResolveCoachPortrait(step), ResolvePanelImage(step));
+            coachView.Show(
+                step.bodyCopy,
+                AdvanceStep,
+                ResolveCoachPortrait(step),
+                ResolvePanelImage(step),
+                TutorialCadenceTrackLibrary.LoadPanelClip(step.stepId));
             SetHostBlocking(true);
             RefreshCombatUiGates();
         }
@@ -420,7 +536,8 @@ namespace FracturedChorus.Tutorial
                 showBack: HasPreviousSlideshowStep(_stepIndex),
                 primaryLabel: "Next",
                 onBack: RetreatStep,
-                onPrimary: BeginSilentFormationPractice);
+                onPrimary: BeginSilentFormationPractice,
+                panelClip: TutorialCadenceTrackLibrary.LoadPanelClip(step.stepId));
             RefreshCombatUiGates();
         }
 
@@ -486,7 +603,7 @@ namespace FracturedChorus.Tutorial
             }
 
             var combat = FindAnyObjectByType<CombatController>();
-            if (combat == null || !combat.AreAllPlayerSkillsPlaced())
+            if (combat == null || !combat.IsTutorialPhase1CounterReady())
             {
                 RefreshCombatUiGates();
                 return;
@@ -575,7 +692,7 @@ namespace FracturedChorus.Tutorial
             var copy = _deployQteHintStep?.qteHintCopy;
             if (string.IsNullOrWhiteSpace(copy))
             {
-                copy = "Đây là QTE — khi bạn bấm Space đúng lúc sẽ tăng thêm sát thương.";
+                copy = "This is a QTE. Hit Space on time and you deal extra damage.";
             }
 
             coachView?.ShowSlide(
@@ -586,7 +703,8 @@ namespace FracturedChorus.Tutorial
                 showBack: false,
                 primaryLabel: "Next",
                 onBack: null,
-                onPrimary: DismissQteExplainPause);
+                onPrimary: DismissQteExplainPause,
+                panelClip: TutorialCadenceTrackLibrary.LoadPanelClip(_deployQteHintStep != null ? _deployQteHintStep.stepId : null));
             SetHostBlocking(true);
         }
 
@@ -750,6 +868,63 @@ namespace FracturedChorus.Tutorial
             _awaitingQteAfterDeploy = false;
             UnbindPracticeHooks();
             AdvanceStep();
+            BeginPostQteCoachReadHold();
+        }
+
+        private void BeginPostQteCoachReadHold()
+        {
+            if (coachView == null || !coachView.IsVisible)
+            {
+                return;
+            }
+
+            if (_coachReadHoldRoutine != null)
+            {
+                StopCoroutine(_coachReadHoldRoutine);
+            }
+
+            _coachReadHoldRoutine = StartCoroutine(HoldTimelineAfterQteRoutine());
+        }
+
+        private IEnumerator HoldTimelineAfterQteRoutine()
+        {
+            yield return new WaitForSeconds(PostQteTimelineRunSeconds);
+            _coachReadHoldRoutine = null;
+            if (coachView == null || !coachView.IsVisible)
+            {
+                yield break;
+            }
+
+            var timeline = FindAnyObjectByType<BeatTimelineUIView>();
+            if (timeline == null)
+            {
+                yield break;
+            }
+
+            timeline.PauseForEncounter();
+            _holdingTimelineForCoachRead = true;
+        }
+
+        public static void NotifyCoachHidden()
+        {
+            s_instance?.ReleasePostQteCoachReadHold();
+        }
+
+        private void ReleasePostQteCoachReadHold()
+        {
+            if (_coachReadHoldRoutine != null)
+            {
+                StopCoroutine(_coachReadHoldRoutine);
+                _coachReadHoldRoutine = null;
+            }
+
+            if (!_holdingTimelineForCoachRead)
+            {
+                return;
+            }
+
+            _holdingTimelineForCoachRead = false;
+            FindAnyObjectByType<BeatTimelineUIView>()?.ResumeAfterEncounter();
         }
 
         private void UnbindPracticeHooks()
@@ -914,6 +1089,7 @@ namespace FracturedChorus.Tutorial
 
         private void ResolveCoachReference()
         {
+            ForgetDestroyedCoach();
             if (coachView == null)
             {
                 coachView = FindAnyObjectByType<TutorialCoachView>(FindObjectsInactive.Include);
@@ -991,33 +1167,33 @@ namespace FracturedChorus.Tutorial
             public static List<TutorialStepSO> HubSteps() => new List<TutorialStepSO>
             {
                 Step(TrackHub, "hub_menu",
-                    "Mở MENU (góc trên phải) để xem chỉ số đội, bond, lịch và slot save."),
+                    "Open MENU (top right) to check party stats, bonds, the calendar, and save slots."),
                 Step(TrackHub, "hub_town",
-                    "Bấm ghim bản đồ để dùng slot hoạt động. Quiz sáng và phase lịch khóa nội dung trong ngày."),
+                    "Tap a map pin to use an activity slot. The morning quiz and the day's phase lock what's available."),
                 Step(TrackHub, "hub_done",
-                    "Cơ bản Hub xong. Khám phá campus, rồi vào Cadence run khi sẵn sàng.")
+                    "Hub basics are done. Wander the campus, then start a Cadence run when you feel ready.")
             };
 
             public static List<TutorialStepSO> MapSteps() => new List<TutorialStepSO>
             {
                 Step(TrackMap, "map_nodes",
-                    "Chọn node tới được để tiến. Battle/Elite dẫn vào combat; cổng boss kết thúc sector."),
+                    "Pick a node you can reach. Battle and Elite start a fight; the boss gate ends the sector."),
                 Step(TrackMap, "map_camp",
-                    "Thua trận sẽ về camp gần nhất. HP giữ giữa các trận trong run."),
+                    "Lose a fight and you drop back to the nearest camp. HP carries between fights in a run."),
                 Step(TrackMap, "map_done",
-                    "Điều hướng map sẵn sàng. Mở đường tới boss khi đội hình ổn.")
+                    "You can read the map now. Head for the boss once the party feels solid.")
             };
 
             public static List<TutorialStepSO> CombatSteps() => new List<TutorialStepSO>
             {
                 Step(TrackCombat, "combat_plan",
-                    "Cửa sổ Planning: vừa kéo unit sang cột FRONT / MID / BACK, vừa kéo skill lên beat timeline. FRONT ít dính sát thương; BACK đánh mạnh hơn."),
+                    "Planning: drag units into FRONT, MID, or BACK, and drag skills onto the beat timeline. FRONT takes less damage. BACK hits harder."),
                 Step(TrackCombat, "combat_standing",
-                    "Standing (chấm xám) để lộ trước telegraph boss. Đổi vị trí bất cứ lúc nào cửa sổ Planning còn mở."),
+                    "Standing (the gray dot) shows the boss telegraph early. You can still move while Planning is open."),
                 Step(TrackCombat, "combat_execute",
-                    "Bấm Execute để chạy round — nhạc không dừng, scan bắt vào ô nhịp kế tiếp. Counter nốt boss đúng beat, rồi hạ cửa sổ skill."),
+                    "Press Execute to run the round. The music keeps going, and the scan jumps to the next beat. Counter the boss note on time, then close the skill window."),
                 Step(TrackCombat, "combat_done",
-                    "Hướng dẫn combat ngắn xong. Giữ nhịp.")
+                    "Short combat guide done. Keep the beat.")
             };
 
             private static TutorialStepSO Step(

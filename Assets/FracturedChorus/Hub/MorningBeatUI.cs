@@ -1,4 +1,5 @@
 using System;
+using FracturedChorus.Localization;
 using FracturedChorus.Meta;
 using UnityEngine;
 using UnityEngine.UI;
@@ -33,7 +34,7 @@ namespace FracturedChorus.Hub
                 }
                 else
                 {
-                    messageLabel.text = "Buổi sáng mới.";
+                    messageLabel.text = GameLoc.Get("hub.morning");
                 }
             }
         }

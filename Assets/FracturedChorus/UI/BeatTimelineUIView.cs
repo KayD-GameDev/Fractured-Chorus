@@ -416,7 +416,7 @@ namespace FracturedChorus.UI
             if (phaseLabel != null &&
                 string.Equals(phaseLabel.text, "PHARSE", System.StringComparison.OrdinalIgnoreCase))
             {
-                phaseLabel.text = "PHASE";
+                phaseLabel.text = FracturedChorus.Localization.GameLoc.Get("combat.phase");
             }
 
             ConfigureAvLabelLayout();
@@ -866,7 +866,7 @@ namespace FracturedChorus.UI
                 else if (string.IsNullOrEmpty(phaseLabel.text) ||
                          string.Equals(phaseLabel.text, "PHARSE", StringComparison.OrdinalIgnoreCase))
                 {
-                    phaseLabel.text = "PHASE";
+                    phaseLabel.text = FracturedChorus.Localization.GameLoc.Get("combat.phase");
                 }
 
                 if (phaseLabelImage == null)
@@ -6492,7 +6492,7 @@ namespace FracturedChorus.UI
 
             if (phaseLabel != null)
             {
-                phaseLabel.text = "PHASE";
+                phaseLabel.text = FracturedChorus.Localization.GameLoc.Get("combat.phase");
             }
 
             RefreshPhaseAvLabel();

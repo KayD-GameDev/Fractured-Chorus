@@ -1,4 +1,5 @@
 using FracturedChorus.Combat.Core;
+using FracturedChorus.Localization;
 using FracturedChorus.Combat.Grid;
 using FracturedChorus.Combat.Presentation;
 using FracturedChorus.Combat.Timeline;
@@ -373,7 +374,7 @@ namespace FracturedChorus.UI
                         : (telegraph.HitsRequired > 0 ? telegraph.HitsRequired : (int)telegraph.NoteTier);
                     if (hits <= 0)
                     {
-                        actionLabel.text = "◆ PERFECT";
+                        actionLabel.text = "◆ " + FracturedChorus.Localization.GameLoc.Get("combat.perfect");
                     }
                     else if (CombatCounterResolver.TryGetDisplayTier(hits, out var displayTier) && hits > 1)
                     {
@@ -663,9 +664,9 @@ namespace FracturedChorus.UI
         {
             return tier switch
             {
-                BossNoteTier.Purple => "TÍM",
-                BossNoteTier.Blue => "LÁ",
-                _ => "ĐỎ"
+                BossNoteTier.Purple => GameLoc.Get("combat.note.purple"),
+                BossNoteTier.Blue => GameLoc.Get("combat.note.leaf"),
+                _ => GameLoc.Get("combat.note.red")
             };
         }
     }

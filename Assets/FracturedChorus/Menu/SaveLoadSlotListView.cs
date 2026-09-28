@@ -1,4 +1,5 @@
 using System;
+using FracturedChorus.Localization;
 using FracturedChorus.Meta;
 using FracturedChorus.UI;
 using UnityEngine;
@@ -199,6 +200,7 @@ namespace FracturedChorus.Menu
 
         private void OnDisable()
         {
+            GameLoc.Changed -= OnLanguageChanged;
             UiEscapeGate.Pop(this);
         }
 
@@ -380,14 +382,14 @@ namespace FracturedChorus.Menu
         {
             if (_titleLabel != null)
             {
-                _titleLabel.text = _mode == Mode.Load ? loadTitle : saveTitle;
+                _titleLabel.text = GameLoc.Tr(_mode == Mode.Load ? loadTitle : saveTitle);
             }
 
             var emptyAction = _mode == Mode.Load ? loadActionLabel : saveActionLabel;
 
             if (_selectedSlot < 0 || _selectedSlot >= _headers.Length)
             {
-                SetDetailText(emptySelectionText);
+                SetDetailText(GameLoc.Tr(emptySelectionText));
                 SetPrimaryEnabled(false, emptyAction);
                 SetDeleteEnabled(false);
                 return;
@@ -396,9 +398,7 @@ namespace FracturedChorus.Menu
             var header = _headers[_selectedSlot];
             if (header.isCorrupted)
             {
-                SetDetailText(
-                    $"Slot {_selectedSlot + 1:00}\nCORRUPTED\n" +
-                    "File save sai chữ ký hoặc hỏng.\nChỉ có thể xóa hoặc ghi đè.");
+                SetDetailText(GameLoc.Get("saveload.corrupt").Replace("{slot}", $"{_selectedSlot + 1:00}"));
                 SetPrimaryEnabled(_mode == Mode.Save, overwriteActionLabel);
                 SetDeleteEnabled(true);
                 return;
@@ -406,18 +406,21 @@ namespace FracturedChorus.Menu
 
             if (header.isEmpty)
             {
-                SetDetailText($"Slot {_selectedSlot + 1:00}\nEmpty");
+                SetDetailText(GameLoc.Get("saveload.empty").Replace("{slot}", $"{_selectedSlot + 1:00}"));
                 SetPrimaryEnabled(_mode == Mode.Save, emptyAction);
                 SetDeleteEnabled(false);
                 return;
             }
 
             SetDetailText(
-                $"Slot {_selectedSlot + 1:00}\n" +
-                $"{header.dateMonth:00}/{header.dateDay:00} · {PhaseLabel(header.phase)}\n" +
-                $"{header.locationLabel}\n" +
-                $"Notes {header.notes} · {DifficultyLabel(header.difficulty)}\n" +
-                $"Playtime {header.FormatPlayTime()}");
+                GameLoc.Get("saveload.filled")
+                    .Replace("{slot}", $"{_selectedSlot + 1:00}")
+                    .Replace("{date}", $"{header.dateMonth:00}/{header.dateDay:00}")
+                    .Replace("{phase}", PhaseLabel(header.phase))
+                    .Replace("{location}", header.locationLabel)
+                    .Replace("{notes}", header.notes.ToString())
+                    .Replace("{difficulty}", DifficultyLabel(header.difficulty))
+                    .Replace("{time}", header.FormatPlayTime()));
 
             SetPrimaryEnabled(true, _mode == Mode.Load ? loadActionLabel : overwriteActionLabel);
             SetDeleteEnabled(true);
@@ -441,7 +444,7 @@ namespace FracturedChorus.Menu
             // Chốt slot ngay lúc bấm: callback chạy sau khi dialog đóng, đọc lại field là rủi ro thừa.
             var slot = _selectedSlot;
             var header = _headers[slot];
-            var slotLabel = $"SLOT {slot + 1:00}";
+            var slotLabel = $"{GameLoc.Tr("SLOT")} {slot + 1:00}";
 
             if (_mode == Mode.Load)
             {
@@ -453,10 +456,10 @@ namespace FracturedChorus.Menu
                 if (_sessionActive)
                 {
                     AskThen(
-                        "THOÁT VÁN ĐANG CHƠI?",
-                        $"Tải {slotLabel} sẽ bỏ tiến trình chưa lưu của ván hiện tại.",
+                        GameLoc.Get("saveload.leave.title"),
+                        GameLoc.Get("saveload.leave.body").Replace("{slot}", slotLabel),
                         () => PerformLoad(slot),
-                        "TẢI");
+                        GameLoc.Tr("LOAD"));
                     return;
                 }
 
@@ -471,12 +474,12 @@ namespace FracturedChorus.Menu
             }
 
             AskThen(
-                "GHI ĐÈ SLOT?",
+                GameLoc.Get("saveload.overwrite.title"),
                 header.isCorrupted
-                    ? $"{slotLabel} đang hỏng. Ghi đè sẽ thay bằng dữ liệu mới."
-                    : $"Ghi đè {slotLabel}? Dữ liệu cũ sẽ mất.",
+                    ? GameLoc.Get("saveload.overwrite.damaged").Replace("{slot}", slotLabel)
+                    : GameLoc.Get("saveload.overwrite.body").Replace("{slot}", slotLabel),
                 () => PerformSave(slot),
-                "GHI ĐÈ");
+                GameLoc.Tr("OVERWRITE"));
         }
 
         private void OnDeleteClicked()
@@ -488,15 +491,15 @@ namespace FracturedChorus.Menu
 
             var slot = _selectedSlot;
             AskThen(
-                "XÓA SLOT?",
-                $"Xóa hẳn SLOT {slot + 1:00}? Không khôi phục lại được.",
+                GameLoc.Get("saveload.delete.title"),
+                GameLoc.Get("saveload.delete.body").Replace("{slot}", $"{slot + 1:00}"),
                 () =>
                 {
                     GameMetaSaveLoad.Delete(slot);
                     RefreshHeaders();
                     UpdateDetail();
                 },
-                "XÓA");
+                GameLoc.Tr("DELETE"));
         }
 
         private void PerformLoad(int slot)
@@ -531,7 +534,7 @@ namespace FracturedChorus.Menu
                 return;
             }
 
-            _confirmDialog.Ask(title, message, onConfirm, null, confirmText, "HỦY");
+            _confirmDialog.Ask(title, message, onConfirm, null, confirmText, GameLoc.Tr("CANCEL"));
         }
 
         private void SetPrimaryEnabled(bool enabled, string label)
@@ -543,7 +546,7 @@ namespace FracturedChorus.Menu
 
             if (_primaryLabel != null)
             {
-                _primaryLabel.text = label;
+                _primaryLabel.text = GameLoc.Tr(label);
             }
         }
 
@@ -559,25 +562,36 @@ namespace FracturedChorus.Menu
         {
             if (header.isCorrupted)
             {
-                return $"SLOT {header.slotIndex + 1:00}  —  CORRUPTED";
+                return $"{GameLoc.Tr("SLOT")} {header.slotIndex + 1:00}  —  {GameLoc.Tr("CORRUPTED")}";
             }
 
             if (header.isEmpty)
             {
-                return $"SLOT {header.slotIndex + 1:00}  —  EMPTY";
+                return $"{GameLoc.Tr("SLOT")} {header.slotIndex + 1:00}  —  {GameLoc.Tr("EMPTY")}";
             }
 
             return
-                $"SLOT {header.slotIndex + 1:00}  ·  {header.dateMonth:00}/{header.dateDay:00}" +
-                $"  ·  {header.notes} NOTES  ·  {header.FormatPlayTime()}";
+                $"{GameLoc.Tr("SLOT")} {header.slotIndex + 1:00}  ·  {header.dateMonth:00}/{header.dateDay:00}" +
+                $"  ·  {header.notes} {GameLoc.Tr("NOTES")}  ·  {header.FormatPlayTime()}";
+        }
+
+        private void OnEnable()
+        {
+            GameLoc.Changed += OnLanguageChanged;
+        }
+
+        private void OnLanguageChanged()
+        {
+            RefreshHeaders();
+            UpdateDetail();
         }
 
         private static string PhaseLabel(int phase) => phase switch
         {
-            0 => "Morning",
-            1 => "Day",
-            2 => "Evening",
-            _ => "Day"
+            0 => GameLoc.Tr("Morning"),
+            1 => GameLoc.Tr("Day"),
+            2 => GameLoc.Tr("Evening"),
+            _ => GameLoc.Tr("Day")
         };
 
         private static string DifficultyLabel(int difficulty) => difficulty switch

@@ -39,61 +39,65 @@ namespace FracturedChorus.Tutorial
         public static readonly StepSeed[] CadenceSeeds =
         {
             new("meet_danger",
-                "Hiện tại ở đây rất nguy hiểm. Tôi là Coda — tôi sẽ hướng dẫn cậu thoát khỏi đây. Nghe kỹ từng bước, đừng nóng vội.",
+                "It's dangerous here. I'm Coda. I'll walk you out. Listen to each step, and don't rush.",
                 TutorialStepKind.Slide, true),
             new("formation_grid",
-                "Đầu tiên hãy đến với phần Formation — đội hình chia thành 6 ô tương ứng với BACK, MID và FRONT.",
+                "First, Formation. The party sits in six cells: BACK, MID, and FRONT.",
                 TutorialStepKind.Slide, true),
             new("formation_buff_intro",
-                "Mỗi vị trí sẽ có buff khác nhau dựa vào tình huống nhất định.",
+                "Each spot gives a different buff, depending on the fight.",
                 TutorialStepKind.Slide, true),
-            new("formation_front", "FRONT giảm sát thương nhận vào.", TutorialStepKind.Slide, true),
+            new("formation_front", "FRONT cuts the damage you take.", TutorialStepKind.Slide, true),
             new("formation_mid_back",
-                "MID tăng sát thương. BACK tăng khả năng buff và né.", TutorialStepKind.Slide, true),
+                "MID raises damage. BACK raises buffs and dodge.", TutorialStepKind.Slide, true),
             new("formation_situational",
-                "Hãy dựa vào đội hình hiện tại và tình huống để đặt sao cho hợp lý.", TutorialStepKind.Slide, true),
-            new("formation_practice", "Hãy di chuyển Ren sang ô FRONT cùng hàng.",
+                "Look at the party and the fight, then place people where they fit.", TutorialStepKind.Slide, true),
+            new("formation_practice", "Move Ren into the FRONT cell on the same row.",
                 TutorialStepKind.PracticeFormation, true),
-            new("formation_good", "Tốt lắm.", TutorialStepKind.Slide, true),
+            new("formation_good", "Nice.", TutorialStepKind.Slide, true),
             new("boss_note_total",
-                "Số trên nốt là tổng số nốt — bạn sẽ phải counter đòn boss.", TutorialStepKind.Slide, true),
-            new("boss_tap_intro", "Hãy bấm vào nhân vật.", TutorialStepKind.Slide, true),
+                "The number on a note is the note total. You have to counter the boss hit.", TutorialStepKind.Slide, true),
+            new("boss_tap_intro", "Tap the character.", TutorialStepKind.Slide, true),
             new("boss_tap_unit", string.Empty, TutorialStepKind.AwaitUnitSkillPanel),
-            new("boss_tap_good", "Tốt lắm.", TutorialStepKind.Slide, true),
+            new("boss_tap_good", "Nice.", TutorialStepKind.Slide, true),
             new("boss_drag_intro",
-                "Đây là skill của nhân vật. Hãy kéo xuống timeline để chặn nốt boss.",
+                "This is the character's skill. Drag it onto the timeline to block the boss note.",
                 TutorialStepKind.Slide, true),
             new("boss_drag_skill", string.Empty, TutorialStepKind.AwaitSkillPlaced),
-            new("boss_drag_good", "Tốt lắm.", TutorialStepKind.Slide, true),
+            new("boss_counter_explain",
+                "Look at the first note. The number just dropped. That is a counter: your skill ate one hit, so the boss has less left on that beat. A note nobody covers still comes down. You will feel that one.",
+                TutorialStepKind.Slide, true),
+            new("boss_drag_good", "Nice.", TutorialStepKind.Slide, true),
             new("skill_big_note",
-                "Mỗi kĩ năng có hai phần: nốt to là thời điểm nhân vật tung đòn. Đặt dưới nốt boss để counter và gây sát thương.",
+                "Each skill has two parts. The big note is when they strike. Put it under the boss note to counter and deal damage.",
                 TutorialStepKind.Slide, true),
             new("skill_small_note",
-                "Nốt nhỏ không tấn công — đó là thời gian chờ để bạn tung và kết thúc đòn.", TutorialStepKind.Slide, true),
+                "The small note doesn't attack. It's the wait before the strike starts and ends.", TutorialStepKind.Slide, true),
             new("skill_small_overlap",
-                "Các nốt nhỏ không thể chồng lên nhau, hãy tính toán đặt hợp lý.", TutorialStepKind.Slide, true),
-            new("coda_place_prompt", "Bây giờ hãy đặt skill của tôi vào nữa nhé.", TutorialStepKind.Slide, true),
-            new("coda_place_intro", "Kéo skill Coda xuống timeline.", TutorialStepKind.Slide, true),
+                "Small notes can't overlap. Leave room when you place them.", TutorialStepKind.Slide, true),
+            new("coda_place_prompt", "Now drop my skill in too.", TutorialStepKind.Slide, true),
+            new("coda_place_intro", "Drag Coda's skill onto the timeline.", TutorialStepKind.Slide, true),
             new("coda_place_skill", string.Empty, TutorialStepKind.AwaitSkillPlaced),
-            new("coda_place_good", "Tốt lắm.", TutorialStepKind.Slide, true),
+            new("coda_place_good", "Nice.", TutorialStepKind.Slide, true),
             new("coda_fill_timeline",
-                "Bây giờ hãy đặt hết skill lên timeline beat nhé.", TutorialStepKind.Slide, true),
+                "One skill from Ren, one from me, on two notes. Then you can press Execute. Leave the third note. That one still hits.",
+                TutorialStepKind.Slide, true),
             new("coda_planning_sandbox", string.Empty, TutorialStepKind.BeginPlanningSandbox),
             new("coda_execute_run", string.Empty, TutorialStepKind.AwaitDeployUntilPlanning, false, null, 1),
             new("phase2_understood",
-                "Tuyệt lắm, bạn đã hiểu cơ chế rồi đấy.", TutorialStepKind.Slide, true),
-            new("phase2_qte_intro", "Bây giờ tới Quick Time Event.", TutorialStepKind.Slide, true),
+                "You've got the idea.", TutorialStepKind.Slide, true),
+            new("phase2_qte_intro", "Next is the Quick Time Event.", TutorialStepKind.Slide, true),
             new("phase2_place_skills",
-                "Hãy đặt skill vào các ô bên dưới timeline.", TutorialStepKind.Slide, true),
-            new("phase2_skill_intro", "Kéo skill xuống timeline.", TutorialStepKind.Slide, true),
+                "Place skills in the cells under the timeline.", TutorialStepKind.Slide, true),
+            new("phase2_skill_intro", "Drag a skill onto the timeline.", TutorialStepKind.Slide, true),
             new("phase2_skill_practice", string.Empty, TutorialStepKind.AwaitSkillPlaced),
-            new("phase2_skill_good", "Tốt lắm.", TutorialStepKind.Slide, true),
-            new("phase2_execute_confirm", "Bấm Execute.", TutorialStepKind.Slide, true),
+            new("phase2_skill_good", "Nice.", TutorialStepKind.Slide, true),
+            new("phase2_execute_confirm", "Press Execute.", TutorialStepKind.Slide, true),
             new("phase2_execute_qte", string.Empty, TutorialStepKind.AwaitDeployThenQte, false,
-                "Đây là QTE — khi bạn bấm Space đúng lúc sẽ tăng thêm sát thương."),
-            new("phase2_qte_praise", "Tuyệt lắm, bạn làm tốt lắm!", TutorialStepKind.Slide, true),
+                "This is a QTE. Hit Space on time and you deal extra damage."),
+            new("phase2_qte_praise", "Nice work.", TutorialStepKind.Slide, true),
             new("cadence_repeat_notes",
-                "Hãy làm tương tự với các nốt còn lại — tôi sẽ hỗ trợ.", TutorialStepKind.Slide, true)
+                "Do the same for the notes left. I'll back you up.", TutorialStepKind.Slide, true)
         };
 
         public static TutorialTrackSO ResolveCadenceIntroTrack(TutorialTrackSO sceneTrack)
@@ -164,6 +168,16 @@ namespace FracturedChorus.Tutorial
             }
 
             return Resources.Load<Sprite>($"UI/Tutorial/Steps/{stepId}_v1");
+        }
+
+        public static UnityEngine.Video.VideoClip LoadPanelClip(string stepId)
+        {
+            if (string.IsNullOrEmpty(stepId))
+            {
+                return null;
+            }
+
+            return Resources.Load<UnityEngine.Video.VideoClip>($"UI/Tutorial/Clips/{stepId}");
         }
 
         private static bool IsValidTrack(TutorialTrackSO track) =>

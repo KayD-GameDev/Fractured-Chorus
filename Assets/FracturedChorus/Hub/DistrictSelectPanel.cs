@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using FracturedChorus.Localization;
 using FracturedChorus.Meta;
 using UnityEngine;
 using UnityEngine.UI;
@@ -85,12 +86,12 @@ namespace FracturedChorus.Hub
 
             if (headerTitle != null)
             {
-                headerTitle.text = "SELECT MAP";
+                headerTitle.text = GameLoc.Get("map.select");
             }
 
             if (headerSubtitle != null)
             {
-                headerSubtitle.text = location != null ? location.DisplayName : "Where should I go?";
+                headerSubtitle.text = location != null ? location.DisplayName : GameLoc.Get("map.where");
             }
 
             RebuildRows();

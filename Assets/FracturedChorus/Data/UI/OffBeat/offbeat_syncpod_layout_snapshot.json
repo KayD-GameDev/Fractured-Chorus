@@ -72,10 +72,10 @@
       "anchorMin": { "x": 0.5, "y": 0.5 },
       "anchorMax": { "x": 0.5, "y": 0.5 },
       "pivot": { "x": 0.5, "y": 0.5 },
-      "anchoredPosition": { "x": -1.0, "y": 7.6 },
-      "sizeDelta": { "x": 135.76, "y": 32.6 },
-      "offsetMin": { "x": 0.0, "y": 0.0 },
-      "offsetMax": { "x": 0.0, "y": 0.0 },
+      "anchoredPosition": { "x": 0.41, "y": -40.4 },
+      "sizeDelta": { "x": 122.0, "y": 35.0 },
+      "offsetMin": { "x": -60.59, "y": -57.9 },
+      "offsetMax": { "x": 61.41, "y": -22.9 },
       "localEulerZ": 0.0
     }
   ]
