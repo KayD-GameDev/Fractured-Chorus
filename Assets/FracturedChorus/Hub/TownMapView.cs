@@ -83,26 +83,6 @@ namespace FracturedChorus.Hub
                 return;
             }
 
-            if (HimaEnrollmentGate.IsActive(_state))
-            {
-                if (runMapHotkey != null)
-                {
-                    runMapHotkey.SetListening(false);
-                }
-
-                if (menuButton != null)
-                {
-                    menuButton.gameObject.SetActive(false);
-                }
-
-                if (statusMenu != null && statusMenu.IsOpen)
-                {
-                    statusMenu.Hide();
-                }
-
-                return;
-            }
-
             var allowHotkey = statusMenu == null || !statusMenu.IsOpen;
             if (runMapHotkey != null)
             {
@@ -156,13 +136,6 @@ namespace FracturedChorus.Hub
             gameObject.SetActive(true);
 
             EnsureStatusMenu();
-            if (HimaEnrollmentGate.IsActive(state))
-            {
-                OpenStatusMenuOnNextShow = false;
-                OpenSystemSubmenuOnNextShow = false;
-                OpenStatusMenuTabOnNextShow = null;
-            }
-
             ApplyBackground(phase);
             slashBanner?.Refresh(state);
             cornerInfoHud?.Refresh(state);
@@ -225,7 +198,6 @@ namespace FracturedChorus.Hub
 
             EnsurePins();
             RefreshPinVisibility();
-            ApplyEnrollmentGateChrome();
             ClearPinSelection();
             districtPanel?.Hide();
             RestoreSavedPin();
@@ -238,7 +210,7 @@ namespace FracturedChorus.Hub
         /// </summary>
         private void RestoreSavedPin()
         {
-            if (_hasRestoredSavedPin || HimaEnrollmentGate.IsActive(_state))
+            if (_hasRestoredSavedPin)
             {
                 _hasRestoredSavedPin = true;
                 return;
@@ -273,17 +245,6 @@ namespace FracturedChorus.Hub
         {
             if (state == null)
             {
-                return;
-            }
-
-            if (HimaEnrollmentGate.IsActive(state))
-            {
-                statusMenu?.Hide();
-                if (HubNavigationEscContext.HasPendingReopenAfterRunMapEsc)
-                {
-                    HubNavigationEscContext.ConsumeReopenAfterRunMapEsc(out _);
-                }
-
                 return;
             }
 
@@ -413,62 +374,20 @@ namespace FracturedChorus.Hub
 
         private void RefreshPinVisibility()
         {
-            var forced = HimaEnrollmentGate.IsActive(_state);
             foreach (var pin in _pins)
             {
-                var visible = forced
-                    ? pin.LocationId == HimaEnrollmentGate.LocationId
-                    : pin.MatchesPhase(_phase, _state);
-                pin.SetVisible(visible);
+                pin.SetVisible(pin.MatchesPhase(_phase, _state));
                 if (pin.Definition == null)
                 {
                     continue;
                 }
 
-                pin.SetLabel(forced && pin.LocationId == HimaEnrollmentGate.LocationId
-                    ? HimaEnrollmentGate.PinLabel
-                    : pin.Definition.DisplayName);
-            }
-        }
-
-        private void ApplyEnrollmentGateChrome()
-        {
-            var forced = HimaEnrollmentGate.IsActive(_state);
-            if (menuButton != null)
-            {
-                menuButton.gameObject.SetActive(!forced);
-            }
-
-            if (runMapHotkey != null)
-            {
-                runMapHotkey.SetListening(!forced);
-                if (forced)
-                {
-                    runMapHotkey.gameObject.SetActive(false);
-                }
-            }
-
-            if (forced && selectMapSubtitle != null)
-            {
-                selectMapSubtitle.text = GameLoc.Get("map.enrollment");
+                pin.SetLabel(pin.Definition.DisplayName);
             }
         }
 
         private void OnPinSelected(TownLocationDefinition location)
         {
-            if (HimaEnrollmentGate.IsActive(_state))
-            {
-                if (location == null || location.Id != HimaEnrollmentGate.LocationId)
-                {
-                    return;
-                }
-
-                sfx?.PlaySelect();
-                _state?.HubLocation.SetLocation(location.Id);
-                _onActivityChosen?.Invoke(HimaEnrollmentGate.ActivityId);
-                return;
-            }
-
             if (statusMenu != null && statusMenu.IsOpen)
             {
                 statusMenu.Hide();

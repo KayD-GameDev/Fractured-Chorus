@@ -83,13 +83,7 @@ namespace FracturedChorus.RunMap
             }
 
             ResolveLayerReferences();
-            EnsureCampusHubHotkey();
-
-            if (returnToHubButton != null
-                && (campusHubHotkey == null || returnToHubButton.gameObject != campusHubHotkey.gameObject))
-            {
-                returnToHubButton.onClick.AddListener(ReturnToCampusHub);
-            }
+            HideCampusHubHotkey();
         }
 
         public bool IsInsideVaultRun()
@@ -116,35 +110,12 @@ namespace FracturedChorus.RunMap
 
             ResolveLayerReferences();
 
-            if (IsInsideVaultRun())
-            {
-                if (innerController != null && innerController.TryHandleCancel())
-                {
-                    return true;
-                }
-
-                return true;
-            }
-
-            if (IsInnerMapActive() && innerController != null && innerController.TryHandleCancel())
+            if (innerController != null && innerController.TryHandleCancel())
             {
                 return true;
             }
 
-            if (IsInnerMapActive())
-            {
-                ShowMacroMap();
-                return true;
-            }
-
-            if (IsMacroMapActive())
-            {
-                RunMapHubBridge.ReturnFromRunMapNavigation();
-                return true;
-            }
-
-            RunMapHubBridge.ReturnFromRunMapNavigation();
-            return true;
+            return false;
         }
 
         private bool IsInnerMapActive()
@@ -235,40 +206,26 @@ namespace FracturedChorus.RunMap
             return closed;
         }
 
-        private void EnsureCampusHubHotkey()
+        private void HideCampusHubHotkey()
         {
-            ResolveLayerReferences();
-
             if (campusHubHotkey != null)
             {
-                campusHubHotkey.Bind(ReturnToCampusHub);
-                campusHubHotkey.gameObject.SetActive(true);
-                if (returnToHubButton == null)
-                {
-                    returnToHubButton = campusHubHotkey.GetComponent<Button>();
-                }
+                campusHubHotkey.SetListening(false);
+                campusHubHotkey.gameObject.SetActive(false);
+            }
 
-                return;
+            if (returnToHubButton != null)
+            {
+                returnToHubButton.gameObject.SetActive(false);
             }
 
             var canvas = GetComponentInChildren<Canvas>(true);
-            if (canvas == null)
+            var overlay = canvas != null
+                ? canvas.transform.Find(SceneLinkHotkeyUI.OverlayObjectName)
+                : null;
+            if (overlay != null)
             {
-                return;
-            }
-
-            var layerAnchor = innerMapRoot != null ? innerMapRoot.transform : null;
-            var overlay = SceneLinkHotkeyUI.EnsureSceneLinkOverlay(canvas.transform, layerAnchor);
-            campusHubHotkey = SceneLinkHotkeyUI.Ensure(
-                overlay != null ? overlay : canvas.transform,
-                "Campus Hub",
-                ReturnToCampusHub,
-                placement: SceneLinkHotkeyPlacement.BottomLeft,
-                persistInScene: true);
-
-            if (returnToHubButton == null && campusHubHotkey != null)
-            {
-                returnToHubButton = campusHubHotkey.GetComponent<Button>();
+                overlay.gameObject.SetActive(false);
             }
         }
 
@@ -356,7 +313,44 @@ namespace FracturedChorus.RunMap
             {
                 var seed = Progress.RunSeed > 0 ? Progress.RunSeed : Random.Range(1, int.MaxValue);
                 EnterInnerSector(Progress.CurrentSector, seed);
+                return;
             }
+
+            TryResumeSavedRun();
+        }
+
+        /// <summary>
+        /// Load giữa cadence phải mở lại đúng sector và seed đã lưu.
+        /// Bấm Pinky trên macro map thì BeginPinkyRun xóa tiến độ, nên không đi đường đó.
+        /// </summary>
+        private bool TryResumeSavedRun()
+        {
+            if (!GameMetaSession.HasSession)
+            {
+                return false;
+            }
+
+            var snap = GameMetaSession.Current.RunSnapshot;
+            if (!snap.HasActiveRun || snap.Seed <= 0 || snap.CurrentNodeId < 0)
+            {
+                return false;
+            }
+
+            var sector = System.Enum.IsDefined(typeof(PinkySectorId), snap.ActiveSector)
+                ? (PinkySectorId)snap.ActiveSector
+                : PinkySectorId.Pulse;
+
+            LoadingScreenController.ShowCoverNow();
+            BeginRunMusic();
+            EnterInnerSector(sector, snap.Seed, resumeSavedPosition: true);
+            return true;
+        }
+
+        private static void BeginRunMusic()
+        {
+            RunMapBgmController.StopAll();
+            var beatMap = Resources.Load<MusicBeatMapSO>("Music/EternalSpark_Candence_BeatMap");
+            RunMusicSession.Ensure().Begin(beatMap != null ? beatMap.Clip : null, beatMap);
         }
 
         public static void NotifyBossVictory()
@@ -390,23 +384,21 @@ namespace FracturedChorus.RunMap
                 GameMetaSession.Current.RunSnapshot.HasActiveRun = true;
             }
 
-            RunMapBgmController.StopAll();
-            var beatMap = Resources.Load<MusicBeatMapSO>("Music/EternalSpark_Candence_BeatMap");
-            RunMusicSession.Ensure().Begin(beatMap != null ? beatMap.Clip : null, beatMap);
+            BeginRunMusic();
             EnterInnerSector(Progress.CurrentSector, seed);
         }
 
-        private void EnterInnerSector(PinkySectorId sector, int seed)
+        private void EnterInnerSector(PinkySectorId sector, int seed, bool resumeSavedPosition = false)
         {
             if (_innerBootCoroutine != null)
             {
                 StopCoroutine(_innerBootCoroutine);
             }
 
-            _innerBootCoroutine = StartCoroutine(EnterInnerSectorDeferred(sector, seed));
+            _innerBootCoroutine = StartCoroutine(EnterInnerSectorDeferred(sector, seed, resumeSavedPosition));
         }
 
-        private IEnumerator EnterInnerSectorDeferred(PinkySectorId sector, int seed)
+        private IEnumerator EnterInnerSectorDeferred(PinkySectorId sector, int seed, bool resumeSavedPosition)
         {
             ShowInnerMap();
 
@@ -462,6 +454,15 @@ namespace FracturedChorus.RunMap
             innerController.ApplyCombatReturnHandoff();
             RunMusicSession.Instance?.SetMode(RunMusicMode.Map);
 
+            var restoredNode = resumeSavedPosition && innerController.State != null && innerController.Graph != null
+                ? innerController.Graph.GetNode(innerController.State.CurrentNodeId)
+                : null;
+            var resumeLanded = restoredNode != null
+                               && innerController.Graph.StartNode != null
+                               && restoredNode.Id != innerController.Graph.StartNode.Id
+                               && GameMetaSession.HasSession
+                               && restoredNode.Id == GameMetaSession.Current.RunSnapshot.CurrentNodeId;
+
             if (mapView != null)
             {
                 if (hadCombatReturn && innerController.State != null && innerController.Graph != null)
@@ -476,6 +477,10 @@ namespace FracturedChorus.RunMap
                         mapView.EnsureScrollShowsStartOnOpen(true);
                     }
                 }
+                else if (resumeLanded)
+                {
+                    mapView.ScrollToNode(restoredNode, immediate: true);
+                }
                 else
                 {
                     mapView.EnsureScrollShowsStartOnOpen(true);
@@ -489,11 +494,14 @@ namespace FracturedChorus.RunMap
                 ? pinkyVaultConfig.GetSector(sector).title
                 : SectorTitle(sector);
             var mapIndex = SectorMapIndex(sector);
+            var restoredFloor = resumeLanded ? restoredNode.Floor : 0;
             SetStatus(defeatReturn
                 ? $"Returned to nearest camp — set up. ({sectorTitle})"
                 : hadCombatReturn
                     ? $"Victory — node cleared. Choose the next path. ({sectorTitle})"
-                    : $"Pinky — Map {mapIndex}/3 · {sectorTitle} · F1 → {bossLabel}");
+                    : resumeLanded
+                        ? $"Run restored — F{restoredFloor}. Chọn node kế tiếp. ({sectorTitle})"
+                        : $"Pinky — Map {mapIndex}/3 · {sectorTitle} · F1 → {bossLabel}");
 
             _innerBootCoroutine = null;
             HideLoadingOverlay();

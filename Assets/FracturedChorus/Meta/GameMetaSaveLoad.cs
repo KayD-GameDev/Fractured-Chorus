@@ -9,6 +9,9 @@ namespace FracturedChorus.Meta
     public static class GameMetaSaveLoad
     {
         public const int SlotCount = 10;
+
+        /// <summary>UI SLOT 2. Bản build PC copy file này từ StreamingAssets khi slot còn trống.</summary>
+        public const int BundledPrepSlot = 1;
         public const string LegacySaveFileName = "fc_meta_save.json";
         public const string SavesFolderName = "saves";
         public const string LegacyBackupFolderName = "_legacy_v2";
@@ -35,6 +38,63 @@ namespace FracturedChorus.Meta
             Path.Combine(LegacyBackupDirectory, $"slot_{slot:00}{SaveCrypto.PlaintextExtension}");
 
         public static bool TrySave(GameMetaState state) => TrySave(state, ActiveSlot);
+
+        /// <summary>
+        /// Cùng định dạng với TrySave, nhưng trả bytes để ghi vào StreamingAssets
+        /// thay vì đè save trong persistentDataPath.
+        /// </summary>
+        public static byte[] EncryptSlot(GameMetaState state, int slot)
+        {
+            if (state == null)
+            {
+                throw new ArgumentNullException(nameof(state));
+            }
+
+            slot = ClampSlot(slot);
+            state.SaveVersionId = GameMetaState.SaveVersion;
+            var file = new SaveSlotFile
+            {
+                header = BuildHeader(state, slot),
+                data = GameMetaSaveData.FromState(state)
+            };
+            var json = JsonUtility.ToJson(file, prettyPrint: true);
+            return SaveCrypto.Encrypt(json);
+        }
+
+        /// <summary>
+        /// Copy save đóng gói sang slot 2 khi máy này chưa có file đó.
+        /// Slot đã có dữ liệu thì giữ nguyên.
+        /// </summary>
+        public static void InstallBundledSlotIfMissing()
+        {
+            const int slot = BundledPrepSlot;
+
+            try
+            {
+                if (SlotExists(slot))
+                {
+                    return;
+                }
+
+                var fileName = $"slot_{slot:00}{SaveCrypto.EncryptedExtension}";
+                var source = Path.Combine(Application.streamingAssetsPath, "Saves", fileName);
+                if (!File.Exists(source))
+                {
+                    return;
+                }
+
+                Directory.CreateDirectory(SavesDirectory);
+                var destination = GetSlotPath(slot);
+                if (!File.Exists(destination))
+                {
+                    File.Copy(source, destination, overwrite: false);
+                }
+            }
+            catch (Exception error)
+            {
+                Debug.LogError($"[Fractured Chorus] Bundled save install failed: {error}");
+            }
+        }
 
         public static bool TrySave(GameMetaState state, int slot)
         {
@@ -70,6 +130,7 @@ namespace FracturedChorus.Meta
         public static GameMetaState LoadOrNew()
         {
             MigrateLegacySaveOnce();
+            InstallBundledSlotIfMissing();
             var loaded = TryLoad(ActiveSlot);
             return loaded ?? GameMetaState.CreateNew();
         }
@@ -78,6 +139,7 @@ namespace FracturedChorus.Meta
         {
             slot = ClampSlot(slot);
             MigrateLegacySaveOnce();
+            InstallBundledSlotIfMissing();
 
             var json = ReadSlotJson(slot, out var status);
             if (json == null)
@@ -178,6 +240,7 @@ namespace FracturedChorus.Meta
         public static SaveSlotHeader[] ListHeaders()
         {
             MigrateLegacySaveOnce();
+            InstallBundledSlotIfMissing();
             var headers = new SaveSlotHeader[SlotCount];
             for (var slot = 0; slot < SlotCount; slot++)
             {
@@ -190,6 +253,7 @@ namespace FracturedChorus.Meta
         public static bool HasAnySave()
         {
             MigrateLegacySaveOnce();
+            InstallBundledSlotIfMissing();
             for (var slot = 0; slot < SlotCount; slot++)
             {
                 if (SlotExists(slot))

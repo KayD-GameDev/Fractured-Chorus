@@ -53,6 +53,15 @@ namespace FracturedChorus.Hub
 
         private void BeginMorning(GameMetaState state)
         {
+            if (CampusHubStoryBeats.ShouldSkipEnrollmentMorning(state))
+            {
+                CampusHubStoryBeats.ApplyMorningFlags(state);
+                state.CompleteMorningQuiz();
+                GameMetaSession.Save();
+                BeginTownMap(GameMetaSession.Current);
+                return;
+            }
+
             _townMap?.Hide();
 
             if (_morningUi == null)

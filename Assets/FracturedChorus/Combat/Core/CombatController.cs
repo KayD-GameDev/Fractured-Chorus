@@ -10,6 +10,7 @@ using FracturedChorus.Combat.Timeline;
 using FracturedChorus.Combat.Units;
 using FracturedChorus.Data;
 using FracturedChorus.Meta;
+using FracturedChorus.Narrative.Vn;
 using FracturedChorus.RunMap;
 using FracturedChorus.Tutorial;
 using FracturedChorus.UI;
@@ -1464,6 +1465,18 @@ namespace FracturedChorus.Combat.Core
             var sceneName = string.IsNullOrWhiteSpace(CombatEncounterHandoff.ReturnSceneName)
                 ? RunMapSceneCatalog.RunMapPrototype
                 : CombatEncounterHandoff.ReturnSceneName;
+            if (string.Equals(sceneName, RunMapSceneCatalog.OpeningInvestigation, StringComparison.OrdinalIgnoreCase))
+            {
+                if (CadenceIntroFlow.EscapeAlreadyPlayed())
+                {
+                    sceneName = RunMapSceneCatalog.CampusHub;
+                }
+                else
+                {
+                    CadenceIntroFlow.ArmEscapeReturn();
+                }
+            }
+
             if (!RunMapSceneLoader.LoadByName(sceneName))
             {
                 Debug.LogError($"[Combat] Failed to load return scene '{sceneName}'.");
@@ -1482,13 +1495,25 @@ namespace FracturedChorus.Combat.Core
         public void ExitTutorialToRunMap()
         {
             PartyRunHpStore.CaptureFromSession(_session);
+            if (!CadenceIntroFlow.EscapeAlreadyPlayed())
+            {
+                CadenceIntroFlow.ArmEscapeReturn();
+                if (!RunMapSceneLoader.LoadByName(RunMapSceneCatalog.OpeningInvestigation))
+                {
+                    Debug.LogError("[Combat] Tutorial exit failed to load OpeningInvestigation.");
+                }
+
+                return;
+            }
+
             CombatEncounterHandoff.SetResult(true);
             var sceneName = string.IsNullOrWhiteSpace(CombatEncounterHandoff.ReturnSceneName)
-                ? RunMapSceneCatalog.RunMapPrototype
+                ? RunMapSceneCatalog.CampusHub
                 : CombatEncounterHandoff.ReturnSceneName;
-            if (string.Equals(sceneName, RunMapSceneCatalog.CampusHub, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(sceneName, RunMapSceneCatalog.RunMapPrototype, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(sceneName, RunMapSceneCatalog.OpeningInvestigation, StringComparison.OrdinalIgnoreCase))
             {
-                sceneName = RunMapSceneCatalog.RunMapPrototype;
+                sceneName = RunMapSceneCatalog.CampusHub;
             }
 
             if (!RunMapSceneLoader.LoadByName(sceneName))

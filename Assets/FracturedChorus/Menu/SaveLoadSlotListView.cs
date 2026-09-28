@@ -20,6 +20,11 @@ namespace FracturedChorus.Menu
         /// </summary>
         public const string ResourcesPath = "UI/SaveLoadPanel";
 
+        /// <summary>
+        /// Kích thước Panel của LoadLayer trên main menu. ESC Save/Load dùng cùng tỷ lệ này.
+        /// </summary>
+        public static readonly Vector2 MenuPanelSize = new Vector2(1445.27f, 980.72f);
+
         public enum Mode
         {
             Load,
@@ -664,33 +669,38 @@ namespace FracturedChorus.Menu
             panelRect.anchorMin = new Vector2(0.5f, 0.5f);
             panelRect.anchorMax = new Vector2(0.5f, 0.5f);
             panelRect.pivot = new Vector2(0.5f, 0.5f);
-            panelRect.sizeDelta = new Vector2(760f, 620f);
+            panelRect.sizeDelta = MenuPanelSize;
             var panelImage = panelGo.GetComponent<Image>();
             panelImage.color = FcColorTokens.Surface.Modal;
 
-            var title = CreateText(panelGo.transform, "Title", "LOAD GAME", 28, TextAnchor.UpperCenter, FontStyle.Bold);
+            var title = CreateText(panelGo.transform, "Title", "LOAD GAME", 34, TextAnchor.UpperCenter, FontStyle.Bold);
             Stretch(title.rectTransform, new Vector2(0.05f, 0.9f), new Vector2(0.95f, 0.98f), Vector2.zero, Vector2.zero);
             title.color = FcColorTokens.Brand.Cyan;
 
             var tabBarGo = new GameObject("TabBar", typeof(RectTransform));
             tabBarGo.transform.SetParent(panelGo.transform, false);
-            Stretch(tabBarGo.GetComponent<RectTransform>(), new Vector2(0.05f, 0.82f), new Vector2(0.95f, 0.89f), Vector2.zero, Vector2.zero);
+            Stretch(tabBarGo.GetComponent<RectTransform>(), new Vector2(0.05f, 0.81f), new Vector2(0.95f, 0.885f), Vector2.zero, Vector2.zero);
 
-            var loadTab = CreateButton(tabBarGo.transform, "Tab_Load", "LOAD", new Vector2(0f, 0f), new Vector2(0.48f, 1f));
-            var saveTab = CreateButton(tabBarGo.transform, "Tab_Save", "SAVE", new Vector2(0.52f, 0f), new Vector2(1f, 1f));
+            var loadTab = CreateButton(tabBarGo.transform, "Tab_Load", "LOAD", new Vector2(0f, 0f), new Vector2(0.485f, 1f));
+            var saveTab = CreateButton(tabBarGo.transform, "Tab_Save", "SAVE", new Vector2(0.515f, 0f), new Vector2(1f, 1f));
 
             var listGo = new GameObject("SlotList", typeof(RectTransform));
             listGo.transform.SetParent(panelGo.transform, false);
-            Stretch(listGo.GetComponent<RectTransform>(), new Vector2(0.05f, 0.2f), new Vector2(0.58f, 0.8f), Vector2.zero, Vector2.zero);
+            Stretch(listGo.GetComponent<RectTransform>(), new Vector2(0.04f, 0.06f), new Vector2(0.486f, 0.79f), Vector2.zero, Vector2.zero);
 
-            var detail = CreateText(panelGo.transform, "Detail", "Select a slot.", 20, TextAnchor.UpperLeft);
-            Stretch(detail.rectTransform, new Vector2(0.6f, 0.42f), new Vector2(0.95f, 0.8f), Vector2.zero, Vector2.zero);
+            var detailPanelGo = new GameObject("DetailPanel", typeof(RectTransform), typeof(Image));
+            detailPanelGo.transform.SetParent(panelGo.transform, false);
+            Stretch(detailPanelGo.GetComponent<RectTransform>(), new Vector2(0.51776767f, 0.34f), new Vector2(0.96f, 0.79f), Vector2.zero, Vector2.zero);
+            detailPanelGo.GetComponent<Image>().color = FcColorTokens.Surface.Detail;
+
+            var detail = CreateText(detailPanelGo.transform, "Detail", "Select a slot.", 22, TextAnchor.UpperLeft);
+            Stretch(detail.rectTransform, new Vector2(0.06f, 0.05f), new Vector2(0.94f, 0.95f), Vector2.zero, Vector2.zero);
             detail.color = FcColorTokens.Brand.TextMuted;
             detail.horizontalOverflow = HorizontalWrapMode.Wrap;
 
-            var primary = CreateButton(panelGo.transform, "PrimaryButton", "Load", new Vector2(0.62f, 0.28f), new Vector2(0.95f, 0.36f));
-            var delete = CreateButton(panelGo.transform, "DeleteButton", "Delete", new Vector2(0.62f, 0.18f), new Vector2(0.95f, 0.26f));
-            var close = CreateButton(panelGo.transform, "CloseButton", "Close", new Vector2(0.62f, 0.08f), new Vector2(0.95f, 0.16f));
+            var primary = CreateButton(panelGo.transform, "Btn_Primary", "LOAD", new Vector2(0.52335715f, 0.23f), new Vector2(0.96f, 0.31263158f));
+            var delete = CreateButton(panelGo.transform, "Btn_Delete", "DELETE", new Vector2(0.52335715f, 0.14f), new Vector2(0.96f, 0.21421053f));
+            var close = CreateButton(panelGo.transform, "Btn_Close", "CLOSE", new Vector2(0.52335715f, 0.05f), new Vector2(0.96f, 0.14f));
 
             var view = rootGo.AddComponent<SaveLoadSlotListView>();
             view._canvasGroup = canvasGroup;
@@ -726,8 +736,8 @@ namespace FracturedChorus.Menu
             var go = new GameObject($"Slot_{index:00}", typeof(RectTransform), typeof(Image), typeof(Button));
             go.transform.SetParent(parent, false);
             var rect = go.GetComponent<RectTransform>();
-            var yMax = 1f - index * 0.095f;
-            var yMin = yMax - 0.085f;
+            var yMax = 1f - index * 0.1f;
+            var yMin = yMax - 0.09f;
             Stretch(rect, new Vector2(0f, yMin), new Vector2(1f, yMax), Vector2.zero, Vector2.zero);
 
             var image = go.GetComponent<Image>();
@@ -735,7 +745,7 @@ namespace FracturedChorus.Menu
             var button = go.GetComponent<Button>();
             button.targetGraphic = image;
 
-            var label = CreateText(go.transform, "Label", $"SLOT {index + 1:00}", 18, TextAnchor.MiddleLeft);
+            var label = CreateText(go.transform, "Label", $"SLOT {index + 1:00}", 20, TextAnchor.MiddleLeft);
             Stretch(label.rectTransform, new Vector2(0.04f, 0f), new Vector2(0.96f, 1f), Vector2.zero, Vector2.zero);
             label.color = Color.white;
 
@@ -761,7 +771,7 @@ namespace FracturedChorus.Menu
             image.color = FcColorTokens.Surface.Row;
             var button = go.GetComponent<Button>();
             button.targetGraphic = image;
-            var label = CreateText(go.transform, "Label", labelText, 18, TextAnchor.MiddleCenter, FontStyle.Bold);
+            var label = CreateText(go.transform, "Label", labelText, 20, TextAnchor.MiddleCenter, FontStyle.Bold);
             Stretch(label.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             label.color = FcColorTokens.Brand.Cyan;
             return (button, label);

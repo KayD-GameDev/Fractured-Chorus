@@ -33,6 +33,14 @@ namespace FracturedChorus.Combat.Bootstrap
             PendingRewardSummary = null;
         }
 
+        public static void SetReturnScene(string sceneName)
+        {
+            if (!string.IsNullOrWhiteSpace(sceneName))
+            {
+                ReturnSceneName = sceneName;
+            }
+        }
+
         public static void SetResult(bool victory)
         {
             LastVictory = victory;

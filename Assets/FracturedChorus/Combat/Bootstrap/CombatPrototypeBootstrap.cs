@@ -111,7 +111,7 @@ namespace FracturedChorus.Combat.Bootstrap
                 {
                     CombatEncounterHandoff.SetPending(
                         EncounterCatalog.Tutorial,
-                        RunMapSceneCatalog.CampusHub);
+                        RunMapSceneCatalog.OpeningInvestigation);
                 }
             }
 

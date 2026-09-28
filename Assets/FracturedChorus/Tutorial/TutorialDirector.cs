@@ -160,7 +160,10 @@ namespace FracturedChorus.Tutorial
             }
 
             s_instance.ForgetDestroyedCoach();
-            s_instance.coachView?.Hide();
+            if (s_instance.coachView != null)
+            {
+                s_instance.coachView.Hide();
+            }
             s_instance.SetHostBlocking(false);
             TutorialGuidePathView.HideActive();
             TutorialFocusOverlay.Release();
@@ -330,7 +333,19 @@ namespace FracturedChorus.Tutorial
 
         public void StartHubTrack()
         {
-            if (!GameMetaSession.HasSession || GameMetaSession.Current.HasFlag(StoryFlagIds.TutorialHubDone))
+            if (!GameMetaSession.HasSession)
+            {
+                return;
+            }
+
+            var state = GameMetaSession.Current;
+            if (state.HasFlag(StoryFlagIds.CharlotteReunited) || state.HasFlag(StoryFlagIds.MimiEncountered))
+            {
+                StartPostRescueHubGuide(state);
+                return;
+            }
+
+            if (state.HasFlag(StoryFlagIds.TutorialHubDone))
             {
                 return;
             }
@@ -339,6 +354,32 @@ namespace FracturedChorus.Tutorial
             {
                 StartTrack(TrackHub, TutorialStepCatalog.HubSteps(), StoryFlagIds.TutorialHubDone);
             }
+        }
+
+        private void StartPostRescueHubGuide(GameMetaState state)
+        {
+            if (state.HasFlag(StoryFlagIds.TutorialHubPostRescueDone))
+            {
+                return;
+            }
+
+            if (_queue.Count > 0 && _completionFlag != StoryFlagIds.TutorialHubPostRescueDone)
+            {
+                DropActiveTrack();
+            }
+
+            if (_queue.Count > 0)
+            {
+                ResolveCoachReference();
+                ShowCurrentStep();
+                return;
+            }
+
+            StartTrack(
+                TrackHub,
+                TutorialStepCatalog.HubSteps(),
+                StoryFlagIds.TutorialHubPostRescueDone,
+                slideshow: true);
         }
 
         public void StartMapTrack()
@@ -1034,6 +1075,24 @@ namespace FracturedChorus.Tutorial
         private static bool CountsAsProgressSlide(TutorialStepKind kind) =>
             kind == TutorialStepKind.Slide || kind == TutorialStepKind.PracticeFormation;
 
+        private void DropActiveTrack()
+        {
+            UnbindPracticeHooks();
+            _queue.Clear();
+            _stepIndex = 0;
+            _completionFlag = null;
+            _slideshowTrack = false;
+            _cadenceTrackActive = false;
+            CombatController.PlanningSegmentBegan -= HandlePlanningSegmentBegan;
+            ForgetDestroyedCoach();
+            if (coachView != null)
+            {
+                coachView.Hide();
+            }
+
+            SetHostBlocking(false);
+        }
+
         private void CompleteTrack()
         {
             if (!string.IsNullOrEmpty(_completionFlag) && GameMetaSession.HasSession)
@@ -1167,7 +1226,7 @@ namespace FracturedChorus.Tutorial
             public static List<TutorialStepSO> HubSteps() => new List<TutorialStepSO>
             {
                 Step(TrackHub, "hub_menu",
-                    "Open MENU (top right) to check party stats, bonds, the calendar, and save slots."),
+                    "Open MENU (bottom right) to check party stats, bonds, the calendar, and save slots."),
                 Step(TrackHub, "hub_town",
                     "Tap a map pin to use an activity slot. The morning quiz and the day's phase lock what's available."),
                 Step(TrackHub, "hub_done",

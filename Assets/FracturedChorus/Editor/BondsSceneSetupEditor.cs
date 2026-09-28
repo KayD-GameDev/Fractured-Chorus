@@ -37,6 +37,7 @@ namespace FracturedChorus.Editor
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             BuildHierarchy();
             EditorSceneManager.SaveScene(scene, ScenePath);
+            EnsureSceneInBuildSettings();
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log($"[Fractured Chorus] Saved {ScenePath}.");
@@ -72,9 +73,34 @@ namespace FracturedChorus.Editor
             BuildHierarchy();
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
+            EnsureSceneInBuildSettings();
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log("[Fractured Chorus] Healed Bonds hierarchy.");
+        }
+
+        private static void EnsureSceneInBuildSettings()
+        {
+            var scenes = EditorBuildSettings.scenes;
+            for (var i = 0; i < scenes.Length; i++)
+            {
+                if (scenes[i].path == ScenePath)
+                {
+                    if (!scenes[i].enabled)
+                    {
+                        scenes[i].enabled = true;
+                        EditorBuildSettings.scenes = scenes;
+                    }
+
+                    return;
+                }
+            }
+
+            var list = new System.Collections.Generic.List<EditorBuildSettingsScene>(scenes)
+            {
+                new EditorBuildSettingsScene(ScenePath, true)
+            };
+            EditorBuildSettings.scenes = list.ToArray();
         }
 
         [MenuItem("Fractured Chorus/Bonds/Attach Missing Layout Objects")]

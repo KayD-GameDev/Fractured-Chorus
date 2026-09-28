@@ -46,6 +46,7 @@ namespace FracturedChorus.Hub
         {
             try
             {
+                CampusBgmPlayer.Play();
                 EnsureSession();
                 if (GameMetaSession.Current.RunSnapshot.HasActiveRun)
                 {
@@ -55,11 +56,7 @@ namespace FracturedChorus.Hub
 
                 _phaseDriver.BeginCurrentPhase();
                 townMapView?.FulfillPendingStatusMenuReturn(GameMetaSession.Current);
-                if (!HimaEnrollmentGate.IsActive(GameMetaSession.Current))
-                {
-                    TutorialDirector.Ensure().StartHubTrack();
-                }
-                CampusBgmPlayer.Play();
+                TutorialDirector.Ensure().StartHubTrack();
                 var canvas = Object.FindAnyObjectByType<Canvas>();
                 if (canvas != null)
                 {
