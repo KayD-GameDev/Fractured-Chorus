@@ -9,6 +9,8 @@ namespace FracturedChorus.Narrative.Vn
         public VnBeatKind kind = VnBeatKind.Narration;
         public string speakerId;
         [TextArea(1, 6)] public string text;
+        [TextArea(1, 6)] public string textVi;
+        public string[] choicesVi;
         public string expression;
         public string bgId;
         public string bgmId;

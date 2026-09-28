@@ -1,3 +1,4 @@
+using FracturedChorus.Localization;
 using FracturedChorus.Meta;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -23,6 +24,9 @@ namespace FracturedChorus.Menu
         [SerializeField] private Button difficultyNextButton;
         [SerializeField] private Button[] difficultyChipButtons;
         [SerializeField] private Image[] difficultyChipGraphics;
+        [SerializeField] private Button[] languageChipButtons;
+        [SerializeField] private Image[] languageChipGraphics;
+        [SerializeField] private Text languageLabel;
         [SerializeField] private Sprite chipNormalSprite;
         [SerializeField] private Sprite chipSelectedSprite;
         [SerializeField] private Button volumeMinusButton;
@@ -108,6 +112,22 @@ namespace FracturedChorus.Menu
             BindStepper(brightnessPlusButton, 1, () => NudgeSlider(brightnessSlider, sliderStep));
 
             RemoveStrayPointerSfx();
+            BindLanguageChips();
+            BindPointerFeedback();
+            GameLoc.Changed += OnLanguageChanged;
+            ApplyLocalizedChrome();
+        }
+
+        private void OnDestroy()
+        {
+            GameLoc.Changed -= OnLanguageChanged;
+        }
+
+        private void OnLanguageChanged()
+        {
+            ApplyLocalizedChrome();
+            RefreshInfoText();
+            RefreshLanguageChips();
         }
 
         private void RemoveStrayPointerSfx()
@@ -345,6 +365,8 @@ namespace FracturedChorus.Menu
                 graphic.color = locked && !isSelected
                     ? new Color(1f, 1f, 1f, LockedChipAlpha)
                     : Color.white;
+                var feedback = graphic.GetComponent<ConfigUiPointerFeedback>();
+                feedback?.SetSelected(isSelected);
             }
         }
 
@@ -498,22 +520,23 @@ namespace FracturedChorus.Menu
             switch (_selectedIndex)
             {
                 case 0:
-                    infoText.text = "Adjust master volume across all scenes.";
+                    infoText.text = GameLoc.Get("settings.volume.info");
                     break;
                 case 1:
-                    infoText.text = "Adjust screen brightness across all scenes.";
+                    infoText.text = GameLoc.Get("settings.brightness.info");
                     break;
                 case 2:
                     infoText.text = MainMenuGameSettings.SkipUnreadText
-                        ? "Allow skipping dialogue you have not read yet."
-                        : "Only skip dialogue you have already read.";
+                        ? GameLoc.Get("settings.skip.on")
+                        : GameLoc.Get("settings.skip.off");
                     break;
                 case 3:
                     var difficulty = ActiveDifficulty;
                     var description = MainMenuGameSettings.GetDifficultyDescription(difficulty);
+                    var label = MainMenuGameSettings.GetDifficultyLabel(difficulty);
                     infoText.text = IsDifficultyLocked
-                        ? $"Locked to this save · {MainMenuGameSettings.GetDifficultyLabel(difficulty)} — {description}"
-                        : $"{description} Applies to a new game.";
+                        ? GameLoc.Get("settings.difficulty.locked").Replace("{label}", label).Replace("{desc}", description)
+                        : GameLoc.Get("settings.difficulty.newgame").Replace("{desc}", description);
                     break;
             }
         }
@@ -577,5 +600,165 @@ namespace FracturedChorus.Menu
             return Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D);
 #endif
         }
+
+        private const string HandleHoverResource = "UI/ConfigMenu/ui_config_slider_handle_hover_v1";
+        private const string ChipHoverResource = "UI/ConfigMenu/ui_config_chip_hover_v1";
+        private const string ChipPressResource = "UI/ConfigMenu/ui_config_chip_press_v1";
+        private const string PlusHoverResource = "UI/ConfigMenu/ui_config_btn_plus_hover_v1";
+        private const string PlusPressResource = "UI/ConfigMenu/ui_config_btn_plus_press_v1";
+        private const string MinusHoverResource = "UI/ConfigMenu/ui_config_btn_minus_hover_v1";
+        private const string MinusPressResource = "UI/ConfigMenu/ui_config_btn_minus_press_v1";
+
+        private void BindLanguageChips()
+        {
+            if (languageChipButtons == null)
+            {
+                return;
+            }
+
+            for (var i = 0; i < languageChipButtons.Length; i++)
+            {
+                var button = languageChipButtons[i];
+                if (button == null)
+                {
+                    continue;
+                }
+
+                var captured = (GameLanguage)i;
+                button.onClick.AddListener(() => GameLoc.SetLanguage(captured));
+            }
+
+            RefreshLanguageChips();
+        }
+
+        private void RefreshLanguageChips()
+        {
+            if (languageChipGraphics == null)
+            {
+                return;
+            }
+
+            var selected = (int)GameLoc.Language;
+            for (var i = 0; i < languageChipGraphics.Length; i++)
+            {
+                var graphic = languageChipGraphics[i];
+                if (graphic == null)
+                {
+                    continue;
+                }
+
+                var isSelected = i == selected;
+                var sprite = isSelected ? chipSelectedSprite : chipNormalSprite;
+                if (sprite != null)
+                {
+                    graphic.sprite = sprite;
+                }
+
+                graphic.GetComponent<ConfigUiPointerFeedback>()?.SetSelected(isSelected);
+            }
+        }
+
+        private void BindPointerFeedback()
+        {
+            var handleHover = Resources.Load<Sprite>(HandleHoverResource);
+            var chipHover = Resources.Load<Sprite>(ChipHoverResource);
+            var chipPress = Resources.Load<Sprite>(ChipPressResource);
+            var plusHover = Resources.Load<Sprite>(PlusHoverResource);
+            var plusPress = Resources.Load<Sprite>(PlusPressResource);
+            var minusHover = Resources.Load<Sprite>(MinusHoverResource);
+            var minusPress = Resources.Load<Sprite>(MinusPressResource);
+            BindSelectable(volumeSlider != null ? volumeSlider.handleRect : null, handleHover);
+            BindSelectable(brightnessSlider != null ? brightnessSlider.handleRect : null, handleHover);
+            BindSelectable(volumeMinusButton != null ? volumeMinusButton.transform : null, minusHover, minusPress);
+            BindSelectable(volumePlusButton != null ? volumePlusButton.transform : null, plusHover, plusPress);
+            BindSelectable(brightnessMinusButton != null ? brightnessMinusButton.transform : null, minusHover, minusPress);
+            BindSelectable(brightnessPlusButton != null ? brightnessPlusButton.transform : null, plusHover, plusPress);
+            if (difficultyChipButtons != null)
+            {
+                for (var i = 0; i < difficultyChipButtons.Length; i++)
+                {
+                    BindSelectable(difficultyChipButtons[i] != null ? difficultyChipButtons[i].transform : null, chipHover, chipPress);
+                }
+            }
+
+            if (languageChipButtons != null)
+            {
+                for (var i = 0; i < languageChipButtons.Length; i++)
+                {
+                    BindSelectable(languageChipButtons[i] != null ? languageChipButtons[i].transform : null, chipHover, chipPress);
+                }
+            }
+
+            if (skipUnreadToggle != null)
+            {
+                BindSelectable(skipUnreadToggle.transform, null);
+            }
+
+            var buttons = GetComponentsInChildren<Button>(true);
+            for (var i = 0; i < buttons.Length; i++)
+            {
+                if (buttons[i] != null && buttons[i].name == "Btn_Back")
+                {
+                    BindSelectable(buttons[i].transform, chipHover, chipPress);
+                }
+            }
+        }
+
+        private void BindSelectable(Transform target, Sprite hover, Sprite pressed = null)
+        {
+            if (target == null)
+            {
+                return;
+            }
+
+            var feedback = target.GetComponent<ConfigUiPointerFeedback>() ??
+                           target.gameObject.AddComponent<ConfigUiPointerFeedback>();
+            feedback.Bind(screenController, hover, pressed);
+        }
+
+        private void ApplyLocalizedChrome()
+        {
+            GameLoc.Skip(infoText);
+            if (rows != null)
+            {
+                if (rows.Length > 0 && rows[0] != null)
+                {
+                    GameLoc.Apply(rows[0].label, "VOLUME");
+                }
+
+                if (rows.Length > 1 && rows[1] != null)
+                {
+                    GameLoc.Apply(rows[1].label, "BRIGHTNESS");
+                }
+
+                if (rows.Length > 2 && rows[2] != null)
+                {
+                    GameLoc.Apply(rows[2].label, "SKIP TEXT");
+                }
+
+                if (rows.Length > 3 && rows[3] != null)
+                {
+                    GameLoc.Apply(rows[3].label, "DIFFICULTY");
+                }
+            }
+
+            var texts = GetComponentsInChildren<Text>(true);
+            for (var i = 0; i < texts.Length; i++)
+            {
+                var text = texts[i];
+                if (text == null)
+                {
+                    continue;
+                }
+
+                if (text.transform.parent != null && text.transform.parent.name == "Btn_Back")
+                {
+                    GameLoc.Apply(text, "BACK");
+                }
+            }
+
+            GameLoc.Apply(languageLabel, "LANGUAGE");
+        }
+
     }
 }

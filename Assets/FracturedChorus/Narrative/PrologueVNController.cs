@@ -1,4 +1,5 @@
 using System.Collections;
+using FracturedChorus.Localization;
 using FracturedChorus.Meta;
 using FracturedChorus.Narrative.Vn;
 using FracturedChorus.RunMap;
@@ -184,7 +185,7 @@ namespace FracturedChorus.Narrative
             }
 
             var typed = false;
-            BeginTypeLine(disclaimerTypewriter, OpeningLine, "prologue_disclaimer", () => typed = true);
+            BeginTypeLine(disclaimerTypewriter, Loc(OpeningLine), "prologue_disclaimer", () => typed = true);
             while (!typed)
             {
                 yield return null;
@@ -232,7 +233,7 @@ namespace FracturedChorus.Narrative
 
             for (var i = 0; i < StoryLines.Length; i++)
             {
-                var displayLine = PrologueNarrationText.WrapBalanced(StoryLines[i]);
+                var displayLine = PrologueNarrationText.WrapBalanced(Loc(StoryLines[i]));
                 var typed = false;
                 BeginTypeLine(dialogueTypewriter, displayLine, $"prologue_story_{i}", () => typed = true);
                 while (!typed)
@@ -248,7 +249,7 @@ namespace FracturedChorus.Narrative
         {
             HideChoiceUi();
 
-            var displayLine = PrologueNarrationText.WrapBalanced(ChoicePrompt);
+            var displayLine = PrologueNarrationText.WrapBalanced(Loc(ChoicePrompt));
             var typed = false;
             BeginTypeLine(dialogueTypewriter, displayLine, "prologue_choice", () => typed = true);
             while (!typed)
@@ -275,8 +276,8 @@ namespace FracturedChorus.Narrative
             var decided = false;
             var agreed = false;
             choiceView?.ShowOptions(
-                "I agree",
-                "I do not agree",
+                Loc("I agree"),
+                Loc("I do not agree"),
                 result =>
                 {
                     agreed = result;
@@ -320,7 +321,7 @@ namespace FracturedChorus.Narrative
 
             for (var i = 0; i < DisagreeLines.Length; i++)
             {
-                var displayLine = PrologueNarrationText.WrapBalanced(DisagreeLines[i]);
+                var displayLine = PrologueNarrationText.WrapBalanced(Loc(DisagreeLines[i]));
                 var typed = false;
                 BeginTypeLine(dialogueTypewriter, displayLine, $"prologue_disagree_{i}", () => typed = true);
                 while (!typed)
@@ -393,7 +394,7 @@ namespace FracturedChorus.Narrative
 
             SetButterflyVfxActive(true);
 
-            var thankYou = PrologueNarrationText.WrapBalanced(string.Format(ThankYouLine, RunProfile.PlayerName));
+            var thankYou = PrologueNarrationText.WrapBalanced(string.Format(Loc(ThankYouLine), RunProfile.PlayerName));
             var typed = false;
             BeginTypeLine(dialogueTypewriter, thankYou, "prologue_thank_you", () => typed = true);
             while (!typed)
@@ -727,7 +728,7 @@ namespace FracturedChorus.Narrative
             SetGameObjectActive(disclaimerText != null ? disclaimerText.gameObject : null, true);
             if (disclaimerText != null)
             {
-                disclaimerText.text = OpeningLine;
+                disclaimerText.text = Loc(OpeningLine);
             }
         }
 
@@ -740,7 +741,7 @@ namespace FracturedChorus.Narrative
             }
 
             SetCanvasGroupActive(dialoguePanel, true);
-            SetDialogueSample(PrologueNarrationText.WrapBalanced(StoryLines[0]));
+            SetDialogueSample(PrologueNarrationText.WrapBalanced(Loc(StoryLines[0])));
         }
 
         private void PreviewChoice()
@@ -749,7 +750,7 @@ namespace FracturedChorus.Narrative
             SetButterflyVfxActive(false);
 
             SetCanvasGroupActive(dialoguePanel, true);
-            SetDialogueSample(PrologueNarrationText.WrapBalanced(ChoicePrompt));
+            SetDialogueSample(PrologueNarrationText.WrapBalanced(Loc(ChoicePrompt)));
             SetCanvasGroupActive(choiceBackdrop, true);
             choiceView?.ApplyEditorPreview(showPrompt: false);
         }
@@ -785,7 +786,12 @@ namespace FracturedChorus.Narrative
 
             SetCanvasGroupActive(dialoguePanel, true);
             SetDialogueSample(PrologueNarrationText.WrapBalanced(
-                string.Format(ThankYouLine, RunProfile.DefaultNameSuggestion)));
+                string.Format(Loc(ThankYouLine), RunProfile.DefaultNameSuggestion)));
+        }
+
+        private static string Loc(string english)
+        {
+            return GameLoc.Pick(english, VnLineCatalog.Lookup(english));
         }
 
         private void SetDialogueSample(string text)

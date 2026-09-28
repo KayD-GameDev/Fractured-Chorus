@@ -1,8 +1,10 @@
 using System;
 using FracturedChorus.Combat.Core;
+using FracturedChorus.Localization;
 using FracturedChorus.UI;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Video;
 
 namespace FracturedChorus.Tutorial
 {
@@ -25,14 +27,60 @@ namespace FracturedChorus.Tutorial
         [SerializeField] [Range(0f, 1f)] private float slideshowDimmerAlpha = 0.12f;
         [SerializeField] private Sprite defaultCoachPortrait;
 
+        private const int CoachBodyFontSize = 28;
+
         private Action _onNext;
         private Action _onBack;
         private bool _slideshowMode;
         private bool _blocksCombatUi;
+        private Image _clipSprite;
+        private RawImage _clipVideo;
+        private VideoPlayer _video;
+        private RenderTexture _videoTexture;
+        private AspectRatioFitter _clipFitter;
+        private Vector2 _bodyAnchorMin;
+        private Vector2 _bodyAnchorMax;
+        private bool _bodyAnchorsCaptured;
+        private Vector2 _panelHomePosition;
+        private bool _panelHomeCaptured;
+
+        private void Awake()
+        {
+            SanitizePanelFonts();
+        }
 
         public bool IsVisible => root != null && root.activeInHierarchy;
         public bool BlocksCombatUi => _blocksCombatUi && IsVisible;
         public RectTransform PanelRect => panelRect;
+
+        public void PlacePanelY(float y)
+        {
+            if (this == null || panelRect == null)
+            {
+                return;
+            }
+
+            if (!_panelHomeCaptured)
+            {
+                _panelHomePosition = panelRect.anchoredPosition;
+                _panelHomeCaptured = true;
+            }
+
+            var pos = _panelHomePosition;
+            pos.y = y;
+            panelRect.anchoredPosition = pos;
+        }
+
+        public void RestorePanelPosition()
+        {
+            if (this == null || !_panelHomeCaptured || panelRect == null)
+            {
+                return;
+            }
+
+            panelRect.anchoredPosition = _panelHomePosition;
+            _panelHomeCaptured = false;
+        }
 
         public static bool FindAnyVisible()
         {
@@ -76,7 +124,7 @@ namespace FracturedChorus.Tutorial
             Show(bodyCopy, onNext, null, null);
         }
 
-        public void Show(string bodyCopy, Action onNext, Sprite portrait, Sprite panel)
+        public void Show(string bodyCopy, Action onNext, Sprite portrait, Sprite panel, VideoClip panelClip = null)
         {
             EnsureBuilt();
             EnsureSlideshowControls();
@@ -87,7 +135,7 @@ namespace FracturedChorus.Tutorial
 
             SetPanelVisible(true);
             SetPanelRaycast(true);
-            ApplyContent(bodyCopy, portrait, panel, null);
+            ApplyContent(bodyCopy, portrait, panel, null, panelClip);
             if (bodyLabel != null)
             {
                 bodyLabel.alignment = TextAnchor.UpperLeft;
@@ -108,7 +156,8 @@ namespace FracturedChorus.Tutorial
             bool showBack,
             string primaryLabel,
             Action onBack,
-            Action onPrimary)
+            Action onPrimary,
+            VideoClip panelClip = null)
         {
             EnsureBuilt();
             EnsureSlideshowControls();
@@ -119,7 +168,7 @@ namespace FracturedChorus.Tutorial
 
             SetPanelVisible(true);
             SetPanelRaycast(true);
-            ApplyContent(bodyCopy, portrait, panel, progressText);
+            ApplyContent(bodyCopy, portrait, panel, progressText, panelClip);
             ApplySlideshowLayout(panel != null);
             if (bodyLabel != null)
             {
@@ -128,7 +177,12 @@ namespace FracturedChorus.Tutorial
 
             ApplyDimmer(slideshowDimmerAlpha);
             SetBackVisible(showBack);
-            SetPrimaryLabel(string.IsNullOrEmpty(primaryLabel) ? "Next" : primaryLabel);
+            if (backLabel != null)
+            {
+                backLabel.text = GameLoc.Tr("BACK");
+            }
+
+            SetPrimaryLabel(string.IsNullOrEmpty(primaryLabel) ? "NEXT" : primaryLabel);
             SetPrimaryVisible(onPrimary != null);
             SetVisible(true);
         }
@@ -144,7 +198,7 @@ namespace FracturedChorus.Tutorial
 
             SetPanelVisible(true);
             var bust = portrait ?? defaultCoachPortrait ?? TutorialCadenceTrackLibrary.LoadCodaPortrait();
-            ApplyContent(bodyCopy, bust, null, null);
+            ApplyContent(bodyCopy, bust, null, null, null);
             ApplyDimmer(0f);
             SetBackVisible(false);
             SetPrimaryVisible(false);
@@ -206,6 +260,12 @@ namespace FracturedChorus.Tutorial
 
         public void Hide()
         {
+            if (this == null)
+            {
+                return;
+            }
+
+            StopPanelClip();
             _onNext = null;
             _onBack = null;
             _slideshowMode = false;
@@ -218,6 +278,7 @@ namespace FracturedChorus.Tutorial
             }
 
             RefreshCombatOverlays();
+            TutorialDirector.NotifyCoachHidden();
         }
 
         private void SetPanelVisible(bool visible)
@@ -228,16 +289,21 @@ namespace FracturedChorus.Tutorial
             }
         }
 
-        private void ApplyContent(string bodyCopy, Sprite portrait, Sprite panel, string progressText)
+        private void ApplyContent(string bodyCopy, Sprite portrait, Sprite panel, string progressText, VideoClip panelClip)
         {
+            SanitizePanelFonts();
             if (bodyLabel != null)
             {
-                bodyLabel.text = bodyCopy ?? string.Empty;
+                bodyLabel.text = GameLoc.Tr(bodyCopy ?? string.Empty);
+                if (bodyLabel.fontSize < 1)
+                {
+                    bodyLabel.fontSize = CoachBodyFontSize;
+                }
             }
 
             var bust = portrait ?? defaultCoachPortrait ?? TutorialCadenceTrackLibrary.LoadCodaPortrait();
             ApplySprite(coachPortrait, bust, preserveAspect: true);
-            ApplySprite(panelImage, panel, preserveAspect: true);
+            ApplyPanelMedia(panel, panelClip);
 
             if (progressLabel != null)
             {
@@ -245,6 +311,216 @@ namespace FracturedChorus.Tutorial
                 progressLabel.gameObject.SetActive(hasProgress);
                 progressLabel.text = progressText ?? string.Empty;
             }
+        }
+
+        private void ApplyPanelMedia(Sprite panel, VideoClip panelClip)
+        {
+            StopPanelClip();
+            var hasVideo = panelClip != null;
+            var hasSprite = !hasVideo && panel != null;
+            if (panelImage != null)
+            {
+                panelImage.sprite = null;
+                panelImage.enabled = false;
+            }
+
+            if (!hasVideo && !hasSprite)
+            {
+                SetClipVisible(sprite: false, video: false);
+                FitBodyToEmptySlot();
+                return;
+            }
+
+            EnsureClipSurfaces();
+            RestoreBodyAnchors();
+            if (hasVideo)
+            {
+                PlayPanelClip(panelClip);
+                return;
+            }
+
+            if (_clipSprite != null)
+            {
+                _clipSprite.sprite = panel;
+                _clipSprite.preserveAspect = false;
+                _clipSprite.color = Color.white;
+                _clipSprite.enabled = true;
+                FitClipAspect(_clipSprite.rectTransform, panel.rect.width, panel.rect.height);
+            }
+
+            if (_clipVideo != null)
+            {
+                _clipVideo.enabled = false;
+            }
+        }
+
+        private void PlayPanelClip(VideoClip clip)
+        {
+            if (_clipVideo == null || clip == null)
+            {
+                return;
+            }
+
+            var width = Mathf.Max(16, (int)clip.width);
+            var height = Mathf.Max(16, (int)clip.height);
+            _videoTexture = new RenderTexture(width, height, 0);
+            _clipVideo.texture = _videoTexture;
+            _clipVideo.enabled = true;
+            if (_clipSprite != null)
+            {
+                _clipSprite.enabled = false;
+            }
+
+            FitClipAspect(_clipVideo.rectTransform, width, height);
+            if (_video == null)
+            {
+                _video = gameObject.GetComponent<VideoPlayer>();
+                if (_video == null)
+                {
+                    _video = gameObject.AddComponent<VideoPlayer>();
+                }
+            }
+
+            _video.playOnAwake = false;
+            _video.isLooping = true;
+            _video.renderMode = VideoRenderMode.RenderTexture;
+            _video.targetTexture = _videoTexture;
+            _video.clip = clip;
+            _video.Stop();
+            _video.Play();
+        }
+
+        private void StopPanelClip()
+        {
+            if (_video != null)
+            {
+                _video.Stop();
+                _video.clip = null;
+                _video.targetTexture = null;
+            }
+
+            if (_clipVideo != null)
+            {
+                _clipVideo.texture = null;
+                _clipVideo.enabled = false;
+            }
+
+            if (_clipSprite != null)
+            {
+                _clipSprite.enabled = false;
+            }
+
+            if (_videoTexture != null)
+            {
+                _videoTexture.Release();
+                Destroy(_videoTexture);
+                _videoTexture = null;
+            }
+        }
+
+        private void SetClipVisible(bool sprite, bool video)
+        {
+            if (_clipSprite != null)
+            {
+                _clipSprite.enabled = sprite;
+            }
+
+            if (_clipVideo != null)
+            {
+                _clipVideo.enabled = video;
+            }
+        }
+
+        private void EnsureClipSurfaces()
+        {
+            if (panelImage == null)
+            {
+                return;
+            }
+
+            var slot = panelImage.rectTransform;
+            if (_clipSprite == null)
+            {
+                var spriteGo = new GameObject("ClipSprite", typeof(RectTransform), typeof(Image), typeof(AspectRatioFitter));
+                spriteGo.transform.SetParent(slot, false);
+                _clipSprite = spriteGo.GetComponent<Image>();
+                _clipSprite.raycastTarget = false;
+                Stretch(spriteGo.GetComponent<RectTransform>(), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            }
+
+            if (_clipVideo == null)
+            {
+                var videoGo = new GameObject("ClipVideo", typeof(RectTransform), typeof(RawImage), typeof(AspectRatioFitter));
+                videoGo.transform.SetParent(slot, false);
+                _clipVideo = videoGo.GetComponent<RawImage>();
+                _clipVideo.raycastTarget = false;
+                _clipVideo.enabled = false;
+                Stretch(videoGo.GetComponent<RectTransform>(), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            }
+        }
+
+        private void FitClipAspect(RectTransform rect, float width, float height)
+        {
+            if (rect == null || width <= 1f || height <= 1f)
+            {
+                return;
+            }
+
+            _clipFitter = rect.GetComponent<AspectRatioFitter>();
+            if (_clipFitter == null)
+            {
+                _clipFitter = rect.gameObject.AddComponent<AspectRatioFitter>();
+            }
+
+            _clipFitter.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
+            _clipFitter.aspectRatio = width / height;
+        }
+
+        private void CaptureBodyAnchors()
+        {
+            if (_bodyAnchorsCaptured || bodyLabel == null)
+            {
+                return;
+            }
+
+            _bodyAnchorMin = bodyLabel.rectTransform.anchorMin;
+            _bodyAnchorMax = bodyLabel.rectTransform.anchorMax;
+            _bodyAnchorsCaptured = true;
+        }
+
+        private void RestoreBodyAnchors()
+        {
+            CaptureBodyAnchors();
+            if (bodyLabel == null)
+            {
+                return;
+            }
+
+            bodyLabel.rectTransform.anchorMin = _bodyAnchorMin;
+            bodyLabel.rectTransform.anchorMax = _bodyAnchorMax;
+        }
+
+        private void FitBodyToEmptySlot()
+        {
+            CaptureBodyAnchors();
+            if (bodyLabel == null)
+            {
+                return;
+            }
+
+            var top = _bodyAnchorMax.y;
+            if (panelImage != null)
+            {
+                top = Mathf.Max(top, panelImage.rectTransform.anchorMax.y);
+            }
+
+            bodyLabel.rectTransform.anchorMin = _bodyAnchorMin;
+            bodyLabel.rectTransform.anchorMax = new Vector2(_bodyAnchorMax.x, top);
+        }
+
+        private void OnDestroy()
+        {
+            StopPanelClip();
         }
 
         private void ApplySlideshowLayout(bool hasPanelImage)
@@ -299,7 +575,7 @@ namespace FracturedChorus.Tutorial
         {
             if (nextLabel != null)
             {
-                nextLabel.text = label;
+                nextLabel.text = GameLoc.Tr(label);
             }
         }
 
@@ -322,6 +598,11 @@ namespace FracturedChorus.Tutorial
 
         private void ApplyDimmer(float alpha)
         {
+            if (this == null)
+            {
+                return;
+            }
+
             if (dimmer == null)
             {
                 var t = transform.Find("Dimmer");
@@ -426,17 +707,24 @@ namespace FracturedChorus.Tutorial
                 }
             }
 
-            backButton.onClick.RemoveListener(HandleBack);
-            backButton.onClick.AddListener(HandleBack);
-            backButton.gameObject.SetActive(false);
-            UiButtonHoverFeedback.Ensure(backButton.gameObject);
+            if (backButton != null)
+            {
+                backButton.onClick.RemoveListener(HandleBack);
+                backButton.onClick.AddListener(HandleBack);
+                backButton.gameObject.SetActive(false);
+                UiButtonHoverFeedback.Ensure(backButton.gameObject);
+            }
 
             if (nextButton != null)
             {
                 nextButton.onClick.RemoveListener(HandleNext);
                 nextButton.onClick.AddListener(HandleNext);
-                Stretch(nextButton.GetComponent<RectTransform>(), new Vector2(0.72f, 0.06f), new Vector2(0.96f, 0.18f),
-                    Vector2.zero, Vector2.zero);
+                if (!preserveSceneLayout)
+                {
+                    Stretch(nextButton.GetComponent<RectTransform>(), new Vector2(0.72f, 0.06f), new Vector2(0.96f, 0.18f),
+                        Vector2.zero, Vector2.zero);
+                }
+
                 UiButtonHoverFeedback.Ensure(nextButton.gameObject);
             }
 
@@ -449,14 +737,16 @@ namespace FracturedChorus.Tutorial
                 }
                 else
                 {
-                    progressLabel = CreateText(panel, "Progress", string.Empty, 16, TextAnchor.MiddleRight);
-                    Stretch(progressLabel.rectTransform, new Vector2(0.7f, 0.9f), new Vector2(0.96f, 0.98f),
-                        Vector2.zero, Vector2.zero);
+                    progressLabel = CreateText(panel, "Progress", string.Empty, 16, TextAnchor.MiddleCenter);
                     progressLabel.color = new Color(0.7f, 0.85f, 1f, 0.85f);
                 }
             }
 
-            progressLabel.gameObject.SetActive(false);
+            if (progressLabel != null)
+            {
+                PlaceProgressUnderPortrait(progressLabel);
+                progressLabel.gameObject.SetActive(false);
+            }
         }
 
         private void BuildHierarchy()
@@ -470,8 +760,9 @@ namespace FracturedChorus.Tutorial
 
             var panel = CreateImage(transform, "Panel", FcColorTokens.WithAlpha(FcColorTokens.Surface.Panel, 0.94f));
             panelRect = panel.rectTransform;
-            Stretch(panelRect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-520f, -280f),
-                new Vector2(520f, 280f));
+            Stretch(panelRect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-672f, -294f),
+                new Vector2(672f, 294f));
+            panelRect.localScale = Vector3.one;
             panel.raycastTarget = true;
 
             coachPortrait = CreateImage(panel.transform, "CoachPortrait", Color.white);
@@ -488,16 +779,15 @@ namespace FracturedChorus.Tutorial
             panelImage.raycastTarget = false;
             panelImage.enabled = false;
 
-            bodyLabel = CreateText(panel.transform, "Body", string.Empty, 22, TextAnchor.UpperLeft);
+            bodyLabel = CreateText(panel.transform, "Body", string.Empty, CoachBodyFontSize, TextAnchor.UpperLeft);
             Stretch(bodyLabel.rectTransform, new Vector2(0.24f, 0.22f), new Vector2(0.96f, 0.4f), Vector2.zero,
                 Vector2.zero);
             bodyLabel.color = Color.white;
             bodyLabel.horizontalOverflow = HorizontalWrapMode.Wrap;
             bodyLabel.verticalOverflow = VerticalWrapMode.Overflow;
 
-            progressLabel = CreateText(panel.transform, "Progress", string.Empty, 16, TextAnchor.MiddleRight);
-            Stretch(progressLabel.rectTransform, new Vector2(0.7f, 0.9f), new Vector2(0.96f, 0.98f), Vector2.zero,
-                Vector2.zero);
+            progressLabel = CreateText(panel.transform, "Progress", string.Empty, 16, TextAnchor.MiddleCenter);
+            PlaceProgressUnderPortrait(progressLabel);
             progressLabel.color = new Color(0.7f, 0.85f, 1f, 0.85f);
             progressLabel.gameObject.SetActive(false);
 
@@ -533,7 +823,7 @@ namespace FracturedChorus.Tutorial
             {
                 canvas.renderMode = parentCanvas.renderMode;
                 canvas.worldCamera = parentCanvas.worldCamera;
-                canvas.planeDistance = Mathf.Max(1f, parentCanvas.planeDistance - 1f);
+                canvas.planeDistance = parentCanvas.planeDistance;
             }
             else
             {
@@ -621,6 +911,53 @@ namespace FracturedChorus.Tutorial
             labelText.color = FcColorTokens.Brand.Cyan;
             labelText.fontStyle = FontStyle.Bold;
             return button;
+        }
+
+        private void SanitizePanelFonts()
+        {
+            var scope = panelRect != null ? panelRect : transform as RectTransform;
+            if (scope == null)
+            {
+                return;
+            }
+
+            var labels = scope.GetComponentsInChildren<Text>(true);
+            for (var i = 0; i < labels.Length; i++)
+            {
+                var label = labels[i];
+                if (label == null)
+                {
+                    continue;
+                }
+
+                if (label.fontSize < 1)
+                {
+                    label.fontSize = CoachBodyFontSize;
+                }
+
+                label.resizeTextForBestFit = false;
+                if (label.resizeTextMinSize < 1)
+                {
+                    label.resizeTextMinSize = 1;
+                }
+
+                if (label.resizeTextMaxSize < label.fontSize)
+                {
+                    label.resizeTextMaxSize = label.fontSize;
+                }
+            }
+        }
+
+        private static void PlaceProgressUnderPortrait(Text label)
+        {
+            if (label == null)
+            {
+                return;
+            }
+
+            label.alignment = TextAnchor.MiddleCenter;
+            Stretch(label.rectTransform, new Vector2(0.02f, 0.02f), new Vector2(0.22f, 0.16f), Vector2.zero,
+                Vector2.zero);
         }
 
         private static void Stretch(RectTransform rect, Vector2 anchorMin, Vector2 anchorMax, Vector2 offsetMin,

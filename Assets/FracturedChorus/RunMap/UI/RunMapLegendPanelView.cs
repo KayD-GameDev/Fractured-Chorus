@@ -1,5 +1,6 @@
 using System;
 using FracturedChorus.Data;
+using FracturedChorus.Localization;
 using FracturedChorus.RunMap.Core;
 using FracturedChorus.UI;
 using UnityEngine;
@@ -206,7 +207,7 @@ namespace FracturedChorus.RunMap.UI
                 return;
             }
 
-            hint.text = "Bấm tên để xem thông tin.";
+            hint.text = GameLoc.Get("room.legend");
             hint.fontSize = MapLayoutConstants.LegendHintFontSize;
             hint.color = new Color(0.62f, 0.65f, 0.7f);
             hint.lineSpacing = MapLayoutConstants.LegendHintLineSpacing;

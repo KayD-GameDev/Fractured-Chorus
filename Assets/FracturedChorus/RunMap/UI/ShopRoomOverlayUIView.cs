@@ -1,4 +1,5 @@
 using System;
+using FracturedChorus.Localization;
 using FracturedChorus.RunMap;
 using FracturedChorus.UI;
 using UnityEngine;
@@ -99,7 +100,7 @@ namespace FracturedChorus.RunMap.UI
 
             if (titleText != null)
             {
-                titleText.text = "SHOP";
+                titleText.text = GameLoc.Get("room.shop");
             }
 
             if (hintText != null)
@@ -107,7 +108,12 @@ namespace FracturedChorus.RunMap.UI
                 var notes = FracturedChorus.Meta.GameMetaSession.HasSession
                     ? FracturedChorus.Meta.GameMetaSession.Current.Wallet.Notes
                     : 0;
-                hintText.text = $"Chọn 1 món · {notes} Notes";
+                hintText.text = GameLoc.Get("room.shop.hint").Replace("{notes}", notes.ToString());
+            }
+
+            if (leaveLabel != null)
+            {
+                leaveLabel.text = GameLoc.Tr("LEAVE");
             }
 
             var count = offers != null ? Mathf.Min(offers.Length, MaxCards) : 0;

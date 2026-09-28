@@ -302,19 +302,19 @@ namespace FracturedChorus.Editor
             panelRect.anchorMax = new Vector2(0.5f, 0.5f);
             panelRect.pivot = new Vector2(0.5f, 0.5f);
             panelRect.anchoredPosition = Vector2.zero;
-            panelRect.sizeDelta = new Vector2(620f, 280f);
+            panelRect.sizeDelta = new Vector2(1240f, 560f);
 
-            var title = CreateText(panelRect, "Title", "CONFIRM", 28, TextAnchor.MiddleCenter, FontStyle.Bold);
+            var title = CreateText(panelRect, "Title", "CONFIRM", 56, TextAnchor.MiddleCenter, FontStyle.Bold);
             Stretch(title.rectTransform, new Vector2(0.06f, 0.74f), new Vector2(0.94f, 0.92f));
             title.color = FcColorTokens.Brand.Cyan;
 
-            var message = CreateText(panelRect, "Message", string.Empty, 21, TextAnchor.UpperCenter);
+            var message = CreateText(panelRect, "Message", string.Empty, 42, TextAnchor.UpperCenter);
             Stretch(message.rectTransform, new Vector2(0.08f, 0.34f), new Vector2(0.92f, 0.72f));
             message.color = FcColorTokens.Brand.TextPrimary;
             message.horizontalOverflow = HorizontalWrapMode.Wrap;
 
-            var confirmBtn = CreateButton(panelRect, "Btn_Confirm", "YES", new Vector2(0.1f, 0.1f), new Vector2(0.46f, 0.28f));
-            var cancelBtn = CreateButton(panelRect, "Btn_Cancel", "NO", new Vector2(0.54f, 0.1f), new Vector2(0.9f, 0.28f));
+            var confirmBtn = CreateButton(panelRect, "Btn_Confirm", "YES", new Vector2(0.1f, 0.1f), new Vector2(0.46f, 0.28f), 40);
+            var cancelBtn = CreateButton(panelRect, "Btn_Cancel", "NO", new Vector2(0.54f, 0.1f), new Vector2(0.9f, 0.28f), 40);
             confirmBtn.Label.color = FcColorTokens.Brand.RedSelection;
 
             var dialog = rootGo.AddComponent<ConfirmDialogView>();
@@ -356,7 +356,8 @@ namespace FracturedChorus.Editor
             string name,
             string labelText,
             Vector2 anchorMin,
-            Vector2 anchorMax)
+            Vector2 anchorMax,
+            int fontSize = 20)
         {
             var image = CreateImage(parent, name, FcColorTokens.Surface.Row);
             Stretch(image.rectTransform, anchorMin, anchorMax);
@@ -364,7 +365,7 @@ namespace FracturedChorus.Editor
             var button = image.gameObject.AddComponent<Button>();
             button.targetGraphic = image;
 
-            var label = CreateText(image.rectTransform, "Label", labelText, 20, TextAnchor.MiddleCenter, FontStyle.Bold);
+            var label = CreateText(image.rectTransform, "Label", labelText, fontSize, TextAnchor.MiddleCenter, FontStyle.Bold);
             Stretch(label.rectTransform, Vector2.zero, Vector2.one);
             label.color = FcColorTokens.Brand.Cyan;
 

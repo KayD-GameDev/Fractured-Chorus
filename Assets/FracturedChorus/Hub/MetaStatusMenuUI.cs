@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using FracturedChorus.Hub.CharacterBuild;
+using FracturedChorus.Localization;
 using FracturedChorus.Menu;
 using FracturedChorus.Meta;
 using FracturedChorus.RunMap;
@@ -78,10 +79,15 @@ namespace FracturedChorus.Hub
         [SerializeField] private SocialStatsOverlayUI socialStatsOverlay;
         [SerializeField] private TownMapSfxController sfx;
 
+        private static int s_openCount;
+
         private Tab _tab = Tab.Stats;
         private GameMetaState _state;
         private bool _wired;
         private bool _systemSubmenuOpen;
+        private bool _countedOpen;
+
+        public static bool IsAnyOpen => s_openCount > 0;
 
         private void Awake()
         {
@@ -92,6 +98,11 @@ namespace FracturedChorus.Hub
             {
                 root.SetActive(false);
             }
+        }
+
+        private void OnDestroy()
+        {
+            NoteClosed();
         }
 
         private void EnsureCornerInfoHud()
@@ -206,6 +217,10 @@ namespace FracturedChorus.Hub
                 root.SetActive(true);
             }
 
+            NoteOpened();
+            HideTooltip();
+            ApplyPromptFont();
+
             diveButton?.SetListening(true);
 
             sfx?.PlayOpenPanel();
@@ -246,10 +261,54 @@ namespace FracturedChorus.Hub
             }
 
             diveButton?.SetListening(false);
+            NoteClosed();
 
             if (root != null)
             {
                 root.SetActive(false);
+            }
+        }
+
+        private void NoteOpened()
+        {
+            if (_countedOpen)
+            {
+                return;
+            }
+
+            _countedOpen = true;
+            s_openCount++;
+        }
+
+        private void NoteClosed()
+        {
+            if (!_countedOpen)
+            {
+                return;
+            }
+
+            _countedOpen = false;
+            s_openCount = Mathf.Max(0, s_openCount - 1);
+        }
+
+        private void HideTooltip()
+        {
+            if (tooltipLabel != null)
+            {
+                tooltipLabel.gameObject.SetActive(false);
+            }
+        }
+
+        private void ApplyPromptFont()
+        {
+            var labels = GetComponentsInChildren<Text>(true);
+            for (var i = 0; i < labels.Length; i++)
+            {
+                var label = labels[i];
+                if (label != null && (label.name == "ConfirmText" || label.name == "BackText"))
+                {
+                    label.fontSize = 22;
+                }
             }
         }
 
@@ -382,7 +441,7 @@ namespace FracturedChorus.Hub
 
             var listRoot = new GameObject("MenuList", typeof(RectTransform));
             listRoot.transform.SetParent(rootGo.transform, false);
-            Stretch(listRoot.GetComponent<RectTransform>(), new Vector2(0.52f, 0.18f), new Vector2(0.96f, 0.88f), Vector2.zero, Vector2.zero);
+            ApplyHubMenuList(listRoot.GetComponent<RectTransform>());
 
             var stats = CreateMenuRow(listRoot.transform, "BtnStats", sprites.StatsNormal, "STATS", 0);
             var bonds = CreateMenuRow(listRoot.transform, "BtnBonds", sprites.BondsNormal, "BONDS", 1);
@@ -391,7 +450,7 @@ namespace FracturedChorus.Hub
 
             var systemListRoot = new GameObject("SystemMenuList", typeof(RectTransform));
             systemListRoot.transform.SetParent(rootGo.transform, false);
-            Stretch(systemListRoot.GetComponent<RectTransform>(), new Vector2(0.52f, 0.18f), new Vector2(0.96f, 0.88f), Vector2.zero, Vector2.zero);
+            ApplyHubMenuList(systemListRoot.GetComponent<RectTransform>());
             var save = CreateMenuRow(systemListRoot.transform, "BtnSave", sprites.StatsNormal, "SAVE", 0);
             var load = CreateMenuRow(systemListRoot.transform, "BtnLoad", sprites.BondsNormal, "LOAD", 1);
             var config = CreateMenuRow(systemListRoot.transform, "BtnConfig", sprites.CalendarNormal, "CONFIG", 2);
@@ -400,7 +459,9 @@ namespace FracturedChorus.Hub
 
             var detail = new GameObject("DetailPanel", typeof(RectTransform), typeof(Image));
             detail.transform.SetParent(rootGo.transform, false);
-            Stretch(detail.GetComponent<RectTransform>(), new Vector2(0.08f, 0.08f), new Vector2(0.48f, 0.42f), Vector2.zero, Vector2.zero);
+            var detailRect = detail.GetComponent<RectTransform>();
+            Stretch(detailRect, new Vector2(0.08f, 0.08f), new Vector2(0.48f, 0.42f), Vector2.zero, Vector2.zero);
+            detailRect.anchoredPosition = new Vector2(-70f, -129f);
             var detailBg = detail.GetComponent<Image>();
             detailBg.color = new Color(1f, 1f, 1f, 0f);
             detailBg.raycastTarget = false;
@@ -411,17 +472,12 @@ namespace FracturedChorus.Hub
 
             var dive = ResonanceDiveButton.Ensure(detail.transform, null, fillParent: true);
 
-            var tooltip = CreateText(rootGo.transform, "Tooltip", "View Social Stats", 18, TextAnchor.MiddleRight);
-            Stretch(tooltip.rectTransform, new Vector2(0.55f, 0.08f), new Vector2(0.92f, 0.14f), Vector2.zero, Vector2.zero);
-            tooltip.color = FcColorTokens.Brand.Cyan;
-            tooltip.fontStyle = FontStyle.Italic;
-
             var prompts = new GameObject("Prompts", typeof(RectTransform));
             prompts.transform.SetParent(rootGo.transform, false);
             Stretch(prompts.GetComponent<RectTransform>(), new Vector2(0.72f, 0.02f), new Vector2(0.98f, 0.08f), Vector2.zero, Vector2.zero);
 
             var confirmIcon = CreateImage(prompts.transform, "ConfirmIcon", sprites.ConfirmPrompt);
-            var confirmText = CreateText(prompts.transform, "ConfirmText", "Confirm", 16, TextAnchor.MiddleLeft);
+            var confirmText = CreateText(prompts.transform, "ConfirmText", "Confirm", 22, TextAnchor.MiddleLeft);
             confirmText.color = Color.white;
 
             var confirmIconRt = confirmIcon.rectTransform;
@@ -434,7 +490,7 @@ namespace FracturedChorus.Hub
 
             var closeIcon = CreateImage(prompts.transform, "BackIcon", sprites.ClosePrompt);
             Stretch(closeIcon.rectTransform, new Vector2(0.48f, 0.1f), new Vector2(0.62f, 0.9f), Vector2.zero, Vector2.zero);
-            var closeText = CreateText(prompts.transform, "BackText", "Back", 16, TextAnchor.MiddleLeft);
+            var closeText = CreateText(prompts.transform, "BackText", "Back", 22, TextAnchor.MiddleLeft);
             Stretch(closeText.rectTransform, new Vector2(0.62f, 0f), new Vector2(0.86f, 1f), Vector2.zero, Vector2.zero);
             closeText.color = Color.white;
 
@@ -442,7 +498,6 @@ namespace FracturedChorus.Hub
             menu.root = rootGo;
             menu.backgroundImage = bg;
             menu.dateChipLabel = dateChip;
-            menu.tooltipLabel = tooltip;
             menu.diveButton = dive;
             menu.confirmPromptIcon = confirmIcon;
             menu.closePromptIcon = closeIcon;
@@ -892,12 +947,12 @@ namespace FracturedChorus.Hub
             }
 
             dialog.Ask(
-                "RETURN TO TITLE?",
-                "Any unsaved progress will be lost.",
+                GameLoc.Get("hub.return.title"),
+                GameLoc.Get("hub.return.body"),
                 ReturnToTitle,
                 null,
-                "YES",
-                "NO");
+                GameLoc.Tr("YES"),
+                GameLoc.Tr("NO"));
         }
 
         private void ReturnToTitle()
@@ -1020,24 +1075,7 @@ namespace FracturedChorus.Hub
                 dateChipLabel.text = $"{_state.Calendar.CurrentDate.ToDisplayString()}  ·  {_state.Calendar.CurrentPhase}";
             }
 
-            if (tooltipLabel != null)
-            {
-                if (_systemSubmenuOpen)
-                {
-                    tooltipLabel.text = "Save · Load · Config · Title";
-                }
-                else
-                {
-                    tooltipLabel.text = _tab switch
-                    {
-                        Tab.Stats => "Open Character Build",
-                        Tab.Bonds => "Open Bonds",
-                        Tab.Calendar => "Open Calendar",
-                        Tab.System => "Save · Load · Config · Title",
-                        _ => string.Empty
-                    };
-                }
-            }
+            HideTooltip();
 
             if (_systemSubmenuOpen)
             {
@@ -1094,14 +1132,14 @@ namespace FracturedChorus.Hub
             BindRow(configButton, configImage, normal, hover);
             BindRow(returnToTitleButton, returnToTitleImage, normal, hover);
 
-            EnsureRowIcon(statsButton, "ui_hub_menu_icon_stats");
-            EnsureRowIcon(bondsButton, "ui_hub_menu_icon_bonds");
-            EnsureRowIcon(calendarButton, "ui_hub_menu_icon_calendar");
-            EnsureRowIcon(systemButton, "ui_hub_menu_icon_system");
-            EnsureRowIcon(saveButton, "ui_hub_menu_icon_save");
-            EnsureRowIcon(loadButton, "ui_hub_menu_icon_load");
-            EnsureRowIcon(configButton, "ui_hub_menu_icon_config");
-            EnsureRowIcon(returnToTitleButton, "ui_hub_menu_icon_title");
+            EnsureRowIcon(statsButton, "ui_hub_menu_icon_stats", 0);
+            EnsureRowIcon(bondsButton, "ui_hub_menu_icon_bonds", 1);
+            EnsureRowIcon(calendarButton, "ui_hub_menu_icon_calendar", 2);
+            EnsureRowIcon(systemButton, "ui_hub_menu_icon_system", 3);
+            EnsureRowIcon(saveButton, "ui_hub_menu_icon_save", 0);
+            EnsureRowIcon(loadButton, "ui_hub_menu_icon_load", 1);
+            EnsureRowIcon(configButton, "ui_hub_menu_icon_config", 2);
+            EnsureRowIcon(returnToTitleButton, "ui_hub_menu_icon_title", 3);
 
             var edgeFx = LoadHubPlate("ui_hub_menu_btn_edge_fx");
             EnsureTailFx(statsButton, edgeFx);
@@ -1146,7 +1184,7 @@ namespace FracturedChorus.Hub
             }
         }
 
-        private static void EnsureRowLabel(Transform row, string caption)
+        private static void EnsureRowLabel(Transform row, string caption, int index)
         {
             var existing = row.Find("Label");
             if (existing != null)
@@ -1157,14 +1195,30 @@ namespace FracturedChorus.Hub
                     current.text = caption;
                 }
 
+                ApplyHubLabelRect(existing as RectTransform, index);
                 return;
             }
 
             var label = CreateText(row, "Label", caption, 28, TextAnchor.MiddleLeft);
-            label.fontStyle = FontStyle.Bold | FontStyle.Italic;
+            label.fontStyle = FontStyle.Normal;
             label.color = new Color(0.08f, 0.1f, 0.22f, 1f);
             label.raycastTarget = false;
-            Stretch(label.rectTransform, new Vector2(0.22f, 0.16f), new Vector2(0.86f, 0.84f), Vector2.zero, Vector2.zero);
+            ApplyHubLabelRect(label.rectTransform, index);
+        }
+
+        private static void ApplyHubLabelRect(RectTransform rect, int index)
+        {
+            if (rect == null)
+            {
+                return;
+            }
+
+            Stretch(rect, new Vector2(0.22f, 0.16f), new Vector2(0.86f, 0.84f), Vector2.zero, Vector2.zero);
+            rect.anchoredPosition = index == 0
+                ? new Vector2(136f, -6f)
+                : index == 3
+                    ? new Vector2(136f, 0f)
+                    : new Vector2(135f, 0f);
         }
 
         private static void ApplyRow(Image image, Sprite normal, Sprite selected, bool isSelected)
@@ -1183,16 +1237,19 @@ namespace FracturedChorus.Hub
             }
         }
 
+        private static void ApplyHubMenuList(RectTransform rect)
+        {
+            Stretch(rect, new Vector2(0.52f, 0.18f), new Vector2(0.96f, 0.88f), Vector2.zero, Vector2.zero);
+            rect.anchoredPosition = new Vector2(123f, -69f);
+            rect.sizeDelta = new Vector2(-192.54f, 0f);
+        }
+
         private static (Button Button, Image Image) CreateMenuRow(Transform parent, string name, Sprite sprite, string caption, int index)
         {
             var go = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
             go.transform.SetParent(parent, false);
             var rect = go.GetComponent<RectTransform>();
-            var yMax = 1f - (index * 0.22f);
-            var yMin = yMax - 0.2f;
-            var xShift = index * 0.04f;
-            Stretch(rect, new Vector2(0.05f + xShift, yMin), new Vector2(0.98f, yMax), Vector2.zero, Vector2.zero);
-            rect.localEulerAngles = new Vector3(0f, 0f, -4f - (index * 0.5f));
+            ApplyHubMenuRow(rect, index);
 
             var image = go.GetComponent<Image>();
             image.sprite = sprite;
@@ -1221,8 +1278,8 @@ namespace FracturedChorus.Hub
             }
 
             button.navigation = new Navigation { mode = Navigation.Mode.None };
-            EnsureRowLabel(go.transform, caption);
-            EnsureRowIcon(button, IconResourceForRow(name));
+            EnsureRowLabel(go.transform, caption, index);
+            EnsureRowIcon(button, IconResourceForRow(name), index);
             var edgeFx = LoadHubPlate("ui_hub_menu_btn_edge_fx");
             HubMenuButtonTailFx.Ensure(button, edgeFx);
             return (button, image);
@@ -1253,7 +1310,7 @@ namespace FracturedChorus.Hub
             }
         }
 
-        private static void EnsureRowIcon(Button button, string resourceName)
+        private static void EnsureRowIcon(Button button, string resourceName, int index)
         {
             if (button == null || string.IsNullOrEmpty(resourceName))
             {
@@ -1273,19 +1330,49 @@ namespace FracturedChorus.Hub
                     image.color = Color.white;
                 }
 
+                ApplyHubIconRect(existing as RectTransform, index);
                 return;
             }
 
             var go = new GameObject("Icon", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
             go.transform.SetParent(button.transform, false);
-            var rect = go.GetComponent<RectTransform>();
-            Stretch(rect, new Vector2(0.02f, 0.1f), new Vector2(0.24f, 0.9f), Vector2.zero, Vector2.zero);
             var icon = go.GetComponent<Image>();
             icon.sprite = sprite;
             icon.preserveAspect = true;
             icon.raycastTarget = false;
             icon.color = Color.white;
             icon.type = Image.Type.Simple;
+            ApplyHubIconRect(go.GetComponent<RectTransform>(), index);
+        }
+
+        private static void ApplyHubIconRect(RectTransform rect, int index)
+        {
+            if (rect == null)
+            {
+                return;
+            }
+
+            Stretch(rect, new Vector2(0.02f, 0.1f), new Vector2(0.24f, 0.9f), Vector2.zero, Vector2.zero);
+            switch (index)
+            {
+                case 0:
+                    rect.anchoredPosition = new Vector2(19.099976f, 2.8999634f);
+                    rect.sizeDelta = new Vector2(13.97f, 26.99f);
+                    rect.localEulerAngles = new Vector3(0f, 0f, -0.299f);
+                    break;
+                case 1:
+                    rect.anchoredPosition = new Vector2(12.299927f, -11.699997f);
+                    rect.sizeDelta = new Vector2(31.73f, 43.76f);
+                    break;
+                case 2:
+                    rect.anchoredPosition = new Vector2(21.400024f, 17.600006f);
+                    rect.sizeDelta = new Vector2(33.24f, 44.61f);
+                    break;
+                default:
+                    rect.anchoredPosition = new Vector2(14.400024f, 17.59999f);
+                    rect.sizeDelta = new Vector2(39.75f, 44.74f);
+                    break;
+            }
         }
 
         private static Image CreateImage(Transform parent, string name, Sprite sprite)
@@ -1312,6 +1399,36 @@ namespace FracturedChorus.Hub
             text.raycastTarget = false;
             UiFontCatalog.ApplyAutomatic(text);
             return text;
+        }
+
+        private static void ApplyHubMenuRow(RectTransform rect, int index)
+        {
+            switch (index)
+            {
+                case 0:
+                    Stretch(rect, new Vector2(0.05f, 0.8f), new Vector2(0.98f, 1f), Vector2.zero, Vector2.zero);
+                    rect.anchoredPosition = new Vector2(-19.571655f, -2.334961f);
+                    rect.localEulerAngles = new Vector3(0f, 0f, 0.531f);
+                    break;
+                case 1:
+                    Stretch(rect, new Vector2(0.09f, 0.58f), new Vector2(0.98f, 0.78f), Vector2.zero, Vector2.zero);
+                    rect.anchoredPosition = new Vector2(-32.080994f, -0.79000854f);
+                    rect.sizeDelta = new Vector2(25.018f, 0f);
+                    rect.localEulerAngles = new Vector3(0f, 0f, 0.031f);
+                    break;
+                case 2:
+                    Stretch(rect, new Vector2(0.13f, 0.36f), new Vector2(0.98f, 0.56f), Vector2.zero, Vector2.zero);
+                    rect.anchoredPosition = new Vector2(-45.690018f, 1.7999878f);
+                    rect.sizeDelta = new Vector2(47.82f, 0f);
+                    rect.localEulerAngles = new Vector3(0f, 0f, -0.469f);
+                    break;
+                default:
+                    Stretch(rect, new Vector2(0.17f, 0.14f), new Vector2(0.98f, 0.34f), Vector2.zero, Vector2.zero);
+                    rect.anchoredPosition = new Vector2(-60.429993f, 3.2700195f);
+                    rect.sizeDelta = new Vector2(74.37f, 0f);
+                    rect.localEulerAngles = new Vector3(0f, 0f, -0.969f);
+                    break;
+            }
         }
 
         private static void Stretch(RectTransform rect, Vector2 anchorMin, Vector2 anchorMax, Vector2 offsetMin, Vector2 offsetMax)

@@ -1,5 +1,6 @@
 using System;
 using FracturedChorus.Data;
+using FracturedChorus.Localization;
 using FracturedChorus.UI;
 using UnityEngine;
 using UnityEngine.UI;
@@ -109,12 +110,12 @@ namespace FracturedChorus.RunMap.UI
 
             if (titleText != null)
             {
-                titleText.text = "EVENT";
+                titleText.text = GameLoc.Get("room.event");
             }
 
             if (hintText != null)
             {
-                hintText.text = "Chọn 1 sự kiện";
+                hintText.text = GameLoc.Get("room.event.hint");
             }
 
             var count = offers != null ? Mathf.Min(offers.Length, MaxCards) : 0;

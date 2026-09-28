@@ -467,6 +467,71 @@ namespace FracturedChorus.Combat.Core
             return required > 0;
         }
 
+        public bool IsTutorialPhase1CounterReady()
+        {
+            var timeline = _session != null ? _session.Timeline : _timeline;
+            if (timeline == null)
+            {
+                return false;
+            }
+
+            TimelineConstants.GetPhaseBeatRange(0, out var startBeat, out var count);
+            var endBeat = startBeat + count;
+            var renBeats = new System.Collections.Generic.HashSet<int>();
+            var codaBeats = new System.Collections.Generic.HashSet<int>();
+            foreach (var entry in timeline.Agenda)
+            {
+                if (entry?.Unit == null || entry.Skill == null)
+                {
+                    continue;
+                }
+
+                var name = entry.Unit.DisplayName ?? string.Empty;
+                var isRen = string.Equals(name, "Ren", System.StringComparison.OrdinalIgnoreCase);
+                var isCoda = string.Equals(name, "Coda", System.StringComparison.OrdinalIgnoreCase);
+                if (!isRen && !isCoda)
+                {
+                    continue;
+                }
+
+                foreach (var telegraph in timeline.Telegraphs)
+                {
+                    if (telegraph == null || telegraph.IsWindupOnly)
+                    {
+                        continue;
+                    }
+
+                    if (telegraph.BeatIndex < startBeat || telegraph.BeatIndex >= endBeat)
+                    {
+                        continue;
+                    }
+
+                    if (!CombatCounterResolver.IsCounterEntry(entry, telegraph))
+                    {
+                        continue;
+                    }
+
+                    if (isRen)
+                    {
+                        renBeats.Add(telegraph.BeatIndex);
+                    }
+
+                    if (isCoda)
+                    {
+                        codaBeats.Add(telegraph.BeatIndex);
+                    }
+                }
+            }
+
+            if (renBeats.Count == 0 || codaBeats.Count == 0)
+            {
+                return false;
+            }
+
+            renBeats.UnionWith(codaBeats);
+            return renBeats.Count >= 2;
+        }
+
         public void StartRound()
 
         {

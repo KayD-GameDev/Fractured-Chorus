@@ -247,7 +247,7 @@ namespace FracturedChorus.Hub
             var scaler = canvasGo.GetComponent<UnityEngine.UI.CanvasScaler>();
             scaler.uiScaleMode = UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920f, 1080f);
-            scaler.matchWidthOrHeight = 0.5f;
+            scaler.matchWidthOrHeight = 0f;
         }
 
         /// <summary>Những ngữ cảnh mà ESC đã có nghĩa khác, mở status menu vào sẽ giẫm chân.</summary>

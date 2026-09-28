@@ -1,5 +1,6 @@
 using System.Collections;
 using FracturedChorus.Combat.Core;
+using FracturedChorus.Hub;
 using FracturedChorus.Combat.Presentation;
 using FracturedChorus.Combat.Timeline;
 using FracturedChorus.Tutorial;
@@ -276,6 +277,11 @@ namespace FracturedChorus.Combat.Qte
 
         private static bool ReadMousePressedThisFrame()
         {
+            if (MetaStatusMenuUI.IsAnyOpen)
+            {
+                return false;
+            }
+
 #if ENABLE_INPUT_SYSTEM
             var mouse = Mouse.current;
             if (mouse != null && mouse.leftButton.wasPressedThisFrame)

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using FracturedChorus.Hub;
+using FracturedChorus.Localization;
 using FracturedChorus.Meta;
 using FracturedChorus.RunMap;
 using UnityEngine;
@@ -118,6 +119,42 @@ namespace FracturedChorus.Narrative.Vn
         private void OnEnable()
         {
             BindConvenience();
+            GameLoc.Changed += OnLanguageChanged;
+        }
+
+        private void OnDisable()
+        {
+            GameLoc.Changed -= OnLanguageChanged;
+        }
+
+        private void OnLanguageChanged()
+        {
+            if (!_running || script == null || script.beats == null)
+            {
+                return;
+            }
+
+            if (_index < 0 || _index >= script.beats.Length)
+            {
+                return;
+            }
+
+            var beat = script.beats[_index];
+            if (_choiceActive)
+            {
+                ShowChoice(beat);
+                return;
+            }
+
+            if (beat.kind == VnBeatKind.Line || beat.kind == VnBeatKind.Narration)
+            {
+                ShowLine(beat);
+                ApplyDateHud(beat);
+            }
+            else if (beat.kind == VnBeatKind.TextCard && textCardBody != null)
+            {
+                textCardBody.text = LineText(beat);
+            }
         }
 
         private void Start()
@@ -456,8 +493,8 @@ namespace FracturedChorus.Narrative.Vn
             portraitView?.DimAll();
             AppendDialogueLog(beat);
 
-            var options = beat.choices ?? Array.Empty<string>();
-            choiceView.Show(beat.text, options, OnChoicePicked);
+            var options = ChoiceLabels(beat);
+            choiceView.Show(LineText(beat), options, OnChoicePicked);
         }
 
         private void OnChoicePicked(int choiceIndex)
@@ -534,6 +571,24 @@ namespace FracturedChorus.Narrative.Vn
             PlayBeat(script.beats[_index]);
         }
 
+        private static string LineText(VnBeat beat)
+        {
+            return beat == null ? string.Empty : GameLoc.Pick(beat.text, beat.textVi);
+        }
+
+        private static string[] ChoiceLabels(VnBeat beat)
+        {
+            var options = beat?.choices ?? Array.Empty<string>();
+            if (GameLoc.Language != GameLanguage.Vietnamese ||
+                beat?.choicesVi == null ||
+                beat.choicesVi.Length != options.Length)
+            {
+                return options;
+            }
+
+            return beat.choicesVi;
+        }
+
         private void ShowLine(VnBeat beat)
         {
             SetPanel(textCardPanel, false);
@@ -575,7 +630,7 @@ namespace FracturedChorus.Narrative.Vn
                 portraitView?.DimAll();
             }
 
-            _pendingText = beat.text ?? string.Empty;
+            _pendingText = LineText(beat);
             AppendDialogueLog(beat);
             if (typewriter == null)
             {
@@ -618,7 +673,7 @@ namespace FracturedChorus.Narrative.Vn
                 }
             }
 
-            convenience.AppendLog(speaker, beat.text);
+            convenience.AppendLog(speaker, LineText(beat));
         }
 
         private void BindConvenience()
@@ -715,7 +770,7 @@ namespace FracturedChorus.Narrative.Vn
 
             yield return null;
 
-            var fullText = beat.text ?? string.Empty;
+            var fullText = LineText(beat);
             var hold = beat.duration > 0f ? beat.duration : 1.2f;
 
             if (textCardBody != null && !string.IsNullOrEmpty(fullText))
@@ -949,7 +1004,7 @@ namespace FracturedChorus.Narrative.Vn
                 _dateHudPhase = openingPhaseDisplay;
             }
 
-            dateHud.ShowStatic(_dateHudDate, _dateHudPhase, useMoon: true);
+            dateHud.ShowStatic(_dateHudDate, GameLoc.Tr(_dateHudPhase), useMoon: true);
         }
 
         private void ApplyHubCornerDateHud(VnBeat beat)
@@ -1258,7 +1313,7 @@ namespace FracturedChorus.Narrative.Vn
                 return;
             }
 
-            dateHud?.ShowStatic(openingDateDisplay, openingPhaseDisplay, useMoon: true);
+            dateHud?.ShowStatic(openingDateDisplay, GameLoc.Tr(openingPhaseDisplay), useMoon: true);
         }
 
         public void EditorApplyBackground(string bgId)

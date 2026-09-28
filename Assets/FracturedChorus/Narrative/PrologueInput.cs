@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using FracturedChorus.Hub;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -26,6 +27,11 @@ namespace FracturedChorus.Narrative
                 }
             }
 
+            if (MetaStatusMenuUI.IsAnyOpen)
+            {
+                return false;
+            }
+
             var mouse = Mouse.current;
             if (mouse != null && mouse.leftButton.wasPressedThisFrame && !IsPointerOverUi())
             {
@@ -47,6 +53,11 @@ namespace FracturedChorus.Narrative
                 Input.GetKeyDown(KeyCode.Space))
             {
                 return true;
+            }
+
+            if (MetaStatusMenuUI.IsAnyOpen)
+            {
+                return false;
             }
 
             if (Input.GetMouseButtonDown(0) && !IsPointerOverUi())

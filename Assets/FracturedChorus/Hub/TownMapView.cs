@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using FracturedChorus.Localization;
 using FracturedChorus.Meta;
 using FracturedChorus.UI;
 using UnityEngine;
@@ -195,18 +196,18 @@ namespace FracturedChorus.Hub
             {
                 if (selectMapTitle != null)
                 {
-                    selectMapTitle.text = "SELECT MAP";
+                    selectMapTitle.text = GameLoc.Get("map.select");
                 }
 
                 if (selectMapSubtitle != null)
                 {
-                    selectMapSubtitle.text = "Where should I go?";
+                    selectMapSubtitle.text = GameLoc.Get("map.where");
                 }
             }
 
             if (wordmarkLabel != null)
             {
-                wordmarkLabel.text = "TOWNMAP";
+                wordmarkLabel.text = GameLoc.Get("map.wordmark");
                 wordmarkLabel.gameObject.SetActive(wordmarkImage == null || wordmarkImage.sprite == null);
             }
 
@@ -449,7 +450,7 @@ namespace FracturedChorus.Hub
 
             if (forced && selectMapSubtitle != null)
             {
-                selectMapSubtitle.text = "HIMA — Enrollment";
+                selectMapSubtitle.text = GameLoc.Get("map.enrollment");
             }
         }
 

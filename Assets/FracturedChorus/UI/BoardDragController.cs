@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using FracturedChorus.Combat.Core;
+using FracturedChorus.Hub;
 using FracturedChorus.Tutorial;
 using FracturedChorus.Combat.Grid;
 using FracturedChorus.Combat.Units;
@@ -48,6 +49,9 @@ namespace FracturedChorus.UI
         }
 
         public bool IsDragging => _draggingUnit != null;
+
+        public bool IsHoldingUnit(UnitView view) =>
+            view != null && _dragPointerActive && _pointerDownUnit == view;
 
         public bool IsRepositionAllowed => _session != null && _session.IsPlanningWindowOpen;
 
@@ -741,6 +745,11 @@ namespace FracturedChorus.UI
 
         private static bool WasPointerPressedThisFrame()
         {
+            if (MetaStatusMenuUI.IsAnyOpen)
+            {
+                return false;
+            }
+
 #if ENABLE_INPUT_SYSTEM
             if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
             {

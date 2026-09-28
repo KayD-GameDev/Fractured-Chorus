@@ -1,6 +1,7 @@
 using FracturedChorus.Combat.Bootstrap;
 using FracturedChorus.Meta;
 using FracturedChorus.RunMap;
+using FracturedChorus.UI.Loading;
 using UnityEngine;
 
 namespace FracturedChorus.Narrative.Vn
@@ -69,7 +70,7 @@ namespace FracturedChorus.Narrative.Vn
             CombatEncounterHandoff.SetPending(
                 EncounterCatalog.Tutorial,
                 RunMapSceneCatalog.OpeningInvestigation);
-            if (!RunMapSceneLoader.LoadByName(RunMapSceneCatalog.CombatTutorial))
+            if (!LoadingScreenController.Ensure().BeginLoadOrChain(RunMapSceneCatalog.CombatTutorial))
             {
                 Debug.LogError("[CadenceIntro] Failed to load CombatTutorial.");
             }

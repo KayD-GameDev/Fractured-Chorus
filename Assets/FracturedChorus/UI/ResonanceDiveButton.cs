@@ -368,9 +368,11 @@ namespace FracturedChorus.UI
 
             var textRootGo = new GameObject("TextRoot", typeof(RectTransform));
             textRootGo.transform.SetParent(transform, false);
-            StretchFull(textRootGo.GetComponent<RectTransform>());
-            SeedLabel(textRootGo.transform, "TitleLabel", "RESONANCE DIVE", 36, new Vector2(0.38f, 0.42f), new Vector2(0.88f, 0.82f));
-            SeedLabel(textRootGo.transform, "SubtitleLabel", "ENTER THE OTHER SIDE", 18, new Vector2(0.38f, 0.28f), new Vector2(0.88f, 0.4f));
+            var textRoot = textRootGo.GetComponent<RectTransform>();
+            StretchFull(textRoot);
+            textRoot.anchoredPosition = new Vector2(34.3f, -46.7f);
+            SeedLabel(textRoot, "TitleLabel", "Resonance Dive", 60, new Vector2(0.38f, 0.42f), new Vector2(0.88f, 0.82f), new Vector2(-52f, -1f));
+            SeedLabel(textRoot, "SubtitleLabel", "ENTER THE OTHER SIDE", 11, new Vector2(0.38f, 0.2f), new Vector2(0.88f, 0.42f), new Vector2(32f, 31f));
         }
 
         private void EnsureTextLabels()
@@ -638,11 +640,19 @@ namespace FracturedChorus.UI
 
         private static void Assign(Image image, Sprite sprite)
         {
-            if (image == null || sprite == null)
+            if (image == null)
             {
                 return;
             }
 
+            if (sprite == null)
+            {
+                image.sprite = null;
+                image.enabled = false;
+                return;
+            }
+
+            image.enabled = true;
             image.sprite = sprite;
         }
 
@@ -667,6 +677,7 @@ namespace FracturedChorus.UI
             if (fillParent)
             {
                 StretchFull(rect);
+                rect.anchoredPosition = new Vector2(0f, 68f);
             }
 
             var hit = go.GetComponent<Image>();
@@ -677,10 +688,13 @@ namespace FracturedChorus.UI
             button.transition = Selectable.Transition.None;
             button.targetGraphic = hit;
 
+            // Layers must exist before AddComponent: Awake runs immediately on an active
+            // parent and also seeds them. Seeding afterwards stacks a second, spriteless
+            // plate that draws as a solid white rectangle over the button art.
+            SeedDefaultLayers(rect);
             var fx = go.AddComponent<ResonanceDiveButton>();
             fx.button = button;
             fx._group = go.GetComponent<CanvasGroup>();
-            SeedDefaultLayers(rect);
             return fx;
         }
 
@@ -694,12 +708,19 @@ namespace FracturedChorus.UI
 
         private static Image SeedImageLayer(RectTransform root, string name)
         {
+            var existing = root.Find(name);
+            if (existing != null)
+            {
+                return existing.GetComponent<Image>();
+            }
+
             var go = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
             go.transform.SetParent(root, false);
             StretchFull(go.GetComponent<RectTransform>());
             var image = go.GetComponent<Image>();
             image.raycastTarget = false;
             image.color = Color.white;
+            image.enabled = false;
             return image;
         }
 
@@ -709,7 +730,8 @@ namespace FracturedChorus.UI
             string content,
             int fontSize,
             Vector2 anchorMin,
-            Vector2 anchorMax)
+            Vector2 anchorMax,
+            Vector2 anchoredPosition)
         {
             var go = new GameObject(name, typeof(RectTransform), typeof(Text));
             go.transform.SetParent(parent, false);
@@ -718,11 +740,16 @@ namespace FracturedChorus.UI
             rect.anchorMax = anchorMax;
             rect.offsetMin = Vector2.zero;
             rect.offsetMax = Vector2.zero;
+            rect.anchoredPosition = anchoredPosition;
             var text = go.GetComponent<Text>();
             text.text = content;
             text.fontSize = fontSize;
             text.alignment = TextAnchor.MiddleLeft;
-            text.color = Color.white;
+            text.color = name == "SubtitleLabel"
+                ? new Color(0.2f, 0.75f, 1f, 0.88f)
+                : Color.white;
+            text.horizontalOverflow = HorizontalWrapMode.Overflow;
+            text.verticalOverflow = VerticalWrapMode.Overflow;
             text.raycastTarget = false;
             UiFontCatalog.Apply(text, name == "TitleLabel" ? UiFontRole.Display : UiFontRole.Body, fontSize);
         }
