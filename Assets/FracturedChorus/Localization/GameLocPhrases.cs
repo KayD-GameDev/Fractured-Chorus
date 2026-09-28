@@ -59,6 +59,7 @@ namespace FracturedChorus.Localization
             { "map.where", new Pair("Where should I go?", "Mình nên đi đâu?") },
             { "map.wordmark", new Pair("TOWNMAP", "BẢN ĐỒ") },
             { "map.enrollment", new Pair("HIMA — Enrollment", "HIMA — Nhập học") },
+            { "map.enrollment.hint", new Pair("Go to HIMA and enroll.", "Đi vào HIMA để nhập học.") },
             { "room.shop", new Pair("SHOP", "CỬA HÀNG") },
             { "room.treasure", new Pair("TREASURE", "KHO BÁU") },
             { "room.camp", new Pair("CAMP", "TRẠI") },

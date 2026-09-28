@@ -1,5 +1,7 @@
 using FracturedChorus.Combat.Bootstrap;
 using FracturedChorus.Meta;
+using FracturedChorus.Narrative.Vn;
+using FracturedChorus.RunMap;
 using FracturedChorus.Meta.Economy;
 using FracturedChorus.Tutorial;
 using FracturedChorus.UI;
@@ -46,8 +48,13 @@ namespace FracturedChorus.Hub
         {
             try
             {
-                CampusBgmPlayer.Play();
                 EnsureSession();
+                if (TryContinuePostInvestigationStory())
+                {
+                    return;
+                }
+
+                CampusBgmPlayer.Play();
                 if (GameMetaSession.Current.RunSnapshot.HasActiveRun)
                 {
                     GameMetaSession.Current.RunSnapshot.HasActiveRun = false;
@@ -56,7 +63,10 @@ namespace FracturedChorus.Hub
 
                 _phaseDriver.BeginCurrentPhase();
                 townMapView?.FulfillPendingStatusMenuReturn(GameMetaSession.Current);
-                TutorialDirector.Ensure().StartHubTrack();
+                if (!HimaEnrollmentGate.IsActive(GameMetaSession.Current))
+                {
+                    TutorialDirector.Ensure().StartHubTrack();
+                }
                 var canvas = Object.FindAnyObjectByType<Canvas>();
                 if (canvas != null)
                 {
@@ -68,6 +78,36 @@ namespace FracturedChorus.Hub
                 Debug.LogError($"[Fractured Chorus] CampusHub start failed: {error}");
                 ShowStatus("Không thể khởi tạo campus hub.");
             }
+        }
+
+        /// <summary>
+        /// Tutorial hoặc cảnh thoát thì không dừng ở town map.
+        /// Còn đang trên đường nhập học thì để life sim chỉ đường vào trường.
+        /// </summary>
+        private static bool TryContinuePostInvestigationStory()
+        {
+            if (!GameMetaSession.HasSession)
+            {
+                return false;
+            }
+
+            if (CadenceIntroFlow.ShouldResumeTutorial())
+            {
+                CadenceIntroFlow.LaunchTutorial();
+                return true;
+            }
+
+            var state = GameMetaSession.Current;
+            var escapeReady = state.HasFlag(StoryFlagIds.CadenceTutorialPending)
+                              && !state.HasFlag(StoryFlagIds.CharlotteReunited)
+                              && CombatEncounterHandoff.HasResult
+                              && CombatEncounterHandoff.LastVictory;
+            if (!escapeReady)
+            {
+                return false;
+            }
+
+            return RunMapSceneLoader.LoadByName(RunMapSceneCatalog.OpeningInvestigation);
         }
 
         public bool TryHubHealService()

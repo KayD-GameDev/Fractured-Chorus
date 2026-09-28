@@ -75,6 +75,64 @@ namespace FracturedChorus.Combat.Bootstrap
             }
         }
 
+        /// <summary>
+        /// Tầng dưới của run map: chỉ số Lv1, chỉ basic. Skill và ult không vào trận.
+        /// </summary>
+        public static void ApplyLowerFloorStart(CombatUnit unit)
+        {
+            if (unit == null || unit.Side != GridSide.Player)
+            {
+                return;
+            }
+
+            var characterId = ResolveCharacterId(unit);
+            if (string.IsNullOrEmpty(characterId))
+            {
+                return;
+            }
+
+            var levelOne = characterId switch
+            {
+                PartyCharacterIds.Ren => UnitStats.CreateRenLevelOne(),
+                PartyCharacterIds.Charlotte => UnitStats.CreateTankLevelOne(),
+                PartyCharacterIds.Coda => UnitStats.CreateMageLevelOne(),
+                _ => null
+            };
+
+            if (levelOne != null)
+            {
+                unit.Stats.Element = levelOne.Element;
+                unit.Stats.Strength = levelOne.Strength;
+                unit.Stats.Magic = levelOne.Magic;
+                unit.Stats.Endurance = levelOne.Endurance;
+                unit.Stats.HeartBeat = levelOne.HeartBeat;
+                unit.Stats.BaseLuck = levelOne.BaseLuck;
+                unit.Stats.CritMultiplier = levelOne.CritMultiplier;
+                unit.Stats.BaseSpeed = levelOne.BaseSpeed;
+                unit.Stats.MaxHp = levelOne.MaxHp;
+                unit.SetCurrentHp(levelOne.MaxHp);
+            }
+
+            var basicId = characterId switch
+            {
+                PartyCharacterIds.Ren => "ren_basic",
+                PartyCharacterIds.Coda => "mage_basic",
+                PartyCharacterIds.Charlotte => "Charlott_basic",
+                _ => null
+            };
+
+            if (string.IsNullOrEmpty(basicId))
+            {
+                return;
+            }
+
+            var skills = ResolveEquippedSkills(new[] { basicId });
+            if (skills.Length > 0)
+            {
+                unit.ReplaceSkills(skills);
+            }
+        }
+
         public static void ApplyDifficultyToEnemy(CombatUnit unit)
         {
             if (unit == null || unit.Side != GridSide.Enemy)

@@ -51,10 +51,6 @@ namespace FracturedChorus.Editor
 
         public static void BuildWindows64()
         {
-            // Sinh save slot 2 rồi build Windows 64.
-            AstraPrepSaveBuilder.WriteBundledSave();
-            AssetDatabase.Refresh();
-
             var scenes = EditorBuildSettings.scenes
                 .Where(scene => scene.enabled)
                 .Select(scene => scene.path)

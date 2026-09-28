@@ -201,6 +201,7 @@ namespace FracturedChorus.Hub
             ClearPinSelection();
             districtPanel?.Hide();
             RestoreSavedPin();
+            DirectEnrollmentIfNeeded();
         }
 
         /// <summary>
@@ -374,15 +375,92 @@ namespace FracturedChorus.Hub
 
         private void RefreshPinVisibility()
         {
+            var enrollmentOnly = HimaEnrollmentGate.IsActive(_state);
+            if (enrollmentOnly)
+            {
+                PrepareEnrollmentSchool();
+            }
+
             foreach (var pin in _pins)
             {
-                pin.SetVisible(pin.MatchesPhase(_phase, _state));
+                var visible = pin.MatchesPhase(_phase, _state);
+                if (enrollmentOnly && pin.LocationId != HimaEnrollmentGate.LocationId)
+                {
+                    visible = false;
+                }
+
+                pin.SetVisible(visible);
                 if (pin.Definition == null)
                 {
                     continue;
                 }
 
                 pin.SetLabel(pin.Definition.DisplayName);
+            }
+        }
+
+        private void PrepareEnrollmentSchool()
+        {
+            if (_locations == null)
+            {
+                return;
+            }
+
+            foreach (var location in _locations)
+            {
+                if (location.Id != HimaEnrollmentGate.LocationId)
+                {
+                    continue;
+                }
+
+                if (location.SubLocations != null
+                    && location.SubLocations.Length == 1
+                    && location.SubLocations[0].ActivityId == HimaEnrollmentGate.ActivityId)
+                {
+                    return;
+                }
+
+                location.DisplayName = GameLoc.Get("map.enrollment");
+                location.SubLocations = new[]
+                {
+                    new TownSubLocation
+                    {
+                        Id = "enrollment",
+                        Label = GameLoc.Get("map.enrollment"),
+                        ActivityId = HimaEnrollmentGate.ActivityId,
+                        AllowedPhases = new[] { DayPhase.Morning, DayPhase.Day, DayPhase.Evening }
+                    }
+                };
+                return;
+            }
+        }
+
+        private void DirectEnrollmentIfNeeded()
+        {
+            if (!HimaEnrollmentGate.IsActive(_state))
+            {
+                return;
+            }
+
+            if (selectMapSubtitle != null)
+            {
+                selectMapSubtitle.text = GameLoc.Get("map.enrollment.hint");
+            }
+
+            if (statusMenu != null && statusMenu.IsOpen)
+            {
+                return;
+            }
+
+            foreach (var pin in _pins)
+            {
+                if (pin.LocationId != HimaEnrollmentGate.LocationId || !pin.gameObject.activeSelf)
+                {
+                    continue;
+                }
+
+                OnPinSelected(pin.Definition);
+                return;
             }
         }
 

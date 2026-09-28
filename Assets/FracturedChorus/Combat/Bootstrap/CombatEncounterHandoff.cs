@@ -1,4 +1,5 @@
 using FracturedChorus.RunMap;
+using FracturedChorus.RunMap.Core;
 
 namespace FracturedChorus.Combat.Bootstrap
 {
@@ -8,6 +9,15 @@ namespace FracturedChorus.Combat.Bootstrap
         public static string LastFoughtEncounterId { get; private set; }
         public static string ReturnSceneName { get; private set; } = RunMapSceneCatalog.RunMapPrototype;
         public static int SourceNodeId { get; private set; } = -1;
+        public static int SourceFloor { get; private set; }
+
+        /// <summary>
+        /// Node tầng 1–3 (đoạn thẳng dưới bản đồ). Party vào trận ở Lv1, skill và ult khóa.
+        /// </summary>
+        public static bool IsLowerFloorStart =>
+            SourceNodeId >= 0
+            && SourceFloor >= 1
+            && SourceFloor <= MapLayoutConstants.ExclusivePrefixFloors;
         public static bool LastVictory { get; private set; }
         public static bool HasResult { get; private set; }
         public static bool PendingReturnToNearestCamp { get; private set; }
@@ -19,7 +29,8 @@ namespace FracturedChorus.Combat.Bootstrap
             string encounterId,
             string returnScene = null,
             int sourceNodeId = -1,
-            CombatPoolRoll poolRoll = null)
+            CombatPoolRoll poolRoll = null,
+            int sourceFloor = 0)
         {
             EncounterId = encounterId;
             LastFoughtEncounterId = encounterId;
@@ -27,6 +38,7 @@ namespace FracturedChorus.Combat.Bootstrap
                 ? RunMapSceneCatalog.RunMapPrototype
                 : returnScene;
             SourceNodeId = sourceNodeId;
+            SourceFloor = sourceFloor;
             PendingPoolRoll = poolRoll;
             HasResult = false;
             PendingReturnToNearestCamp = false;
@@ -77,6 +89,7 @@ namespace FracturedChorus.Combat.Bootstrap
             LastFoughtEncounterId = null;
             ReturnSceneName = RunMapSceneCatalog.RunMapPrototype;
             SourceNodeId = -1;
+            SourceFloor = 0;
             HasResult = false;
             PendingReturnToNearestCamp = false;
             LastVictory = false;

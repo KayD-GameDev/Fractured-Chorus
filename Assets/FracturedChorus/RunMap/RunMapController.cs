@@ -906,7 +906,8 @@ namespace FracturedChorus.RunMap
                 encounterId,
                 RunMapSceneCatalog.RunMapPrototype,
                 node != null ? node.Id : -1,
-                roll);
+                roll,
+                node != null ? node.Floor : 0);
             RunMapRunSave.Persist(Graph, State);
             UpdateLabels(status);
             BeginBossCombatTransition();

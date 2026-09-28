@@ -233,6 +233,17 @@ namespace FracturedChorus.Combat.Bootstrap
                 return;
             }
 
+            if (MaxHpByUnitId.TryGetValue(unit.UnitId, out var storedMax)
+                && storedMax > 0
+                && unit.Stats.MaxHp > 0
+                && storedMax != unit.Stats.MaxHp)
+            {
+                hp = Mathf.Clamp(
+                    Mathf.RoundToInt(hp * (unit.Stats.MaxHp / (float)storedMax)),
+                    0,
+                    unit.Stats.MaxHp);
+            }
+
             unit.SetCurrentHp(hp);
         }
 

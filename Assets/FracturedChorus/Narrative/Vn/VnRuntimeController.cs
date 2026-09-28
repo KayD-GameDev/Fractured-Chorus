@@ -449,6 +449,11 @@ namespace FracturedChorus.Narrative.Vn
 
             _transitionBusy = false;
             _beatRoutine = null;
+            if (BeatInterceptor != null && BeatInterceptor(beat))
+            {
+                yield break;
+            }
+
             DispatchBeatView(beat);
         }
 

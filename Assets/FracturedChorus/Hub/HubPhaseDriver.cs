@@ -1,3 +1,4 @@
+using FracturedChorus.Localization;
 using FracturedChorus.Meta;
 using FracturedChorus.RunMap;
 using UnityEngine;
@@ -106,6 +107,10 @@ namespace FracturedChorus.Hub
             }
 
             _townMap.Show(state, state.Calendar.CurrentPhase, OnActivityChosen);
+            if (HimaEnrollmentGate.IsActive(state))
+            {
+                _host.ShowStatus(GameLoc.Get("map.enrollment.hint"));
+            }
         }
 
         private void OnActivityChosen(string activityId)

@@ -1234,6 +1234,23 @@ namespace FracturedChorus.Combat.Bootstrap
             unitViews = survivors.ToArray();
         }
 
+        private static void ApplyPlayerKit(CombatUnit unit, bool tutorialBasics)
+        {
+            if (tutorialBasics)
+            {
+                PartyLoadoutApplicator.ApplyTutorialBasics(unit);
+                return;
+            }
+
+            if (CombatEncounterHandoff.IsLowerFloorStart)
+            {
+                PartyLoadoutApplicator.ApplyLowerFloorStart(unit);
+                return;
+            }
+
+            PartyLoadoutApplicator.ApplyToUnit(unit);
+        }
+
         private void RegisterPlayerSceneUnits(bool tutorialBasics = false)
         {
             foreach (var view in unitViews)
@@ -1258,14 +1275,7 @@ namespace FracturedChorus.Combat.Bootstrap
                 }
 
                 var unit = new CombatUnit(unitPreset, view.Side);
-                if (tutorialBasics)
-                {
-                    PartyLoadoutApplicator.ApplyTutorialBasics(unit);
-                }
-                else
-                {
-                    PartyLoadoutApplicator.ApplyToUnit(unit);
-                }
+                ApplyPlayerKit(unit, tutorialBasics);
 
                 if (!_grid.TryPlaceUnit(unit, pos))
                 {
@@ -1403,14 +1413,7 @@ namespace FracturedChorus.Combat.Bootstrap
                 }
 
                 var unit = new CombatUnit(unitPreset, view.Side);
-                if (tutorialBasics)
-                {
-                    PartyLoadoutApplicator.ApplyTutorialBasics(unit);
-                }
-                else
-                {
-                    PartyLoadoutApplicator.ApplyToUnit(unit);
-                }
+                ApplyPlayerKit(unit, tutorialBasics);
 
                 PartyLoadoutApplicator.ApplyDifficultyToEnemy(unit);
                 if (!_grid.TryPlaceUnit(unit, pos))
@@ -1670,14 +1673,7 @@ namespace FracturedChorus.Combat.Bootstrap
                 }
 
                 var unit = new CombatUnit(spawn.preset, spawn.side);
-                if (tutorialBasics)
-                {
-                    PartyLoadoutApplicator.ApplyTutorialBasics(unit);
-                }
-                else
-                {
-                    PartyLoadoutApplicator.ApplyToUnit(unit);
-                }
+                ApplyPlayerKit(unit, tutorialBasics);
 
                 PartyLoadoutApplicator.ApplyDifficultyToEnemy(unit);
                 var pos = new GridPosition(spawn.side, spawn.row, spawn.column);
