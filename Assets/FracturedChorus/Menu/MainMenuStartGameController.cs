@@ -151,6 +151,9 @@ namespace FracturedChorus.Menu
                 return false;
             }
 
+            // Chốt bậc khó ngay lúc này: save sinh ra ở cuối Prologue phải mang đúng lựa chọn
+            // người chơi thấy lúc bấm New Game.
+            GameMetaSession.PendingNewGameDifficulty = (int)MainMenuGameSettings.Difficulty;
             StartCoroutine(BeginNewGameRoutine());
             return true;
         }
@@ -489,6 +492,13 @@ namespace FracturedChorus.Menu
                     HideOffBeatArchive();
                 }
 
+                return;
+            }
+
+            // Modal xác nhận tự xử ESC của nó; để nhánh dưới chạy thì một phím ESC vừa đóng
+            // dialog vừa ném người chơi về attract.
+            if (menuController != null && menuController.IsConfirmDialogOpen)
+            {
                 return;
             }
 

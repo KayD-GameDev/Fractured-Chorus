@@ -28,6 +28,7 @@ namespace FracturedChorus.UI
 
         public Image InnerRing => innerRing;
         public Image OuterRing => outerRing;
+        public RectTransform RingRoot => ringRoot;
         public Image Prompt => prompt;
         public Image GradeChip => gradeChip;
 

@@ -98,11 +98,11 @@ namespace FracturedChorus.Menu
             switch (value)
             {
                 case GameDifficulty.OnBeat:
-                    return "Enemy HP/dmg ×0.85 · +1 planning beat · Notes ×1.1.";
+                    return "Enemy −2 lv · HP/dmg ×0.85 · Notes ×1.1 · target party Lv13.";
                 case GameDifficulty.Cadence:
-                    return "Standard balance · intended pressure.";
+                    return "Baseline tune · party Lv15 vs boss Lv18.";
                 case GameDifficulty.OffBeat:
-                    return "Enemy HP ×1.15 · dmg ×1.2 · stricter Early/Late blocks.";
+                    return "Enemy +2 lv · HP ×1.15 · dmg ×1.2 · target party Lv17.";
                 default:
                     return string.Empty;
             }

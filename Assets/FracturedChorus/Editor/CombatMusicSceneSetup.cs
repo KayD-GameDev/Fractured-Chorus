@@ -31,11 +31,11 @@ namespace FracturedChorus.Editor
         private const string CodaSkill1SourceDownload = @"d:\Project 1\freesound_community-swinging-staff-whoosh-strong-08-44658.mp3";
         private const string CodaSkill23SourceDownload = @"d:\Project 1\Skill 2 3 Coda SFX.wav";
         private const string UiClickPath = "Assets/FracturedChorus/Audio/SFX/Combat_UiClick.wav";
-        private const string SkillPlacePath = "Assets/FracturedChorus/Audio/SFX/Combat_SkillPlace.wav";
+        private const string SkillPlacePath = "Assets/FracturedChorus/Audio/SFX/Combat_SkillMagnet.wav";
         private const string UiClickSourceDownload = @"d:\Project 1\Click Button.wav";
-        private const string SkillPlaceSourceDownload = @"d:\Project 1\soundreality-re-verse-dj-fx-344132.wav";
+        private const string SkillPlaceSourceDownload = @"c:\Users\admin\Downloads\1.mp3";
         private const string UiClickResourcePath = "Assets/FracturedChorus/Resources/Audio/SFX/Combat_UiClick.wav";
-        private const string SkillPlaceResourcePath = "Assets/FracturedChorus/Resources/Audio/SFX/Combat_SkillPlace.wav";
+        private const string SkillPlaceResourcePath = "Assets/FracturedChorus/Resources/Audio/SFX/Combat_SkillMagnet.wav";
 
         public static void ImportCombatAudioFromDownloads()
         {
@@ -197,7 +197,7 @@ namespace FracturedChorus.Editor
             sfxSo.FindProperty("clashHitVolume").floatValue = 1f;
             sfxSo.FindProperty("renSkillVolume").floatValue = 1f;
             sfxSo.FindProperty("uiClickVolume").floatValue = 0.9f;
-            sfxSo.FindProperty("skillPlaceVolume").floatValue = 0.9f;
+            sfxSo.FindProperty("skillPlaceVolume").floatValue = 0.8f;
             sfxSo.ApplyModifiedPropertiesWithoutUndo();
 
             var bootstrapSo = new SerializedObject(bootstrap);

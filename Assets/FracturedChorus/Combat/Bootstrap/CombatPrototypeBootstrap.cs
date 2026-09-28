@@ -218,7 +218,7 @@ namespace FracturedChorus.Combat.Bootstrap
             {
                 EnsureAstraStageTv();
             }
-            else
+            else if (isTutorial || isPooledEncounter)
             {
                 AstraStageTvView.HideIfPresent();
             }

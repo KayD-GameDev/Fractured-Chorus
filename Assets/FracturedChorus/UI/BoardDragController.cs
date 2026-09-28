@@ -123,6 +123,11 @@ namespace FracturedChorus.UI
                 return false;
             }
 
+            if (TutorialDirector.RequiresRenFrontCell && !TutorialDirector.IsRenUnit(view))
+            {
+                return false;
+            }
+
             return true;
         }
 
@@ -325,6 +330,18 @@ namespace FracturedChorus.UI
                 if (_markers.TryGetValue(view.GridPosition, out var lockedHome))
                 {
                     SnapUnitToCell(view, lockedHome);
+                }
+
+                _draggingUnit = null;
+                return;
+            }
+
+            if (TutorialDirector.RequiresRenFrontCell
+                && (target == null || !TutorialDirector.IsRenFrontCell(target)))
+            {
+                if (_markers.TryGetValue(view.GridPosition, out var rejectedHome))
+                {
+                    SnapUnitToCell(view, rejectedHome);
                 }
 
                 _draggingUnit = null;

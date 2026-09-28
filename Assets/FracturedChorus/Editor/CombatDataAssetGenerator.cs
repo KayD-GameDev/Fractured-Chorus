@@ -102,21 +102,27 @@ namespace FracturedChorus.Editor
             var preset = CreatePreset(
                 "UnitPreset_Kiki_Ueda",
                 "kiki_ueda",
-                "Kiki Ueda",
+                "Mimi",
                 UnitRole.Elite,
                 block,
                 new[] { claw, smokeRend },
                 new Color(0.55f, 0.12f, 0.14f));
             preset.battleSprite = LoadKikiIdleSprite();
-            preset.combatCardSprite = LoadKikiCombatIconSprite();
+            preset.combatCardSprite = LoadMimiCombatCardSprite();
             preset.telegraphAttacksPerPhase = 2;
             preset.healthSlotTop = 2.9f;
             EditorUtility.SetDirty(preset);
         }
 
-        private static Sprite LoadKikiCombatIconSprite()
+        private static Sprite LoadMimiCombatCardSprite()
         {
-            const string path = "Assets/FracturedChorus/Art/UI/Combat/Characters/kiki_ueda_character_icon_bars_elite_v1.png";
+            const string avatarPath = "Assets/FracturedChorus/Art/UI/Combat/Characters/Avatars/mimi_enemy_avatar_v1.png";
+            const string iconPath = "Assets/FracturedChorus/Art/UI/Combat/Characters/mimi_character_icon_bars_elite_v1.png";
+            return LoadFirstSprite(avatarPath) ?? LoadFirstSprite(iconPath);
+        }
+
+        private static Sprite LoadFirstSprite(string path)
+        {
             var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
             if (sprite != null)
             {
@@ -137,22 +143,13 @@ namespace FracturedChorus.Editor
         private static Sprite LoadKikiIdleSprite()
         {
             const string path = "Assets/FracturedChorus/Art/Characters/KikiUeda/kiki_ueda_idle_v1.png";
-            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
-            if (sprite != null)
+            var sprite = LoadFirstSprite(path);
+            if (sprite == null)
             {
-                return sprite;
+                Debug.LogWarning("[Fractured Chorus] Kiki idle sprite missing at " + path);
             }
 
-            foreach (var asset in AssetDatabase.LoadAllAssetsAtPath(path))
-            {
-                if (asset is Sprite s)
-                {
-                    return s;
-                }
-            }
-
-            Debug.LogWarning("[Fractured Chorus] Kiki idle sprite missing at " + path);
-            return null;
+            return sprite;
         }
 
         public static void CreateBossDespairAssets()

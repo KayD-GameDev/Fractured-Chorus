@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using FracturedChorus.Combat.Core;
+using FracturedChorus.Combat.Grid;
 using FracturedChorus.Combat.Qte;
 using FracturedChorus.Meta;
 using FracturedChorus.UI;
@@ -78,6 +79,23 @@ namespace FracturedChorus.Tutorial
         public static bool BlocksSlideshowCombatUi =>
             IsCadenceIntroActive && s_instance.coachView != null && s_instance.coachView.BlocksCombatUi;
 
+        public static bool RequiresRenFrontCell =>
+            s_instance != null && s_instance._awaitingFormationMove;
+
+        public static bool WantsQteBubbleGuide =>
+            s_instance != null && s_instance._awaitingQteAfterDeploy && !s_instance._qteExplainPauseActive;
+
+        public static bool IsRenUnit(UnitView view) =>
+            view != null
+            && view.Unit != null
+            && string.Equals(view.Unit.DisplayName, "Ren", System.StringComparison.OrdinalIgnoreCase);
+
+        public static bool IsRenFrontCell(GridCellMarker cell) =>
+            cell != null
+            && cell.Side == GridSide.Player
+            && cell.Row == 1
+            && cell.Column == 0;
+
         public static bool SuppressFormationHint =>
             s_instance != null
             && (s_instance._awaitingFormationMove
@@ -137,6 +155,58 @@ namespace FracturedChorus.Tutorial
 
             s_instance.coachView?.Hide();
             s_instance.SetHostBlocking(false);
+            TutorialGuidePathView.HideActive();
+            TutorialFocusOverlay.Release();
+        }
+
+        private void LateUpdate()
+        {
+            RefreshGameplayGuide();
+        }
+
+        private void RefreshGameplayGuide()
+        {
+            if (!_cadenceTrackActive)
+            {
+                TutorialGuidePathView.HideActive();
+                TutorialFocusOverlay.Release();
+                return;
+            }
+
+            if (_awaitingFormationMove)
+            {
+                TutorialGuidePathView.ShowFormationArrow();
+                TutorialFocusOverlay.SyncFormation();
+                return;
+            }
+
+            if (_awaitingSkillPanel)
+            {
+                TutorialGuidePathView.HideActive();
+                TutorialFocusOverlay.SyncParty();
+                return;
+            }
+
+            if (_awaitingSkillPlaced && IsCurrentStep("boss_drag_skill"))
+            {
+                TutorialFocusOverlay.SyncSkillDrag();
+                TutorialGuidePathView.ShowSkillDragArrow();
+                return;
+            }
+
+            TutorialGuidePathView.HideActive();
+            TutorialFocusOverlay.Release();
+        }
+
+        private bool IsCurrentStep(string stepId)
+        {
+            if (string.IsNullOrEmpty(stepId) || _stepIndex < 0 || _stepIndex >= _queue.Count)
+            {
+                return false;
+            }
+
+            var step = _queue[_stepIndex];
+            return step != null && step.stepId == stepId;
         }
 
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -474,7 +544,11 @@ namespace FracturedChorus.Tutorial
             RefreshFormationHintVisibility();
             coachView?.Hide();
             SetHostBlocking(false);
-            _awaitingQteAfterDeploy = false;
+            // PlayerDeployed only fires on the first Execute of the fight. This step is a later
+            // Execute, so the bubble guide has to arm here instead of waiting for that event.
+            _awaitingQte = true;
+            _awaitingQteAfterDeploy = true;
+            TutorialCombatHooks.QteResolved += HandleQteResolved;
 
             _boundCombat = FindAnyObjectByType<CombatController>();
             if (_boundCombat != null)
@@ -565,9 +639,33 @@ namespace FracturedChorus.Tutorial
                 return;
             }
 
+            if (!IsRenStandingOnFrontCell())
+            {
+                return;
+            }
+
             _awaitingFormationMove = false;
+            TutorialFocusOverlay.Release();
             UnbindPracticeHooks();
             AdvanceStep();
+        }
+
+        private static bool IsRenStandingOnFrontCell()
+        {
+            var views = FindObjectsByType<UnitView>(FindObjectsInactive.Exclude);
+            for (var i = 0; i < views.Length; i++)
+            {
+                var view = views[i];
+                if (!IsRenUnit(view))
+                {
+                    continue;
+                }
+
+                var position = view.GridPosition;
+                return position.Side == GridSide.Player && position.Row == 1 && position.Column == 0;
+            }
+
+            return false;
         }
 
         private void HandlePlayerDeployed()
@@ -602,7 +700,6 @@ namespace FracturedChorus.Tutorial
                 _awaitingQteAfterDeploy = true;
                 coachView?.Hide();
                 SetHostBlocking(false);
-                TutorialCombatHooks.QteResolved += HandleQteResolved;
                 RefreshCombatUiGates();
                 return;
             }
@@ -637,6 +734,7 @@ namespace FracturedChorus.Tutorial
             }
 
             _awaitingSkillPlaced = false;
+            TutorialFocusOverlay.Release();
             UnbindPracticeHooks();
             AdvanceStep();
         }

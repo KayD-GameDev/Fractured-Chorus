@@ -1089,7 +1089,7 @@ namespace FracturedChorus.Combat.Core
                 ? GameMetaSession.Current.Difficulty
                 : DifficultyRuntime.Cadence;
             var difficultyMult = DifficultyRuntime.Get(difficulty);
-            var finalDamage = damageResult.FinalDamage * difficultyMult.EnemyDamage;
+            var finalDamage = damageResult.FinalDamage * difficultyMult.ResolvedEnemyDamage;
             if (CombatQteModifiers.HasActive
                 && !Mathf.Approximately(CombatQteModifiers.IncomingEnemyMult, 1f))
             {

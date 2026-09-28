@@ -37,8 +37,14 @@ namespace FracturedChorus.Audio
         private const string PlanningTransitionResourcePath = "Audio/SFX/Combat_PlanningTransition";
         private const string UiClickClipPath = "Assets/FracturedChorus/Audio/SFX/Combat_UiClick.wav";
         private const string UiClickResourcePath = "Audio/SFX/Combat_UiClick";
-        private const string SkillPlaceClipPath = "Assets/FracturedChorus/Audio/SFX/Combat_SkillPlace.wav";
-        private const string SkillPlaceResourcePath = "Audio/SFX/Combat_SkillPlace";
+        private const string SkillPlaceClipPath = "Assets/FracturedChorus/Audio/SFX/Combat_SkillMagnet.wav";
+        private const string SkillPlaceResourcePath = "Audio/SFX/Combat_SkillMagnet";
+        private const string ExecuteClipPath = "Assets/FracturedChorus/Audio/SFX/Combat_SkillPlace.wav";
+        private const string ExecuteResourcePath = "Audio/SFX/Combat_SkillPlace";
+        private const string EnemyPalmClipPath = "Assets/FracturedChorus/Audio/SFX/Combat_EnemyPalm.mp3";
+        private const string EnemyPalmResourcePath = "Audio/SFX/Combat_EnemyPalm";
+        private const string AstraSwordClipPath = "Assets/FracturedChorus/Audio/SFX/Combat_AstraSword.mp3";
+        private const string AstraSwordResourcePath = "Audio/SFX/Combat_AstraSword";
 
         [SerializeField] private AudioSource perfectCounterSource;
         [SerializeField] private AudioClip perfectCounterClip;
@@ -76,7 +82,15 @@ namespace FracturedChorus.Audio
         [SerializeField] private float uiClickVolume = 0.9f;
         [SerializeField] private AudioSource skillPlaceSource;
         [SerializeField] private AudioClip skillPlaceClip;
-        [SerializeField] private float skillPlaceVolume = 0.9f;
+        [SerializeField] [Range(0f, 1f)] private float skillPlaceVolume = 0.8f;
+        [SerializeField] private AudioSource executeSource;
+        [SerializeField] private AudioClip executeClip;
+        [SerializeField] private float executeVolume = 0.9f;
+        [SerializeField] private AudioSource enemyAttackSource;
+        [SerializeField] private AudioClip enemyPalmClip;
+        [SerializeField] private float enemyPalmVolume = 1f;
+        [SerializeField] private AudioClip astraSwordClip;
+        [SerializeField] [Range(0f, 1f)] private float astraSwordVolume = 0.8f;
 
         private void Awake()
         {
@@ -87,6 +101,8 @@ namespace FracturedChorus.Audio
             EnsurePlanningTransitionSource();
             EnsureUiClickSource();
             EnsureSkillPlaceSource();
+            EnsureExecuteSource();
+            EnsureEnemyAttackSource();
             TryAssignDefaultClips();
             PrimePerfectCounterSource();
             PrimePerfectBlockSource();
@@ -150,8 +166,38 @@ namespace FracturedChorus.Audio
 
             skillPlaceSource.spatialBlend = 0f;
             skillPlaceSource.mute = false;
-            skillPlaceSource.volume = skillPlaceVolume;
+            skillPlaceSource.volume = 1f;
             skillPlaceSource.PlayOneShot(skillPlaceClip, skillPlaceVolume);
+        }
+
+        public void PlayExecute()
+        {
+            EnsureClip(ref executeClip, ExecuteResourcePath, ExecuteClipPath);
+            if (executeClip == null)
+            {
+                return;
+            }
+
+            EnsureExecuteSource();
+            if (executeSource == null)
+            {
+                return;
+            }
+
+            executeSource.spatialBlend = 0f;
+            executeSource.mute = false;
+            executeSource.volume = executeVolume;
+            executeSource.PlayOneShot(executeClip, executeVolume);
+        }
+
+        public void PlayEnemyPalm()
+        {
+            PlayEnemyAttackClip(ref enemyPalmClip, EnemyPalmResourcePath, EnemyPalmClipPath, enemyPalmVolume);
+        }
+
+        public void PlayAstraSword()
+        {
+            PlayEnemyAttackClip(ref astraSwordClip, AstraSwordResourcePath, AstraSwordClipPath, astraSwordVolume);
         }
 
         public void PlayPerfectCounter(double targetDspTime = -1d)
@@ -588,6 +634,46 @@ namespace FracturedChorus.Audio
             skillPlaceSource = FindOrCreateSfxSource("SkillPlaceSfx");
         }
 
+        private void EnsureExecuteSource()
+        {
+            if (executeSource != null)
+            {
+                return;
+            }
+
+            executeSource = FindOrCreateSfxSource("ExecuteSfx");
+        }
+
+        private void EnsureEnemyAttackSource()
+        {
+            if (enemyAttackSource != null)
+            {
+                return;
+            }
+
+            enemyAttackSource = FindOrCreateSfxSource("EnemyAttackSfx");
+        }
+
+        private void PlayEnemyAttackClip(ref AudioClip clip, string resourcePath, string editorAssetPath, float volume)
+        {
+            EnsureClip(ref clip, resourcePath, editorAssetPath);
+            if (clip == null)
+            {
+                return;
+            }
+
+            EnsureEnemyAttackSource();
+            if (enemyAttackSource == null)
+            {
+                return;
+            }
+
+            enemyAttackSource.spatialBlend = 0f;
+            enemyAttackSource.mute = false;
+            enemyAttackSource.volume = 1f;
+            enemyAttackSource.PlayOneShot(clip, volume);
+        }
+
         private AudioSource FindOrCreateSfxSource(string name)
         {
             var existing = transform.Find(name);
@@ -654,6 +740,9 @@ namespace FracturedChorus.Audio
             EnsureClip(ref planningTransitionClip, PlanningTransitionResourcePath, PlanningTransitionClipPath);
             EnsureClip(ref uiClickClip, UiClickResourcePath, UiClickClipPath);
             EnsureClip(ref skillPlaceClip, SkillPlaceResourcePath, SkillPlaceClipPath);
+            EnsureClip(ref executeClip, ExecuteResourcePath, ExecuteClipPath);
+            EnsureClip(ref enemyPalmClip, EnemyPalmResourcePath, EnemyPalmClipPath);
+            EnsureClip(ref astraSwordClip, AstraSwordResourcePath, AstraSwordClipPath);
             EnsureRenSkillClips();
             EnsureClip(ref mirrorBreakingClip, MirrorBreakingResourcePath, MirrorBreakingClipPath);
             EnsureCodaSkillClips();

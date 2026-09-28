@@ -3,7 +3,9 @@ using FracturedChorus.Combat.Damage;
 using FracturedChorus.Combat.Presentation;
 using FracturedChorus.Combat.Units;
 using FracturedChorus.Data;
+using FracturedChorus.RunMap;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace FracturedChorus.UI
@@ -1442,8 +1444,28 @@ namespace FracturedChorus.UI
             RefreshAstraTvMoodIcon();
         }
 
+        private static bool IsCombatTutorialScene()
+        {
+            return string.Equals(
+                SceneManager.GetActiveScene().name,
+                RunMapSceneCatalog.CombatTutorial,
+                System.StringComparison.OrdinalIgnoreCase);
+        }
+
         private void EnsureAstraTvMoodIcon()
         {
+            if (IsCombatTutorialScene())
+            {
+                var authored = transform.Find("BuffAstraTv");
+                if (authored != null)
+                {
+                    authored.gameObject.SetActive(false);
+                }
+
+                _astraTvMoodIcon = null;
+                return;
+            }
+
             var cardRt = transform as RectTransform;
             if (cardRt == null)
             {

@@ -1,0 +1,84 @@
+<mxfile host="app.diagrams.net" modified="2026-09-24T04:00:00.000Z" agent="cursor-skill" version="22.1.0" type="device">
+  <diagram name="Activity-ChayPhase" id="act-phase">
+    <mxGraphModel dx="1200" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="1400" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="title" value="&lt;b&gt;Hoạt động: suy nghĩ rồi chạy một phase (22 beat)&lt;/b&gt;" style="text;html=1;align=left;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="40" y="10" width="480" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="laneP" value="Người chơi" style="swimlane;html=1;startSize=28;fillColor=#FFFFFF;" vertex="1" parent="1">
+          <mxGeometry x="40" y="50" width="240" height="1280" as="geometry"/>
+        </mxCell>
+        <mxCell id="laneC" value="CombatController" style="swimlane;html=1;startSize=28;fillColor=#FFFFFF;" vertex="1" parent="1">
+          <mxGeometry x="280" y="50" width="250" height="1280" as="geometry"/>
+        </mxCell>
+        <mxCell id="laneS" value="CombatSession" style="swimlane;html=1;startSize=28;fillColor=#FFFFFF;" vertex="1" parent="1">
+          <mxGeometry x="530" y="50" width="270" height="1280" as="geometry"/>
+        </mxCell>
+        <mxCell id="laneM" value="Đồng hồ nhạc" style="swimlane;html=1;startSize=28;fillColor=#FFFFFF;" vertex="1" parent="1">
+          <mxGeometry x="800" y="50" width="220" height="1280" as="geometry"/>
+        </mxCell>
+        <mxCell id="start" value="" style="ellipse;fillColor=#000000;strokeColor=#000000;html=1;" vertex="1" parent="laneS">
+          <mxGeometry x="115" y="40" width="20" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="aOpen" value="Mở planning" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="laneS">
+          <mxGeometry x="40" y="80" width="180" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="aDrag" value="Kéo quân, thả chiêu" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="laneP">
+          <mxGeometry x="30" y="160" width="180" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="aCheck" value="Footprint hợp lệ?" style="rhombus;whiteSpace=wrap;html=1;" vertex="1" parent="laneS">
+          <mxGeometry x="40" y="240" width="180" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="aDeny" value="Từ chối, đặt lại" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="laneS">
+          <mxGeometry x="40" y="360" width="180" height="44" as="geometry"/>
+        </mxCell>
+        <mxCell id="aAdd" value="Thêm AgendaEntry" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="laneS">
+          <mxGeometry x="40" y="430" width="180" height="44" as="geometry"/>
+        </mxCell>
+        <mxCell id="aExec" value="Bấm Execute" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="laneP">
+          <mxGeometry x="30" y="520" width="180" height="44" as="geometry"/>
+        </mxCell>
+        <mxCell id="aCall" value="ConfirmPlanningAndExecute" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="laneC">
+          <mxGeometry x="25" y="600" width="200" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="aBeat" value="Báo beat tuyệt đối" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="laneM">
+          <mxGeometry x="20" y="690" width="180" height="44" as="geometry"/>
+        </mxCell>
+        <mxCell id="aAnchor" value="Neo timeline, quét 22 beat" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="laneS">
+          <mxGeometry x="30" y="780" width="210" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="aGuard" value="Có đòn và bấm chắn?" style="rhombus;whiteSpace=wrap;html=1;" vertex="1" parent="laneS">
+          <mxGeometry x="40" y="870" width="190" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="aBlock" value="Resolver trả kết quả đỡ" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="laneS">
+          <mxGeometry x="30" y="990" width="210" height="44" as="geometry"/>
+        </mxCell>
+        <mxCell id="aHp" value="Trừ máu hoặc khiên" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="laneS">
+          <mxGeometry x="30" y="1060" width="210" height="44" as="geometry"/>
+        </mxCell>
+        <mxCell id="aNext" value="Hết 22 beat, mở planning mới" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="laneC">
+          <mxGeometry x="20" y="1140" width="210" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="end" value="" style="ellipse;html=1;strokeWidth=3;fillColor=#FFFFFF;" vertex="1" parent="laneC">
+          <mxGeometry x="100" y="1220" width="24" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="f1" style="endArrow=block;html=1;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="start" target="aOpen"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="f2" style="endArrow=block;html=1;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="aOpen" target="aDrag"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="f3" style="endArrow=block;html=1;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="aDrag" target="aCheck"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="f4" value="không" style="endArrow=block;html=1;fontSize=11;" edge="1" parent="1" source="aCheck" target="aDeny"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="f5" value="có" style="endArrow=block;html=1;fontSize=11;" edge="1" parent="1" source="aCheck" target="aAdd"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="f6" style="endArrow=block;html=1;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="aAdd" target="aExec"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="f7" style="endArrow=block;html=1;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="aExec" target="aCall"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="f8" style="endArrow=block;html=1;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="aCall" target="aBeat"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="f9" style="endArrow=block;html=1;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="aBeat" target="aAnchor"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="f10" style="endArrow=block;html=1;" edge="1" parent="1" source="aAnchor" target="aGuard"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="f11" value="có" style="endArrow=block;html=1;fontSize=11;" edge="1" parent="1" source="aGuard" target="aBlock"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="f12" style="endArrow=block;html=1;" edge="1" parent="1" source="aBlock" target="aHp"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="f13" style="endArrow=block;html=1;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="aHp" target="aNext"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="f14" style="endArrow=block;html=1;" edge="1" parent="1" source="aNext" target="end"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

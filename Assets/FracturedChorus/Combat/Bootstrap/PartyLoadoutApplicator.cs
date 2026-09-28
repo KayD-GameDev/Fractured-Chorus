@@ -86,12 +86,12 @@ namespace FracturedChorus.Combat.Bootstrap
                 ? GameMetaSession.Current.Difficulty
                 : DifficultyRuntime.Cadence;
             var mult = DifficultyRuntime.Get(difficulty);
-            if (Mathf.Approximately(mult.EnemyHp, 1f))
+            if (Mathf.Approximately(mult.ResolvedEnemyHp, 1f))
             {
                 return;
             }
 
-            var newMax = Mathf.Max(1, Mathf.RoundToInt(unit.Stats.MaxHp * mult.EnemyHp));
+            var newMax = Mathf.Max(1, Mathf.RoundToInt(unit.Stats.MaxHp * mult.ResolvedEnemyHp));
             unit.Stats.MaxHp = newMax;
             unit.SetCurrentHp(newMax);
         }

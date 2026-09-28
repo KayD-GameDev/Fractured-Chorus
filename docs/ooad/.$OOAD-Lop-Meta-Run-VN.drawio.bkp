@@ -1,0 +1,112 @@
+<mxfile host="app.diagrams.net" modified="2026-09-24T03:00:00.000Z" agent="cursor-skill" version="22.1.0" type="device">
+  <diagram name="Lop-Meta-Run-VN" id="ooad-meta">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1680" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="title" value="&lt;b&gt;Fractured Chorus — sơ đồ lớp thành phố, hầm, thoại, hồ sơ&lt;/b&gt;&lt;br&gt;Kim cương đặc = cấu thành. Mũi tên mở = biết / điều hướng. Nét đứt = phụ thuộc tạm." style="text;html=1;align=left;verticalAlign=top;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="40" y="10" width="780" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="cHub" value="&lt;b&gt;«boundary»&lt;br&gt;CampusHubController&lt;/b&gt;&lt;hr&gt;+ TryHubHealService() : bool&lt;br&gt;+ ShowStatus(message) : void&lt;br&gt;nhận chọn hoạt động trong ngày" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="70" width="240" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="cDriver" value="&lt;b&gt;«control»&lt;br&gt;HubPhaseDriver&lt;/b&gt;&lt;hr&gt;+ BeginCurrentPhase() : void&lt;br&gt;quiz sáng, bản đồ, lịch&lt;br&gt;đọc ngày hiện tại rồi chọn màn" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="340" y="70" width="230" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="cCal" value="&lt;b&gt;«entity»&lt;br&gt;CalendarState&lt;/b&gt;&lt;hr&gt;+ CurrentDate : GameDate&lt;br&gt;+ CurrentPhase : DayPhase&lt;br&gt;+ SlotsUsedToday : int&lt;br&gt;+ MaxSlotsPerDay = 2&lt;br&gt;+ ConsumeActivitySlot() : bool&lt;br&gt;+ AdvanceDay() : void" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="640" y="60" width="240" height="160" as="geometry"/>
+        </mxCell>
+        <mxCell id="cDate" value="&lt;b&gt;«entity»&lt;br&gt;GameDate&lt;/b&gt;&lt;hr&gt;+ ngày trong Arc 1&lt;br&gt;+ DaysUntil(mốc) : int&lt;br&gt;Arc1Start, VaultDeadline, Arc1End" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="940" y="70" width="230" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="cBond" value="&lt;b&gt;«entity»&lt;br&gt;BondState&lt;/b&gt;&lt;hr&gt;+ GetOrCreate(npcId)&lt;br&gt;+ TryGet(npcId) : bool&lt;br&gt;một tiến độ cho mỗi NPC" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="300" width="220" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="cProg" value="&lt;b&gt;«entity»&lt;br&gt;BondProgress&lt;/b&gt;&lt;hr&gt;+ NpcId : string&lt;br&gt;+ EchoKey&lt;br&gt;+ Rank : int&lt;br&gt;+ Exp : int&lt;br&gt;+ ArcCap : int" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="320" y="290" width="200" height="140" as="geometry"/>
+        </mxCell>
+        <mxCell id="cSocial" value="&lt;b&gt;«entity»&lt;br&gt;SocialStatsState&lt;/b&gt;&lt;hr&gt;+ GetRank(stat) : int&lt;br&gt;+ GetExp(stat) : int&lt;br&gt;+ AddExp(stat, amount) : void&lt;br&gt;+ MaxRank = 10&lt;br&gt;không ghi vào UnitStats" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="580" y="290" width="230" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="cSave" value="&lt;b&gt;«entity»&lt;br&gt;GameMetaSaveData&lt;/b&gt;&lt;hr&gt;gói lịch, bond,&lt;br&gt;chỉ số đời sống, cấp đội&lt;br&gt;mang qua các scene" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="870" y="290" width="220" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="cSaveLoad" value="&lt;b&gt;«control»&lt;br&gt;GameMetaSaveLoad&lt;/b&gt;&lt;hr&gt;+ đọc file hồ sơ&lt;br&gt;+ ghi file hồ sơ&lt;br&gt;view không tự mở đĩa" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1140" y="290" width="210" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="cRunCtl" value="&lt;b&gt;«boundary»&lt;br&gt;RunMapController&lt;/b&gt;&lt;hr&gt;nhận chọn node trên map&lt;br&gt;hỏi RunState trước khi đi" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="520" width="220" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="cRun" value="&lt;b&gt;«entity»&lt;br&gt;RunState&lt;/b&gt;&lt;hr&gt;+ Seed : int&lt;br&gt;+ CurrentFloor : int&lt;br&gt;+ BeginRun(seed) : void&lt;br&gt;+ EnterNode(node) : void&lt;br&gt;+ CanTravelTo(graph, node) : bool" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="320" y="500" width="250" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="cGraph" value="&lt;b&gt;«entity»&lt;br&gt;MapGraph&lt;/b&gt;&lt;hr&gt;+ các node của một seed&lt;br&gt;+ cạnh đi giữa các tầng&lt;br&gt;sống suốt run" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="630" y="510" width="210" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="cNode" value="&lt;b&gt;«entity»&lt;br&gt;MapNodeData&lt;/b&gt;&lt;hr&gt;+ Id, Floor, Column : int&lt;br&gt;+ Type : MapNodeType&lt;br&gt;+ IsBoss : bool&lt;br&gt;+ Cleared : bool&lt;br&gt;+ Outgoing : int[*]" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="900" y="500" width="220" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="cGen" value="&lt;b&gt;«control»&lt;br&gt;MapGenerator&lt;/b&gt;&lt;hr&gt;+ Generate(seed) : MapGraph&lt;br&gt;chỉ chạy lúc tạo map&lt;br&gt;không nhớ node hiện tại" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1180" y="510" width="220" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="cVn" value="&lt;b&gt;«boundary»&lt;br&gt;VnRuntimeController&lt;/b&gt;&lt;hr&gt;+ SetScript(script) : void&lt;br&gt;+ Begin() : void&lt;br&gt;+ ChoiceSelected : event&lt;br&gt;+ Finished : event&lt;br&gt;không gọi CombatSession" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="740" width="240" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="cScript" value="&lt;b&gt;«entity»&lt;br&gt;VnScriptSO&lt;/b&gt;&lt;hr&gt;+ danh sách VnBeat&lt;br&gt;lời thoại và lựa chọn&lt;br&gt;controller chỉ phát, không sở hữu luật combat" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="340" y="750" width="250" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="cLoadout" value="&lt;b&gt;«control»&lt;br&gt;PartyLoadoutApplicator&lt;/b&gt;&lt;hr&gt;đọc cấp đội và chiêu đã mở&lt;br&gt;áp vào CombatUnit lúc vào trận&lt;br&gt;trận không ghi ngược hạng đời sống" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="660" y="740" width="280" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="cLoader" value="&lt;b&gt;«control»&lt;br&gt;RunMapSceneLoader&lt;/b&gt;&lt;hr&gt;node boss mở scene combat&lt;br&gt;không sinh lại MapGraph" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="750" width="230" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="m1" value="" style="endArrow=open;html=1;" edge="1" parent="1" source="cHub" target="cDriver">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="m2" value="đọc" style="endArrow=open;html=1;fontSize=11;" edge="1" parent="1" source="cDriver" target="cCal">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="m3" value="1" style="endArrow=diamond;endFill=1;html=1;fontSize=11;" edge="1" parent="1" source="cDate" target="cCal">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="m4" value="1..*" style="endArrow=diamond;endFill=1;html=1;fontSize=11;" edge="1" parent="1" source="cProg" target="cBond">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="m5" value="gom" style="endArrow=open;html=1;fontSize=11;" edge="1" parent="1" source="cSave" target="cCal">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="m6" value="" style="endArrow=open;html=1;" edge="1" parent="1" source="cSave" target="cBond">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="m7" value="" style="endArrow=open;html=1;" edge="1" parent="1" source="cSave" target="cSocial">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="m8" value="ghi / đọc" style="endArrow=open;dashed=1;html=1;fontSize=11;" edge="1" parent="1" source="cSaveLoad" target="cSave">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="m9" value="" style="endArrow=open;html=1;" edge="1" parent="1" source="cRunCtl" target="cRun">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="m10" value="" style="endArrow=open;html=1;" edge="1" parent="1" source="cRun" target="cGraph">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="m11" value="*" style="endArrow=diamond;endFill=1;html=1;fontSize=11;" edge="1" parent="1" source="cNode" target="cGraph">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="m12" value="tạo rồi rút" style="endArrow=open;dashed=1;html=1;fontSize=11;" edge="1" parent="1" source="cGen" target="cGraph">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="m13" value="phát" style="endArrow=open;html=1;fontSize=11;" edge="1" parent="1" source="cVn" target="cScript">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="m14" value="node boss" style="endArrow=open;dashed=1;html=1;fontSize=11;" edge="1" parent="1" source="cLoader" target="cRun">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="m15" value="cấp đội → unit" style="endArrow=open;dashed=1;html=1;fontSize=11;" edge="1" parent="1" source="cLoadout" target="cSave">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

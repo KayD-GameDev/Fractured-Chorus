@@ -1,0 +1,75 @@
+<mxfile host="Electron" agent="cursor-skill" pages="2">
+  <diagram name="Component" id="comp-fc">
+    <mxGraphModel dx="1030" dy="626" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="700" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="text;html=1;align=left;fontSize=14;" value="&lt;b&gt;Thành phần phần mềm&lt;/b&gt;" vertex="1">
+          <mxGeometry height="30" width="280" x="40" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="cHub" parent="1" style="shape=component;whiteSpace=wrap;html=1;align=center;" value="Hub" vertex="1">
+          <mxGeometry height="70" width="140" x="10" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="cNar" parent="1" style="shape=component;whiteSpace=wrap;html=1;align=center;" value="Narrative" vertex="1">
+          <mxGeometry height="70" width="140" x="10" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="cRun" parent="1" style="shape=component;whiteSpace=wrap;html=1;align=center;" value="RunMap" vertex="1">
+          <mxGeometry height="70" width="140" x="440" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="cCom" parent="1" style="shape=component;whiteSpace=wrap;html=1;align=center;" value="Combat" vertex="1">
+          <mxGeometry height="70" width="140" x="440" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="cMeta" parent="1" style="shape=component;whiteSpace=wrap;html=1;align=center;" value="Meta" vertex="1">
+          <mxGeometry height="70" width="140" x="220" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="cAud" parent="1" style="shape=component;whiteSpace=wrap;html=1;align=center;" value="Audio" vertex="1">
+          <mxGeometry height="70" width="140" x="650" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="d1" edge="1" parent="1" source="cHub" style="dashed=1;endArrow=open;html=1;fontSize=11;" target="cMeta" value="đọc hồ sơ">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d2" edge="1" parent="1" source="cNar" style="dashed=1;endArrow=open;html=1;fontSize=11;" target="cMeta" value="cộng bond">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d3" edge="1" parent="1" source="cRun" style="dashed=1;endArrow=open;html=1;fontSize=11;" target="cMeta" value="tiến độ run">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d4" edge="1" parent="1" source="cRun" style="dashed=1;endArrow=open;html=1;fontSize=11;" target="cCom" value="mở trận">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d5" edge="1" parent="1" source="cCom" style="dashed=1;endArrow=open;html=1;fontSize=11;" target="cMeta" value="trang bị">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d6" edge="1" parent="1" source="cCom" style="dashed=1;endArrow=open;html=1;fontSize=11;" target="cAud" value="beat">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="Deployment" id="dep-fc">
+    <mxGraphModel dx="900" dy="600" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="900" pageHeight="600" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="&lt;b&gt;Triển khai prototype: một máy người chơi&lt;/b&gt;" style="text;html=1;align=left;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="420" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pc" value="Máy người chơi" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;spacingTop=8;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="70" width="520" height="360" as="geometry" />
+        </mxCell>
+        <mxCell id="unity" value="Tiến trình Unity&lt;br&gt;scene combat, run map, hub, thoại" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="pc">
+          <mxGeometry x="40" y="50" width="280" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="audio" value="AudioSource&lt;br&gt;nhạc boss trong scene combat" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="pc">
+          <mxGeometry x="40" y="200" width="280" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="disk" value="Đĩa cục bộ&lt;br&gt;GameMetaSaveData" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;spacingTop=8;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="620" y="160" width="200" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="link" value="đọc / ghi hồ sơ" style="endArrow=none;html=1;fontSize=12;" edge="1" parent="1" source="pc" target="disk">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

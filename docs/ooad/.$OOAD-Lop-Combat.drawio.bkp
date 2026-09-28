@@ -1,0 +1,109 @@
+<mxfile host="app.diagrams.net" modified="2026-09-24T03:00:00.000Z" agent="cursor-skill" version="22.1.0" type="device">
+  <diagram name="Lop-Combat" id="ooad-combat">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="title" value="&lt;b&gt;Fractured Chorus — sơ đồ lớp combat&lt;/b&gt;&lt;br&gt;Kim cương đặc = cấu thành. Kim cương rỗng = kết tập. Nét đứt = phụ thuộc. Tam giác rỗng = hiện thực giao diện." style="text;html=1;align=left;verticalAlign=top;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="40" y="10" width="720" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="cController" value="&lt;b&gt;«boundary»&lt;br&gt;CombatController&lt;/b&gt;&lt;hr&gt;+ Initialize(session, timeline)&lt;br&gt;+ StartRound() : void&lt;br&gt;+ ResumeFromPlanningPause() : void&lt;br&gt;+ OnRoundSegmentComplete() : void" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="60" width="230" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="cSession" value="&lt;b&gt;«control»&lt;br&gt;CombatSession&lt;/b&gt;&lt;hr&gt;+ Phase : CombatPhase&lt;br&gt;+ IsPlanningWindowOpen : bool&lt;br&gt;+ TryAssignPlayerAction(...) : bool&lt;br&gt;+ ConfirmPlanningAndExecute() : void&lt;br&gt;+ OnTimelineScanBeat(beat) : void" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="340" y="60" width="250" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="cTimeline" value="&lt;b&gt;«entity»&lt;br&gt;BeatTimelineEngine&lt;/b&gt;&lt;hr&gt;+ Phase : CombatPhase&lt;br&gt;+ ScanBeatIndex : int&lt;br&gt;+ Agenda : AgendaEntry[*]&lt;br&gt;+ Telegraphs : EnemyTelegraph[*]&lt;br&gt;+ OnScanAdvanced : event" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="660" y="60" width="240" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="cIMusic" value="&lt;b&gt;«interface»&lt;br&gt;ICombatMusicSync&lt;/b&gt;&lt;hr&gt;+ đồng hồ beat tuyệt đối&lt;br&gt;+ báo beat cho timeline" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="960" y="60" width="200" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="cMusic" value="&lt;b&gt;«boundary»&lt;br&gt;CombatMusicController&lt;/b&gt;&lt;hr&gt;+ bpm, offset beat đầu&lt;br&gt;+ EnterPlanningDuck()&lt;br&gt;+ ExitPlanningDuck()&lt;br&gt;nhạc không dừng khi planning" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="60" width="220" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="cGrid" value="&lt;b&gt;«entity»&lt;br&gt;DualGrid&lt;/b&gt;&lt;hr&gt;+ Rows = 2&lt;br&gt;+ Columns = 3&lt;br&gt;+ MaxPlayerUnits = 4&lt;br&gt;+ MaxEnemyUnits = 6&lt;br&gt;+ GetCell(position) : GridCell" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="300" width="220" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="cUnit" value="&lt;b&gt;«entity»&lt;br&gt;CombatUnit&lt;/b&gt;&lt;hr&gt;+ UnitId : string&lt;br&gt;+ CurrentHp : int&lt;br&gt;+ Prep : int&lt;br&gt;+ Shield : int&lt;br&gt;+ IsAlive : bool&lt;br&gt;+ GainPrep(amount) : int&lt;br&gt;+ TrySpendPrep(amount) : bool" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="340" y="300" width="230" height="170" as="geometry"/>
+        </mxCell>
+        <mxCell id="cStats" value="&lt;b&gt;«entity»&lt;br&gt;UnitStats&lt;/b&gt;&lt;hr&gt;+ máu tối đa&lt;br&gt;+ sức vật lý / phép&lt;br&gt;+ BaseAv : float&lt;br&gt;chỉ số trận, không phải hạng đời sống" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="640" y="320" width="230" height="140" as="geometry"/>
+        </mxCell>
+        <mxCell id="cCover" value="&lt;b&gt;«entity»&lt;br&gt;CoverRuntime&lt;/b&gt;&lt;hr&gt;+ gauge từ ô trống&lt;br&gt;+ kích hoạt trong planning&lt;br&gt;thuộc vòng đời của trận" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="930" y="320" width="210" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="cDiff" value="&lt;b&gt;«control»&lt;br&gt;DifficultyRuntime&lt;/b&gt;&lt;hr&gt;+ OnBeat = 0&lt;br&gt;+ Cadence = 1&lt;br&gt;+ OffBeat = 2&lt;br&gt;+ Multipliers : Hp, Damage, Notes&lt;br&gt;luật chơi không đổi theo mức" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="300" width="240" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="cAgenda" value="&lt;b&gt;«entity»&lt;br&gt;AgendaEntry&lt;/b&gt;&lt;hr&gt;+ EntryId : string&lt;br&gt;+ BeatIndex : int&lt;br&gt;+ Delay : int&lt;br&gt;+ IsEmpowered : bool&lt;br&gt;một lần đặt chiêu trên thước nhịp" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="560" width="230" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="cTele" value="&lt;b&gt;«entity»&lt;br&gt;EnemyTelegraph&lt;/b&gt;&lt;hr&gt;+ BeatIndex : int&lt;br&gt;+ NoteTier : BossNoteTier&lt;br&gt;+ HitsRequired : int&lt;br&gt;báo đòn địch trước khi resolve" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="320" y="560" width="230" height="140" as="geometry"/>
+        </mxCell>
+        <mxCell id="cSkill" value="&lt;b&gt;«entity»&lt;br&gt;SkillDefinitionSO&lt;/b&gt;&lt;hr&gt;+ delay : int&lt;br&gt;+ footprint S1 / S / S2&lt;br&gt;định nghĩa chiêu, không phải lần dùng" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="600" y="560" width="230" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="cCmd" value="&lt;b&gt;«control»&lt;br&gt;SkillActionCommand&lt;/b&gt;&lt;hr&gt;+ Delay : int&lt;br&gt;+ CanExecute(ctx) : bool&lt;br&gt;+ Execute(ctx) : void" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="900" y="560" width="220" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="cIAction" value="&lt;b&gt;«interface»&lt;br&gt;ICombatAction&lt;/b&gt;&lt;hr&gt;+ Delay : int&lt;br&gt;+ CanExecute(ctx) : bool&lt;br&gt;+ Execute(ctx) : void" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1180" y="560" width="220" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="cFactory" value="&lt;b&gt;«control»&lt;br&gt;EncounterRuntimeFactory&lt;/b&gt;&lt;hr&gt;+ tạo lưới, unit, encounter lúc vào trận&lt;br&gt;không quét beat sau khi đã tạo" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="800" width="280" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="e1" value="điều khiển" style="endArrow=open;html=1;fontSize=11;" edge="1" parent="1" source="cController" target="cSession">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e2" value="1" style="endArrow=diamond;endFill=1;html=1;fontSize=11;" edge="1" parent="1" source="cTimeline" target="cSession">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e3" value="1" style="endArrow=diamond;endFill=1;html=1;fontSize=11;" edge="1" parent="1" source="cGrid" target="cSession">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e4" value="1" style="endArrow=diamond;endFill=1;html=1;fontSize=11;" edge="1" parent="1" source="cCover" target="cSession">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e5" value="0..4 / 0..6" style="endArrow=diamond;endFill=1;html=1;fontSize=11;" edge="1" parent="1" source="cUnit" target="cGrid">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e6" value="1" style="endArrow=diamond;endFill=1;html=1;fontSize=11;" edge="1" parent="1" source="cStats" target="cUnit">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e7" value="*" style="endArrow=diamond;endFill=0;html=1;fontSize=11;" edge="1" parent="1" source="cAgenda" target="cTimeline">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e8" value="*" style="endArrow=diamond;endFill=0;html=1;fontSize=11;" edge="1" parent="1" source="cTele" target="cTimeline">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e9" value="" style="endArrow=open;html=1;" edge="1" parent="1" source="cAgenda" target="cUnit">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e10" value="" style="endArrow=open;html=1;" edge="1" parent="1" source="cAgenda" target="cSkill">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e11" value="" style="endArrow=block;endFill=0;dashed=1;html=1;" edge="1" parent="1" source="cCmd" target="cIAction">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e12" value="" style="endArrow=block;endFill=0;dashed=1;html=1;" edge="1" parent="1" source="cMusic" target="cIMusic">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e13" value="dùng đồng hồ" style="endArrow=open;dashed=1;html=1;fontSize=11;" edge="1" parent="1" source="cController" target="cIMusic">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e14" value="tra hệ số" style="endArrow=open;dashed=1;html=1;fontSize=11;" edge="1" parent="1" source="cSession" target="cDiff">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e15" value="tạo trận" style="endArrow=open;dashed=1;html=1;fontSize=11;" edge="1" parent="1" source="cFactory" target="cSession">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e16" value="thực thi lúc tới beat" style="endArrow=open;dashed=1;html=1;fontSize=11;" edge="1" parent="1" source="cSession" target="cCmd">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

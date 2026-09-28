@@ -17,6 +17,12 @@ namespace FracturedChorus.Meta
         public static Func<int> DefaultDifficultyProvider { get; set; }
 
         /// <summary>
+        /// Bậc khó người chơi chốt lúc bấm New Game. Save mới lấy giá trị này thay vì đọc lại
+        /// setting, để đổi chip giữa Prologue không ghi đè bậc đã chọn. Dùng xong thì xoá.
+        /// </summary>
+        public static int? PendingNewGameDifficulty { get; set; }
+
+        /// <summary>
         /// Bắn mỗi khi state đang hoạt động bị thay bằng state khác (load slot, new game, replace).
         /// Các store runtime như PartyRunHpStore nghe sự kiện này để nạp lại từ save
         /// mà Meta không phải biết gì về tầng Combat.
@@ -71,9 +77,10 @@ namespace FracturedChorus.Meta
 
         public static void BeginHubAfterOpening()
         {
+            var difficulty = ResolveContinuedDifficulty();
             SetState(GameMetaState.CreateHubStart());
             s_state.SetFlag(StoryFlagIds.OpeningInvestigationDone);
-            s_state.Difficulty = ResolveDefaultDifficulty();
+            s_state.Difficulty = difficulty;
             GameMetaSaveLoad.TrySave(s_state, s_activeSlotIndex);
         }
 
@@ -91,8 +98,9 @@ namespace FracturedChorus.Meta
 
         public static void BeginHubEnRouteToHima()
         {
+            var difficulty = ResolveContinuedDifficulty();
             SetState(CreateEnRouteToHima());
-            s_state.Difficulty = ResolveDefaultDifficulty();
+            s_state.Difficulty = difficulty;
             GameMetaSaveLoad.TrySave(s_state, s_activeSlotIndex);
         }
 
@@ -204,8 +212,29 @@ namespace FracturedChorus.Meta
             }
         }
 
+        /// <summary>
+        /// Các mốc Prologue thay state nhưng vẫn là cùng một lượt chơi, nên bậc đã khoá phải đi theo.
+        /// Chỉ khi chưa có state nào mới đọc lại lựa chọn ở menu.
+        /// </summary>
+        private static int ResolveContinuedDifficulty()
+        {
+            if (PendingNewGameDifficulty.HasValue || s_state == null)
+            {
+                return ResolveDefaultDifficulty();
+            }
+
+            return s_state.Difficulty;
+        }
+
         private static int ResolveDefaultDifficulty()
         {
+            var pending = PendingNewGameDifficulty;
+            if (pending.HasValue)
+            {
+                PendingNewGameDifficulty = null;
+                return pending.Value;
+            }
+
             var provider = DefaultDifficultyProvider;
             if (provider == null)
             {

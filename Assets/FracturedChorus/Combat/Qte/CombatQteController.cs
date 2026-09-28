@@ -110,15 +110,19 @@ namespace FracturedChorus.Combat.Qte
             }
 
             overlay.ShowPrompt(profile);
+            var guidedQte = TutorialDirector.WantsQteBubbleGuide;
             TutorialQtePolicy.NotifyIntroShown();
-            TutorialDirector.NotifyQtePromptVisible();
-            while (TutorialDirector.IsQteExplainPauseActive)
+            if (!guidedQte)
             {
-                yield return null;
+                TutorialDirector.NotifyQtePromptVisible();
+                while (TutorialDirector.IsQteExplainPauseActive)
+                {
+                    yield return null;
+                }
             }
 
             var grade = CombatQteGrade.Miss;
-            yield return RunPrompt(resolved => grade = resolved);
+            yield return StartCoroutine(RunPrompt(resolved => grade = resolved, guidedQte));
 
             var rule = profile.GetRule(grade, phaseIndex, missDamageReduction);
             CombatQteModifiers.Apply(grade, rule);
@@ -151,7 +155,7 @@ namespace FracturedChorus.Combat.Qte
             }
         }
 
-        private IEnumerator RunPrompt(System.Action<CombatQteGrade> onResolved)
+        private IEnumerator RunPrompt(System.Action<CombatQteGrade> onResolved, bool guidedTutorial = false)
         {
             var duration = Mathf.Max(0.05f, profile.shrinkDuration);
             var windowMult = AstraTvMoodState.AngerQteWindowMult;
@@ -160,18 +164,38 @@ namespace FracturedChorus.Combat.Qte
                 profile.goodWindowSec * windowMult,
                 profile.perfectWindowSec * windowMult);
             var elapsed = 0f;
+            var explained = !guidedTutorial;
+            const float leadInSeconds = 0.1f;
 
             while (elapsed < lateLimit)
             {
                 elapsed += Time.unscaledDeltaTime;
-                var t = Mathf.Clamp01(elapsed / duration);
-                if (overlay != null)
+                if (guidedTutorial && !explained && elapsed >= leadInSeconds)
                 {
-                    overlay.SetOuterScale(Mathf.Lerp(startScale, 1f, t));
-                    overlay.SetTimingPreview(profile.Evaluate(elapsed, windowMult));
+                    elapsed = leadInSeconds;
+                    ApplyPromptPose(elapsed, duration, startScale, windowMult);
+                    yield return StartCoroutine(TutorialQteGuideView.PlayIntro(overlay));
+                    explained = true;
+                    continue;
                 }
 
-                if (ReadConfirmPressed())
+                if (guidedTutorial && explained && elapsed >= duration)
+                {
+                    elapsed = duration;
+                    if (overlay != null)
+                    {
+                        overlay.SetOuterScale(1f);
+                        overlay.SetTimingPreview(CombatQteGrade.Perfect);
+                    }
+
+                    yield return StartCoroutine(TutorialQteGuideView.WaitForContactClick(overlay));
+                    onResolved(CombatQteGrade.Perfect);
+                    yield break;
+                }
+
+                ApplyPromptPose(elapsed, duration, startScale, windowMult);
+
+                if (!guidedTutorial && ReadConfirmPressed())
                 {
                     onResolved(profile.Evaluate(elapsed, windowMult));
                     yield break;
@@ -181,6 +205,18 @@ namespace FracturedChorus.Combat.Qte
             }
 
             onResolved(CombatQteGrade.Miss);
+        }
+
+        private void ApplyPromptPose(float elapsed, float duration, float startScale, float windowMult)
+        {
+            if (overlay == null)
+            {
+                return;
+            }
+
+            var t = Mathf.Clamp01(elapsed / duration);
+            overlay.SetOuterScale(Mathf.Lerp(startScale, 1f, t));
+            overlay.SetTimingPreview(profile.Evaluate(elapsed, windowMult));
         }
 
         private void EnsureProfile()

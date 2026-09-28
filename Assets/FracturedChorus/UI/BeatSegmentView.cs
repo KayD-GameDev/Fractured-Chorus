@@ -37,6 +37,11 @@ namespace FracturedChorus.UI
 
         public int DisplayBeatIndex => beatIndex;
 
+        public RectTransform BeatFrameRect =>
+            _beatFrameVisual != null
+                ? _beatFrameVisual.rectTransform
+                : beatFrame != null ? beatFrame.rectTransform : null;
+
         public void SetNoteVisualCatalog(TimelineNoteVisualCatalog catalog)
         {
             _noteVisuals = catalog;
@@ -417,7 +422,11 @@ namespace FracturedChorus.UI
             var sprite = _noteVisuals?.BeatFrame(true, isWindup);
             if (sprite != null && _beatFrameVisual != null)
             {
-                StretchInset(_beatFrameVisual.rectTransform, 1.5f);
+                if (!FracturedChorus.Tutorial.TutorialFocusOverlay.IsLifted(_beatFrameVisual.rectTransform))
+                {
+                    StretchInset(_beatFrameVisual.rectTransform, 1.5f);
+                }
+
                 _beatFrameVisual.enabled = true;
                 _beatFrameVisual.sprite = sprite;
                 _beatFrameVisual.type = Image.Type.Simple;
@@ -486,6 +495,11 @@ namespace FracturedChorus.UI
                         beatFrame = _beatFrameVisual;
                     }
                 }
+            }
+
+            if (FracturedChorus.Tutorial.TutorialFocusOverlay.IsLifted(_beatFrameVisual.rectTransform))
+            {
+                return;
             }
 
             StretchInset(_beatFrameVisual.rectTransform, 1.5f);

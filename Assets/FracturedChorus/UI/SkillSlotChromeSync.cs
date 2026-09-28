@@ -32,7 +32,8 @@ namespace FracturedChorus.UI
         /// </summary>
         public static void ApplyFromTemplate(RectTransform templateRoot, RectTransform slotRoot)
         {
-            if (templateRoot == null || slotRoot == null)
+            if (templateRoot == null || slotRoot == null
+                || FracturedChorus.Tutorial.TutorialFocusOverlay.IsLifted(slotRoot))
             {
                 return;
             }
