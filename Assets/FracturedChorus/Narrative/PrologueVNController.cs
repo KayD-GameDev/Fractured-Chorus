@@ -629,6 +629,11 @@ namespace FracturedChorus.Narrative
             rect.pivot = new Vector2(0.5f, 0.5f);
         }
 
+        private static string Loc(string english)
+        {
+            return GameLoc.Pick(english, VnLineCatalog.Lookup(english));
+        }
+
 #if UNITY_EDITOR
         private Transform _canvasTransform;
         private bool _applyingEditorPreview;
@@ -787,11 +792,6 @@ namespace FracturedChorus.Narrative
             SetCanvasGroupActive(dialoguePanel, true);
             SetDialogueSample(PrologueNarrationText.WrapBalanced(
                 string.Format(Loc(ThankYouLine), RunProfile.DefaultNameSuggestion)));
-        }
-
-        private static string Loc(string english)
-        {
-            return GameLoc.Pick(english, VnLineCatalog.Lookup(english));
         }
 
         private void SetDialogueSample(string text)

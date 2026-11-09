@@ -36,6 +36,24 @@ namespace FracturedChorus.Hub
             return true;
         }
 
+        public static bool ShouldSkipEnrollmentMorning(GameMetaState state)
+        {
+            if (state == null)
+            {
+                return false;
+            }
+
+            if (!state.HasFlag(StoryFlagIds.HimaEnrollmentDone)
+                && !state.HasFlag(StoryFlagIds.MimiEncountered)
+                && !state.HasFlag(StoryFlagIds.CharlotteReunited))
+            {
+                return false;
+            }
+
+            var date = state.Calendar.CurrentDate;
+            return date.Month == 9 && date.Day <= 2;
+        }
+
         public static void ApplyMorningFlags(GameMetaState state)
         {
             var date = state.Calendar.CurrentDate;

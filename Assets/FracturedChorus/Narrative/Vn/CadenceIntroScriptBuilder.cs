@@ -64,23 +64,40 @@ namespace FracturedChorus.Narrative.Vn
             script.beats = new[]
             {
                 OpeningInvestigationScriptBuilder.N(
-                    "Kiki is thrown clear of the arch.\nThe Cadence is splitting along the banners.",
+                    "Mimi drops. The arches refuse to settle.\nFarther in, Charlotte is fighting something stitched from broken notes.",
                     VnBgIds.CadenceFirstLook),
+                OpeningInvestigationScriptBuilder.N(
+                    "Ren sees her. Coda is already running.\nThe two of them cut in and pull the thing off her.",
+                    VnBgIds.CadenceFracturePull),
                 OpeningInvestigationScriptBuilder.L(
                     VnSpeakerIds.Ren,
-                    "The hall. We run before this place closes."),
+                    "Charlotte!",
+                    "startled"),
                 OpeningInvestigationScriptBuilder.L(
                     VnSpeakerIds.Coda,
-                    "Stay with me. The way out is still open."),
-                OpeningInvestigationScriptBuilder.N(
-                    "They run. The white stone peels away.\nThe ceremony hall rushes back in, loud and ordinary."),
+                    "Stay with her. I'll hold this."),
+                OpeningInvestigationScriptBuilder.L(
+                    VnSpeakerIds.Ren,
+                    "Get behind us."),
+                OpeningInvestigationScriptBuilder.L(
+                    VnSpeakerIds.Charlotte,
+                    "Ren. You fell in too.",
+                    "grim"),
+                OpeningInvestigationScriptBuilder.L(
+                    VnSpeakerIds.Charlotte,
+                    "I can still stand. That thing can't.",
+                    "neutral"),
                 OpeningInvestigationScriptBuilder.End(
                     StoryFlagIds.RenArrivedHima,
                     StoryFlagIds.HimaEnrollmentDone,
                     StoryFlagIds.OpeningCeremony,
                     StoryFlagIds.FirstResonanceDive,
                     StoryFlagIds.CodaMet,
-                    StoryFlagIds.CadenceBreach)
+                    StoryFlagIds.CodaRescue,
+                    StoryFlagIds.CadenceBreach,
+                    StoryFlagIds.MimiEncountered,
+                    StoryFlagIds.CharlotteReunited,
+                    StoryFlagIds.VaultQuestActive)
             };
             return script;
         }

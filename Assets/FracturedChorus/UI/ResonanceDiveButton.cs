@@ -1,4 +1,5 @@
 using System;
+using FracturedChorus.Localization;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -37,8 +38,14 @@ namespace FracturedChorus.UI
         [SerializeField] private float pulseSpeed = 2.2f;
         [SerializeField] private float particleOrbitSpeed = 0.7f;
 
+        private const string LockedNotice = "Resonance Dive can't be used during combat.";
+
         private Action _onActivate;
         private bool _listening;
+        private bool _locked;
+        private GameObject _lockRoot;
+        private Text _noticeLabel;
+        private float _noticeLeft;
         private bool _hovered;
         private bool _pressed;
         private float _phase;
@@ -96,6 +103,25 @@ namespace FracturedChorus.UI
             if (_listening)
             {
                 button.onClick.AddListener(Activate);
+            }
+        }
+
+        public void SetLocked(bool locked)
+        {
+            _locked = locked;
+            EnsureLockBadge();
+            if (_lockRoot != null)
+            {
+                _lockRoot.SetActive(locked);
+                if (locked)
+                {
+                    _lockRoot.transform.SetAsLastSibling();
+                }
+            }
+
+            if (!locked)
+            {
+                HideLockedNotice();
             }
         }
 
@@ -166,9 +192,18 @@ namespace FracturedChorus.UI
 
         private void Update()
         {
-            if (_listening)
+            if (_listening && !_locked)
             {
                 PollHotkey();
+            }
+
+            if (_noticeLeft > 0f)
+            {
+                _noticeLeft -= Time.unscaledDeltaTime;
+                if (_noticeLeft <= 0f)
+                {
+                    HideLockedNotice();
+                }
             }
 
             _phase += Time.unscaledDeltaTime;
@@ -190,12 +225,141 @@ namespace FracturedChorus.UI
 
         private void Activate()
         {
-            if (!_listening || _onActivate == null || !isActiveAndEnabled)
+            if (!isActiveAndEnabled)
+            {
+                return;
+            }
+
+            if (_locked)
+            {
+                ShowLockedNotice();
+                return;
+            }
+
+            if (!_listening || _onActivate == null)
             {
                 return;
             }
 
             _onActivate();
+        }
+
+        private void EnsureLockBadge()
+        {
+            if (_lockRoot != null)
+            {
+                return;
+            }
+
+            _lockRoot = new GameObject("LockBadge", typeof(RectTransform), typeof(Image));
+            _lockRoot.transform.SetParent(transform, false);
+            var rect = _lockRoot.GetComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = Vector2.zero;
+            rect.sizeDelta = new Vector2(72f, 72f);
+            var plateImage = _lockRoot.GetComponent<Image>();
+            plateImage.color = new Color(0.12f, 0.12f, 0.14f, 0.88f);
+            plateImage.raycastTarget = false;
+
+            var iconGo = new GameObject("Icon", typeof(RectTransform), typeof(Image));
+            iconGo.transform.SetParent(_lockRoot.transform, false);
+            var iconRect = iconGo.GetComponent<RectTransform>();
+            iconRect.anchorMin = new Vector2(0.5f, 0.5f);
+            iconRect.anchorMax = new Vector2(0.5f, 0.5f);
+            iconRect.pivot = new Vector2(0.5f, 0.5f);
+            iconRect.anchoredPosition = Vector2.zero;
+            iconRect.sizeDelta = new Vector2(40f, 40f);
+            var icon = iconGo.GetComponent<Image>();
+            icon.sprite = LockSprite;
+            icon.color = new Color(0.82f, 0.82f, 0.86f, 1f);
+            icon.raycastTarget = false;
+            _lockRoot.SetActive(false);
+        }
+
+        private void ShowLockedNotice()
+        {
+            EnsureNotice();
+            if (_noticeLabel == null)
+            {
+                return;
+            }
+
+            _noticeLabel.text = GameLoc.Tr(LockedNotice);
+            _noticeLabel.gameObject.SetActive(true);
+            _noticeLeft = 2.6f;
+        }
+
+        private void HideLockedNotice()
+        {
+            _noticeLeft = 0f;
+            if (_noticeLabel != null)
+            {
+                _noticeLabel.gameObject.SetActive(false);
+            }
+        }
+
+        private void EnsureNotice()
+        {
+            if (_noticeLabel != null)
+            {
+                return;
+            }
+
+            var go = new GameObject("LockNotice", typeof(RectTransform), typeof(Text));
+            go.transform.SetParent(transform, false);
+            var rect = go.GetComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0.5f, 1f);
+            rect.anchorMax = new Vector2(0.5f, 1f);
+            rect.pivot = new Vector2(0.5f, 0f);
+            rect.anchoredPosition = new Vector2(0f, 12f);
+            rect.sizeDelta = new Vector2(520f, 64f);
+            _noticeLabel = go.GetComponent<Text>();
+            _noticeLabel.font = UiFontCatalog.Body;
+            _noticeLabel.fontSize = 22;
+            _noticeLabel.alignment = TextAnchor.MiddleCenter;
+            _noticeLabel.color = new Color(0.95f, 0.93f, 0.88f, 1f);
+            _noticeLabel.horizontalOverflow = HorizontalWrapMode.Wrap;
+            _noticeLabel.verticalOverflow = VerticalWrapMode.Overflow;
+            _noticeLabel.raycastTarget = false;
+            go.SetActive(false);
+        }
+
+        private static Sprite _lockSprite;
+
+        private static Sprite LockSprite
+        {
+            get
+            {
+                if (_lockSprite != null)
+                {
+                    return _lockSprite;
+                }
+
+                const int size = 64;
+                var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+                var pixels = new Color32[size * size];
+                var ink = new Color32(230, 230, 236, 255);
+                for (var y = 0; y < size; y++)
+                {
+                    for (var x = 0; x < size; x++)
+                    {
+                        var body = x >= 14 && x < 50 && y >= 6 && y < 34;
+                        var dx = x - 31.5f;
+                        var dy = y - 38f;
+                        var dist = Mathf.Sqrt(dx * dx + dy * dy);
+                        var shackle = y >= 34 && dist >= 10f && dist <= 16f;
+                        pixels[y * size + x] = body || shackle ? ink : new Color32(0, 0, 0, 0);
+                    }
+                }
+
+                tex.SetPixels32(pixels);
+                tex.Apply();
+                tex.filterMode = FilterMode.Bilinear;
+                _lockSprite = Sprite.Create(tex, new Rect(0f, 0f, size, size), new Vector2(0.5f, 0.5f), 100f);
+                return _lockSprite;
+            }
         }
 
         public void OnPointerEnter(PointerEventData eventData)
@@ -227,6 +391,31 @@ namespace FracturedChorus.UI
         private void ApplyVisual(float pulse)
         {
             Assign(plate, ResolvePlateSprite());
+            if (_locked)
+            {
+                SetRgb(plate, 0.42f, 0.42f, 0.46f, 1f);
+                SetRgb(baseLayer, 0.45f, 0.45f, 0.48f, 1f);
+                SetRgb(gradient, 0.35f, 0.35f, 0.38f, 0.12f);
+                SetRgb(glass, 0.55f, 0.55f, 0.58f, 0.08f);
+                SetAlpha(shadow, 0.55f);
+                SetAlpha(border, 0.2f);
+                SetAlpha(decoLeft, 0.35f);
+                SetAlpha(decoRight, 0.35f);
+                SetRgb(textLayer, 0.62f, 0.62f, 0.66f, 1f);
+                if (titleLabel != null)
+                {
+                    titleLabel.color = new Color(0.72f, 0.72f, 0.76f, 1f);
+                }
+
+                if (subtitleLabel != null)
+                {
+                    subtitleLabel.color = new Color(0.62f, 0.62f, 0.66f, 0.9f);
+                }
+
+                SetAlpha(glow, 0f);
+                return;
+            }
+
             SetRgb(plate, 1f, 1f, 1f, 1f);
             SetRgb(baseLayer, 1f, 1f, 1f, 1f);
             SetRgb(gradient, 0.55f, 0.72f, 1f, Mathf.Lerp(0.05f, _hovered ? 0.12f : 0.08f, pulse));
@@ -235,6 +424,16 @@ namespace FracturedChorus.UI
             SetAlpha(border, Mathf.Lerp(0.22f, _hovered ? 0.5f : 0.32f, pulse));
             SetAlpha(decoLeft, 1f);
             SetAlpha(decoRight, 1f);
+            if (titleLabel != null)
+            {
+                titleLabel.color = Color.white;
+            }
+
+            if (subtitleLabel != null)
+            {
+                subtitleLabel.color = Color.white;
+            }
+
             SetTextAlpha(titleLabel, 1f);
             SetTextAlpha(subtitleLabel, _hovered ? 1f : 0.88f);
 
@@ -250,6 +449,16 @@ namespace FracturedChorus.UI
         {
             if (_particleRoot == null)
             {
+                return;
+            }
+
+            if (_locked)
+            {
+                for (var i = 0; i < ParticleCount; i += 1)
+                {
+                    SetAlpha(_bits[i], 0f);
+                }
+
                 return;
             }
 

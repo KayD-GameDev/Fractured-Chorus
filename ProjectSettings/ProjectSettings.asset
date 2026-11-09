@@ -785,7 +785,13 @@ PlayerSettings:
   windowsGamepadBackendHint: 0
   cloudProjectId: c41ed87d-395a-4c16-8c0f-f064c709803d
   framebufferDepthMemorylessMode: 0
-  qualitySettingsNames: []
+  qualitySettingsNames:
+  - Very Low
+  - Low
+  - Medium
+  - High
+  - Very High
+  - Ultra
   projectName: Fractured Chorus
   organizationId: khoa27
   cloudEnabled: 0

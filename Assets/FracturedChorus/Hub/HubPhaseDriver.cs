@@ -1,3 +1,4 @@
+using FracturedChorus.Localization;
 using FracturedChorus.Meta;
 using FracturedChorus.RunMap;
 using UnityEngine;
@@ -53,6 +54,15 @@ namespace FracturedChorus.Hub
 
         private void BeginMorning(GameMetaState state)
         {
+            if (CampusHubStoryBeats.ShouldSkipEnrollmentMorning(state))
+            {
+                CampusHubStoryBeats.ApplyMorningFlags(state);
+                state.CompleteMorningQuiz();
+                GameMetaSession.Save();
+                BeginTownMap(GameMetaSession.Current);
+                return;
+            }
+
             _townMap?.Hide();
 
             if (_morningUi == null)
@@ -97,6 +107,10 @@ namespace FracturedChorus.Hub
             }
 
             _townMap.Show(state, state.Calendar.CurrentPhase, OnActivityChosen);
+            if (HimaEnrollmentGate.IsActive(state))
+            {
+                _host.ShowStatus(GameLoc.Get("map.enrollment.hint"));
+            }
         }
 
         private void OnActivityChosen(string activityId)

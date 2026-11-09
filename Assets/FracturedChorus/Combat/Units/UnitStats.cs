@@ -116,6 +116,57 @@ namespace FracturedChorus.Combat.Units
             };
         }
 
+        /// <summary>Ren Lv1 — CHARACTER_LEVEL_PROGRESS. Chỉ basic.</summary>
+        public static UnitStats CreateRenLevelOne()
+        {
+            return new UnitStats
+            {
+                Element = HarmonyElement.Melody,
+                Strength = 22f,
+                Magic = 6f,
+                Endurance = 4f,
+                HeartBeat = 145,
+                BaseLuck = 8f,
+                CritMultiplier = 1.15f,
+                MaxHp = 74,
+                BaseSpeed = 12
+            };
+        }
+
+        /// <summary>Charlotte Lv1 — CHARACTER_LEVEL_PROGRESS. Chỉ basic.</summary>
+        public static UnitStats CreateTankLevelOne()
+        {
+            return new UnitStats
+            {
+                Element = HarmonyElement.Rhythm,
+                Strength = 15f,
+                Magic = 5f,
+                Endurance = 10f,
+                HeartBeat = 105,
+                BaseLuck = 3f,
+                CritMultiplier = 1.05f,
+                MaxHp = 140,
+                BaseSpeed = 8
+            };
+        }
+
+        /// <summary>Coda Lv1 — CHARACTER_LEVEL_PROGRESS. Chỉ basic.</summary>
+        public static UnitStats CreateMageLevelOne()
+        {
+            return new UnitStats
+            {
+                Element = HarmonyElement.Harmony,
+                Strength = 6f,
+                Magic = 30f,
+                Endurance = 3f,
+                HeartBeat = 125,
+                BaseLuck = 7f,
+                CritMultiplier = 1.12f,
+                MaxHp = 38,
+                BaseSpeed = 10
+            };
+        }
+
         public static UnitStats CreateGruntPreset()
         {
             return new UnitStats

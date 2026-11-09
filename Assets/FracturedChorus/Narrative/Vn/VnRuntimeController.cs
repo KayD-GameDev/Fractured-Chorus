@@ -248,18 +248,18 @@ namespace FracturedChorus.Narrative.Vn
             }
 
             BeatInterceptor = CadenceIntroFlow.TryIntercept;
-            if (CadenceIntroFlow.ShouldResumeTutorial())
-            {
-                CadenceIntroFlow.LaunchTutorial();
-                return false;
-            }
-
             if (CadenceIntroFlow.TryTakeEscapeScript(out var escape))
             {
                 SetScript(escape);
                 beginHubOnEnd = false;
                 CadenceIntroCast.Install();
                 return true;
+            }
+
+            if (CadenceIntroFlow.ShouldResumeTutorial())
+            {
+                CadenceIntroFlow.LaunchTutorial();
+                return false;
             }
 
             if (HimaEnrollmentLaunch.TryConsume(out var enrollment))
@@ -449,6 +449,11 @@ namespace FracturedChorus.Narrative.Vn
 
             _transitionBusy = false;
             _beatRoutine = null;
+            if (BeatInterceptor != null && BeatInterceptor(beat))
+            {
+                yield break;
+            }
+
             DispatchBeatView(beat);
         }
 

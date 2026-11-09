@@ -204,7 +204,7 @@ namespace FracturedChorus.Editor
             panelRect.anchorMax = new Vector2(0.5f, 0.5f);
             panelRect.pivot = new Vector2(0.5f, 0.5f);
             panelRect.anchoredPosition = Vector2.zero;
-            panelRect.sizeDelta = new Vector2(1120f, 760f);
+            panelRect.sizeDelta = SaveLoadSlotListView.MenuPanelSize;
 
             var title = CreateText(panelRect, "Title", "LOAD GAME", 34, TextAnchor.UpperCenter, FontStyle.Bold);
             Stretch(title.rectTransform, new Vector2(0.05f, 0.9f), new Vector2(0.95f, 0.98f));
@@ -216,7 +216,7 @@ namespace FracturedChorus.Editor
             var saveTab = CreateButton(tabBar, "Tab_Save", "SAVE", new Vector2(0.515f, 0f), new Vector2(1f, 1f));
 
             var slotList = CreateEmpty(panelRect, "SlotList");
-            Stretch(slotList, new Vector2(0.04f, 0.06f), new Vector2(0.56f, 0.79f));
+            Stretch(slotList, new Vector2(0.04f, 0.06f), new Vector2(0.486f, 0.79f));
 
             var slots = new (Button Button, Image Background, Text Label)[GameMetaSaveLoad.SlotCount];
             for (var i = 0; i < slots.Length; i++)
@@ -225,16 +225,16 @@ namespace FracturedChorus.Editor
             }
 
             var detailPanel = CreateImage(panelRect, "DetailPanel", FcColorTokens.Surface.Detail);
-            Stretch(detailPanel.rectTransform, new Vector2(0.58f, 0.34f), new Vector2(0.96f, 0.79f));
+            Stretch(detailPanel.rectTransform, new Vector2(0.51776767f, 0.34f), new Vector2(0.96f, 0.79f));
 
             var detail = CreateText(detailPanel.rectTransform, "Detail", "Select a slot.", 22, TextAnchor.UpperLeft);
             Stretch(detail.rectTransform, new Vector2(0.06f, 0.05f), new Vector2(0.94f, 0.95f));
             detail.color = FcColorTokens.Brand.TextMuted;
             detail.horizontalOverflow = HorizontalWrapMode.Wrap;
 
-            var primary = CreateButton(panelRect, "Btn_Primary", "LOAD", new Vector2(0.58f, 0.23f), new Vector2(0.96f, 0.31f));
-            var delete = CreateButton(panelRect, "Btn_Delete", "DELETE", new Vector2(0.58f, 0.14f), new Vector2(0.96f, 0.22f));
-            var close = CreateButton(panelRect, "Btn_Close", "CLOSE", new Vector2(0.58f, 0.05f), new Vector2(0.96f, 0.13f));
+            var primary = CreateButton(panelRect, "Btn_Primary", "LOAD", new Vector2(0.52335715f, 0.23f), new Vector2(0.96f, 0.31263158f));
+            var delete = CreateButton(panelRect, "Btn_Delete", "DELETE", new Vector2(0.52335715f, 0.14f), new Vector2(0.96f, 0.21421053f));
+            var close = CreateButton(panelRect, "Btn_Close", "CLOSE", new Vector2(0.52335715f, 0.05f), new Vector2(0.96f, 0.14f));
 
             var confirm = BuildConfirmDialog(layerGo.transform);
 

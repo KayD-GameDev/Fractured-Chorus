@@ -1,3 +1,4 @@
+using FracturedChorus.Audio;
 using FracturedChorus.RunMap;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -16,6 +17,11 @@ namespace FracturedChorus.Hub
 
         public static void Play()
         {
+            if (RunMusicSession.Instance != null)
+            {
+                RunMusicSession.Instance.Stop();
+            }
+
             Ensure().StartLoop();
         }
 

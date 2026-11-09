@@ -1345,7 +1345,7 @@ namespace FracturedChorus.Hub.CharacterBuild
 
         private static string DisplayName(string characterId) => characterId switch
         {
-            PartyCharacterIds.Charlotte => "Charlotte Vale",
+            PartyCharacterIds.Charlotte => "Charlotte Dubois",
             PartyCharacterIds.Coda => "Coda",
             _ => "Ren Takahashi"
         };

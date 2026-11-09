@@ -96,12 +96,27 @@ namespace FracturedChorus.Tests
             try
             {
                 Assert.AreEqual(VnBgIds.CadenceFirstLook, script.beats[0].bgId);
+                Assert.IsTrue(ContainsBg(script.beats, VnBgIds.CadenceFracturePull));
+                Assert.IsFalse(ContainsBg(script.beats, VnBgIds.CgResonanceDive));
+                Assert.IsFalse(ContainsBg(script.beats, VnBgIds.LuminaCrossingDay));
                 Assert.IsTrue(ContainsSpeaker(script.beats, VnSpeakerIds.Ren));
                 Assert.IsTrue(ContainsSpeaker(script.beats, VnSpeakerIds.Coda));
-                Assert.IsFalse(ContainsSpeaker(script.beats, VnSpeakerIds.Charlotte));
+                Assert.IsTrue(ContainsSpeaker(script.beats, VnSpeakerIds.Charlotte));
+                for (var i = 0; i < script.beats.Length; i++)
+                {
+                    if (!string.IsNullOrEmpty(script.beats[i].text))
+                    {
+                        Assert.IsFalse(string.IsNullOrEmpty(script.beats[i].textVi), script.beats[i].text);
+                    }
+                }
+
                 var last = script.beats[script.beats.Length - 1];
                 CollectionAssert.Contains(last.setFlags, StoryFlagIds.HimaEnrollmentDone);
                 CollectionAssert.Contains(last.setFlags, StoryFlagIds.CodaMet);
+                CollectionAssert.Contains(last.setFlags, StoryFlagIds.MimiEncountered);
+                CollectionAssert.Contains(last.setFlags, StoryFlagIds.CodaRescue);
+                CollectionAssert.Contains(last.setFlags, StoryFlagIds.CharlotteReunited);
+                CollectionAssert.Contains(last.setFlags, StoryFlagIds.VaultQuestActive);
                 Assert.AreEqual(RunMapSceneCatalog.CampusHub, script.nextScene);
             }
             finally

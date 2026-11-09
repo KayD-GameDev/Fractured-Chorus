@@ -28,6 +28,7 @@ namespace FracturedChorus.Tutorial
         [SerializeField] private Sprite defaultCoachPortrait;
 
         private const int CoachBodyFontSize = 28;
+        private const int CoachButtonFontSize = 40;
 
         private Action _onNext;
         private Action _onBack;
@@ -702,8 +703,8 @@ namespace FracturedChorus.Tutorial
                 else
                 {
                     backButton = CreateButton(panel, "BackButton", "Back", out backLabel);
-                    Stretch(backButton.GetComponent<RectTransform>(), new Vector2(0.24f, 0.06f),
-                        new Vector2(0.48f, 0.18f), Vector2.zero, Vector2.zero);
+                    Stretch(backButton.GetComponent<RectTransform>(), new Vector2(0.36f, 0.06f),
+                        new Vector2(0.64f, 0.2f), Vector2.zero, Vector2.zero);
                 }
             }
 
@@ -721,12 +722,14 @@ namespace FracturedChorus.Tutorial
                 nextButton.onClick.AddListener(HandleNext);
                 if (!preserveSceneLayout)
                 {
-                    Stretch(nextButton.GetComponent<RectTransform>(), new Vector2(0.72f, 0.06f), new Vector2(0.96f, 0.18f),
+                    Stretch(nextButton.GetComponent<RectTransform>(), new Vector2(0.68f, 0.06f), new Vector2(0.96f, 0.2f),
                         Vector2.zero, Vector2.zero);
                 }
 
                 UiButtonHoverFeedback.Ensure(nextButton.gameObject);
             }
+
+            MatchBackButtonToNext();
 
             if (progressLabel == null)
             {
@@ -792,14 +795,14 @@ namespace FracturedChorus.Tutorial
             progressLabel.gameObject.SetActive(false);
 
             backButton = CreateButton(panel.transform, "BackButton", "Back", out backLabel);
-            Stretch(backButton.GetComponent<RectTransform>(), new Vector2(0.24f, 0.06f), new Vector2(0.48f, 0.18f),
+            Stretch(backButton.GetComponent<RectTransform>(), new Vector2(0.36f, 0.06f), new Vector2(0.64f, 0.2f),
                 Vector2.zero, Vector2.zero);
             backButton.onClick.AddListener(HandleBack);
             backButton.gameObject.SetActive(false);
             UiButtonHoverFeedback.Ensure(backButton.gameObject);
 
             nextButton = CreateButton(panel.transform, "NextButton", "Next", out nextLabel);
-            Stretch(nextButton.GetComponent<RectTransform>(), new Vector2(0.72f, 0.06f), new Vector2(0.96f, 0.18f),
+            Stretch(nextButton.GetComponent<RectTransform>(), new Vector2(0.68f, 0.06f), new Vector2(0.96f, 0.2f),
                 Vector2.zero, Vector2.zero);
             nextButton.onClick.AddListener(HandleNext);
             UiButtonHoverFeedback.Ensure(nextButton.gameObject);
@@ -906,7 +909,7 @@ namespace FracturedChorus.Tutorial
             image.color = new Color(0.08f, 0.18f, 0.32f, 0.95f);
             var button = go.GetComponent<Button>();
             button.targetGraphic = image;
-            labelText = CreateText(go.transform, "Label", label, 20, TextAnchor.MiddleCenter);
+            labelText = CreateText(go.transform, "Label", label, CoachButtonFontSize, TextAnchor.MiddleCenter);
             Stretch(labelText.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             labelText.color = FcColorTokens.Brand.Cyan;
             labelText.fontStyle = FontStyle.Bold;
@@ -946,6 +949,58 @@ namespace FracturedChorus.Tutorial
                     label.resizeTextMaxSize = label.fontSize;
                 }
             }
+        }
+
+        private void MatchBackButtonToNext()
+        {
+            if (backButton == null || nextButton == null)
+            {
+                return;
+            }
+
+            var next = nextButton.GetComponent<RectTransform>();
+            var back = backButton.GetComponent<RectTransform>();
+            if (next == null || back == null)
+            {
+                return;
+            }
+
+            var width = next.anchorMax.x - next.anchorMin.x;
+            var gap = 0.04f;
+            back.anchorMin = new Vector2(next.anchorMin.x - gap - width, next.anchorMin.y);
+            back.anchorMax = new Vector2(next.anchorMin.x - gap, next.anchorMax.y);
+            back.offsetMin = next.offsetMin;
+            back.offsetMax = next.offsetMax;
+            back.pivot = next.pivot;
+            back.localScale = Vector3.one;
+
+            var nextImage = nextButton.targetGraphic as Image;
+            var backImage = backButton.targetGraphic as Image;
+            if (nextImage != null && backImage != null)
+            {
+                backImage.sprite = nextImage.sprite;
+                backImage.type = nextImage.type;
+                backImage.preserveAspect = nextImage.preserveAspect;
+                backImage.color = nextImage.color;
+            }
+
+            ApplyButtonLabel(nextLabel);
+            ApplyButtonLabel(backLabel);
+        }
+
+        private static void ApplyButtonLabel(Text label)
+        {
+            if (label == null)
+            {
+                return;
+            }
+
+            label.fontSize = CoachButtonFontSize;
+            label.fontStyle = FontStyle.Bold;
+            label.alignment = TextAnchor.MiddleCenter;
+            label.resizeTextForBestFit = false;
+            label.horizontalOverflow = HorizontalWrapMode.Overflow;
+            label.verticalOverflow = VerticalWrapMode.Overflow;
         }
 
         private static void PlaceProgressUnderPortrait(Text label)

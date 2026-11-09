@@ -21,7 +21,7 @@ namespace FracturedChorus.Hub
     [DefaultExecutionOrder(1000)]
     public sealed class StatusMenuRuntime : MonoBehaviour
     {
-        private const int OverlaySortingOrder = 700;
+        private const int OverlaySortingOrder = 1400;
 
         private static StatusMenuRuntime s_instance;
 
@@ -136,26 +136,45 @@ namespace FracturedChorus.Hub
 
             if (IsRunMapActive())
             {
-                if (UiEscapeGate.TryConsumeBackground())
+                var runMapMenu = ResolveMenu(createIfMissing: false);
+                if (runMapMenu != null && (runMapMenu.IsCalendarOpen || runMapMenu.IsSocialStatsOpen))
                 {
-                    _fallbackMenu?.Hide();
-                    var cadence = CadenceMapController.Instance;
-                    if (cadence != null)
-                    {
-                        if (cadence.TryHandleCancelInput())
-                        {
-                            return;
-                        }
-
-                        if (cadence.IsInsideVaultRun())
-                        {
-                            return;
-                        }
-                    }
-
-                    RunMapHubBridge.ReturnFromRunMapNavigation();
+                    return;
                 }
 
+                if (runMapMenu != null && runMapMenu.IsOpen)
+                {
+                    if (UiEscapeGate.TryConsumeBackground())
+                    {
+                        if (runMapMenu.TryNavigateBack())
+                        {
+                            return;
+                        }
+
+                        runMapMenu.Hide();
+                    }
+
+                    return;
+                }
+
+                if (!UiEscapeGate.TryConsumeBackground())
+                {
+                    return;
+                }
+
+                var cadence = CadenceMapController.Instance;
+                if (cadence != null && cadence.TryHandleCancelInput())
+                {
+                    return;
+                }
+
+                if (IsSuppressed())
+                {
+                    return;
+                }
+
+                runMapMenu = ResolveMenu(createIfMissing: true);
+                runMapMenu?.Show(GameMetaSession.Current);
                 return;
             }
 
@@ -259,7 +278,8 @@ namespace FracturedChorus.Hub
             }
 
             // Disclaimer / VN / contract: ESC không được mở settings trước khi người chơi ký.
-            if (!RunProfile.CanOpenPauseMenu)
+            // Run Map và combat đã qua đoạn đó; chặn ở đây làm phím ESC không mở được menu.
+            if (!RunProfile.CanOpenPauseMenu && !IsGameplayScene())
             {
                 return true;
             }
@@ -298,6 +318,14 @@ namespace FracturedChorus.Hub
         private static bool IsRunMapActive()
         {
             return SceneManager.GetActiveScene().name == RunMapSceneCatalog.RunMapPrototype;
+        }
+
+        private static bool IsGameplayScene()
+        {
+            var sceneName = SceneManager.GetActiveScene().name;
+            return sceneName == RunMapSceneCatalog.RunMapPrototype
+                   || sceneName == RunMapSceneCatalog.CombatPrototype
+                   || sceneName == RunMapSceneCatalog.CombatTutorial;
         }
 
         private void ClearFallbackMenu()

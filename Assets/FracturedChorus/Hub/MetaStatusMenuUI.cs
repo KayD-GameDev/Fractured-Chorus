@@ -8,6 +8,7 @@ using FracturedChorus.RunMap;
 using FracturedChorus.UI;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
@@ -222,6 +223,7 @@ namespace FracturedChorus.Hub
             ApplyPromptFont();
 
             diveButton?.SetListening(true);
+            ApplyCombatDiveLock();
 
             sfx?.PlayOpenPanel();
             if (EventSystem.current != null)
@@ -623,10 +625,30 @@ namespace FracturedChorus.Hub
             diveButton = ResonanceDiveButton.Ensure(parent, OnResonanceDiveClicked, fillParent: true);
         }
 
+        private void ApplyCombatDiveLock()
+        {
+            var sceneName = SceneManager.GetActiveScene().name;
+            var combat = string.Equals(sceneName, RunMapSceneCatalog.CombatPrototype, StringComparison.OrdinalIgnoreCase)
+                         || string.Equals(sceneName, RunMapSceneCatalog.CombatTutorial, StringComparison.OrdinalIgnoreCase);
+            diveButton?.SetLocked(combat);
+        }
+
         private void OnResonanceDiveClicked()
         {
             if (UiCancelInput.WasPressed())
             {
+                return;
+            }
+
+            if (string.Equals(
+                    SceneManager.GetActiveScene().name,
+                    RunMapSceneCatalog.RunMapPrototype,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                sfx?.PlaySelect();
+                diveButton?.SetListening(false);
+                Hide();
+                RunMapHubBridge.ReturnToCampusHub(forceTownMap: true);
                 return;
             }
 
