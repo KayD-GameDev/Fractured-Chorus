@@ -1,0 +1,32 @@
+---
+description: Unity 6 URP 2D import — sprites, PSD, preserve meta, no scene layout hacks.
+globs:
+  - Assets/FracturedChorus/**
+alwaysApply: false
+---
+
+# Unity 2D Pipeline — Fractured Chorus
+
+## Engine & SRP
+
+- **Unity 6000.4.x**; **URP** (`com.unity.render-pipelines.universal`). Sprite renderer dùng material URP default cho 2D.
+
+## Import
+
+- **Texture Type:** Sprite (2D and UI) cho sprite gameplay/UI; Read/Write chỉ bật khi cần script mesh/sprite đọc pixel.
+- **PSD:** `com.unity.2d.psdimporter` — ưu tiên giữ layer đặt tên cho animation pipeline.
+- **Aseprite:** `com.unity.2d.aseprite` — dùng khi source là `.ase`/`.aseprite`.
+
+## `.meta` và GUID
+
+- Không xóa `.meta` đã commit; khi thay nội dung texture giữ file `.meta` để reference trong scene/prefab không gãy.
+- File mới trong Unity cần generate `.meta` rồi commit cùng GUID ổn định.
+
+## Scene / UI layout
+
+- **Không** hardcode `RectTransform.anchoredPosition` / `sizeDelta` trong C# để **ghi đè** layout menu/sandbox đã chỉnh trên scene — layout do author trong `.unity` (theo quy ước dự án).
+- Gán reference sprite/animator trong Inspector hoặc qua serialized field có sẵn; tránh OpenScene tự động sửa hierarchy.
+
+## Packages liên quan (project)
+
+- `2d.animation`, `2d.sprite`, `2d.tilemap`, `2d.spriteshape`, `timeline`, `ugui` — dùng đúng mục đích; không tự thêm package trong task art thuần (để lead/engine chỉ định).

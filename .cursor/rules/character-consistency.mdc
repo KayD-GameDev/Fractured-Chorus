@@ -1,0 +1,37 @@
+---
+description: Character consistency — read CHARACTER_LOCK, use canonical refs, forbid drift.
+globs:
+  - Assets/FracturedChorus/Art/Characters/**
+  - Assets/FracturedChorus/Art/UI/Narrative/Portraits/**
+alwaysApply: false
+---
+
+# Character Consistency (Fractured Chorus)
+
+Hệ thống nhất quán nhân vật bám **một file lock** mỗi ID.
+
+## Trước khi gen hoặc sửa ảnh có nhân vật
+
+1. Đọc `Assets/FracturedChorus/Art/Characters/<Name>/CHARACTER_LOCK.md` (PascalCase folder = ID).
+2. Nếu chưa có lock → tạo theo `Art/Characters/README_CHARACTER_LOCK.md` — **chỉ một** lock per character.
+3. Không tạo lock thứ hai; không đổi identity đã khóa trừ khi user/design chỉ định cập nhật lock.
+
+## Phải lưu / tham chiếu (concept “Character Consistency System”)
+
+| Thành phần | Nơi lưu / cách dùng |
+|------------|---------------------|
+| Ảnh tham chiếu chuẩn | Paths trong CHARACTER_LOCK + (tuỳ chọn) `_Refs/` hoặc `_Consistency/` dưới folder nhân vật |
+| Design / expression | Bảng trong lock; bust canvas thường **1024×1536** (xem lock + `character-art-lock.mdc`) |
+| Palette & costume | Hex và mô tả layer trong lock — không đổi màu đã khóa |
+| Góc nhìn & tỷ lệ | “Proportion”, “bust framing”, “head-count” nếu lock có ghi |
+| Tuyệt đối không đổi | Liệt kê trong lock (ví dụ: màu mắt, SyncPod, cấm headphone trừ Cadence, v.v.) |
+
+## Sau khi có asset mới
+
+- Cập nhật đúng path trong CHARACTER_LOCK.
+- Nếu thay file đã có `.meta` trong repo → **giữ GUID** `.meta` (xem rule `character-art-lock.mdc`).
+
+## Compose
+
+- Art direction toàn cục: rule `fracture-chorus-art-style.mdc`.
+- Bust/portrait kỹ thuật: `.cursor/rules/character-art-lock.mdc`.

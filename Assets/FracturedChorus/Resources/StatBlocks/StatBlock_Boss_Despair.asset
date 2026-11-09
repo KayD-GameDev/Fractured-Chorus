@@ -1,4 +1,4 @@
-﻿%YAML 1.1
+%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -21,5 +21,5 @@ MonoBehaviour:
   heartBeat: 130
   baseLuck: 5
   critMultiplier: 1.1
-  maxHp: 1680
+  maxHp: 500
   baseSpeed: 8

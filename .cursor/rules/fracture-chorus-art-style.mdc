@@ -1,0 +1,38 @@
+---
+description: Fractured Chorus global art direction — anime/JRPG, Lumina, hologram/neon palette.
+globs:
+  - Assets/FracturedChorus/Art/**
+alwaysApply: false
+---
+
+# Fracture Chorus — Art Style
+
+Khi tạo hoặc chỉnh concept art, sprite, UI art, BG hoặc illustration cho Fractured Chorus:
+
+## Định hướng
+
+- Anime 2D / JRPG; tham khảo **Caligula Effect 2**, **Persona** — không sao chép nhận diện có bản quyền.
+- **Lumina:** đô thị hiện đại, chân thực; hologram và neon **có chừng mực**, tránh sci-fi quá đà.
+- Hình đọc rõ, có chiều sâu (atmospheric perspective); tránh quá tối hoặc quá bão hòa.
+
+## Palette chủ (directional)
+
+| Màu | Hex | Dùng |
+|-----|-----|------|
+| Nền sâu | `#0B1220` | Shadow, negative space |
+| Neon chính | `#00D4FF` | Accent, hologram edge |
+| Neon phụ | `#8CD9FF` | Highlight, glow nhẹ |
+| Vàng nhấn | `#C9A84E` | Chi tiết chọn lọc (badge, rim) |
+
+Hạn chế **hồng / magenta** trừ khi lock nhân vật hoặc user chỉ định.
+
+## Nhân vật trong khung cảnh
+
+- Giữ **nhất quán với** `Assets/FracturedChorus/Art/Characters/<Name>/CHARACTER_LOCK.md` (face, hair, outfit, prop).
+- Sprite nhân vật **full body** trừ khi task nói khác (bust/portrait/chibi theo lock).
+
+## Vi phạm cần tránh
+
+- Thêm IP / logo / costume nhận diện từ game khác.
+- Đổi màu mắt / tóc / phụ kiện đã khóa trong CHARACTER_LOCK.
+- Neon hồng-magenta chiếm ưu thế trên frame.
