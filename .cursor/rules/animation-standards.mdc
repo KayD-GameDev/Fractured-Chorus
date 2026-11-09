@@ -1,0 +1,31 @@
+---
+description: 2D animation standards — clips, controllers, frame vs skeletal for Fractured Chorus.
+globs:
+  - Assets/FracturedChorus/Art/Characters/**/Animation/**
+  - Assets/FracturedChorus/Art/Characters/**/*.controller
+  - Assets/FracturedChorus/Art/Characters/**/*.anim
+alwaysApply: false
+---
+
+# Animation Standards — Fractured Chorus
+
+## Tổ chức file
+
+- Clip và controller nằm dưới `Art/Characters/<Name>/Animation/` (hoặc subfolder theo state: Idle, Skill, …) — khớp README `Characters/`.
+- Tên clip: rõ state — ví dụ `Ren Idle`, `Coda - Idle` (giữ consistency với controller hiện có).
+
+## Frame-by-frame
+
+- Nguồn: sheet PNG hoặc PSD layers (đã có PSD pipeline trong repo).
+- Frame rate mặc định: **12 fps** cho gameplay character trừ khi AD chỉ định; VN có thể 8–12 fps cho loop nhẹ.
+- Loop: tránh pop — khung đầu/cuối khớp silhouette khi idle.
+
+## Skeletal (2D Animation package hoặc Spine)
+
+- **Unity 2D Animation:** skinning với mesh; kiểm tra stretch ở elbow/knee.
+- **Spine:** chưa có package trong `Packages/manifest.json` — nếu adopt sau: quy ước export JSON/atlas riêng và rule import mới.
+- Một nhân vật — một rig source; không trộn rig Spine với sprite sequence cùng state mà không có transition rõ.
+
+## Thay ref tạm
+
+- Animation đang dùng file `N_Corp_*`, `Lobotomy_*`, `LCB_*` phải được thay trước khi coi là content ship; cập nhật clip và giữ `.meta` GUID khi replace file cũ.

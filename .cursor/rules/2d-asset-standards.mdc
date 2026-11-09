@@ -1,0 +1,35 @@
+---
+description: 2D asset naming, resolution, alpha and export standards for Fractured Chorus Art/.
+globs:
+  - Assets/FracturedChorus/Art/**
+alwaysApply: false
+---
+
+# 2D Asset Standards — Fractured Chorus
+
+## Naming
+
+- Chuẩn: `{scope}_{subject}_{variant}_v{major}.png` (chữ thường, underscore); VD Ren combat semichibi **source:** `ren_combat_battle_idle_semichibi_v2_full.png` (864×1152).
+- Tránh ký tự lạ trong tên asset ship (`'`, khoảng trắng ngoài quy ước) — Unity và CI dễ lỗi path.
+- Không đặt tên file theo IP bên ngoài khi asset là sản phẩm cuối cho FC (ref tạm chỉ trong giai đoạn transition).
+
+## Định dạng
+
+- Sprite/UI trong game: **PNG** (alpha khi cần transparent); clean alpha, không viền trắng.
+- Concept / ref có thể JPG nếu lock hoặc task ghi rõ.
+- PSD: dùng cho layer animation; import qua **PSD Importer**; giữ layer có tên ổn định.
+
+## Độ phân giải & canvas
+
+- VN bust (mặc định): **1024×1536** hoặc cùng tỷ lệ; không crop sát mép trái/phải (padding ~8–12% ngang) — theo `README_CHARACTER_LOCK.md`.
+- Combat static / chibi: theo số trong CHARACTER_LOCK hoặc brief (Ren semi-chibi source **864×1152** — `ren_combat_battle_idle_semichibi_v2_full.png`; bản crop/history khác chỉ ref).
+- UI element: ưu tiên bội số **2** (pixel-perfect) khi có grid neon/sharp edge.
+
+## Sprite sheet
+
+- Grid và pivot thống nhất per character hoặc per animation set; ghi trong brief hoặc lock.
+- Padding frame đủ tránh bleeding khi filter bilinear.
+
+## Mock vs ship
+
+- Ref tạm (README Characters: `LCB_*`, `N_Corp_*`) không gán preset canon; thay bằng asset đặt tên FC + cập nhật lock.

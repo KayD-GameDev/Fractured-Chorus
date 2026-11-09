@@ -66,6 +66,13 @@
 
 Tone: keep **ngầu** — restrained face acting, no cartoon exaggeration.
 
+## Combat battle unit (static)
+- **Semi-chibi combat — single source (chỉnh sửa / sản xuất tiếp):** `Art/Characters/Ren/Battle/ren_combat_battle_idle_semichibi_v2_full.png` — **864×1152**; alpha / cách đọc nền theo thực tế file; quy định lead: mọi chỉnh combat semichibi **bám file này**. Sau khi nghiệm thu, `UnitPreset_Ren.battleSprite` nên trỏ sprite import từ source này (hiện preset có thể vẫn placeholder — cập nhật trong Unity sau).
+- **Reference / history (không dùng làm nguồn chỉnh sửa mới):** `ren_combat_battle_idle_semichibi_v2.png` (crop/export từ pipeline cũ), `ren_combat_battle_idle_semichibi_v3.png` (470×1109, snapshot cũ).
+- **HD full-body (alt):** `Art/Characters/Ren/Battle/ren_combat_battle_idle_v2.png`
+- Một PNG idle — **không** sprite sheet; thay placeholder `N_Corp_*`
+- School HIMA lock + Violin Rifle Basic; SyncPod là đĩa tròn nhỏ trên tai, sóng xanh, **dây mảnh** từ đĩa xuống cổ áo — **không** gọng trùm đầu, **không** earcup (xem `semichibi_v2_full`)
+
 ## Combat party card
 - Portrait: `Art/UI/Combat/Characters/Avatars/ren_party_avatar_v1.png` (bust only; cut from Clear card)
 - Chrome (shared): `Art/UI/Combat/PartyCard/` — CardBg jagged, AccentShard diamond, bar track
